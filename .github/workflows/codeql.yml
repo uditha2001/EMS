@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run Maven Build
-      uses: ./.github/workflows/maven.yml
+      uses: ./maven.yml
         
  analyze:
     name: Analyze (${{ matrix.language }})
