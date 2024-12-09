@@ -37,6 +37,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         java-version: '21'
+        distribution: 'AdoptOpenJDK'
 
     - name: Verify Java version
       if: contains(github.event.pull_request.head.repo.default_branch, 'java')
@@ -54,6 +55,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '20.18.1'
+        distribution: ''
 
     - name: Verify Node.js version
       if: |
