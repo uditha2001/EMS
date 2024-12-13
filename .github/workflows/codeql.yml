@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       # Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,6 +39,7 @@ jobs:
         with:
           languages: java,javascript # Analyze Java and JavaScript (React falls under this)
           queries: +security-extended
+
 
       # Build code if necessary (optional step for Java or Node.js projects)
       - name: Build Code
