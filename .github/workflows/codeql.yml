@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Set up Java 21
-      - name: Set up Java 21
+      - name: Set up Java 21(Adoptium)
         uses: actions/setup-java@v3
         with:
           java-version: '21'
