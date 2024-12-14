@@ -1,4 +1,4 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
-public class UserManagementEntity {
+public class PermissionEntity {
 }
