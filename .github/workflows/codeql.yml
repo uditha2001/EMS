@@ -1,0 +1,62 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+
+    branches: 
+      - "development"
+      - "main"
+ 
+  pull_request:
+    branches: 
+      - "development"
+      - "main"
+  
+  schedule:
+    - cron: "0 0 * * 0" # Weekly schedule
+
+jobs:
+  analyze:
+
+    name: Analyze Code
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Java 21
+      - name: Set up Java 21(Adoptium)
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Set up Node.js 20.18.1
+      - name: Set up Node.js 20.18.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.18.1'
+
+      # Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java,javascript # Analyze Java and JavaScript (React falls under this)
+          queries: +security-extended
+
+
+      # Build code if necessary (optional step for Java or Node.js projects)
+      - name: Build Code
+        run: |
+          echo "Building the project"
+          # Add your build commands here if necessary
+          # Example for Java: ./gradlew build
+          # Example for Node.js: npm install && npm run build
+
+      # Perform CodeQL analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
