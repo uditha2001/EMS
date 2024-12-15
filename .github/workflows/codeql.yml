@@ -56,11 +56,12 @@ jobs:
           cd Backend
           mvn clean install -DskipTests
 
-      # Step 6: Build JavaScript/TypeScript code (for Node.js projects)
+      # Step 6: Build JavaScript Code (NPM Build in Frontend_1 Folder)
       - name: Build JavaScript Code
         if: ${{ matrix.language == 'javascript' }}
         run: |
-          echo "Building JavaScript project..."
+          echo "Building JavaScript project in Frontend_1 folder..."
+          cd Frontend_1
           npm install
           npm run build # Ensure this step produces JavaScript files in `dist`
 
