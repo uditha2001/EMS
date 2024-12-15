@@ -2,76 +2,68 @@ name: "CodeQL Analysis"
 
 on:
   push:
-
     branches: 
       - "development"
       - "main"
- 
   pull_request:
     branches: 
       - "development"
       - "main"
-  
   schedule:
-    - cron: "0 0 * * 0" # Weekly schedule
+    - cron: "0 0 * * 0"
 
 jobs:
   analyze:
-
     name: Analyze Code
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        include:
-        - language: java-kotlin
-        - language: javascript-typescript
-        # CodeQL supports the following values keywords for 'language': 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
-        # Use `c-cpp` to analyze code written in C, C++ or both
-        # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
-        # Use 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
-        # To learn more about changing the languages that are analyzed or customizing the build mode for your analysis,
-        # see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning.
-        # If you are analyzing a compiled language, you can modify the 'build-mode' for that language to customize how
-        # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
+        language: [java, javascript-typescript]
 
     steps:
-
-      # Checkout the code
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Java 21
-      - name: Set up Java 21(Adoptium)
+      # Step 2: Set up Java for Java/Kotlin projects
+      - name: Set up Java 21 (Adoptium)
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # Set up Node.js 20.18.1
+      # Step 3: Set up Node.js for JavaScript/TypeScript projects
       - name: Set up Node.js 20.18.1
         uses: actions/setup-node@v3
         with:
           node-version: '20.18.1'
 
-      # Initialize CodeQL
+      # Step 4: Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: java,javascript # Analyze Java and JavaScript (React falls under this)
+          languages: ${{ matrix.language }}
           queries: +security-extended
 
-
-      # Build code if necessary (optional step for Java or Node.js projects)
-      - name: Build Code
+      # Step 5: Build Java Code (Maven Build in Backend Folder)
+      - name: Build Java Code
+        if: ${{ matrix.language == 'java' }}
         run: |
-          echo "Building the project"
-          # Add your build commands here if necessary
-          # Example for Java: ./gradlew build
-          # Example for Node.js: npm install && npm run build
+          echo "Building Java project with Maven in the Backend folder..."
+          cd Backend
+          mvn clean install -DskipTests
 
-      # Perform CodeQL analysis
+      # Step 6: Build JavaScript Code (NPM Build in Frontend_1 Folder)
+      - name: Build JavaScript Code
+        if: ${{ matrix.language == 'javascript' }}
+        run: |
+          echo "Building JavaScript project in Frontend_1 folder..."
+          cd Frontend_1
+          npm install
+          npm run build # Ensure this step produces JavaScript files in `dist`
+
+      # Step 7: Perform CodeQL Analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-

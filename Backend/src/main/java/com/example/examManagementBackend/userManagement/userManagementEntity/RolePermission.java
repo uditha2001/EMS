@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
+@Table(name="role_permissions")
 public class RolePermission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
