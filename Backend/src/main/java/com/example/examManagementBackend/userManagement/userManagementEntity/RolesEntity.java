@@ -21,11 +21,9 @@ public class RolesEntity {
     public RolesEntity() {
     }
 
-    public RolesEntity(String roleName, String roleDescription, Set<UserRoles> userRoles, Set<RolePermission> rolePermissions) {
+    public RolesEntity(String roleName, String roleDescription) {
         this.roleName = roleName;
         this.roleDescription = roleDescription;
-        this.userRoles = userRoles;
-        this.rolePermissions = rolePermissions;
     }
 
     public String getRoleName() {
@@ -42,22 +40,6 @@ public class RolesEntity {
 
     public void setRoleDescription(String roleDescription) {
         this.roleDescription = roleDescription;
-    }
-
-    public Set<UserRoles> getUserRoles() {
-        return userRoles;
-    }
-
-    public void setUserRoles(Set<UserRoles> userRoles) {
-        this.userRoles = userRoles;
-    }
-
-    public Set<RolePermission> getRolePermissions() {
-        return rolePermissions;
-    }
-
-    public void setRolePermissions(Set<RolePermission> rolePermissions) {
-        this.rolePermissions = rolePermissions;
     }
 
     public Long getRoleId() {
