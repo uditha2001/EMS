@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
+@Table(name="permissions")
 public class PermissionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
