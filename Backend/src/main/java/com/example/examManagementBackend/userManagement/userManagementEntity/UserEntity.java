@@ -2,9 +2,11 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -16,10 +18,8 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
     @Column(nullable = false,unique = true)
     private String username;
-
     @Column(nullable = false)
     private String password;
     @Column(nullable = false,unique = true)
@@ -33,7 +33,7 @@ public class UserEntity {
     @Column(nullable = false,columnDefinition = "BOOLEAN DEFAULT 1")
     private boolean isActive;
     @CreatedDate
-    @Column(nullable = false,updatable = false)
+    @Column(updatable = false,nullable = false)
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
@@ -44,15 +44,13 @@ public class UserEntity {
 
     }
 
-    public UserEntity(String password, String username, String email, String firstName, String lastName, int failedLoginAttemps, boolean isActive, Set<UserRoles> userRoles) {
-        this.password = password;
+    public UserEntity(String username, String email, String firstName, String lastName, int failedLoginAttemps, boolean isActive) {
         this.username = username;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.failedLoginAttemps = failedLoginAttemps;
         this.isActive = isActive;
-        this.userRoles = userRoles;
     }
 
     public String getUsername() {
@@ -111,13 +109,8 @@ public class UserEntity {
         isActive = active;
     }
 
-    public Set<UserRoles> getUserRoles() {
-        return userRoles;
-    }
 
-    public void setUserRoles(Set<UserRoles> userRoles) {
-        this.userRoles = userRoles;
-    }
+
 
     public Long getUserId() {
         return userId;

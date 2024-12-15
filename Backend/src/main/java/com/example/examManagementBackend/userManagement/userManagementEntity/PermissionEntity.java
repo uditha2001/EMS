@@ -23,11 +23,10 @@ public class PermissionEntity {
     public PermissionEntity() {
     }
 
-    public PermissionEntity(String permissionName, String permissionDescription, String permissionType, Set<RolePermission> rolePermissions) {
+    public PermissionEntity(String permissionName, String permissionDescription, String permissionType) {
         this.permissionName = permissionName;
         this.permissionDescription = permissionDescription;
         this.permissionType = permissionType;
-        this.rolePermissions = rolePermissions;
     }
 
     public String getPermissionName() {
@@ -52,14 +51,6 @@ public class PermissionEntity {
 
     public void setPermissionType(String permissionType) {
         this.permissionType = permissionType;
-    }
-
-    public Set<RolePermission> getRolePermissions() {
-        return rolePermissions;
-    }
-
-    public void setRolePermissions(Set<RolePermission> rolePermissions) {
-        this.rolePermissions = rolePermissions;
     }
 
     public Long getPermissionId() {
