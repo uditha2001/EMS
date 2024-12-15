@@ -48,11 +48,12 @@ jobs:
           languages: ${{ matrix.language }}
           queries: +security-extended
 
-      # Step 5: Build Java Code (Maven Build)
+      # Step 5: Build Java Code (Maven Build in Backend Folder)
       - name: Build Java Code
         if: ${{ matrix.language == 'java' }}
         run: |
-          echo "Building Java project with Maven..."
+          echo "Building Java project with Maven in the Backend folder..."
+          cd Backend
           mvn clean install -DskipTests
 
       # Step 6: Build JavaScript/TypeScript code (for Node.js projects)
