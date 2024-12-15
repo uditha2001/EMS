@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userId;
+    private Long userId;
 
     @Column(nullable = false,unique = true)
     private String username;
@@ -28,7 +29,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String lastName;
     @Column(nullable = false,columnDefinition = "INT DEFAULT 0")
-    private int failed_login_attemps;
+    private int failedLoginAttemps;
     @Column(nullable = false,columnDefinition = "BOOLEAN DEFAULT 1")
     private boolean isActive;
     @CreatedDate
@@ -36,5 +37,7 @@ public class UserEntity {
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
+    @OneToMany(mappedBy = "user")
+    Set<UserRoles> userRoles;
 
 }
