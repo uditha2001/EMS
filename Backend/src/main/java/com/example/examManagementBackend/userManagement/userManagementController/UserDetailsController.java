@@ -21,4 +21,8 @@ public class UserDetailsController {
         System.out.println(message);
         return message;
     }
+    @PutMapping(path="/updateUser")
+    public String updateUser(@RequestBody UserDTO userdto) {
+        return null;
+    }
 }

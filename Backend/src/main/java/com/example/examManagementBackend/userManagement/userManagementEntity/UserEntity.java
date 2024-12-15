@@ -2,9 +2,11 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -42,8 +44,7 @@ public class UserEntity {
 
     }
 
-    public UserEntity(String password, String username, String email, String firstName, String lastName, int failedLoginAttemps, boolean isActive) {
-        this.password = password;
+    public UserEntity(String username, String email, String firstName, String lastName, int failedLoginAttemps, boolean isActive) {
         this.username = username;
         this.email = email;
         this.firstName = firstName;
