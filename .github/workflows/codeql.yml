@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [java, javascript]
+        language: [java-kotlin, javascript-typescript]
 
     steps:
       # Step 1: Checkout the repository
