@@ -23,7 +23,6 @@ jobs:
         language: [java, javascript]
 
     steps:
-
       # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
