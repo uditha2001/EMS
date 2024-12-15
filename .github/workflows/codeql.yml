@@ -48,13 +48,12 @@ jobs:
           languages: ${{ matrix.language }}
           queries: +security-extended
 
-      # Step 5: Build Java/Kotlin code (ensure .class files exist)
+      # Step 5: Build Java Code (Maven Build)
       - name: Build Java Code
         if: ${{ matrix.language == 'java' }}
         run: |
-          echo "Building Java project..."
-          ./gradlew build -x test # Replace with your build tool (e.g., Maven or Gradle)
-          # For Maven: mvn clean install -DskipTests
+          echo "Building Java project with Maven..."
+          mvn clean install -DskipTests
 
       # Step 6: Build JavaScript/TypeScript code (for Node.js projects)
       - name: Build JavaScript Code
