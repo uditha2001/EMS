@@ -24,4 +24,20 @@ public class RolePermission {
     @Column(nullable = false)
     private LocalDateTime grantedAt;
 
+
+    public RolesEntity getRolesEntity() {
+        return rolesEntity;
+    }
+
+    public Long getRolePermissionid() {
+        return rolePermissionid;
+    }
+
+    public PermissionEntity getRolePermission() {
+        return rolePermission;
+    }
+
+    public LocalDateTime getGrantedAt() {
+        return grantedAt;
+    }
 }

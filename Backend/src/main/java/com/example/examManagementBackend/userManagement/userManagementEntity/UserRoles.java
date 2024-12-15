@@ -25,5 +25,19 @@ public class UserRoles {
     @Column(nullable = false)
     private LocalDateTime assignedAt;
 
+    public UserEntity getUser() {
+        return user;
+    }
 
+    public Long getId() {
+        return id;
+    }
+
+    public RolesEntity getRole() {
+        return role;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
 }
