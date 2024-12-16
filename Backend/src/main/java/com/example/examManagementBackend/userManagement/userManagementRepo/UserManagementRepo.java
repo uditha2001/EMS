@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 @EnableJpaRepositories
 public interface UserManagementRepo extends JpaRepository<UserEntity,Long> {
-    User findByUsername(String username);
+    UserEntity findByUsername(String username);
 }
