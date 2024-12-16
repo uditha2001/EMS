@@ -46,4 +46,6 @@ public class RolesEntity {
     public Long getRoleId() {
         return roleId;
     }
+
+
 }
