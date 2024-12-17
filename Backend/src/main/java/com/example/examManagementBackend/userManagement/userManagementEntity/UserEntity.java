@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -123,4 +124,14 @@ public class UserEntity {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public Set<UserRoles> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRoles> userRoles) {
+        this.userRoles = userRoles;
+    }
+
+
 }
