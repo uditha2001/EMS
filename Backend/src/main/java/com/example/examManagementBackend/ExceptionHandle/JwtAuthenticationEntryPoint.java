@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.utill.ExceptionHandle;
+package com.example.examManagementBackend.ExceptionHandle;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
