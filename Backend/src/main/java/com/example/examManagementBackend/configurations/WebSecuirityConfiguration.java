@@ -17,10 +17,13 @@ public class WebSecuirityConfiguration{
     @Autowired
     JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+    //create authentication manger
     @Bean
     public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+    //customize the default websecurity config
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -28,7 +31,8 @@ public class WebSecuirityConfiguration{
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers(
-                                "api/v1/user/addUser"
+                                "api/v1/user/addUser",
+                                 "api/v1/login/authentication"
                         ).permitAll()
                         .anyRequest().authenticated()
 
@@ -46,6 +50,7 @@ public class WebSecuirityConfiguration{
 
 
     }
+    //create a password encoder
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

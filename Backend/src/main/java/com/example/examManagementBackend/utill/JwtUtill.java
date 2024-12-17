@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtill {
-    private static final String SECRET_KEY="SPAxim1@";
+    private static final String SECRET_KEY="12345678920010900FutureSpaxim1hsecretkeyforproject123456789123456";
 
     public String extractUserName(String token) {
             return getClaimFromToken(token, Claims::getSubject);
@@ -45,7 +45,7 @@ public class JwtUtill {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000))
-                .signWith(SignatureAlgorithm.HS512,SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS256,SECRET_KEY)
                 .compact();
     }
 
