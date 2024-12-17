@@ -30,10 +30,13 @@ public class WebSecuirityConfiguration{
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers(
                                 "api/v1/user/addUser",
                                  "api/v1/login/authentication"
                         ).permitAll()
+                        .requestMatchers("/api/v1/permissions/**").permitAll()
+                        .requestMatchers("/api/v1/roles/**").permitAll()
                         .anyRequest().authenticated()
 
 

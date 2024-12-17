@@ -2,6 +2,7 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,8 +19,12 @@ public class PermissionEntity {
 
     @Column(nullable = false)
     private String permissionType;
-    @OneToMany(mappedBy = "rolePermission")
-    Set<RolePermission> rolePermissions;
+    //@OneToMany(mappedBy = "rolePermission")
+    ///Set<RolePermission> rolePermissions;
+
+    @OneToMany(mappedBy = "permissionEntity") // Make sure this matches the field in RolePermission
+    private Set<RolePermission> rolePermissions = new HashSet<>(); // Or List<RolePermission>
+
 
     public PermissionEntity() {
     }
