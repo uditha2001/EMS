@@ -37,6 +37,7 @@ public class WebSecuirityConfiguration{
                         ).permitAll()
                         .requestMatchers("/api/v1/permissions/**").permitAll()
                         .requestMatchers("/api/v1/roles/**").permitAll()
+                        .requestMatchers("/api/v1/user/**").permitAll()
                         .anyRequest().authenticated()
 
 
