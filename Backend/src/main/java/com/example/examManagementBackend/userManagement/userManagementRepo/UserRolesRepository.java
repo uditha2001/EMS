@@ -1,7 +1,5 @@
 package com.example.examManagementBackend.userManagement.userManagementRepo;
 
-
-import com.example.examManagementBackend.userManagement.userManagementDTO.RoleWithPermissionsDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +16,6 @@ public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
     @Query("SELECT ur FROM UserRoles ur WHERE ur.user = :userid")
     List<UserRoles> extractusers(@Param("userid") Long userId);
 
-public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
     // Find all roles associated with a specific user
     List<UserRoles> findByUser(UserEntity user);
 

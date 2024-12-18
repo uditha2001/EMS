@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.userManagement.userManagementRepo;
 
-import com.example.examManagementBackend.userManagement.userManagementDTO.RoleWithPermissionsDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

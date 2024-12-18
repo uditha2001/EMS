@@ -2,7 +2,8 @@ package com.example.examManagementBackend.userManagement.userManagementServices;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
-import com.example.examManagementBackend.userManagement.userManagementDTO.RoleWithPermissionsDTO;
+import com.example.examManagementBackend.userManagement.userManagementDTO.RoleDTO;
+import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,14 +89,19 @@ public class JwtService implements UserDetailsService {
         }
     }
     //get userroles using userid
-    public List<RoleWithPermissionsDTO> getRolesByUserId(String user){
+    public List<String> getRolesByUserId(String user){
         UserEntity userEntities=userManagementRepo.findByUsername(user);
         Long currentUserId=userEntities.getUserId();
+        List<String> rolesSet=new ArrayList<>();
        List<UserRoles> roles=userRolesRepository.extractusers(currentUserId);
-       RoleWithPermissionsDTO roleWithPermissionsDTO=new RoleWithPermissionsDTO(
-               roles.
-       )
-        return null;
+       for(UserRoles userrole:roles){
+                rolesSet.add(userrole.getRole().getRoleName());
+        }
+
+       UserDTO userdto=new UserDTO(
+                    rolesSet
+       );
+        return userdto.getRoles();
     }
 
 

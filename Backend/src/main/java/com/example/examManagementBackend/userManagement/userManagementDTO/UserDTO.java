@@ -29,6 +29,10 @@ public class UserDTO {
         this.roles = roles;
     }
 
+    public UserDTO(List<String> roles) {
+        this.roles = roles;
+    }
+
     public Long getId() {
         return id;
     }
