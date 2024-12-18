@@ -74,7 +74,8 @@ public class JwtService implements UserDetailsService {
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
         }
         catch(BadCredentialsException e){
-            throw new BadCredentialsException("Bad credentials");
+            System.out.println("unauthorized");
+            throw new BadCredentialsException("Bad credentials",e);
         }
     }
 
