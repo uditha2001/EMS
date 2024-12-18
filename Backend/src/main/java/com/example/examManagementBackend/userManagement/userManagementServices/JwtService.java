@@ -2,8 +2,11 @@ package com.example.examManagementBackend.userManagement.userManagementServices;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
+import com.example.examManagementBackend.userManagement.userManagementDTO.RoleWithPermissionsDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
+import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.JwtUtill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -18,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -30,6 +34,10 @@ public class JwtService implements UserDetailsService {
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtill jwtUtill;
+    @Autowired
+    RoleService roleService;
+    @Autowired
+    UserRolesRepository userRolesRepository;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity userEntity=userManagementRepo.findByUsername(username);
@@ -52,7 +60,7 @@ public class JwtService implements UserDetailsService {
     //get authorities
     private Set<SimpleGrantedAuthority> getAuthority(UserEntity userEntity){
         Set<SimpleGrantedAuthority> authorities=new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        authorities.add(new SimpleGrantedAuthority("ROLE_"+getRolesByUserId(userEntity.getUsername())));
         return authorities;
     }
 
@@ -77,6 +85,16 @@ public class JwtService implements UserDetailsService {
             System.out.println("unauthorized");
             throw new BadCredentialsException("Bad credentials",e);
         }
+    }
+    //get userroles using userid
+    public List<RoleWithPermissionsDTO> getRolesByUserId(String user){
+        UserEntity userEntities=userManagementRepo.findByUsername(user);
+        Long currentUserId=userEntities.getUserId();
+       List<UserRoles> roles=userRolesRepository.extractusers(currentUserId);
+       RoleWithPermissionsDTO roleWithPermissionsDTO=new RoleWithPermissionsDTO(
+               roles.
+       )
+        return null;
     }
 
 
