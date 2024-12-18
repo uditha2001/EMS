@@ -1,6 +1,6 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
 
-import com.example.examManagementBackend.userManagement.userManagementDTO.RoleWithPermissionsDTO;
+import com.example.examManagementBackend.userManagement.userManagementDTO.RoleDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolePermission;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -28,29 +28,29 @@ public class RoleService {
 
     // Create role
     @Transactional
-    public RoleWithPermissionsDTO createRole(String roleName, String roleDescription, Set<Long> permissionIds) {
+    public RoleDTO createRole(String roleName, String roleDescription, Set<Long> permissionIds) {
         RolesEntity role = new RolesEntity(roleName, roleDescription);
         RolesEntity savedRole = rolesRepository.save(role);
 
         // Assign permissions to the role
-        Set<String> assignedPermissions = permissionIds.stream()
+        Set<Long> assignedPermissionIds = permissionIds.stream()
                 .map(permissionId -> permissionRepository.findById(permissionId)
                         .map(permission -> {
                             RolePermission rolePermission = new RolePermission();
                             rolePermission.setRolesEntity(savedRole);
                             rolePermission.setPermissionEntity(permission); // Ensure this method exists in RolePermission
                             rolePermissionRepository.save(rolePermission);
-                            return permission.getPermissionName();
+                            return permission.getPermissionId();
                         })
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleWithPermissionsDTO(savedRole.getRoleName(), savedRole.getRoleDescription(), List.copyOf(assignedPermissions));
+        return new RoleDTO(savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds);
     }
 
     // Update role
     @Transactional
-    public RoleWithPermissionsDTO updateRole(Long roleId, String roleName, String roleDescription, Set<Long> permissionIds) {
+    public RoleDTO updateRole(Long roleId, String roleName, String roleDescription, Set<Long> permissionIds) {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
@@ -60,31 +60,31 @@ public class RoleService {
 
         // Update permissions for the role
         rolePermissionRepository.deleteAllByRolesEntity(role);
-        Set<String> updatedPermissions = permissionIds.stream()
+        Set<Long> updatedPermissionIds = permissionIds.stream()
                 .map(permissionId -> permissionRepository.findById(permissionId)
                         .map(permission -> {
                             RolePermission rolePermission = new RolePermission();
                             rolePermission.setRolesEntity(role);
                             rolePermission.setPermissionEntity(permission); // Ensure this method exists in RolePermission
                             rolePermissionRepository.save(rolePermission);
-                            return permission.getPermissionName();
+                            return permission.getPermissionId();
                         })
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleWithPermissionsDTO(role.getRoleName(), role.getRoleDescription(), List.copyOf(updatedPermissions));
+        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), updatedPermissionIds);
     }
 
     // View role by ID
-    public RoleWithPermissionsDTO getRoleById(Long roleId) {
+    public RoleDTO getRoleById(Long roleId) {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
-        Set<String> permissions = rolePermissionRepository.findByRolesEntity(role).stream()
-                .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionName()) // Ensure this method exists in Permission
+        Set<Long> permissionIds = rolePermissionRepository.findByRolesEntity(role).stream()
+                .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                 .collect(Collectors.toSet());
 
-        return new RoleWithPermissionsDTO(role.getRoleName(), role.getRoleDescription(), List.copyOf(permissions));
+        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
     }
 
     // Delete role
@@ -98,14 +98,14 @@ public class RoleService {
     }
 
     // Get all roles
-    public List<RoleWithPermissionsDTO> getAllRoles() {
+    public List<RoleDTO> getAllRoles() {
         List<RolesEntity> roles = rolesRepository.findAll();
         return roles.stream().map(role -> {
-            Set<String> permissions = rolePermissionRepository.findByRolesEntity(role).stream()
-                    .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionName()) // Ensure this method exists in Permission
+            Set<Long> permissionIds = rolePermissionRepository.findByRolesEntity(role).stream()
+                    .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                     .collect(Collectors.toSet());
 
-            return new RoleWithPermissionsDTO(role.getRoleName(), role.getRoleDescription(), List.copyOf(permissions));
+            return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
         }).collect(Collectors.toList());
 
 

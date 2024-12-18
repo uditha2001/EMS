@@ -7,6 +7,12 @@ public class RoleDTO {
     private String description;
     private Set<Long> permissionIds;
 
+    public RoleDTO(String roleName, String roleDescription, Set<Long> permissionIds) {
+        this.roleName = roleName;
+        this.description = roleDescription;
+        this.permissionIds = permissionIds;
+    }
+
     public String getRoleName() {
         return roleName;
     }

@@ -21,6 +21,7 @@ public class PermissionService {
         List<PermissionEntity> permissions = permissionRepository.findAll();
         return permissions.stream()
                 .map(permission -> new PermissionDTO(
+                        permission.getPermissionId(),
                         permission.getPermissionName(),
                         permission.getPermissionDescription(),
                         permission.getPermissionType()))
@@ -32,6 +33,7 @@ public class PermissionService {
         PermissionEntity permission = permissionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + id));
         return new PermissionDTO(
+                permission.getPermissionId(),
                 permission.getPermissionName(),
                 permission.getPermissionDescription(),
                 permission.getPermissionType());
@@ -42,6 +44,7 @@ public class PermissionService {
         List<PermissionEntity> permissions = permissionRepository.findByPermissionType(category);
         return permissions.stream()
                 .map(permission -> new PermissionDTO(
+                        permission.getPermissionId(),
                         permission.getPermissionName(),
                         permission.getPermissionDescription(),
                         permission.getPermissionType()))
