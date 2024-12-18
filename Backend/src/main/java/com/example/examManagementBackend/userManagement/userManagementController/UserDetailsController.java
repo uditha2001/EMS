@@ -26,9 +26,11 @@ public class UserDetailsController {
         System.out.println(message);
         return message;
     }
-    @PutMapping(path="/updateUser")
-    public String updateUser(@RequestBody UserDTO userdto) {
-        return null;
+    // Update user details
+    @PutMapping(path="/updateUser/{userId}")
+    public ResponseEntity<String> updateUser(@PathVariable Long userId, @RequestBody UserDTO userdto) {
+        String message = userService.updateUser(userId, userdto);
+        return ResponseEntity.ok(message);
     }
 
     @PostMapping("/addUserWithRoles")
@@ -47,6 +49,20 @@ public class UserDetailsController {
     public ResponseEntity<List<UserRoleDTO>> getAllUsersWithRoles() {
         List<UserRoleDTO> users = userService.getAllUsersWithRoles();
         return ResponseEntity.ok(users);
+    }
+
+    // Delete user by ID
+    @DeleteMapping(path="/deleteUser/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
+        String message = userService.deleteUser(userId);
+        return ResponseEntity.ok(message);
+    }
+
+    // Update user details with roles
+    @PutMapping(path="/updateUserWithRoles/{userId}")
+    public ResponseEntity<String> updateUserWithRoles(@PathVariable Long userId, @RequestBody UserRoleDTO userRoleDTO) {
+        String message = userService.updateUserWithRoles(userId, userRoleDTO);
+        return ResponseEntity.ok(message);
     }
 
 }

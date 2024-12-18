@@ -107,6 +107,59 @@ public class UserManagementServices {
                 .toList();
     }
 
+    // Delete user by ID
+    public String deleteUser(Long userId) {
+        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Delete associated roles
+        List<UserRoles> userRoles = userRolesRepo.findByUser(userEntity);
+        userRolesRepo.deleteAll(userRoles);
+
+        // Delete the user
+        userManagementRepo.delete(userEntity);
+        return "User deleted successfully";
+    }
+    // Update user information
+    public String updateUser(Long userId, UserDTO updatedUser) {
+        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        userEntity.setUsername(updatedUser.getUsername());
+        userEntity.setEmail(updatedUser.getEmail());
+        userEntity.setFirstName(updatedUser.getFirstName());
+        userEntity.setLastName(updatedUser.getLastName());
+
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+            userEntity.setPassword(getEncodePassword(updatedUser.getPassword()));
+        }
+
+        userManagementRepo.save(userEntity);
+        return "User updated successfully";
+    }
+
+    public String updateUserWithRoles(Long userId, UserRoleDTO userRoleDTO) {
+        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        userEntity.setUsername(userRoleDTO.getUsername());
+        userEntity.setEmail(userRoleDTO.getEmail());
+        userEntity.setFirstName(userRoleDTO.getFirstName());
+        userEntity.setLastName(userRoleDTO.getLastName());
+
+        if (userRoleDTO.getPassword() != null && !userRoleDTO.getPassword().isEmpty()) {
+            userEntity.setPassword(getEncodePassword(userRoleDTO.getPassword()));
+        }
+
+        userManagementRepo.save(userEntity);
+
+        userRolesRepo.deleteAll(userEntity.getUserRoles());
+
+        for (String roleName : userRoleDTO.getRoles()) {
+            RolesEntity role = roleRepository.findByRoleName(roleName).orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+            UserRoles userRole = new UserRoles();
+            userRole.setUser(userEntity);
+            userRole.setRole(role);
+            userRolesRepo.save(userRole);
+        }
+
+        return "User with roles updated successfully";
+    }
 
 }
