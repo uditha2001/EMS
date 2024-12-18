@@ -62,4 +62,6 @@ public class PermissionEntity {
     public Long getPermissionId() {
         return permissionId;
     }
+
+
 }

@@ -1,12 +1,12 @@
 package com.example.examManagementBackend.userManagement.userManagementController;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
-import com.example.examManagementBackend.userManagement.userManagementDTO.UserRoleDTO;
 import com.example.examManagementBackend.userManagement.userManagementServices.UserManagementServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetailsService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,8 +34,8 @@ public class UserDetailsController {
     }
 
     @PostMapping("/addUserWithRoles")
-    public String addUserWithRoles(@RequestBody UserRoleDTO userRoleDTO) {
-        return userService.saveUserWithRoles(userRoleDTO);
+    public String addUserWithRoles(@RequestBody UserDTO userDTO) {
+        return userService.saveUserWithRoles(userDTO);
     }
     // Assign a role to a user
     @PostMapping("/{userId}/roles/{roleId}")
@@ -46,8 +46,8 @@ public class UserDetailsController {
 
     // Get all users with roles
     @GetMapping
-    public ResponseEntity<List<UserRoleDTO>> getAllUsersWithRoles() {
-        List<UserRoleDTO> users = userService.getAllUsersWithRoles();
+    public ResponseEntity<List<UserDTO>> getAllUsersWithRoles() {
+        List<UserDTO> users = userService.getAllUsersWithRoles();
         return ResponseEntity.ok(users);
     }
 
@@ -60,8 +60,8 @@ public class UserDetailsController {
 
     // Update user details with roles
     @PutMapping(path="/updateUserWithRoles/{userId}")
-    public ResponseEntity<String> updateUserWithRoles(@PathVariable Long userId, @RequestBody UserRoleDTO userRoleDTO) {
-        String message = userService.updateUserWithRoles(userId, userRoleDTO);
+    public ResponseEntity<String> updateUserWithRoles(@PathVariable Long userId, @RequestBody UserDTO userDTO) {
+        String message = userService.updateUserWithRoles(userId, userDTO);
         return ResponseEntity.ok(message);
     }
 
