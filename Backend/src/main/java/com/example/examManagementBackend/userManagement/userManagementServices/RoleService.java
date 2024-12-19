@@ -3,9 +3,8 @@ package com.example.examManagementBackend.userManagement.userManagementServices;
 import com.example.examManagementBackend.userManagement.userManagementDTO.RoleDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolePermission;
-import com.example.examManagementBackend.userManagement.userManagementRepo.PermissionRepository;
-import com.example.examManagementBackend.userManagement.userManagementRepo.RolePermissionRepository;
-import com.example.examManagementBackend.userManagement.userManagementRepo.RoleRepository;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.example.examManagementBackend.userManagement.userManagementRepo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +24,7 @@ public class RoleService {
 
     @Autowired
     private PermissionRepository permissionRepository;
+
 
     // Create role
     @Transactional
@@ -107,5 +107,8 @@ public class RoleService {
 
             return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
         }).collect(Collectors.toList());
+
+
     }
+
 }
