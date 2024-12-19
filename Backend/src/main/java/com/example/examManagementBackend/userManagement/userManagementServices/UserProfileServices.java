@@ -39,47 +39,47 @@ public class UserProfileServices {
     }
 
     // Update user profile image
-    public String updateUserProfileImage(Long userId, MultipartFile imageFile) {
-        UserEntity userEntity = userManagementRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        try {
-            // Check if the image is not empty
-            if (!imageFile.isEmpty()) {
-                // Save the image to the designated directory
-                Path path = Paths.get(uploadDir + userId + "_" + imageFile.getOriginalFilename());
-                Files.write(path, imageFile.getBytes());
-
-                // Update the user's profile image path in the database
-                userEntity.setProfileImage(path.toString());
-                userManagementRepo.save(userEntity);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
-        }
-
-        return "Profile image updated successfully";
-    }
-
-    // Delete user profile image
-    public String deleteUserProfileImage(Long userId) {
-        UserEntity userEntity = userManagementRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Check if the user has a profile image and delete it
-        if (userEntity.getProfileImage() != null) {
-            try {
-                Path imagePath = Paths.get(userEntity.getProfileImage());
-                Files.delete(imagePath); // Delete the file from the file system
-                userEntity.setProfileImage(null); // Remove the image path from the database
-                userManagementRepo.save(userEntity);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to delete profile image: " + e.getMessage());
-            }
-        }
-
-        return "Profile image deleted successfully";
-    }
+//    public String updateUserProfileImage(Long userId, MultipartFile imageFile) {
+//        UserEntity userEntity = userManagementRepo.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        try {
+//            // Check if the image is not empty
+//            if (!imageFile.isEmpty()) {
+//                // Save the image to the designated directory
+//                Path path = Paths.get(uploadDir + userId + "_" + imageFile.getOriginalFilename());
+//                Files.write(path, imageFile.getBytes());
+//
+//                // Update the user's profile image path in the database
+//                userEntity.setProfileImage(path.toString());
+//                userManagementRepo.save(userEntity);
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
+//        }
+//
+//        return "Profile image updated successfully";
+//    }
+//
+//    // Delete user profile image
+//    public String deleteUserProfileImage(Long userId) {
+//        UserEntity userEntity = userManagementRepo.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        // Check if the user has a profile image and delete it
+//        if (userEntity.getProfileImage() != null) {
+//            try {
+//                Path imagePath = Paths.get(userEntity.getProfileImage());
+//                Files.delete(imagePath); // Delete the file from the file system
+//                userEntity.setProfileImage(null); // Remove the image path from the database
+//                userManagementRepo.save(userEntity);
+//            } catch (Exception e) {
+//                throw new RuntimeException("Failed to delete profile image: " + e.getMessage());
+//            }
+//        }
+//
+//        return "Profile image deleted successfully";
+//    }
     public UserProfileDTO getUserProfile(Long userId) {
         UserEntity userEntity = userManagementRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
