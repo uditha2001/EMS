@@ -5,6 +5,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name="user_roles")
@@ -41,4 +42,15 @@ public class UserRoles {
     public LocalDateTime getAssignedAt() {
         return assignedAt;
     }
+
+    public void setRole(RolesEntity role) {
+        this.role = role;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+
+
+
 }

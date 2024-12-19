@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtill {
-    private static final String SECRET_KEY="12345678920010900FutureSpaxim1hsecretkeyforproject123456789123456";
+    private static final String SECRET_KEY="12345678920010900FutureSpaxim1hsecretkeyforproject12345678912345667456HttpTestinglooow9993772828";
 
     public String extractUserName(String token) {
             return getClaimFromToken(token, Claims::getSubject);
@@ -28,12 +28,12 @@ public class JwtUtill {
     public Claims getAllClaimsFromToken(String token) {
          return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
     }
-    public Boolean validateToken(String token, UserDetailsService userDetailsService) {
+    public Boolean validateToken(String token, UserDetails userDetails) {
         String username = extractUserName(token);
-        return (username.equals(userDetailsService.loadUserByUsername(username).getUsername()) && isTokenValid(token));
+        return (username.equals(userDetails.getUsername()) && isTokenExpired(token));
     }
 
-    private boolean isTokenValid(String token) {
+    private boolean isTokenExpired(String token) {
         final Date expiration=getClaimFromToken(token,Claims::getExpiration);
         return !expiration.before(new Date());
     }
@@ -45,7 +45,7 @@ public class JwtUtill {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000))
-                .signWith(SignatureAlgorithm.HS256,SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS512,SECRET_KEY)
                 .compact();
     }
 
