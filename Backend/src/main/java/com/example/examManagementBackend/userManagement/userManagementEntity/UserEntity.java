@@ -41,6 +41,16 @@ public class UserEntity {
     @OneToMany(mappedBy = "user")
     Set<UserRoles> userRoles;
 
+    // New columns
+    @Column(nullable = true)
+    private String contactNo;  // Contact number
+
+    @Column(nullable = true, length = 500)
+    private String bio;  // Bio
+
+    @Column(nullable = true)
+    private String profileImage;  // Profile image (URL or file path)
+
     public UserEntity() {
 
     }
@@ -131,6 +141,30 @@ public class UserEntity {
 
     public void setUserRoles(Set<UserRoles> userRoles) {
         this.userRoles = userRoles;
+    }
+
+    public String getContactNo() {
+        return contactNo;
+    }
+
+    public void setContactNo(String contactNo) {
+        this.contactNo = contactNo;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
 
