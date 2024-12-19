@@ -81,18 +81,18 @@ public class UserDetailsController {
     }
 
     // Update user profile image
-    @PutMapping(path="/updateProfileImage/{userId}")
-    public ResponseEntity<String> updateProfileImage(@PathVariable Long userId, @RequestParam("image") MultipartFile imageFile) {
-        String message = userProfileServices.updateUserProfileImage(userId, imageFile);
-        return ResponseEntity.ok(message);
-    }
+//    @PutMapping(path="/updateProfileImage/{userId}")
+//    public ResponseEntity<String> updateProfileImage(@PathVariable Long userId, @RequestParam("image") MultipartFile imageFile) {
+//        String message = userProfileServices.updateUserProfileImage(userId, imageFile);
+//        return ResponseEntity.ok(message);
+//    }
 
     // Delete user profile image
-    @DeleteMapping(path="/deleteProfileImage/{userId}")
-    public ResponseEntity<String> deleteProfileImage(@PathVariable Long userId) {
-        String message = userProfileServices.deleteUserProfileImage(userId);
-        return ResponseEntity.ok(message);
-    }
+//    @DeleteMapping(path="/deleteProfileImage/{userId}")
+//    public ResponseEntity<String> deleteProfileImage(@PathVariable Long userId) {
+//        String message = userProfileServices.deleteUserProfileImage(userId);
+//        return ResponseEntity.ok(message);
+//    }
 
 
 
