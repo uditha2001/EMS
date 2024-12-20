@@ -1,0 +1,74 @@
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import AOS from 'aos'; // Import AOS for animations
+import 'aos/dist/aos.css'; // Import the AOS CSS
+
+const WelcomePage: React.FC = () => {
+  useEffect(() => {
+    AOS.init(); // Initialize AOS when the component mounts
+  }, []);
+
+  return (
+    <div
+      className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('src/images/welcome.jpg')" }} // Replace with your image path
+    >
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60"></div>
+
+      {/* Content */}
+      <div className="relative text-center text-white px-6 max-w-3xl">
+        {/* University Logo */}
+        {/* <div className="mb-8" data-aos="fade-down" data-aos-duration="1500">
+          <img
+            src="src/images/university-logo.jpg" // Replace with your logo image path
+            alt="University Logo"
+            className="mx-auto w-24 h-24"
+          />
+        </div> */}
+
+        {/* Heading and Paragraph with animations */}
+        <h1
+          className="text-5xl font-extrabold mb-4"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+        >
+          Welcome to EMS
+        </h1>
+        <p
+          className="text-lg mb-8"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          data-aos-delay="200"
+        >
+          Streamline your exam management process with ease. Designed for the
+          Department of Computer Science, University of Ruhuna.
+        </p>
+
+        {/* Buttons with animations */}
+        <div className="flex justify-center space-x-6">
+          <Link
+            to="/login"
+            className="inline-flex items-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+            data-aos="zoom-in"
+            data-aos-duration="1500"
+            data-aos-delay="400"
+          >
+            Get Started →
+          </Link>
+          <Link
+            to="/about"
+            className="inline-flex items-center py-2 px-6 border border-white hover:bg-white hover:text-black rounded-md shadow-lg transition focus:outline-none focus:ring focus:ring-white"
+            data-aos="zoom-in"
+            data-aos-duration="1500"
+            data-aos-delay="400"
+          >
+            Learn More →
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WelcomePage;
