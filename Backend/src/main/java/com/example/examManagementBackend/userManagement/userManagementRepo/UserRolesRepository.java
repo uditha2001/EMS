@@ -13,8 +13,8 @@ import java.util.List;
 @Repository
 @EnableJpaRepositories
 public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
-    @Query("SELECT ur FROM UserRoles ur WHERE ur.user = :userid")
-    List<UserRoles> extractusers(@Param("userid") Long userId);
+    @Query("SELECT ur FROM UserRoles ur WHERE ur.user = :user_id")
+    List<UserRoles> extractusers(@Param("user_id") Long userId);
 
     // Find all roles associated with a specific user
     List<UserRoles> findByUser(UserEntity user);

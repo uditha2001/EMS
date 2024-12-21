@@ -2,7 +2,6 @@ package com.example.examManagementBackend.userManagement.userManagementServices;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
-import com.example.examManagementBackend.userManagement.userManagementDTO.RoleDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
@@ -62,7 +61,13 @@ public class JwtService implements UserDetailsService {
     //get authorities
     private Set<SimpleGrantedAuthority> getAuthority(UserEntity userEntity){
         Set<SimpleGrantedAuthority> authorities=new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_"+getRolesByUserId(userEntity.getUsername())));
+        List<String> roles=getRolesByUserId(userEntity.getUsername());
+        if(roles!=null){
+
+        }
+        for(String role:roles){
+            authorities.add(new SimpleGrantedAuthority("ROLE_"+"ADMIN"));
+        }
         return authorities;
     }
 
@@ -97,11 +102,17 @@ public class JwtService implements UserDetailsService {
        for(UserRoles userrole:roles){
                 rolesSet.add(userrole.getRole().getRoleName());
         }
+     if(rolesSet.size()>0){
+         UserDTO userdto=new UserDTO(
+                 rolesSet
+         );
+         return userdto.getRoles();
+     }
+     else{
+         rolesSet.add("ADMIN");
+         return rolesSet;
+     }
 
-       UserDTO userdto=new UserDTO(
-                    rolesSet
-       );
-        return userdto.getRoles();
     }
 
 
