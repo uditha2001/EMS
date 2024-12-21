@@ -13,7 +13,7 @@ public class UserDTO {
     private List<String> roles;
 
     public UserDTO(){
-        
+
     }
 
     public UserDTO(String username, String password, String email, String lastName, String firstName) {
