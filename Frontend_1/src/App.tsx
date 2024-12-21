@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
@@ -35,9 +35,7 @@ function App() {
   return loading ? (
     <Loader />
   ) : (
-    <Routes>
-      {/* Guest Layout */}
-      <Route element={<GuestLayout />}>
+    <Routes> 
         <Route
           index
           element={
@@ -47,6 +45,8 @@ function App() {
             </>
           }
         />
+        {/* Guest Layout */}
+        <Route element={<GuestLayout />}>
         <Route
           path="/login"
           element={

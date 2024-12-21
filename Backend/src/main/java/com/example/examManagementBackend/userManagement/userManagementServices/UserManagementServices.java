@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 public class UserManagementServices {
     @Autowired
@@ -118,21 +119,6 @@ public class UserManagementServices {
         userManagementRepo.delete(userEntity);
         return "User deleted successfully";
     }
-    // Update user information
-    public String updateUser(Long userId, UserDTO updatedUser) {
-        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        userEntity.setUsername(updatedUser.getUsername());
-        userEntity.setEmail(updatedUser.getEmail());
-        userEntity.setFirstName(updatedUser.getFirstName());
-        userEntity.setLastName(updatedUser.getLastName());
-
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            userEntity.setPassword(getEncodePassword(updatedUser.getPassword()));
-        }
-
-        userManagementRepo.save(userEntity);
-        return "User updated successfully";
-    }
 
     public String updateUserWithRoles(Long userId, UserDTO userDTO) {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
@@ -160,5 +146,6 @@ public class UserManagementServices {
 
         return "User with roles updated successfully";
     }
+
 
 }
