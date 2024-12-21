@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+.input {
+  @apply w-full rounded-lg border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply border border-gray-400 text-gray-600 py-2 px-4 rounded hover:bg-gray-100;
+}
+
 @layer base {
   body {
     @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
@@ -117,7 +129,9 @@ span.flatpickr-weekday,
 }
 .flatpickr-day.inRange {
   @apply dark:!shadow-7;
-  box-shadow: -5px 0 0 #EFF4FB, 5px 0 0 #EFF4FB;
+  box-shadow:
+    -5px 0 0 #eff4fb,
+    5px 0 0 #eff4fb;
 }
 .flatpickr-day.inRange,
 .flatpickr-day.prevMonthDay.inRange,

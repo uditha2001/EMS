@@ -1,29 +1,30 @@
-import { useState } from 'react';
+import React from 'react';
 
-const CheckboxTwo = () => {
-  const [isChecked, setIsChecked] = useState<boolean>(false);
+interface CheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}
 
+const Checkbox: React.FC<CheckboxProps> = ({ label, checked, onChange }) => {
   return (
     <div>
       <label
-        htmlFor="checkboxLabelTwo"
         className="flex cursor-pointer select-none items-center"
       >
         <div className="relative">
           <input
             type="checkbox"
-            id="checkboxLabelTwo"
-            className="sr-only"
-            onChange={() => {
-              setIsChecked(!isChecked);
-            }}
+            checked={checked}
+            onChange={onChange}
+            className="sr-only "
           />
           <div
-            className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${
-              isChecked && 'border-primary bg-gray dark:bg-transparent'
+            className={`mr-4 flex h-5 w-5 items-center justify-center rounded border  ${
+              checked ? 'border-primary bg-gray dark:bg-transparent' : ''
             }`}
           >
-            <span className={`opacity-0 ${isChecked && '!opacity-100'}`}>
+            <span className={`opacity-0 ${checked ? '!opacity-100' : ''}`}>
               <svg
                 width="11"
                 height="8"
@@ -41,10 +42,12 @@ const CheckboxTwo = () => {
             </span>
           </div>
         </div>
-        Checkbox Text
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {label}
+        </span>
       </label>
     </div>
   );
 };
 
-export default CheckboxTwo;
+export default Checkbox;
