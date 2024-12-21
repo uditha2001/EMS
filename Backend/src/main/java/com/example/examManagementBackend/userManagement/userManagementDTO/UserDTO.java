@@ -12,6 +12,10 @@ public class UserDTO {
      private String lastName;
     private List<String> roles;
 
+    public UserDTO(){
+
+    }
+
     public UserDTO(String username, String password, String email, String lastName, String firstName) {
         this.username = username;
         this.password = password;

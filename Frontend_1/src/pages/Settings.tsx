@@ -223,6 +223,7 @@ const Settings = () => {
                         placeholder="devidjhon24"
                         value={formData.username}
                         onChange={handleChange}
+                        disabled
                       />
                     </div>
 
