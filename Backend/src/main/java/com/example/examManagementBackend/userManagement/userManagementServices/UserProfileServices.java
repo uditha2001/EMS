@@ -2,10 +2,16 @@ package com.example.examManagementBackend.userManagement.userManagementServices;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserProfileDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,47 +45,65 @@ public class UserProfileServices {
     }
 
     // Update user profile image
-//    public String updateUserProfileImage(Long userId, MultipartFile imageFile) {
-//        UserEntity userEntity = userManagementRepo.findById(userId)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        try {
-//            // Check if the image is not empty
-//            if (!imageFile.isEmpty()) {
-//                // Save the image to the designated directory
-//                Path path = Paths.get(uploadDir + userId + "_" + imageFile.getOriginalFilename());
-//                Files.write(path, imageFile.getBytes());
-//
-//                // Update the user's profile image path in the database
-//                userEntity.setProfileImage(path.toString());
-//                userManagementRepo.save(userEntity);
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
-//        }
-//
-//        return "Profile image updated successfully";
-//    }
-//
-//    // Delete user profile image
-//    public String deleteUserProfileImage(Long userId) {
-//        UserEntity userEntity = userManagementRepo.findById(userId)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        // Check if the user has a profile image and delete it
-//        if (userEntity.getProfileImage() != null) {
-//            try {
-//                Path imagePath = Paths.get(userEntity.getProfileImage());
-//                Files.delete(imagePath); // Delete the file from the file system
-//                userEntity.setProfileImage(null); // Remove the image path from the database
-//                userManagementRepo.save(userEntity);
-//            } catch (Exception e) {
-//                throw new RuntimeException("Failed to delete profile image: " + e.getMessage());
-//            }
-//        }
-//
-//        return "Profile image deleted successfully";
-//    }
+    public String updateUserProfileImage(Long userId, MultipartFile imageFile) {
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Uploaded image file is empty");
+        }
+
+        String contentType = imageFile.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Uploaded file is not a valid image");
+        }
+
+        try {
+            String sanitizedFileName = Paths.get(imageFile.getOriginalFilename())
+                    .getFileName().toString()
+                    .replaceAll("[^a-zA-Z0-9._-]", "_");
+            Path targetPath = Paths.get(uploadDir).resolve(userId + "_" + sanitizedFileName);
+
+            Files.createDirectories(targetPath.getParent());
+            Files.write(targetPath, imageFile.getBytes());
+
+            userEntity.setProfileImage(targetPath.toString());
+            userManagementRepo.save(userEntity);
+
+            return "Profile image updated successfully";
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload profile image: " + e.getMessage(), e);
+        }
+    }
+
+    // Delete user profile image
+    public String deleteUserProfileImage(Long userId) {
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String profileImagePath = userEntity.getProfileImage();
+
+        if (profileImagePath == null || profileImagePath.isEmpty()) {
+            throw new IllegalStateException("No profile image found for this user");
+        }
+
+        try {
+            Path imagePath = Paths.get(profileImagePath);
+            if (!Files.exists(imagePath)) {
+                return "Profile image does not exist; nothing to delete.";
+            }
+
+            Files.delete(imagePath);
+
+            userEntity.setProfileImage(null);
+            userManagementRepo.save(userEntity);
+
+            return "Profile image deleted successfully";
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete profile image: " + e.getMessage(), e);
+        }
+    }
+
     public UserProfileDTO getUserProfile(Long userId) {
         UserEntity userEntity = userManagementRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -99,6 +123,37 @@ public class UserProfileServices {
                 userEntity.getProfileImage(),
                 roles
         );
+    }
+
+    public ResponseEntity<byte[]> getUserProfileImage(Long userId) {
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String profileImagePath = userEntity.getProfileImage();
+
+        if (StringUtils.isEmpty(profileImagePath)) {
+            throw new RuntimeException("No profile image found for this user");
+        }
+
+        try {
+            Path imagePath = Paths.get(profileImagePath);
+
+            // Check if the file exists
+            if (!Files.exists(imagePath)) {
+                throw new RuntimeException("Profile image file not found on disk");
+            }
+
+            // Read the image file as bytes
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+
+            // Set response headers to indicate the file type (optional)
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, Files.probeContentType(imagePath));
+
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load profile image: " + e.getMessage(), e);
+        }
     }
 }
 
