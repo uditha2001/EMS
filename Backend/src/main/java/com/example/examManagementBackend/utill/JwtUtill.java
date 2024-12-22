@@ -3,8 +3,8 @@ package com.example.examManagementBackend.utill;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -15,8 +15,12 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtill {
-    private static final String SECRET_KEY="12345678920010900FutureSpaxim1hsecretkeyforproject12345678912345667456HttpTestinglooow9993772828";
-
+    @Value("${secretKey}")
+    private String SECRET_KEY;
+    @Value("${accessTokenExpiration}")
+    private Long acessTokenExpiration;
+    @Value("${expiration}")
+    private Long refreshTokenExpiration;
     public String extractUserName(String token) {
             return getClaimFromToken(token, Claims::getSubject);
     }
@@ -38,16 +42,26 @@ public class JwtUtill {
         return !expiration.before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Map<String, Objects> claims = new HashMap<>();
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000))
-                .signWith(SignatureAlgorithm.HS512,SECRET_KEY)
-                .compact();
+        return tokenGenarate(userDetails,acessTokenExpiration,claims);
     }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Objects> claims = new HashMap<>();
+        return tokenGenarate(userDetails,refreshTokenExpiration,claims);
+    }
+
+    private String tokenGenarate(UserDetails user,Long time,Map<String,Objects> claims) {
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setSubject(user.getUsername())
+                    .setIssuedAt(new Date(System.currentTimeMillis()))
+                    .setExpiration(new Date(System.currentTimeMillis()+time))
+                    .signWith(SignatureAlgorithm.HS512,SECRET_KEY)
+                    .compact();
+        }
+
 
 
 }

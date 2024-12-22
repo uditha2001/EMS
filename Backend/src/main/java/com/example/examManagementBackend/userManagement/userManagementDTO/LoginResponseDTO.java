@@ -1,32 +1,31 @@
 package com.example.examManagementBackend.userManagement.userManagementDTO;
 
-import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.security.core.userdetails.User;
-
 
 public class LoginResponseDTO {
-    private String token;
-    private UserEntity user;
-    public LoginResponseDTO(String token) {
-        this.token = token;
+    private String Accesstoken;
+    private String RequestToken;
+    public LoginResponseDTO(String Accesstoken,String RequestToken) {
+        this.Accesstoken = Accesstoken;
+        this.RequestToken = RequestToken;
 
     }
 
-    public String getToken() {
-        return token;
+    public String getRequestToken() {
+        return RequestToken;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setRequestToken(String requestToken) {
+        RequestToken = requestToken;
     }
 
-    public UserEntity getUser() {
-        return user;
+    public String getAccesstoken() {
+        return Accesstoken;
     }
 
-    public void setUser(UserEntity user) {
-        this.user = user;
+    public void setAccesstoken(String accesstoken) {
+        this.Accesstoken = accesstoken;
     }
+
+
+
 }
