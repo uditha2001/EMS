@@ -1,6 +1,17 @@
 import { useState } from "react";
 
 function App() {
+<<<<<<< HEAD
+
+  return(
+<h1 className='text-3xl font-bold underline'>
+    Hello world irosha
+  </h1>
+
+  )
+
+  
+=======
   return (
     <h1 className="text-3xl font-bold underline">
       Hello world....!
@@ -13,6 +24,7 @@ function App() {
       </ul>
     </h1>
   );
+>>>>>>> development
 }
 
 export default App;
