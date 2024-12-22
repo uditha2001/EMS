@@ -3,6 +3,8 @@ import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import userThree from '../images/user/user-03.png';
 import SuccessMessage from '../components/SuccessMessage';
 import ErrorMessage from '../components/ErrorMessage';
+import axios from 'axios';
+import ConfirmationModal from '../components/Modals/ConfirmationModal';
 
 const Settings = () => {
   const [formData, setFormData] = useState({
@@ -12,33 +14,61 @@ const Settings = () => {
     username: '',
     bio: '',
     email: '',
+    profileImage: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState(userThree);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const userId = 1;
 
-  // Fetch user data on component load
+  const getApiUrl = (endpoint: string): string =>
+    `http://localhost:8080/api/v1/user/${endpoint}`;
+
+  const fetchUserData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(getApiUrl(`userProfile/${userId}`));
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      const data = await response.json();
+      setFormData(data);
+    } catch (error) {
+      setErrorMessage('Failed to fetch user data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProfileImage = async () => {
+    try {
+      const response = await axios.get(getApiUrl(`getProfileImage/${userId}`), {
+        responseType: 'arraybuffer',
+      });
+
+      const base64Image = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          '',
+        ),
+      );
+      setImagePreview(
+        `data:${response.headers['content-type']};base64,${base64Image}`,
+      );
+    } catch (error) {
+      setErrorMessage('Failed to fetch profile image');
+    }
+  };
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          'http://localhost:8080/api/v1/user/userProfile/1',
-        ); // Replace `1` with actual user ID
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        const data = await response.json();
-        setFormData(data);
-      } catch (error) {
-        setErrorMessage('Failed to fetch user data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUserData();
-  }, []);
+    fetchProfileImage();
+  }, [userId]);
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -46,26 +76,80 @@ const Settings = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        'http://localhost:8080/api/v1/user/updateUserProfile/1',
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        },
-      );
-
+      const response = await fetch(getApiUrl(`updateUserProfile/${userId}`), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
       if (response.ok) {
         setSuccessMessage('Profile updated successfully!');
       } else {
         setErrorMessage('Failed to update profile');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       setErrorMessage('Error occurred while updating profile');
     }
+  };
+
+  // Function to handle cancel action
+  const handleCancel = () => {
+    fetchUserData();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedFile) {
+      alert('Please select an image file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      await axios.put(getApiUrl(`updateProfileImage/${userId}`), formData);
+      setSuccessMessage('Profile image updated successfully');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErrorMessage(
+          error.response?.data || 'Failed to update profile image',
+        );
+      } else {
+        setErrorMessage('An unexpected error occurred');
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(getApiUrl(`deleteProfileImage/${userId}`));
+      setImagePreview(userThree);
+      setSuccessMessage('Profile image deleted successfully');
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage('Failed to delete profile image');
+      setSuccessMessage('');
+    }
+  };
+
+  const openModal = () => setIsModalVisible(true);
+  const closeModal = () => setIsModalVisible(false);
+
+  const confirmDelete = () => {
+    closeModal();
+    handleDelete();
+  };
+
+  // Function to handle cancel action
+  const handleCancelProfileImage = () => {
+    fetchProfileImage();
   };
 
   return (
@@ -152,7 +236,7 @@ const Settings = () => {
                           Phone Number
                         </label>
                         <input
-                          className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                           type="text"
                           name="contactNo"
                           id="contactNo"
@@ -282,6 +366,7 @@ const Settings = () => {
                       <button
                         className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                         type="button"
+                        onClick={handleCancel}
                       >
                         Cancel
                       </button>
@@ -307,18 +392,37 @@ const Settings = () => {
               <div className="p-7">
                 <form action="#">
                   <div className="mb-4 flex items-center gap-3">
-                    <div className="h-14 w-14 rounded-full">
-                      <img src={userThree} alt="User" />
+                    <div className="h-14 w-14 rounded-full overflow-hidden">
+                      <img
+                        src={imagePreview}
+                        alt="User"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+
                     <div>
                       <span className="mb-1.5 text-black dark:text-white">
                         Edit your photo
                       </span>
                       <span className="flex gap-2.5">
-                        <button className="text-sm hover:text-primary">
+                        <button
+                          className="text-sm hover:text-primary"
+                          onClick={openModal}
+                        >
                           Delete
                         </button>
-                        <button className="text-sm hover:text-primary">
+                        {/* Confirmation Modal */}
+                        {isModalVisible && (
+                          <ConfirmationModal
+                            message="Are you sure you want to delete your profile image?"
+                            onConfirm={confirmDelete}
+                            onCancel={closeModal}
+                          />
+                        )}
+                        <button
+                          className="text-sm hover:text-primary"
+                          onClick={handleUpdate}
+                        >
                           Update
                         </button>
                       </span>
@@ -333,6 +437,7 @@ const Settings = () => {
                       type="file"
                       accept="image/*"
                       className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
+                      onChange={handleFileChange}
                     />
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
@@ -376,12 +481,14 @@ const Settings = () => {
                     <button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="button"
+                      onClick={handleCancelProfileImage}
                     >
                       Cancel
                     </button>
                     <button
                       className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
                       type="submit"
+                      onClick={handleUpdate}
                     >
                       Save
                     </button>
