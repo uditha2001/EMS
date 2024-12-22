@@ -8,6 +8,9 @@ import com.example.examManagementBackend.userManagement.userManagementEntity.Use
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.JwtUtill;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -76,11 +80,20 @@ public class JwtService implements UserDetailsService {
         String password=loginRequestDTO.getPassword();
         authenticate(username,password);
         UserDetails userDetails=loadUserByUsername(username);
-        String newGeneratedToken  = jwtUtill.generateToken(userDetails);
+        String newGeneratedAccessToken  = jwtUtill.generateAccessToken(userDetails);
+        String newGenaratedRefreshtToken= jwtUtill.generateRefreshToken(userDetails);
         UserEntity userEntity=userManagementRepo.findByUsername(username);
+        UserDTO userDTO=new UserDTO(
+                userEntity.getUserId(),
+                userEntity.getUsername(),
+                userEntity.getEmail(),
+                userEntity.getFirstName(),
+                userEntity.getLastName(),
+                getRolesByUserId(userEntity.getUsername())
+        );
         return new LoginResponseDTO(
-                newGeneratedToken
-
+                newGeneratedAccessToken,
+                newGenaratedRefreshtToken
         );
     }
     private void authenticate(String username, String password){
@@ -114,5 +127,27 @@ public class JwtService implements UserDetailsService {
 
     }
 
+    //refresh the acess token using refresh token
+    public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final String authorizationHeader = request.getHeader("Authorization");
+        String refreshToken=null;
+        String userName=null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            refreshToken= authorizationHeader.substring(7);
+            userName=jwtUtill.extractUserName(refreshToken);
+        }
+        if(userName!=null){
+            UserDetails userDetails=loadUserByUsername(userName);
+            if(jwtUtill.validateToken(refreshToken,userDetails)){
+                    String acessToken= jwtUtill.generateAccessToken(userDetails);
+                    LoginResponseDTO loginResponseDTO=new LoginResponseDTO(
+                            acessToken,
+                            refreshToken
+                    );
+                    new ObjectMapper().writeValue(response.getOutputStream(),loginResponseDTO);
+            }
+        }
 
+        return null;
+    }
 }
