@@ -66,7 +66,7 @@ public class JwtService implements UserDetailsService {
 
         }
         for(String role:roles){
-            authorities.add(new SimpleGrantedAuthority("ROLE_"+"ADMIN"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_"+getRolesByUserId(userEntity.getUsername())));
         }
         return authorities;
     }
@@ -79,8 +79,7 @@ public class JwtService implements UserDetailsService {
         String newGeneratedToken  = jwtUtill.generateToken(userDetails);
         UserEntity userEntity=userManagementRepo.findByUsername(username);
         return new LoginResponseDTO(
-                newGeneratedToken,
-                userEntity
+                newGeneratedToken
 
         );
     }
