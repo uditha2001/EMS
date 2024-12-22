@@ -100,7 +100,7 @@ const Settings = () => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      const validImageTypes = ['image/jpeg', 'image/png'];
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
       if (!validImageTypes.includes(file.type)) {
         alert('Invalid file type. Please select an image file.');
         return;
