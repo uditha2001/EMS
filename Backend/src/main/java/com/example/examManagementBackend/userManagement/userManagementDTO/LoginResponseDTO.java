@@ -9,9 +9,8 @@ import org.springframework.security.core.userdetails.User;
 public class LoginResponseDTO {
     private String token;
     private UserEntity user;
-    public LoginResponseDTO(String token, UserEntity user) {
+    public LoginResponseDTO(String token) {
         this.token = token;
-        this.user = user;
 
     }
 
