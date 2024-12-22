@@ -5,6 +5,7 @@ import SuccessMessage from '../components/SuccessMessage';
 import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
+import DOMPurify from 'dompurify';
 
 const Settings = () => {
   const [formData, setFormData] = useState({
@@ -112,7 +113,8 @@ const Settings = () => {
         return;
       }
       setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(DOMPurify.sanitize(objectUrl));
     }
   };
 
