@@ -3,6 +3,9 @@ import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import userThree from '../images/user/user-03.png';
 import SuccessMessage from '../components/SuccessMessage';
 import ErrorMessage from '../components/ErrorMessage';
+import axios from 'axios';
+import ConfirmationModal from '../components/Modals/ConfirmationModal';
+import DOMPurify from 'dompurify';
 
 const Settings = () => {
   const [formData, setFormData] = useState({
@@ -12,33 +15,61 @@ const Settings = () => {
     username: '',
     bio: '',
     email: '',
+    profileImage: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState(userThree);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const userId = 1;
 
-  // Fetch user data on component load
+  const getApiUrl = (endpoint: string): string =>
+    `http://localhost:8080/api/v1/user/${endpoint}`;
+
+  const fetchUserData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(getApiUrl(`userProfile/${userId}`));
+      if (!response.ok) throw new Error('Failed to fetch user data');
+      const data = await response.json();
+      setFormData(data);
+    } catch (error) {
+      setErrorMessage('Failed to fetch user data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProfileImage = async () => {
+    try {
+      const response = await axios.get(getApiUrl(`getProfileImage/${userId}`), {
+        responseType: 'arraybuffer',
+      });
+
+      const base64Image = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          '',
+        ),
+      );
+      setImagePreview(
+        `data:${response.headers['content-type']};base64,${base64Image}`,
+      );
+    } catch (error) {
+      setErrorMessage('Failed to fetch profile image');
+    }
+  };
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          'http://localhost:8080/api/v1/user/userProfile/1',
-        ); // Replace `1` with actual user ID
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        const data = await response.json();
-        setFormData(data);
-      } catch (error) {
-        setErrorMessage('Failed to fetch user data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUserData();
-  }, []);
+    fetchProfileImage();
+  }, [userId]);
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -46,26 +77,93 @@ const Settings = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        'http://localhost:8080/api/v1/user/updateUserProfile/1',
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        },
-      );
-
+      const response = await fetch(getApiUrl(`updateUserProfile/${userId}`), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
       if (response.ok) {
         setSuccessMessage('Profile updated successfully!');
       } else {
         setErrorMessage('Failed to update profile');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       setErrorMessage('Error occurred while updating profile');
     }
+  };
+
+  // Function to handle cancel action
+  const handleCancel = () => {
+    fetchUserData();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+      if (!validImageTypes.includes(file.type)) {
+        alert('Invalid file type. Please select an image file.');
+        return;
+      }
+      // Validate file size (e.g., max 5MB)
+      const maxSizeInBytes = 5 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        alert('File size exceeds the limit of 5MB.');
+        return;
+      }
+      setSelectedFile(file);
+      const objectUrl = URL.createObjectURL(file);
+      setImagePreview(DOMPurify.sanitize(objectUrl));
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedFile) {
+      alert('Please select an image file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
+    try {
+      await axios.put(getApiUrl(`updateProfileImage/${userId}`), formData);
+      setSuccessMessage('Profile image updated successfully');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErrorMessage(
+          error.response?.data || 'Failed to update profile image',
+        );
+      } else {
+        setErrorMessage('An unexpected error occurred');
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(getApiUrl(`deleteProfileImage/${userId}`));
+      setImagePreview(userThree);
+      setSuccessMessage('Profile image deleted successfully');
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage('Failed to delete profile image');
+      setSuccessMessage('');
+    }
+  };
+
+  const openModal = () => setIsModalVisible(true);
+  const closeModal = () => setIsModalVisible(false);
+
+  const confirmDelete = () => {
+    closeModal();
+    handleDelete();
+  };
+
+  // Function to handle cancel action
+  const handleCancelProfileImage = () => {
+    fetchProfileImage();
   };
 
   return (
@@ -104,7 +202,7 @@ const Settings = () => {
                           className="mb-3 block text-sm font-medium text-black dark:text-white"
                           htmlFor="firstName"
                         >
-                          Full Name
+                          First Name
                         </label>
                         <div className="relative">
                           <span className="absolute left-4.5 top-4">
@@ -137,8 +235,52 @@ const Settings = () => {
                             type="text"
                             name="firstName"
                             id="firstName"
-                            placeholder="Devid Jhon"
+                            placeholder="Devid"
                             value={formData.firstName}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="w-full sm:w-1/2">
+                        <label
+                          className="mb-3 block text-sm font-medium text-black dark:text-white"
+                          htmlFor="firstName"
+                        >
+                          Last Name
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4.5 top-4">
+                            <svg
+                              className="fill-current"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <g opacity="0.8">
+                                <path
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
+                                  d="M3.72039 12.887C4.50179 12.1056 5.5616 11.6666 6.66667 11.6666H13.3333C14.4384 11.6666 15.4982 12.1056 16.2796 12.887C17.061 13.6684 17.5 14.7282 17.5 15.8333V17.5C17.5 17.9602 17.1269 18.3333 16.6667 18.3333C16.2064 18.3333 15.8333 17.9602 15.8333 17.5V15.8333C15.8333 15.1703 15.5699 14.5344 15.1011 14.0655C14.6323 13.5967 13.9964 13.3333 13.3333 13.3333H6.66667C6.00363 13.3333 5.36774 13.5967 4.8989 14.0655C4.43006 14.5344 4.16667 15.1703 4.16667 15.8333V17.5C4.16667 17.9602 3.79357 18.3333 3.33333 18.3333C2.8731 18.3333 2.5 17.9602 2.5 17.5V15.8333C2.5 14.7282 2.93899 13.6684 3.72039 12.887Z"
+                                  fill=""
+                                />
+                                <path
+                                  fillRule="evenodd"
+                                  clipRule="evenodd"
+                                  d="M9.99967 3.33329C8.61896 3.33329 7.49967 4.45258 7.49967 5.83329C7.49967 7.214 8.61896 8.33329 9.99967 8.33329C11.3804 8.33329 12.4997 7.214 12.4997 5.83329C12.4997 4.45258 11.3804 3.33329 9.99967 3.33329ZM5.83301 5.83329C5.83301 3.53211 7.69849 1.66663 9.99967 1.66663C12.3009 1.66663 14.1663 3.53211 14.1663 5.83329C14.1663 8.13448 12.3009 9.99996 9.99967 9.99996C7.69849 9.99996 5.83301 8.13448 5.83301 5.83329Z"
+                                  fill=""
+                                />
+                              </g>
+                            </svg>
+                          </span>
+                          <input
+                            className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                            type="text"
+                            name="lastName"
+                            id="lastName"
+                            placeholder="Jhon"
+                            value={formData.lastName}
                             onChange={handleChange}
                           />
                         </div>
@@ -152,7 +294,7 @@ const Settings = () => {
                           Phone Number
                         </label>
                         <input
-                          className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                           type="text"
                           name="contactNo"
                           id="contactNo"
@@ -282,6 +424,7 @@ const Settings = () => {
                       <button
                         className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                         type="button"
+                        onClick={handleCancel}
                       >
                         Cancel
                       </button>
@@ -307,18 +450,37 @@ const Settings = () => {
               <div className="p-7">
                 <form action="#">
                   <div className="mb-4 flex items-center gap-3">
-                    <div className="h-14 w-14 rounded-full">
-                      <img src={userThree} alt="User" />
+                    <div className="h-14 w-14 rounded-full overflow-hidden">
+                      <img
+                        src={imagePreview}
+                        alt="User"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+
                     <div>
                       <span className="mb-1.5 text-black dark:text-white">
                         Edit your photo
                       </span>
                       <span className="flex gap-2.5">
-                        <button className="text-sm hover:text-primary">
+                        <button
+                          className="text-sm hover:text-primary"
+                          onClick={openModal}
+                        >
                           Delete
                         </button>
-                        <button className="text-sm hover:text-primary">
+                        {/* Confirmation Modal */}
+                        {isModalVisible && (
+                          <ConfirmationModal
+                            message="Are you sure you want to delete your profile image?"
+                            onConfirm={confirmDelete}
+                            onCancel={closeModal}
+                          />
+                        )}
+                        <button
+                          className="text-sm hover:text-primary"
+                          onClick={handleUpdate}
+                        >
                           Update
                         </button>
                       </span>
@@ -333,6 +495,7 @@ const Settings = () => {
                       type="file"
                       accept="image/*"
                       className="absolute inset-0 z-50 m-0 h-full w-full cursor-pointer p-0 opacity-0 outline-none"
+                      onChange={handleFileChange}
                     />
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-full border border-stroke bg-white dark:border-strokedark dark:bg-boxdark">
@@ -376,12 +539,14 @@ const Settings = () => {
                     <button
                       className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
                       type="button"
+                      onClick={handleCancelProfileImage}
                     >
                       Cancel
                     </button>
                     <button
                       className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
                       type="submit"
+                      onClick={handleUpdate}
                     >
                       Save
                     </button>
