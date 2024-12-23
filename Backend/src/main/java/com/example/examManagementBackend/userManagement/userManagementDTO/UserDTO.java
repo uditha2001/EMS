@@ -1,21 +1,42 @@
 package com.example.examManagementBackend.userManagement.userManagementDTO;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UserDTO {
+    private Long id; // User ID
      private String username;
      private String password;
      private String  email;
      private String firstName;
      private String lastName;
+    private List<String> roles;
 
-    public UserDTO(String username, String password, String email, String lastName, String firstName) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.lastName = lastName;
-        this.firstName = firstName;
+    public UserDTO(){
+
     }
+
+    public UserDTO(Long id, String username, String email, String firstName, String lastName, List<String> roles) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.roles = roles;
+    }
+
+    public UserDTO(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
 
     public void setUsername(String username) {
         this.username = username;
@@ -55,6 +76,10 @@ public class UserDTO {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public List<String> getRoles() {
+        return roles;
     }
 }
 

@@ -2,12 +2,17 @@ package com.example.examManagementBackend.userManagement.userManagementDTO;
 
 public class PermissionDTO {
     private String permissionName;
+    private Long permissionId;
     private String permissionDescription;
     private String category;
-    public PermissionDTO(String permissionName, String permissionDescription, String category) {
+    public PermissionDTO(Long permissionId,String permissionName, String permissionDescription, String category) {
+        this.permissionId=permissionId;
         this.permissionName = permissionName;
         this.permissionDescription = permissionDescription;
         this.category = category;
+    }
+    public Long getPermissionId() {
+        return permissionId;
     }
     public String getPermissionName() {
         return permissionName;
