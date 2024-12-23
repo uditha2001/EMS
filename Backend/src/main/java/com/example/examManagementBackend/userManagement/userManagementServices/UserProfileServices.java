@@ -59,10 +59,18 @@ public class UserProfileServices {
         }
 
         try {
-            String sanitizedFileName = Paths.get(imageFile.getOriginalFilename())
-                    .getFileName().toString()
-                    .replaceAll("[^a-zA-Z0-9._-]", "_");
-            Path targetPath = Paths.get(uploadDir).resolve(userId + "_" + sanitizedFileName);
+            String originalFileName = Paths.get(imageFile.getOriginalFilename())
+                    .getFileName().toString();
+            if (originalFileName.contains("..") || originalFileName.contains("/") || originalFileName.contains("\\")) {
+                throw new IllegalArgumentException("Invalid filename");
+            }
+            String sanitizedFileName = originalFileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+            Path targetPath = Paths.get(uploadDir).resolve(userId + "_" + sanitizedFileName).normalize();
+
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            if (!targetPath.startsWith(uploadPath)) {
+                throw new IllegalArgumentException("Invalid file path");
+            }
 
             Files.createDirectories(targetPath.getParent());
             Files.write(targetPath, imageFile.getBytes());
