@@ -107,7 +107,7 @@ public class UserDetailsController {
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting profile image: " + e.getMessage());
+                    .body("Error deleting profile image: ");
         }
     }
 
