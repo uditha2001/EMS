@@ -16,10 +16,8 @@ public class LogginController {
     @Autowired
     private JwtService jwtService;
     @PostMapping("/authentication")
-    public LoginResponseDTO createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) {
-            LoginResponseDTO loginResponseDTO1=jwtService.CreateJwtToken(loginRequestDTO);
-            return loginResponseDTO1;
-
+    public LoginResponseDTO createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) throws IOException {
+            return jwtService.CreateJwtToken(loginRequestDTO);
     }
     @PostMapping("/refresh-token")
     public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {

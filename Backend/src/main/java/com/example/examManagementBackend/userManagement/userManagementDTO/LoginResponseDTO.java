@@ -2,12 +2,12 @@ package com.example.examManagementBackend.userManagement.userManagementDTO;
 
 
 public class LoginResponseDTO {
-    private String Accesstoken;
-    private String RequestToken;
+    private String accesstoken;
+    private String refreshToken;
     private UserDTO user;
-    public LoginResponseDTO(String Accesstoken,String RequestToken,UserDTO user) {
-        this.Accesstoken = Accesstoken;
-        this.RequestToken = RequestToken;
+    public LoginResponseDTO(String Accesstoken, String refreshToken, UserDTO user) {
+        this.accesstoken = Accesstoken;
+        this.refreshToken = refreshToken;
         this.user = user;
 
     }
@@ -20,20 +20,20 @@ public class LoginResponseDTO {
         this.user = user;
     }
 
-    public String getRequestToken() {
-        return RequestToken;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 
-    public void setRequestToken(String requestToken) {
-        RequestToken = requestToken;
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public String getAccesstoken() {
-        return Accesstoken;
+        return accesstoken;
     }
 
     public void setAccesstoken(String accesstoken) {
-        this.Accesstoken = accesstoken;
+        this.accesstoken = accesstoken;
     }
 
 

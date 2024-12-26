@@ -152,13 +152,13 @@ public class JwtService implements UserDetailsService {
         final String authorizationHeader = request.getHeader("Authorization");
         String acesssToken=null;
         String userName=null;
-        String requestToken=null;
+        String refreshToken=null;
         TokenEntity token=null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             acesssToken= authorizationHeader.substring(7);
             token=tokenRepo.findByAcessToken(acesssToken);
-            requestToken=token.getRefreshToken();
-            userName=jwtUtill.extractUserName(requestToken);
+            refreshToken=token.getRefreshToken();
+            userName=jwtUtill.extractUserName(refreshToken);
         }
         if(userName!=null){
             UserDetails userDetails=loadUserByUsername(userName);
@@ -171,12 +171,12 @@ public class JwtService implements UserDetailsService {
                     userEntity.getLastName(),
                     getRolesByUserId(userEntity.getUsername())
             );
-            if(jwtUtill.validateToken(requestToken,userDetails)){
+            if(jwtUtill.validateToken(refreshToken,userDetails)){
                     String acessToken= jwtUtill.generateAccessToken(userDetails);
                     tokenRepo.updateacessTokenValueById(token.getToken_id(),acessToken);
                     LoginResponseDTO loginResponseDTO=new LoginResponseDTO(
                             acessToken,
-                            requestToken,
+                            refreshToken,
                             userDTO
 
                     );
