@@ -153,6 +153,7 @@ public class JwtService implements UserDetailsService {
         String userName=null;
         String refreshToken=null;
         TokenEntity token=null;
+        LoginResponseDTO loginResponseDTO=null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             acesssToken= authorizationHeader.substring(7);
             token=tokenRepo.findByAcessToken(acesssToken);
@@ -173,7 +174,7 @@ public class JwtService implements UserDetailsService {
             if(jwtUtill.validateToken(refreshToken,userDetails)){
                     String acessToken= jwtUtill.generateAccessToken(userDetails);
                     tokenRepo.updateacessTokenValueById(token.getToken_id(),acessToken);
-                    LoginResponseDTO loginResponseDTO=new LoginResponseDTO(
+                    loginResponseDTO=new LoginResponseDTO(
                             acessToken,
                             userDTO
 
@@ -182,6 +183,6 @@ public class JwtService implements UserDetailsService {
             }
         }
 
-        return null;
+        return loginResponseDTO;
     }
 }
