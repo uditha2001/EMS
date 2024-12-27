@@ -40,7 +40,7 @@ const UseRefreshToken = () => {
         roles: updatedUser["user"]["roles"],
         accessToken: newAccessToken,
       }));
-
+      console.log("New Access Token:", newAccessToken);
       return newAccessToken;
     } catch (error) {
       console.error("Error refreshing token:", error);
