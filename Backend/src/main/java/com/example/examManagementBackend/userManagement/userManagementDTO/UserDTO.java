@@ -16,14 +16,6 @@ public class UserDTO {
 
     }
 
-    public UserDTO(String username, String password, String email, String lastName, String firstName) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.lastName = lastName;
-        this.firstName = firstName;
-    }
-
     public UserDTO(Long id, String username, String email, String firstName, String lastName, List<String> roles) {
         this.id = id;
         this.username = username;
@@ -32,6 +24,8 @@ public class UserDTO {
         this.lastName = lastName;
         this.roles = roles;
     }
+
+
 
     public UserDTO(List<String> roles) {
         this.roles = roles;
