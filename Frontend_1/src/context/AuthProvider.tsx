@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, ReactNode } from "react";
+import { useState, createContext,ReactNode } from "react";
 
 // Define the type for the context value
 interface AuthContextType {
