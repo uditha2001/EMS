@@ -111,7 +111,6 @@ public class JwtService implements UserDetailsService {
         );
         return new LoginResponseDTO(
                 newGeneratedAccessToken,
-                newGeneratedRefreshToken,
                 userDTO
 
                 );
@@ -176,7 +175,6 @@ public class JwtService implements UserDetailsService {
                     tokenRepo.updateacessTokenValueById(token.getToken_id(),acessToken);
                     LoginResponseDTO loginResponseDTO=new LoginResponseDTO(
                             acessToken,
-                            refreshToken,
                             userDTO
 
                     );

@@ -1,22 +1,35 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import AuthService from "../../services/Auth-Service";
+import useAuth from "../../hooks/useAuth";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
-  const [username, setUserName] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
+  const { auth, setAuth } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/login/authentication', {
-        username,
-        password
+      const data = await AuthService.login(username, password);
+      setAuth((prev: any) => {
+        return {
+          ...prev,
+          roles: data.user["roles"],
+          acessToken: data["accesstoken"],
+        };
       });
-      console.log('Login successful:', response.data);
+      setShouldNavigate(true); // Trigger navigation
     } catch (error) {
-      console.error('Login failed:', error);
-    } 
+      console.error("Login failed", error);
+    }
   };
+
+  // Redirect to dashboard if login is successful
+  if (shouldNavigate) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div>
