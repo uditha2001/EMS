@@ -14,14 +14,13 @@ import EditUser from './pages/Users/EditUser';
 import CreateRole from './pages/Roles/CreateRole';
 import Roles from './pages/Roles/Roles';
 import EditRole from './pages/Roles/EditRole';
-
-import AuthenticatedLayout from './layout/AuthenticatedLayout';
+import PersistLogin from './components/PresistLogin';
 import GuestLayout from './layout/GestLayout';
 import Login from './pages/Authentication/Login';
+import RequireAuth from './components/RequireAuth';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
-  const [isAuthenticated] = useState<boolean>(true); // Mock authentication status
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -58,11 +57,9 @@ function App() {
         />
       </Route>
 
-      {/* Authenticated Layout */}
-      <Route
-        element={<AuthenticatedLayout isAuthenticated={isAuthenticated} />}
-      >
-        <Route
+        <Route element={<PersistLogin />}>
+        <Route element={<RequireAuth allowedRoles={["ADMIN"]}/>}>
+        <Route 
           path="/dashboard"
           element={
             <>
@@ -71,6 +68,7 @@ function App() {
             </>
           }
         />
+        </Route>
         <Route
           path="/calendar"
           element={
@@ -152,6 +150,16 @@ function App() {
             </>
           }
         />
+      </Route>
+      <Route
+          path="/admin"
+          element={
+            <>
+              <PageTitle title="ADMINBOARD | EMS" />
+              <AdminDashboard />
+            </>
+          }
+        >
       </Route>
     </Routes>
   );
