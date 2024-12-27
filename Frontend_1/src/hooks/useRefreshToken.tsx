@@ -28,8 +28,6 @@ const UseRefreshToken = () => {
       );
 
       const newAccessToken = response.data['accesstoken'];
-      console.log("New Access Token:", newAccessToken);
-
       // Update localStorage and auth state
       const updatedUser = {
         ...user,

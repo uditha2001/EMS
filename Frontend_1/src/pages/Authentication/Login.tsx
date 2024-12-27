@@ -7,7 +7,7 @@ const Login = () => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
-  const { auth, setAuth } = useAuth();
+  const {setAuth } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
