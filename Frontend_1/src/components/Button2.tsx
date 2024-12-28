@@ -2,16 +2,16 @@ interface ButtonProps {
     ButtonName: string;
   }
   
-  const Button1: React.FC<ButtonProps> = ({ ButtonName }) => {
+  const Button2: React.FC<ButtonProps> = ({ ButtonName }) => {
     return (
       <button
         type="button"
-        className="rounded-md bg-blue-900 px-2 py-1 text-white hover:bg-blue-800 duration-700"
+        className="rounded-2xl bg-blue-700 px-4 py-2 text-white hover:bg-blue-400 duration-300"
       >
         {ButtonName}
       </button>
     );
   };
   
-  export default Button1;
+  export default Button2;
   
