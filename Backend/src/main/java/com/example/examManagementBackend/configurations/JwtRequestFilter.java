@@ -43,6 +43,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         String requestURI = request.getRequestURI();
 
+        // Skip excluded paths
         if (EXCLUDED_PATHS.stream().anyMatch(requestURI::startsWith)) {
             filterChain.doFilter(request, response);
             return;
@@ -54,15 +55,27 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             userName = jwtUtill.extractUserName(token);
         }
 
-        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = jwtService.loadUserByUsername(userName);
-            if (jwtUtill.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userName, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = jwtService.loadUserByUsername(userName);
+
+                // Validate the token
+                if (jwtUtill.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userName, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    throw new RuntimeException("Invalid Token");
+                }
             }
+            filterChain.doFilter(request, response);
+
+        } catch (RuntimeException ex) {
+            // Handle invalid token
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: " + ex.getMessage());
+            response.getWriter().flush();
         }
-        filterChain.doFilter(request, response);
     }
 }

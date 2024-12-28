@@ -38,7 +38,7 @@ public class WebSecuirityConfiguration{
                         .requestMatchers(
                                  "/api/v1/login/authentication",
                                 "/api/v1/login/refresh-token"
-                        ).permitAll()
+                                ).permitAll()
                         .requestMatchers("/api/v1/permissions/**").permitAll()
                         .requestMatchers("/api/v1/roles/**").permitAll()
                         .requestMatchers("/api/v1/user/**").permitAll()
