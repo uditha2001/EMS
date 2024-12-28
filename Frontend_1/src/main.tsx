@@ -9,10 +9,10 @@ import 'flatpickr/dist/flatpickr.min.css';
 import { AuthProvider } from './context/AuthProvider';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
     <Router>
+    <AuthProvider>
         <App /> 
+    </AuthProvider>
     </Router>
-  </AuthProvider>
   </React.StrictMode>,
 );
