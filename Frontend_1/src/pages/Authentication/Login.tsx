@@ -7,8 +7,7 @@ const Login = () => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
-  const { auth, setAuth } = useAuth();
-
+  const {setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -20,11 +19,13 @@ const Login = () => {
           acessToken: data["accesstoken"],
         };
       });
+      console.log("Login successful", data);
       setShouldNavigate(true); // Trigger navigation
     } catch (error) {
       console.error("Login failed", error);
     }
   };
+  
 
   // Redirect to dashboard if login is successful
   if (shouldNavigate) {

@@ -1,10 +1,16 @@
-import { useState, createContext, useContext, ReactNode } from "react";
+import { useState, createContext, ReactNode } from "react";
+
+// Define the type for the auth state
+type AuthState = {
+    roles?: string[];
+    accessToken?: string;
+};
 
 // Define the type for the context value
-interface AuthContextType {
-    auth: Record<string, unknown>;
-    setAuth: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
-}
+type AuthContextType = {
+    auth: AuthState;
+    setAuth: React.Dispatch<React.SetStateAction<AuthState>>;
+};
 
 // Create the context with a default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,7 +20,8 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [auth, setAuth] = useState<Record<string, unknown>>({});
+    // Initialize auth state with the proper type
+    const [auth, setAuth] = useState<AuthState>({});
 
     return (
         <AuthContext.Provider value={{ auth, setAuth }}>
@@ -22,6 +29,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         </AuthContext.Provider>
     );
 };
-
 
 export default AuthContext;
