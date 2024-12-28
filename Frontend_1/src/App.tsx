@@ -18,6 +18,7 @@ import PersistLogin from './components/PresistLogin';
 import GuestLayout from './layout/GestLayout';
 import Login from './pages/Authentication/Login';
 import RequireAuth from './components/RequireAuth';
+import AuthenticatedLayout from './layout/AuthenticatedLayout';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,18 +35,18 @@ function App() {
   return loading ? (
     <Loader />
   ) : (
-    <Routes> 
-        <Route
-          index
-          element={
-            <>
-              <PageTitle title="Welcome | EMS" />
-              <Welcome />
-            </>
-          }
-        />
-        {/* Guest Layout */}
-        <Route element={<GuestLayout />}>
+    <Routes>
+      <Route
+        index
+        element={
+          <>
+            <PageTitle title="Welcome | EMS" />
+            <Welcome />
+          </>
+        }
+      />
+      {/* Guest Layout */}
+      <Route element={<GuestLayout />}>
         <Route
           path="/login"
           element={
@@ -57,109 +58,102 @@ function App() {
         />
       </Route>
 
-        <Route element={<PersistLogin />}>
-        <Route element={<RequireAuth allowedRoles={["ADMIN"]}/>}>
-        <Route 
-          path="/dashboard"
-          element={
-            <>
-              <PageTitle title="Dashboard | EMS" />
-              <AdminDashboard />
-            </>
-          }
-        />
+      {/* Authenticated Routes */}
+      <Route element={<PersistLogin />}>
+        <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+          <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
+            <Route
+              path="/dashboard"
+              element={
+                <>
+                  <PageTitle title="Dashboard | EMS" />
+                  <AdminDashboard />
+                </>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <>
+                  <PageTitle title="Calendar | EMS" />
+                  <Calendar />
+                </>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <>
+                  <PageTitle title="Profile | EMS" />
+                  <Profile />
+                </>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <>
+                  <PageTitle title="Settings | EMS" />
+                  <Settings />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/users"
+              element={
+                <>
+                  <PageTitle title="Users | EMS" />
+                  <Users />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/users/create"
+              element={
+                <>
+                  <PageTitle title="Users | EMS" />
+                  <CreateUser />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/users/edit"
+              element={
+                <>
+                  <PageTitle title="Users | EMS" />
+                  <EditUser />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/roles"
+              element={
+                <>
+                  <PageTitle title="Roles | EMS" />
+                  <Roles />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/roles/create"
+              element={
+                <>
+                  <PageTitle title="Roles | EMS" />
+                  <CreateRole />
+                </>
+              }
+            />
+            <Route
+              path="/usermanagement/roles/edit"
+              element={
+                <>
+                  <PageTitle title="Roles | EMS" />
+                  <EditRole />
+                </>
+              }
+            />
+          </Route>
         </Route>
-        <Route
-          path="/calendar"
-          element={
-            <>
-              <PageTitle title="Calendar | EMS" />
-              <Calendar />
-            </>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <>
-              <PageTitle title="Profile | EMS" />
-              <Profile />
-            </>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <>
-              <PageTitle title="Settings | EMS" />
-              <Settings />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/users"
-          element={
-            <>
-              <PageTitle title="Users | EMS" />
-              <Users />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/users/create"
-          element={
-            <>
-              <PageTitle title="Users | EMS" />
-              <CreateUser />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/users/edit"
-          element={
-            <>
-              <PageTitle title="Users | EMS" />
-              <EditUser />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/roles"
-          element={
-            <>
-              <PageTitle title="Roles | EMS" />
-              <Roles />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/roles/create"
-          element={
-            <>
-              <PageTitle title="Roles | EMS" />
-              <CreateRole />
-            </>
-          }
-        />
-        <Route
-          path="/usermanagement/roles/edit"
-          element={
-            <>
-              <PageTitle title="Roles | EMS" />
-              <EditRole />
-            </>
-          }
-        />
-      </Route>
-      <Route
-          path="/admin"
-          element={
-            <>
-              <PageTitle title="ADMINBOARD | EMS" />
-              <AdminDashboard />
-            </>
-          }
-        >
       </Route>
     </Routes>
   );
