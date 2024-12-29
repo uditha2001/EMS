@@ -19,10 +19,9 @@ const Login = () => {
           acessToken: data["accesstoken"],
         };
       });
-      console.log("Login successful", data);
       setShouldNavigate(true); // Trigger navigation
     } catch (error) {
-      console.error("Login failed", error);
+      console.error("Login failed");
     }
   };
   
