@@ -1,4 +1,4 @@
-import { Axios } from "../common/axios";
+import { Axios } from "../common/Axios";
 
 class AuthService {
   static login(username: string, password: string) {
@@ -18,6 +18,7 @@ class AuthService {
     if (user) {
       const status = axiosInstance.post(`login/logout`);
       localStorage.removeItem("user");
+      console.log("User logged out successfully.");
       return status;
     }
     return Promise.resolve(null); // If no user is found, return null

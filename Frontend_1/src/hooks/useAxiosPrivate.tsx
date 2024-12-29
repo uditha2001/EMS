@@ -1,4 +1,4 @@
-import { privateAxios } from "../common/axios";
+import { privateAxios } from "../common/Axios";
 import { useEffect } from "react";
 import useAuth from "./useAuth";
 import useRefreshToken from "./useRefreshToken";
@@ -24,7 +24,7 @@ const useAxiosPrivate = () => {
             (response) => response,
             async (error) => {
                 const prevRequest = error.config;
-                if (error.response?.status === 401 && !prevRequest?.sent) {
+                if (error.response?.status === 403 && !prevRequest?.sent) {
                     prevRequest.sent = true;
                     try {
                         console.log('Refreshing token...');

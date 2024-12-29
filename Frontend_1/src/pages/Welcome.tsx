@@ -66,7 +66,7 @@ const WelcomePage: React.FC = () => {
         {/* Buttons with animations */}
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
           <Link
-            to="/login"
+            to="/dashboard"
             className="inline-flex items-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
             data-aos="zoom-in"
             data-aos-duration="1500"

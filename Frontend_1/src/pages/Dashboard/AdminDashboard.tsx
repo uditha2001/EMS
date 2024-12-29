@@ -1,13 +1,4 @@
-import AuthService from "../../services/Auth-Service";
-import useAuth from "../../hooks/useAuth";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 const AdminDashboard=() => {
-  const { setAuth } = useAuth();
-  const [status, setStatus] = useState<{ code?: number }>({});
-  const navigate = useNavigate(); 
-  const privateAxios = useAxiosPrivate();
  
   return (
     <>

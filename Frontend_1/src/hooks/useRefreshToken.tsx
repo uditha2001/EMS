@@ -1,56 +1,57 @@
-import { useEffect } from 'react';
-import { Axios } from '../common/axios';
+import { useNavigate } from 'react-router-dom';
+import { Axios } from '../common/Axios';
 import UseAuth from './useAuth';
 
 const UseRefreshToken = () => {
-  const { auth, setAuth } = UseAuth();
-  const refresh = () => {
-    // Retrieve the user object from localStorage
-    const user = JSON.parse(localStorage.getItem("user") || '{}');
-    const accessToken = user["accesstoken"];
+  const navigate = useNavigate();
+  const { setAuth } = UseAuth();
 
-    // Check if accessToken exists
+  const refresh = async () => {
+    const user = JSON.parse(localStorage.getItem("user") || '{}');
+    const accessToken = user?.accesstoken;
+
     if (!accessToken) {
-      console.error("No access token found");
-      return Promise.reject("No access token found");
+      console.error("No access token found.");
+      navigate('/login');
+      return Promise.reject("No access token found.");
     }
 
-    // Make the API request to refresh the token
-    return Axios.post(
-      `login/refresh-token`,
-      {}, // Empty request body if needed
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Send old access token
-        },
-        withCredentials: true,
+    try {
+      const response = await Axios.post(
+        `login/refresh-token`,
+        {}, // Empty request body if needed
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true,
+        }
+      );
+      console.log("Token refreshed successfully.");
+      const newAccessToken = response.data?.accesstoken;
+
+      if (!newAccessToken) {
+        console.error("New access token is null or undefined.");
+        navigate('/login');
+        return Promise.reject("Invalid access token.");
       }
-    )
-      .then((response) => {
-        const newAccessToken = response.data['accesstoken'];
 
-        // Update localStorage with the new token
-        const updatedUser = {
-          ...user,
-          accesstoken: newAccessToken,
-        };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+      // Update localStorage with the new token
+      const updatedUser = { ...user, accesstoken: newAccessToken };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
 
-        // Update the auth state with new token and roles
-        setAuth(
-          {
-            roles: response.data?.user?.roles || [], // Extract roles from response
-            accessToken: newAccessToken,
-          }
-        );
-
-        // Return the new access token
-        return newAccessToken;
-      })
-      .catch((error) => {
-        console.error("Error refreshing token:", error);
-        throw error; // Optionally, propagate the error
+      // Update the auth state with the new token and roles
+      setAuth({
+        roles: response.data?.user?.roles || [],
+        accessToken: newAccessToken,
       });
+
+      return newAccessToken; // Return the new access token
+    } catch (error) {
+      console.error("Error refreshing token:");
+      // Clear invalid user data and redirect to login
+      localStorage.removeItem("user");
+      setAuth({});
+      navigate('/login');
+      return Promise.reject("Error refreshing token.");}
   };
 
   return refresh;
