@@ -62,10 +62,7 @@ const Users: React.FC = () => {
     }
   };
 
-  const handleCreate = () => {
-    alert('Redirect to create user form');
-    // Implement user creation logic here
-  };
+  
 
   const openModal = (id: number) => {
     setSelectedUserId(id);
