@@ -6,7 +6,6 @@ import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
 import DOMPurify from 'dompurify';
-
 const Settings = () => {
   const [formData, setFormData] = useState({
     firstName: '',

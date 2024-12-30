@@ -1,4 +1,4 @@
-import { privateAxios } from "../common/axios";
+import { privateAxios } from "../common/Axios";
 import { useEffect } from "react";
 import useAuth from "./useAuth";
 import useRefreshToken from "./useRefreshToken";
@@ -13,6 +13,7 @@ const useAxiosPrivate = () => {
             (config) => {
                 if (!config.headers['Authorization']) {
                     config.headers['Authorization'] = `Bearer ${auth.accessToken}`;
+                  
                 }
                 return config;
             },
@@ -27,6 +28,7 @@ const useAxiosPrivate = () => {
                 if (error.response?.status === 401 && !prevRequest?.sent) {
                     prevRequest.sent = true;
                     try {
+                        console.log("inside 401");
                         console.log('Refreshing token...');
                         const newAccessToken = await refreshToken();
                         prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
@@ -44,7 +46,7 @@ const useAxiosPrivate = () => {
             privateAxios.interceptors.request.eject(requestInterceptor);
             privateAxios.interceptors.response.eject(responseInterceptor);
         };
-    }, [auth,refreshToken]);
+    },[]);
 
     return privateAxios;
 };

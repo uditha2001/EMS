@@ -1,4 +1,4 @@
-import { Axios } from "../common/axios";
+import { Axios } from "../common/Axios";
 
 class AuthService {
   static login(username: string, password: string) {
