@@ -158,5 +158,33 @@ public class UserManagementServices {
         return "User status updated successfully";
     }
 
+    public UserDTO getUserById(Long userId) {
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Safely map the UserEntity to a UserDTO
+        List<String> roles = userEntity.getUserRoles().stream()
+                .map(userRole -> {
+                    if (userRole != null && userRole.getRole() != null) {
+                        return userRole.getRole().getRoleName();
+                    }
+                    return null;
+                })
+                .filter(roleName -> roleName != null) // Exclude null role names
+                .toList();
+
+        // Create and return UserDTO
+        return new UserDTO(
+                userEntity.getUserId(),
+                userEntity.getUsername(),
+                userEntity.getEmail(),
+                userEntity.getFirstName(),
+                userEntity.getLastName(),
+                roles,
+                userEntity.isActive()
+        );
+    }
+
+
 
 }
