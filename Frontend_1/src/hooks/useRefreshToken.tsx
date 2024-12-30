@@ -7,13 +7,13 @@ const UseRefreshToken = () => {
   const { setAuth } = UseAuth();
 
   const refresh = async () => {
-    const user = JSON.parse(localStorage.getItem("user") || '{}');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const accessToken = user?.accesstoken;
 
     if (!accessToken) {
-      console.error("No access token found.");
+      console.error('No access token found.');
       navigate('/login');
-      return Promise.reject("No access token found.");
+      return Promise.reject('No access token found.');
     }
 
     try {
@@ -23,34 +23,38 @@ const UseRefreshToken = () => {
         {
           headers: { Authorization: `Bearer ${accessToken}` },
           withCredentials: true,
-        }
+        },
       );
       const newAccessToken = response.data?.accesstoken;
 
       if (!newAccessToken) {
-        console.error("New access token is null or undefined.");
+        console.error('New access token is null or undefined.');
         navigate('/login');
-        return Promise.reject("Invalid access token.");
+        return Promise.reject('Invalid access token.');
       }
-      console.log("Token refreshed successfully.");
+      console.log('Token refreshed successfully.');
       // Update localStorage with the new token
       const updatedUser = { ...user, accesstoken: newAccessToken };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      localStorage.setItem('user', JSON.stringify(updatedUser));
 
       // Update the auth state with the new token and roles
       setAuth({
+        id: response.data?.user?.id,
+        firstName: response.data?.user?.firstName,
+        username: response.data?.user?.username,
         roles: response.data?.user?.roles || [],
         accessToken: newAccessToken,
       });
 
       return newAccessToken; // Return the new access token
     } catch (error) {
-      console.error("Error refreshing token:");
+      console.error('Error refreshing token:');
       // Clear invalid user data and redirect to login
-     localStorage.removeItem("user");
-      setAuth(prev=>({...prev,roles:[],accessToken:""}));
+      localStorage.removeItem('user');
+      setAuth((prev) => ({ ...prev, roles: [], accessToken: '' }));
       navigate('/login');
-      return Promise.reject("Error refreshing token.");}
+      return Promise.reject('Error refreshing token.');
+    }
   };
 
   return refresh;
