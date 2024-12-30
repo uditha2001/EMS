@@ -128,5 +128,10 @@ public class UserDetailsController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/getUserById/{userId}")
+    public UserDTO getUserById(@PathVariable Long userId) {
+        return userService.getUserById(userId);
+    }
+
 
 }
