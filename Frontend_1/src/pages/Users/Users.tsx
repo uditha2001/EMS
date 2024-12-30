@@ -5,6 +5,7 @@ import SuccessMessage from '../../components/SuccessMessage'; // Import SuccessM
 import ErrorMessage from '../../components/ErrorMessage'; // Import ErrorMessage
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
+import SelectBox from '../../components/SelectBox'; // Import SelectBox component for filtering roles
 
 type User = {
   id: number;
@@ -13,22 +14,28 @@ type User = {
   firstName: string;
   lastName: string;
   roles: string[];
+  active: boolean;
 };
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Success message state
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Error message state
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get('http://localhost:8080/api/v1/user');
         setUsers(response.data);
+        setFilteredUsers(response.data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch users');
       } finally {
@@ -39,11 +46,6 @@ const Users: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const handleEdit = (id: number) => {
-    alert(`Edit user with ID: ${id}`);
-    // Implement edit logic here
-  };
-
   const handleDelete = async () => {
     if (selectedUserId !== null) {
       try {
@@ -51,27 +53,72 @@ const Users: React.FC = () => {
           `http://localhost:8080/api/v1/user/deleteUser/${selectedUserId}`,
         );
         setUsers(users.filter((user) => user.id !== selectedUserId));
-        setIsModalOpen(false); // Close the modal after deletion
-        setSuccessMessage('User deleted successfully!'); // Set success message
-        setErrorMessage(null); // Clear any previous error message
+        setIsModalOpen(false);
+        setSuccessMessage('User deleted successfully!');
+        setErrorMessage(null);
       } catch (err: any) {
-        setErrorMessage('Failed to delete user'); // Set error message
-        setSuccessMessage(null); // Clear any previous success message
+        setErrorMessage('Failed to delete user');
+        setSuccessMessage(null);
         setIsModalOpen(false);
       }
     }
   };
 
-  
-
   const openModal = (id: number) => {
     setSelectedUserId(id);
-    setIsModalOpen(true); // Open the confirmation modal
+    setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setSelectedUserId(null);
-    setIsModalOpen(false); // Close the modal
+    setIsModalOpen(false);
+  };
+
+  const handleSearchAndFilter = () => {
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+
+    const filtered = users.filter((user) => {
+      const matchesSearchTerm =
+        user.username.toLowerCase().includes(lowercasedSearchTerm) ||
+        user.email.toLowerCase().includes(lowercasedSearchTerm) ||
+        (user.firstName + ' ' + user.lastName)
+          .toLowerCase()
+          .includes(lowercasedSearchTerm);
+
+      const matchesCategory =
+        categoryFilter === '' || user.roles.includes(categoryFilter);
+
+      const matchesStatus =
+        statusFilter === '' ||
+        (statusFilter === 'active' && user.active) ||
+        (statusFilter === 'inactive' && !user.active);
+
+      return matchesSearchTerm && matchesCategory && matchesStatus;
+    });
+
+    setFilteredUsers(filtered);
+  };
+
+  useEffect(() => {
+    handleSearchAndFilter();
+  }, [searchTerm, categoryFilter, statusFilter, users]);
+
+  const toggleUserStatus = async (userId: number, newStatus: boolean) => {
+    try {
+      await axios.put(
+        `http://localhost:8080/api/v1/user/users/${userId}/status?isActive=${newStatus}`,
+      );
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, active: newStatus } : user,
+        ),
+      );
+      setSuccessMessage('User status updated successfully!');
+      setErrorMessage(null);
+    } catch (err: any) {
+      setErrorMessage('Failed to update user status');
+      setSuccessMessage(null);
+    }
   };
 
   if (loading)
@@ -87,13 +134,12 @@ const Users: React.FC = () => {
           <h3 className="font-medium text-black dark:text-white">Users</h3>
           <Link
             to="/usermanagement/users/create"
-            className="inline-block bg-primary  text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
+            className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
           >
             Create User
           </Link>
         </div>
 
-        {/* Display Success or Error Message */}
         {successMessage && (
           <SuccessMessage
             message={successMessage}
@@ -106,6 +152,42 @@ const Users: React.FC = () => {
             onClose={() => setErrorMessage('')}
           />
         )}
+
+        {/* Search and Filter Section */}
+        <div className="flex flex-col sm:flex-row items-center mb-4 space-y-4 sm:space-y-0 sm:space-x-4">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-2/3 rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+          />
+          <SelectBox
+            options={[
+              { value: '', label: 'All Roles' },
+              ...users
+                .map((user) => user.roles)
+                .flat()
+                .filter((value, index, self) => self.indexOf(value) === index)
+                .map((role) => ({ value: role, label: role })),
+            ]}
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            placeholder="Select role"
+            className="appearance-none rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 pr-10 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+          />
+          <SelectBox
+            options={[
+              { value: '', label: 'All Statuses' },
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' },
+            ]}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            placeholder="Select status"
+            className="appearance-none rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 pr-10 outline-none transition focus:border-primary active:border-primary dark:bg-form-input dark:border-form-strokedark dark:text-white dark:focus:border-primary"
+          />
+        </div>
 
         <div className="overflow-x-auto">
           <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
@@ -127,12 +209,15 @@ const Users: React.FC = () => {
                   Roles
                 </th>
                 <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                  Status
+                </th>
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr
                   key={user.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -151,6 +236,16 @@ const Users: React.FC = () => {
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {user.roles.join(', ')}
+                  </td>
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                    <button
+                      onClick={() => toggleUserStatus(user.id, !user.active)}
+                      className={`py-1 px-4 rounded ${
+                        user.active ? 'bg-green-500' : 'bg-red-500'
+                      } text-white`}
+                    >
+                      {user.active ? 'Active' : 'Inactive'}
+                    </button>
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     <Link
@@ -173,7 +268,6 @@ const Users: React.FC = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
       {isModalOpen && (
         <ConfirmationModal
           message="Are you sure you want to delete this user?"
