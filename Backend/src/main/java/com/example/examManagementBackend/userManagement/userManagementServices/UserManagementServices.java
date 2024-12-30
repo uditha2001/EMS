@@ -101,7 +101,9 @@ public class UserManagementServices {
                             user.getEmail(),
                             user.getFirstName(),
                             user.getLastName(),
-                            roles
+                            roles,
+                            user.isActive()
+
                     );
                 })
                 .toList();
@@ -145,6 +147,15 @@ public class UserManagementServices {
         }
 
         return "User with roles updated successfully";
+    }
+
+    public String updateUserStatus(Long userId, boolean isActive) {
+        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        userEntity.setActive(isActive); // Update the user's active status
+        userManagementRepo.save(userEntity); // Save the updated user entity
+
+        return "User status updated successfully";
     }
 
 

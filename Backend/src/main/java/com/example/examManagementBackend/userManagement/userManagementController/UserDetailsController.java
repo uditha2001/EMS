@@ -122,6 +122,11 @@ public class UserDetailsController {
         }
     }
 
+    @PutMapping("/users/{userId}/status")
+    public ResponseEntity<String> updateUserStatus(@PathVariable Long userId, @RequestParam boolean isActive) {
+        String response = userService.updateUserStatus(userId, isActive);
+        return ResponseEntity.ok(response);
+    }
 
 
 }
