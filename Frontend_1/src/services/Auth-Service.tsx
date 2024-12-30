@@ -8,8 +8,11 @@ class AuthService {
     }).then((response) => {
       if (response.data["accesstoken"]) {
         localStorage.setItem("user", JSON.stringify(response.data));
+        return response.data;
       }
-      return response.data;
+      else{
+        return null;
+      }
     });
   }
 
