@@ -60,7 +60,7 @@ function App() {
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
-        <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+        <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
           <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
             <Route
               path="/dashboard"
@@ -144,7 +144,7 @@ function App() {
               }
             />
             <Route
-              path="/usermanagement/roles/edit"
+              path="/usermanagement/roles/edit/:roleId"
               element={
                 <>
                   <PageTitle title="Roles | EMS" />
