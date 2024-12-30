@@ -17,7 +17,6 @@ class AuthService {
     const user = localStorage.getItem("user");
     if (user) {
       const status = axiosInstance.post(`login/logout`);
-      localStorage.removeItem("user");
       return status;
     }
     return Promise.resolve(null); // If no user is found, return null
