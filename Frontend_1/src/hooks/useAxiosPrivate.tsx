@@ -13,6 +13,7 @@ const useAxiosPrivate = () => {
             (config) => {
                 if (!config.headers['Authorization']) {
                     config.headers['Authorization'] = `Bearer ${auth.accessToken}`;
+                  
                 }
                 return config;
             },
@@ -24,9 +25,10 @@ const useAxiosPrivate = () => {
             (response) => response,
             async (error) => {
                 const prevRequest = error.config;
-                if (error.response?.status === 403 && !prevRequest?.sent) {
+                if (error.response?.status === 401 && !prevRequest?.sent) {
                     prevRequest.sent = true;
                     try {
+                        console.log("inside 401");
                         console.log('Refreshing token...');
                         const newAccessToken = await refreshToken();
                         prevRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
@@ -44,7 +46,7 @@ const useAxiosPrivate = () => {
             privateAxios.interceptors.request.eject(requestInterceptor);
             privateAxios.interceptors.response.eject(responseInterceptor);
         };
-    }, [auth,refreshToken]);
+    },[]);
 
     return privateAxios;
 };

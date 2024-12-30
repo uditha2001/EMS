@@ -2,7 +2,6 @@ import { useState } from "react";
 import AuthService from "../../services/Auth-Service";
 import useAuth from "../../hooks/useAuth";
 import { Navigate } from "react-router-dom";
-
 const Login = () => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
