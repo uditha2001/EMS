@@ -107,7 +107,8 @@ public class JwtService implements UserDetailsService {
                 userEntity.getEmail(),
                 userEntity.getFirstName(),
                 userEntity.getLastName(),
-                getRolesByUserId(userEntity.getUsername())
+                getRolesByUserId(userEntity.getUsername()),
+                userEntity.isActive()
         );
         return new LoginResponseDTO(
                 newGeneratedAccessToken,
@@ -169,7 +170,8 @@ public class JwtService implements UserDetailsService {
                     userEntity.getEmail(),
                     userEntity.getFirstName(),
                     userEntity.getLastName(),
-                    getRolesByUserId(userEntity.getUsername())
+                    getRolesByUserId(userEntity.getUsername()),
+                    userEntity.isActive()
             );
             if(jwtUtill.validateToken(refreshToken,userDetails)){
                     String acessToken= jwtUtill.generateAccessToken(userDetails);
