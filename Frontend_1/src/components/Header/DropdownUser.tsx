@@ -14,7 +14,7 @@ const DropdownUser = () => {
   const axiosPrivate=useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [status,setStatus]=useState<null|statusObject>();
-  const {auth,setAuth}=useAuth();
+  const {setAuth}=useAuth();
   const navigate=useNavigate();
 
   const handleLogout=()=>{
@@ -25,11 +25,11 @@ const DropdownUser = () => {
           accessToken: '',
           roles: []
         }));
+        localStorage.removeItem("user");
         navigate('/login');
       }).catch((error: any) => {
         console.error("Logout failed", error);
       });
-      navigate('/login');
       return data;
     }
     catch (error: any) {
