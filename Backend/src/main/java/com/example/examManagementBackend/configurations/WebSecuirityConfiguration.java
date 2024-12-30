@@ -37,7 +37,8 @@ public class WebSecuirityConfiguration{
                         .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers(
                                  "/api/v1/login/authentication",
-                                "/api/v1/login/refresh-token"
+                                "/api/v1/login/refresh-token",
+                                "/api/v1/login/logout"
 
                                 ).permitAll()
                         .requestMatchers("/api/v1/permissions/**").permitAll()

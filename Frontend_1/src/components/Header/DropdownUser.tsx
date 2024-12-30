@@ -13,6 +13,7 @@ type statusObject = {
 const DropdownUser = () => {
   const axiosPrivate = useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
   const [status, setStatus] = useState<null | statusObject>();
   const { auth, setAuth } = useAuth();
   const navigate = useNavigate();
