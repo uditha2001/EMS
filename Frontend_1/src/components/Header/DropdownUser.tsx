@@ -5,37 +5,38 @@ import UserOne from '../../images/user/user-01.png';
 import AuthService from '../../services/Auth-Service';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useAuth from '../../hooks/useAuth';
-type statusObject={
-  code:string,
-  message:string,
-  obj:string
-}
+type statusObject = {
+  code: string;
+  message: string;
+  obj: string;
+};
 const DropdownUser = () => {
-  const axiosPrivate=useAxiosPrivate();
+  const axiosPrivate = useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [status,setStatus]=useState<null|statusObject>();
-  const {auth,setAuth}=useAuth();
-  const navigate=useNavigate();
+  const [status, setStatus] = useState<null | statusObject>();
+  const { auth, setAuth } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout=()=>{
-    try{
-      const data=AuthService.logout(axiosPrivate).then(() => {
-        setAuth((prev) => ({
-          ...prev,
-          accessToken: '',
-          roles: []
-        }));
-        navigate('/login');
-      }).catch((error: any) => {
-        console.error("Logout failed", error);
-      });
+  const handleLogout = () => {
+    try {
+      const data = AuthService.logout(axiosPrivate)
+        .then(() => {
+          setAuth((prev) => ({
+            ...prev,
+            accessToken: '',
+            roles: [],
+          }));
+          navigate('/login');
+        })
+        .catch((error: any) => {
+          console.error('Logout failed', error);
+        });
       navigate('/login');
       return data;
+    } catch (error: any) {
+      console.error('Logout failed');
     }
-    catch (error: any) {
-      console.error("Logout failed");
-    }
-  }
+  };
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <Link
@@ -45,9 +46,9 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {auth.firstName}
           </span>
-          <span className="block text-xs">UX Designer</span>
+          <span className="block text-xs">{auth.username}</span>
         </span>
 
         <span className="h-12 w-12 rounded-full">
@@ -149,8 +150,9 @@ const DropdownUser = () => {
               </Link>
             </li>
           </ul>
-          <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
-            onClick={() =>handleLogout()}
+          <button
+            className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+            onClick={() => handleLogout()}
           >
             <svg
               className="fill-current"
