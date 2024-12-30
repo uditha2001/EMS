@@ -199,9 +199,8 @@ const CreateRole: React.FC = () => {
                               .includes(searchTerm.toLowerCase()),
                           )
                           .map((permission) => (
-                            <div className="mb-2">
+                            <div className="mb-2" key={permission.permissionId}>
                               <Checkbox
-                                key={permission.permissionId}
                                 label={permission.permissionName}
                                 checked={permissions.includes(
                                   permission.permissionId,
