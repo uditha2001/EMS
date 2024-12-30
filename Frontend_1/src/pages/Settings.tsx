@@ -6,7 +6,9 @@ import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
 import DOMPurify from 'dompurify';
+import useAuth from '../hooks/useAuth';
 const Settings = () => {
+  const { auth } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,7 +24,7 @@ const Settings = () => {
   const [imagePreview, setImagePreview] = useState(userThree);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const userId = 1;
+  const userId = auth.id;
 
   const getApiUrl = (endpoint: string): string =>
     `http://localhost:8080/api/v1/user/${endpoint}`;
