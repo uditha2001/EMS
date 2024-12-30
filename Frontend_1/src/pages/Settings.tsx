@@ -6,9 +6,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
 import DOMPurify from 'dompurify';
-import useAxiosPrivate from '../hooks/useAxiosPrivate';
 const Settings = () => {
-  const axiosPrivate = useAxiosPrivate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -45,7 +43,7 @@ const Settings = () => {
 
   const fetchProfileImage = async () => {
     try {
-      const response = await axiosPrivate.get(getApiUrl(`getProfileImage/${userId}`), {
+      const response = await axios.get(getApiUrl(`getProfileImage/${userId}`), {
         responseType: 'arraybuffer',
       });
 
@@ -78,22 +76,21 @@ const Settings = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axiosPrivate.put(
-        getApiUrl(`updateUserProfile/${userId}`),
-        formData,
-      );
-  
-      if (response.status === 200) {
+      const response = await fetch(getApiUrl(`updateUserProfile/${userId}`), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
         setSuccessMessage('Profile updated successfully!');
       } else {
         setErrorMessage('Failed to update profile');
       }
     } catch (error) {
       setErrorMessage('Error occurred while updating profile');
-      console.error('Error details:', error|| error);
     }
   };
-  
+
   // Function to handle cancel action
   const handleCancel = () => {
     fetchUserData();
