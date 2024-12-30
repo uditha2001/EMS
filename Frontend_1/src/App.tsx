@@ -19,6 +19,7 @@ import GuestLayout from './layout/GestLayout';
 import Login from './pages/Authentication/Login';
 import RequireAuth from './components/RequireAuth';
 import AuthenticatedLayout from './layout/AuthenticatedLayout';
+import Unauthorized from './components/Unauthorized';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,6 +46,8 @@ function App() {
           </>
         }
       />
+      {/* Unauthorized Route */}
+      <Route path="/unauthorized" element={<Unauthorized />} />
       {/* Guest Layout */}
       <Route element={<GuestLayout />}>
         <Route
@@ -117,7 +120,7 @@ function App() {
               }
             />
             <Route
-              path="/usermanagement/users/edit"
+              path="/usermanagement/users/edit/:userId"
               element={
                 <>
                   <PageTitle title="Users | EMS" />
