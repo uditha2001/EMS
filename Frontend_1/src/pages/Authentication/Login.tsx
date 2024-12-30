@@ -9,17 +9,24 @@ const Login = () => {
   const {setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
       const data = await AuthService.login(username, password);
-      setAuth((prev: any) => {
-        return {
-          ...prev,
-          roles: data.user["roles"],
-          acessToken: data["accesstoken"],
-        };
-      });
-      setShouldNavigate(true); // Trigger navigation
-    } catch (error) {
+      try{
+        if(data!=null){
+          setAuth((prev: any) => {
+            return {
+              ...prev,
+              roles: data.user["roles"],
+              acessToken: data["accesstoken"],
+            };
+          });
+          setShouldNavigate(true); // Trigger navigation
+        }
+        else{
+          console.log("unothorized")
+          return <Navigate to="/login" replace/>
+        }
+      }
+     catch (error) {
       console.error("Login failed");
     }
   };

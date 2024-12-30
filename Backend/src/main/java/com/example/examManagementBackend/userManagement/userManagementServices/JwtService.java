@@ -82,39 +82,43 @@ public class JwtService implements UserDetailsService {
         String password=loginRequestDTO.getPassword();
         authenticate(username,password);
         UserDetails userDetails=loadUserByUsername(username);
-        String newGeneratedAccessToken  = jwtUtill.generateAccessToken(userDetails);
-        String newGeneratedRefreshToken= jwtUtill.generateRefreshToken(userDetails);
         UserEntity userEntity=userManagementRepo.findByUsername(username);
-        TokenEntity token =null;
-        if(tokenRepo.findToken(userEntity.getUserId())!=null){
-            token=tokenRepo.findToken(userEntity.getUserId());
-            String oldToken=token.getRefreshToken();
-            tokenRepo.updaterefreshTokenValueById(token.getToken_id(), newGeneratedRefreshToken);
-            tokenRepo.updateacessTokenValueById(token.getToken_id(), newGeneratedAccessToken);
-        }
-        else{
-            token=new TokenEntity(
-
-            );
-            token.setRefreshToken(newGeneratedRefreshToken);
-            token.setAcessToken(newGeneratedAccessToken);
-            token.setUser(userEntity);
-            tokenRepo.save(token);
-        }
-        UserDTO userDTO=new UserDTO(
-                userEntity.getUserId(),
-                userEntity.getUsername(),
-                userEntity.getEmail(),
-                userEntity.getFirstName(),
-                userEntity.getLastName(),
-                getRolesByUserId(userEntity.getUsername()),
-                userEntity.isActive()
-        );
-        return new LoginResponseDTO(
-                newGeneratedAccessToken,
-                userDTO
+        if(userEntity.isActive()){
+            String newGeneratedAccessToken  = jwtUtill.generateAccessToken(userDetails);
+            String newGeneratedRefreshToken= jwtUtill.generateRefreshToken(userDetails);
+            TokenEntity token =null;
+            if(tokenRepo.findToken(userEntity.getUserId())!=null){
+                token=tokenRepo.findToken(userEntity.getUserId());
+                String oldToken=token.getRefreshToken();
+                tokenRepo.updaterefreshTokenValueById(token.getToken_id(), newGeneratedRefreshToken);
+                tokenRepo.updateacessTokenValueById(token.getToken_id(), newGeneratedAccessToken);
+            }
+            else{
+                token=new TokenEntity(
 
                 );
+                token.setRefreshToken(newGeneratedRefreshToken);
+                token.setAcessToken(newGeneratedAccessToken);
+                token.setUser(userEntity);
+                tokenRepo.save(token);
+            }
+            UserDTO userDTO=new UserDTO(
+                    userEntity.getUserId(),
+                    userEntity.getUsername(),
+                    userEntity.getEmail(),
+                    userEntity.getFirstName(),
+                    userEntity.getLastName(),
+                    getRolesByUserId(userEntity.getUsername()),
+                    userEntity.isActive()
+            );
+            return new LoginResponseDTO(
+                    newGeneratedAccessToken,
+                    userDTO
+
+            );
+        }
+
+       return null;
     }
     private void authenticate(String username, String password){
         try{
