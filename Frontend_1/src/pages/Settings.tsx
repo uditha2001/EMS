@@ -102,7 +102,13 @@ const Settings = () => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+      const validImageTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+      ];
       if (!validImageTypes.includes(file.type)) {
         alert('Invalid file type. Please select an image file.');
         return;
@@ -300,7 +306,7 @@ const Settings = () => {
                           name="contactNo"
                           id="contactNo"
                           placeholder="+990 3343 7865"
-                          value={formData.contactNo}
+                          value={formData.contactNo || ''}
                           onChange={handleChange}
                         />
                       </div>
@@ -415,7 +421,7 @@ const Settings = () => {
                           id="bio"
                           rows={6}
                           placeholder="Write your bio here"
-                          value={formData.bio}
+                          value={formData.bio || ''}
                           onChange={handleChange}
                         ></textarea>
                       </div>
