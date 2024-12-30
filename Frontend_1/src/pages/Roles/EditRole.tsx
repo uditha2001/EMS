@@ -8,7 +8,8 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 
 const EditRole: React.FC = () => {
-  //const { roleId } = useParams<{ roleId: string }>();
+  const { roleId } = useParams<{ roleId: string }>();
+  //console.log(roleId);
   const [roleName, setRoleName] = useState('');
   const [description, setDescription] = useState('');
   const [permissions, setPermissions] = useState<number[]>([]);
@@ -18,7 +19,8 @@ const EditRole: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const roleId=2;
+ // const roleId=2;
+
 
   useEffect(() => {
     // Fetch available permissions
@@ -47,6 +49,7 @@ const EditRole: React.FC = () => {
         setErrorMessage('Error fetching role details.');
         console.error('Error fetching role details:', error);
       });
+    
   }, [roleId]);
 
   const groupedPermissions = availablePermissions.reduce(
