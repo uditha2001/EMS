@@ -1,12 +1,12 @@
-import { useState } from "react";
-import AuthService from "../../services/Auth-Service";
-import useAuth from "../../hooks/useAuth";
-import { Navigate } from "react-router-dom";
+import { useState } from 'react';
+import AuthService from '../../services/Auth-Service';
+import useAuth from '../../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 const Login = () => {
-  const [username, setUserName] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUserName] = useState('');
+  const [password, setPassword] = useState('');
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
-  const {setAuth } = useAuth();
+  const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -14,16 +14,17 @@ const Login = () => {
       setAuth((prev: any) => {
         return {
           ...prev,
-          roles: data.user["roles"],
-          acessToken: data["accesstoken"],
+          id:data.user['id'],
+          firstName: data.user['firstName'],
+          roles: data.user['roles'],
+          acessToken: data['accesstoken'],
         };
       });
       setShouldNavigate(true); // Trigger navigation
     } catch (error) {
-      console.error("Login failed");
+      console.error('Login failed');
     }
   };
-  
 
   // Redirect to dashboard if login is successful
   if (shouldNavigate) {
@@ -39,14 +40,14 @@ const Login = () => {
         {/* Email Input */}
         <div>
           <label
-            htmlFor="email"
+            htmlFor="username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Email
           </label>
           <input
             id="username"
-            type="name"
+            type="text"
             value={username}
             onChange={(e) => setUserName(e.target.value)}
             required
