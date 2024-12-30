@@ -25,7 +25,6 @@ const UseRefreshToken = () => {
           withCredentials: true,
         }
       );
-      console.log("Token refreshed successfully.");
       const newAccessToken = response.data?.accesstoken;
 
       if (!newAccessToken) {
@@ -33,7 +32,7 @@ const UseRefreshToken = () => {
         navigate('/login');
         return Promise.reject("Invalid access token.");
       }
-
+      console.log("Token refreshed successfully.");
       // Update localStorage with the new token
       const updatedUser = { ...user, accesstoken: newAccessToken };
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -48,8 +47,8 @@ const UseRefreshToken = () => {
     } catch (error) {
       console.error("Error refreshing token:");
       // Clear invalid user data and redirect to login
-      localStorage.removeItem("user");
-      setAuth({});
+     localStorage.removeItem("user");
+      setAuth(prev=>({...prev,roles:[],accessToken:""}));
       navigate('/login');
       return Promise.reject("Error refreshing token.");}
   };

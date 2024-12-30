@@ -11,16 +11,24 @@ type statusObject={
   obj:string
 }
 const DropdownUser = () => {
+  const axiosPrivate=useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [status,setStatus]=useState<null|statusObject>();
-  const {setAuth}=useAuth();
+  const {auth,setAuth}=useAuth();
   const navigate=useNavigate();
-  const axiosPrivate=useAxiosPrivate();
 
   const handleLogout=()=>{
     try{
-      const data=AuthService.logout(axiosPrivate);
-      setAuth({});
+      const data=AuthService.logout(axiosPrivate).then(() => {
+        setAuth((prev) => ({
+          ...prev,
+          accessToken: '',
+          roles: []
+        }));
+        navigate('/login');
+      }).catch((error: any) => {
+        console.error("Logout failed", error);
+      });
       navigate('/login');
       return data;
     }
