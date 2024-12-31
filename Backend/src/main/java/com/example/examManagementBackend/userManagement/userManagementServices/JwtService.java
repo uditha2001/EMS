@@ -159,6 +159,7 @@ public class JwtService implements UserDetailsService {
         String refreshToken=null;
         TokenEntity token=null;
         LoginResponseDTO loginResponseDTO=null;
+        UserEntity userEntity=null;
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             acesssToken= authorizationHeader.substring(7);
             token=tokenRepo.findByAcessToken(acesssToken);
@@ -167,7 +168,7 @@ public class JwtService implements UserDetailsService {
         }
         if(userName!=null){
             UserDetails userDetails=loadUserByUsername(userName);
-            UserEntity userEntity=userManagementRepo.findByUsername(userName);
+            userEntity=userManagementRepo.findByUsername(userName);
             UserDTO userDTO=new UserDTO(
                     userEntity.getUserId(),
                     userEntity.getUsername(),
@@ -177,7 +178,8 @@ public class JwtService implements UserDetailsService {
                     getRolesByUserId(userEntity.getUsername()),
                     userEntity.isActive()
             );
-            if(jwtUtill.validateToken(refreshToken,userDetails)){
+            if(userEntity.isActive()){
+                if(jwtUtill.validateToken(refreshToken,userDetails)){
                     String acessToken= jwtUtill.generateAccessToken(userDetails);
                     tokenRepo.updateacessTokenValueById(token.getToken_id(),acessToken);
                     loginResponseDTO=new LoginResponseDTO(
@@ -186,7 +188,9 @@ public class JwtService implements UserDetailsService {
 
                     );
                     new ObjectMapper().writeValue(response.getOutputStream(),loginResponseDTO);
+                }
             }
+
         }
 
         return loginResponseDTO;
@@ -198,7 +202,6 @@ public class JwtService implements UserDetailsService {
         TokenEntity token=new TokenEntity();
         if(authorizationHeader.startsWith("Bearer ")){
             acesssToken= authorizationHeader.substring(7);
-            System.out.println(acesssToken);
             token.setAcessToken(acesssToken);
             tokenRepo.deletebyAcessToken(token.getAcessToken());
             return "ok";

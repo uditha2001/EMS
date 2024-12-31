@@ -63,7 +63,7 @@ function App() {
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
-        <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+        <Route element={<RequireAuth allowedRoles={['ADMIN', 'USER']} />}>
           <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
             <Route
               path="/dashboard"
@@ -74,89 +74,93 @@ function App() {
                 </>
               }
             />
-            <Route
-              path="/calendar"
-              element={
-                <>
-                  <PageTitle title="Calendar | EMS" />
-                  <Calendar />
-                </>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <>
-                  <PageTitle title="Profile | EMS" />
-                  <Profile />
-                </>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <>
-                  <PageTitle title="Settings | EMS" />
-                  <Settings />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/users"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <Users />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/users/create"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <CreateUser />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/users/edit/:userId"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <EditUser />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/roles"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <Roles />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/roles/create"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <CreateRole />
-                </>
-              }
-            />
-            <Route
-              path="/usermanagement/roles/edit/:roleId"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <EditRole />
-                </>
-              }
-            />
           </Route>
-        </Route>
+          </Route>
+          <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+          <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
+          <Route
+            path="/calendar"
+            element={
+              <>
+                <PageTitle title="Calendar | EMS" />
+                <Calendar />
+              </>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <>
+                <PageTitle title="Profile | EMS" />
+                <Profile />
+              </>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <>
+                <PageTitle title="Settings | EMS" />
+                <Settings />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/users"
+            element={
+              <>
+                <PageTitle title="Users | EMS" />
+                <Users />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/users/create"
+            element={
+              <>
+                <PageTitle title="Users | EMS" />
+                <CreateUser />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/users/edit/:userId"
+            element={
+              <>
+                <PageTitle title="Users | EMS" />
+                <EditUser />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/roles"
+            element={
+              <>
+                <PageTitle title="Roles | EMS" />
+                <Roles />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/roles/create"
+            element={
+              <>
+                <PageTitle title="Roles | EMS" />
+                <CreateRole />
+              </>
+            }
+          />
+          <Route
+            path="/usermanagement/roles/edit/:roleId"
+            element={
+              <>
+                <PageTitle title="Roles | EMS" />
+                <EditRole />
+              </>
+            }
+          />
+      </Route>
+      </Route>
       </Route>
     </Routes>
   );
