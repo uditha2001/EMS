@@ -1,14 +1,35 @@
 import { useState } from 'react';
-
+import AuthService from '../../services/Auth-Service';
+import useAuth from '../../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
+  const { setAuth } = useAuth();
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your login logic here
-    console.log('Login submitted:', { email, password });
+      const data = await AuthService.login(username, password);
+
+      setAuth((prev: any) => {
+        return {
+          ...prev,
+          id:data.user['id'],
+          firstName: data.user['firstName'],
+          roles: data.user['roles'],
+          acessToken: data['accesstoken'],
+        };
+      });
+      setShouldNavigate(true); // Trigger navigation
+    } catch (error) {
+      console.error('Login failed');
+    }
   };
+
+  // Redirect to dashboard if login is successful
+  if (shouldNavigate) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div>
@@ -19,16 +40,16 @@ const Login = () => {
         {/* Email Input */}
         <div>
           <label
-            htmlFor="email"
+            htmlFor="username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Email
           </label>
           <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id="username"
+            type="text"
+            value={username}
+            onChange={(e) => setUserName(e.target.value)}
             required
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           />
