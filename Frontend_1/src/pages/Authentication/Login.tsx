@@ -6,29 +6,44 @@ const Login = () => {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
+  const [unothorized,setUnothorized]=useState(false);
+  const [error,setError]=useState(false);
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
       const data = await AuthService.login(username, password);
-
-      setAuth((prev: any) => {
-        return {
-          ...prev,
-          id:data.user['id'],
-          firstName: data.user['firstName'],
-          roles: data.user['roles'],
-          acessToken: data['accesstoken'],
-        };
-      });
-      setShouldNavigate(true); // Trigger navigation
-    } catch (error) {
+      if (data != null) {
+        setAuth((prev: any) => {
+          return {
+            ...prev,
+            id: data.user['id'],
+            firstName: data.user['firstName'],
+            roles: data.user['roles'],
+            acessToken: data['accesstoken'],
+          };
+        });
+        console.log("data is not nll");
+        setShouldNavigate(true); // Trigger navigation
+      }
+      else{
+        setUnothorized(true);
+        console.log("data is null");
+      }
+    }
+    catch (error) {
       console.error('Login failed');
+      setError(true);
     }
   };
 
   // Redirect to dashboard if login is successful
   if (shouldNavigate) {
     return <Navigate to="/dashboard" replace />;
+  }
+  if(unothorized)
+  {
+    return <Navigate to="/unauthorized" replace />
   }
 
   return (
@@ -39,11 +54,12 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Input */}
         <div>
+          {error?<h3 className='text-red-500 text-center'>invailid credentials</h3>:null}
           <label
             htmlFor="username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >
-            Email
+            User
           </label>
           <input
             id="username"
