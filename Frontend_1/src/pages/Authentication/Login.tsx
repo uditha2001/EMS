@@ -9,8 +9,8 @@ const Login = () => {
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
       const data = await AuthService.login(username, password);
+
       setAuth((prev: any) => {
         return {
           ...prev,

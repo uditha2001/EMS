@@ -8,8 +8,11 @@ class AuthService {
     }).then((response) => {
       if (response.data["accesstoken"]) {
         localStorage.setItem("user", JSON.stringify(response.data));
+        return response.data;
       }
-      return response.data;
+      else{
+        return null;
+      }
     });
   }
 
@@ -17,7 +20,6 @@ class AuthService {
     const user = localStorage.getItem("user");
     if (user) {
       const status = axiosInstance.post(`login/logout`);
-      localStorage.removeItem("user");
       return status;
     }
     return Promise.resolve(null); // If no user is found, return null
