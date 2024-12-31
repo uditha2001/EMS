@@ -249,7 +249,7 @@ const Users: React.FC = () => {
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     <Link
-                      to="/usermanagement/users/edit"
+                      to={`/usermanagement/users/edit/${user.id}`}
                       className="text-primary hover:underline"
                     >
                       Edit
