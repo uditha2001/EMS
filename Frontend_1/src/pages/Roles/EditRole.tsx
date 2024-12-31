@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Checkbox from '../../components/Checkbox';
 import SelectBox from '../../components/SelectBox';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const EditRole: React.FC = () => {
   const { roleId } = useParams<{ roleId: string }>();
@@ -19,11 +19,11 @@ const EditRole: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  // const roleId=2;
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     // Fetch available permissions
-    axios
+    axiosPrivate
       .get('http://localhost:8080/api/v1/permissions')
       .then((response) => {
         setAvailablePermissions(response.data);
@@ -36,8 +36,8 @@ const EditRole: React.FC = () => {
       });
 
     // Fetch role data by roleId
-    axios
-      .get(`http://localhost:8080/api/v1/roles/view/${roleId}`)
+    axiosPrivate
+      .get(`/roles/view/${roleId}`)
       .then((response) => {
         const { roleName, description, permissionIds } = response.data;
         setRoleName(roleName);
@@ -92,8 +92,8 @@ const EditRole: React.FC = () => {
       permissionIds: permissions,
     };
 
-    axios
-      .put(`http://localhost:8080/api/v1/roles/update/${roleId}`, updatedRole)
+    axiosPrivate
+      .put(`/roles/update/${roleId}`, updatedRole)
       .then(() => {
         setSuccessMessage('Role updated successfully!');
         setErrorMessage('');
