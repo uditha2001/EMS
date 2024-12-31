@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
-
   const [, setRoleName] = useState('');
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -21,7 +20,8 @@ const CreateUser: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [emailVailidity,setEmailValidity]=useState(false);
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   useEffect(() => {
     axios
       .get('http://localhost:8080/api/v1/roles/all')
@@ -41,7 +41,14 @@ const CreateUser: React.FC = () => {
     );
     setFilteredRoles(filtered);
   }, [searchTerm, availableRoles]);
-
+  useEffect(()=>{
+     if(isValidEmail(email)){
+      setEmailValidity(true);
+     }
+     else{
+      setEmailValidity(false);
+     }
+  },[email])
   const handleRoleChange = (roleName: string) => {
     setRoles((prevRoles) =>
       prevRoles.includes(roleName)
@@ -49,6 +56,7 @@ const CreateUser: React.FC = () => {
         : [...prevRoles, roleName]
     );
   };
+  const isValidEmail = (emailParam:any) => emailRegex.test(emailParam);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +135,7 @@ const CreateUser: React.FC = () => {
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   required
                 />
+                {emailVailidity ? <p className='text-green-500 text-center'>vailid email!</p> :<p className='text-red-500 text-center'>enter vailid email!</p>}
               </div>
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
