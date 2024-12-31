@@ -20,6 +20,9 @@ import Login from './pages/Authentication/Login';
 import RequireAuth from './components/RequireAuth';
 import AuthenticatedLayout from './layout/AuthenticatedLayout';
 import Unauthorized from './components/Unauthorized';
+import ForgotPassword from './pages/Authentication/ForgotPassword';
+import ResetPassword from './pages/Authentication/ResetPassword';
+import OTPVerification from './pages/Authentication/OTPVerification';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,18 +51,52 @@ function App() {
       />
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
-      {/* Guest Layout */}
-      <Route element={<GuestLayout />}>
-        <Route
-          path="/login"
-          element={
-            <>
-              <PageTitle title="Login | EMS" />
-              <Login />
-            </>
-          }
-        />
-      </Route>
+        {/* Guest Layout */}
+        <Route element={<GuestLayout />}>
+          {/* Login Route */}
+          <Route
+            path="/login"
+            element={
+              <>
+                <PageTitle title="Login | EMS" />
+                <Login />
+              </>
+            }
+          />
+
+          {/* Forgot Password Route */}
+          <Route
+            path="/forgot-password"
+            element={
+              <>
+                <PageTitle title="Forgot Password | EMS" />
+                <ForgotPassword />
+              </>
+            }
+          />
+
+          {/* OTP Verification Route */}
+          <Route
+            path="/otp-verification"
+            element={
+              <>
+                <PageTitle title="Verify OTP | EMS" />
+                <OTPVerification />
+              </>
+            }
+          />
+
+          {/* Reset Password Route */}
+          <Route
+            path="/reset-password"
+            element={
+              <>
+                <PageTitle title="Reset Password | EMS" />
+                <ResetPassword />
+              </>
+            }
+          />
+        </Route>
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
