@@ -5,7 +5,6 @@ import SuccessMessage from '../components/SuccessMessage';
 import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
-import useAxiosPrivate from '../hooks/useAxiosPrivate';
 import DOMPurify from 'dompurify';
 import useAuth from '../hooks/useAuth';
 const Settings = () => {
