@@ -23,15 +23,13 @@ const Login = () => {
             acessToken: data['accesstoken'],
           };
         });
-        console.log("data is not nll");
+        console.log('data is not nll');
         setShouldNavigate(true); // Trigger navigation
-      }
-      else {
+      } else {
         setDeActiveStatus(true);
-        console.log("data is null");
+        console.log('data is null');
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Login failed');
       setError(true);
     }
@@ -42,15 +40,19 @@ const Login = () => {
     return <Navigate to="/dashboard" replace />;
   }
   return (
-    <div >
+    <div>
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Welcome to EMS
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Input */}
-        {error ? <h3 className='text-red-500 text-center'>invailid credentials</h3> : null}
-        {deActiveStatus ? <h3 className='text-red-500 text-center'>user is deactivated!</h3> : null}
-        <div className='relative'>
+        {error ? (
+          <h3 className="text-red-500 text-center">invailid credentials</h3>
+        ) : null}
+        {deActiveStatus ? (
+          <h3 className="text-red-500 text-center">user is deactivated!</h3>
+        ) : null}
+        <div className="relative">
           <label
             htmlFor="username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -118,7 +120,6 @@ const Login = () => {
             />
           </div>
         </div>
-
 
         <div className="text-center mt-4">
           <Link to="/resetPassword" className="text-blue-500 hover:underline">
