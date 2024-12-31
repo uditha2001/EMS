@@ -6,7 +6,9 @@ import ErrorMessage from '../components/ErrorMessage';
 import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
 import DOMPurify from 'dompurify';
+import useAuth from '../hooks/useAuth';
 const Settings = () => {
+  const { auth } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,7 +24,7 @@ const Settings = () => {
   const [imagePreview, setImagePreview] = useState(userThree);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const userId = 1;
+  const userId = auth.id;
 
   const getApiUrl = (endpoint: string): string =>
     `http://localhost:8080/api/v1/user/${endpoint}`;
@@ -100,7 +102,13 @@ const Settings = () => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+      const validImageTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+      ];
       if (!validImageTypes.includes(file.type)) {
         alert('Invalid file type. Please select an image file.');
         return;
@@ -298,7 +306,7 @@ const Settings = () => {
                           name="contactNo"
                           id="contactNo"
                           placeholder="+990 3343 7865"
-                          value={formData.contactNo}
+                          value={formData.contactNo || ''}
                           onChange={handleChange}
                         />
                       </div>
@@ -413,7 +421,7 @@ const Settings = () => {
                           id="bio"
                           rows={6}
                           placeholder="Write your bio here"
-                          value={formData.bio}
+                          value={formData.bio || ''}
                           onChange={handleChange}
                         ></textarea>
                       </div>
