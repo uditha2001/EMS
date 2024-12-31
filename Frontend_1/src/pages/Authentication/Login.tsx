@@ -6,7 +6,7 @@ const Login = () => {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
-  const [unothorized, setUnothorized] = useState(false);
+  const [deActiveStatus, setDeActiveStatus] = useState(false);
   const [error, setError] = useState(false);
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +27,7 @@ const Login = () => {
         setShouldNavigate(true); // Trigger navigation
       }
       else {
-        setUnothorized(true);
+        setDeActiveStatus(true);
         console.log("data is null");
       }
     }
@@ -41,10 +41,6 @@ const Login = () => {
   if (shouldNavigate) {
     return <Navigate to="/dashboard" replace />;
   }
-  if (unothorized) {
-    return <Navigate to="/unauthorized" replace />
-  }
-
   return (
     <div >
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
@@ -53,6 +49,7 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email Input */}
         {error ? <h3 className='text-red-500 text-center'>invailid credentials</h3> : null}
+        {deActiveStatus ? <h3 className='text-red-500 text-center'>user is deactivated!</h3> : null}
         <div className='relative'>
           <label
             htmlFor="username"
