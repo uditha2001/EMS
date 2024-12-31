@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Checkbox from '../../components/Checkbox';
 import { useNavigate, useParams } from 'react-router-dom';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -22,11 +22,12 @@ const EditUser: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     // Fetch all roles
-    axios
-      .get('http://localhost:8080/api/v1/roles/all')
+    axiosPrivate
+      .get('/roles/all')
       .then((response) => {
         setAvailableRoles(response.data);
         setFilteredRoles(response.data);
@@ -38,8 +39,8 @@ const EditUser: React.FC = () => {
 
     // Fetch user details for editing
     if (userId) {
-      axios
-        .get(`http://localhost:8080/api/v1/user/getUserById/${userId}`)
+      axiosPrivate
+        .get(`/user/getUserById/${userId}`)
         .then((response) => {
           const user = response.data;
           setEmail(user.email);
@@ -89,8 +90,8 @@ const EditUser: React.FC = () => {
 
     try {
       setIsLoading(true);
-      await axios.put(
-        `http://localhost:8080/api/v1/user/updateUserWithRoles/${userId}`,
+      await axiosPrivate.put(
+        `/user/updateUserWithRoles/${userId}`,
         updatedUser,
       );
       setSuccessMessage('User updated successfully!');
