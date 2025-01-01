@@ -24,7 +24,9 @@ const useAxiosPrivate = () => {
             (response) => response,
             async (error) => {
                 const prevRequest = error.config;
-                if (error['code'] === 'ERR_NETWORK' && !prevRequest?.sent) {
+                const status=error.response.status;
+                console.log(status);
+                if (status=== 401 && !prevRequest?.sent) {
                     prevRequest.sent = true;
                     try {
                         console.log('Refreshing token...');
