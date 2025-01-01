@@ -41,9 +41,9 @@ public class LogginController {
                }
     }
 
-    @PostMapping("/verifyUser")
-    public ResponseEntity<StandardResponse> verifyUser(@RequestParam String userName) throws IOException {
-            String message=mailService.verifyUserMail(userName);
+    @PostMapping("/verifyuser")
+    public ResponseEntity<StandardResponse> verifyUser(@RequestParam String username) throws IOException {
+            String message=mailService.verifyUserMail(username);
             if(message.equals("ok")){
                 String confirmMessage="verified sucessfully";
                 return new ResponseEntity<>(new StandardResponse(200,"verify ",confirmMessage), HttpStatus.OK);
@@ -52,6 +52,18 @@ public class LogginController {
                 String statusMessage="invailid user or current user doesn't have a mail";
                 return new ResponseEntity<>(new StandardResponse(404," not verify ",statusMessage), HttpStatus.BAD_REQUEST);
             }
+    }
+    @GetMapping("/otpValidate")
+    public ResponseEntity<StandardResponse> otpValidate(@RequestParam Integer otp,@RequestParam String username) throws IOException {
+        String message=mailService.verifyOtp(otp,username);
+        if(message.equals("ok")){
+            return new ResponseEntity<>(new StandardResponse(200,"verify ",message), HttpStatus.OK);
+        }
+        else{
+            String statusMessage="verification faild!";
+            return new ResponseEntity<>(new StandardResponse(304,"verify ",statusMessage), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
 }
