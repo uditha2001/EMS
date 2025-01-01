@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, ReactNode } from 'react';
-import { privateAxios } from '../common/Axios';
+import { Axios } from '../common/Axios';
 
 // Define the type for the auth state
 type AuthState = {
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const response = await privateAxios.get('/permissions');
+        const response = await Axios.get('/permissions');
         if (response?.data?.permissions) {
           setPermissions(response.data.permissions);
         }
