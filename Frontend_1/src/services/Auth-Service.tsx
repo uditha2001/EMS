@@ -25,13 +25,6 @@ class AuthService {
     return Promise.resolve(null); // If no user is found, return null
   }
 
-  static getCurrentUser() {
-    const user = localStorage.getItem("user");
-    if (user) {
-      return JSON.parse(user);
-    }
-    return null;
-  }
 }
 
 export default AuthService;
