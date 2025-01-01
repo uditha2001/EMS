@@ -5,6 +5,7 @@ const Unauthorized: React.FC = () => {
   const navigate = useNavigate();
 
   const handleRedirect = () => {
+    localStorage.removeItem('user'); // Clear user data
     navigate('/login'); // Redirect user to login page
   };
 

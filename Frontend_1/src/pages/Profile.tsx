@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import useAuth from '../hooks/useAuth';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
 
 interface Role {
   id: number;
@@ -38,18 +38,17 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const userId = auth.id;
+  const axiosPrivate = useAxiosPrivate();
 
   console.log(userId);
-
-  const baseUrl = `http://localhost:8080/api/v1/user`;
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
 
-        const imageResponse = await axios.get(
-          `${baseUrl}/getProfileImage/${userId}`,
+        const imageResponse = await axiosPrivate.get(
+          `user/getProfileImage/${userId}`,
           { responseType: 'arraybuffer' },
         );
         const base64Image = btoa(
@@ -62,8 +61,8 @@ const Profile: React.FC = () => {
           `data:${imageResponse.headers['content-type']};base64,${base64Image}`,
         );
 
-        const userResponse = await axios.get<UserProfile>(
-          `${baseUrl}/userProfile/${userId}`,
+        const userResponse = await axiosPrivate.get<UserProfile>(
+          `user/userProfile/${userId}`,
         );
         setUserData(userResponse.data);
       } catch (err) {
