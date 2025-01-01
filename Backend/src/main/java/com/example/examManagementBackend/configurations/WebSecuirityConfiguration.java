@@ -41,6 +41,7 @@ public class WebSecuirityConfiguration{
                         .requestMatchers("/api/v1/permissions/**").permitAll()
                         .requestMatchers("/api/v1/roles/**").permitAll()
                         .requestMatchers("/api/v1/user/**").permitAll()
+                        .requestMatchers("/api/v1/user/updateProfileImage/**").permitAll()
                         .anyRequest().authenticated()
 
 

@@ -12,12 +12,8 @@ public class UserDTO {
      private String lastName;
     private List<String> roles;
 
-    public UserDTO(String username, String password, String email, String lastName, String firstName) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.lastName = lastName;
-        this.firstName = firstName;
+    public UserDTO(){
+
     }
 
     public UserDTO(Long id, String username, String email, String firstName, String lastName, List<String> roles) {
