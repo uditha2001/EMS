@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementDTO;
 
+import jakarta.validation.constraints.Email;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,6 +9,7 @@ public class UserDTO {
     private Long id; // User ID
      private String username;
      private String password;
+     @Email
      private String  email;
      private String firstName;
      private String lastName;

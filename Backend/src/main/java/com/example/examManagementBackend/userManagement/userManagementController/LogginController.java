@@ -3,6 +3,7 @@ package com.example.examManagementBackend.userManagement.userManagementControlle
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
+import com.example.examManagementBackend.userManagement.userManagementServices.MailService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,6 +19,8 @@ import java.io.IOException;
 public class LogginController {
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private MailService mailService;
     @PostMapping("/authentication")
     public LoginResponseDTO createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) throws IOException {
             return jwtService.CreateJwtToken(loginRequestDTO);
@@ -36,6 +39,19 @@ public class LogginController {
                else{
                    return new ResponseEntity<>(new StandardResponse(304,"logout ",message), HttpStatus.INTERNAL_SERVER_ERROR);
                }
+    }
+
+    @PostMapping("/verifyUser")
+    public ResponseEntity<StandardResponse> verifyUser(@RequestParam String userName) throws IOException {
+            String message=mailService.verifyUserMail(userName);
+            if(message.equals("ok")){
+                String confirmMessage="verified sucessfully";
+                return new ResponseEntity<>(new StandardResponse(200,"verify ",confirmMessage), HttpStatus.OK);
+            }
+            else{
+                String statusMessage="invailid user or current user doesn't have a mail";
+                return new ResponseEntity<>(new StandardResponse(404," not verify ",statusMessage), HttpStatus.BAD_REQUEST);
+            }
     }
 
 }
