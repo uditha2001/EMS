@@ -45,7 +45,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds);
+        return new RoleDTO(savedRole.getRoleId(), savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds);
     }
 
     // Update role
@@ -72,7 +72,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), updatedPermissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), updatedPermissionIds);
     }
 
     // View role by ID
@@ -84,7 +84,7 @@ public class RoleService {
                 .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds);
     }
 
     // Delete role
@@ -105,7 +105,7 @@ public class RoleService {
                     .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                     .collect(Collectors.toSet());
 
-            return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
+            return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds);
         }).collect(Collectors.toList());
 
 

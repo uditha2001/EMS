@@ -95,7 +95,7 @@ public class UserDetailsController {
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error updating profile image: " + e.getMessage());
+                    .body("Error updating profile image: ");
         }
     }
 
@@ -107,7 +107,7 @@ public class UserDetailsController {
             return ResponseEntity.ok(message);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting profile image: " + e.getMessage());
+                    .body("Error deleting profile image: ");
         }
     }
 
@@ -122,6 +122,16 @@ public class UserDetailsController {
         }
     }
 
+    @PutMapping("/users/{userId}/status")
+    public ResponseEntity<String> updateUserStatus(@PathVariable Long userId, @RequestParam boolean isActive) {
+        String response = userService.updateUserStatus(userId, isActive);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getUserById/{userId}")
+    public UserDTO getUserById(@PathVariable Long userId) {
+        return userService.getUserById(userId);
+    }
 
 
 }
