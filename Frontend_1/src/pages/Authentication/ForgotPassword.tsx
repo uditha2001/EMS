@@ -22,7 +22,7 @@ const ForgotPassword = () => {
           }
 
         })
-        .catch((error) => {
+        .catch(() => {
           setError(true);
           setUserName('');
           console.error("error occur");

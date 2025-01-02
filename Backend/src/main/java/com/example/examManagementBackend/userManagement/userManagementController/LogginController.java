@@ -53,9 +53,9 @@ public class LogginController {
                 return new ResponseEntity<>(new StandardResponse(404," not verify ",statusMessage), HttpStatus.BAD_REQUEST);
             }
     }
-    @GetMapping("/otpValidate")
-    public ResponseEntity<StandardResponse> otpValidate(@RequestParam Integer otp,@RequestParam String username) throws IOException {
-        String message=mailService.verifyOtp(otp,username);
+    @PostMapping("/otpValidate")
+    public ResponseEntity<StandardResponse> otpValidate(@RequestParam String enteredOtp,@RequestParam String username) throws IOException {
+        String message=mailService.verifyOtp(enteredOtp,username);
         if(message.equals("ok")){
             return new ResponseEntity<>(new StandardResponse(200,"verify ",message), HttpStatus.OK);
         }
