@@ -9,7 +9,6 @@ const UseRefreshToken = () => {
   const refresh = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const accessToken = user?.accesstoken;
-
     if (!accessToken) {
       console.error('No access token found.');
       navigate('/login');

@@ -5,7 +5,7 @@ class AuthService {
     return Axios.post(`login/authentication`, {
       username,
       password,
-    }).then((response) => {
+    }).then((response:any) => {
       if (response.data["accesstoken"]) {
         localStorage.setItem("user", JSON.stringify(response.data));
         return response.data;
@@ -25,13 +25,6 @@ class AuthService {
     return Promise.resolve(null); // If no user is found, return null
   }
 
-  static getCurrentUser() {
-    const user = localStorage.getItem("user");
-    if (user) {
-      return JSON.parse(user);
-    }
-    return null;
-  }
 }
 
 export default AuthService;
