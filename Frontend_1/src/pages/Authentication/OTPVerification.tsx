@@ -3,8 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Axios } from '../../common/Axios';
 const OTPVerification = () => {
   const [otp, setOtp] = useState(Array(6).fill(''));
-  const [error, setError] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [resetError, setResetError] = useState(false);
+  const [submitFailed, setSubmitFailed] = useState(false);
+  const [resetFailed, setResetFailed] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes = 120 seconds
   const [isOtpExpired, setIsOtpExpired] = useState(false);
   const navigate = useNavigate();
@@ -50,16 +51,15 @@ const OTPVerification = () => {
     const enteredOtp = otp.join('');
     try {
       const response = await Axios.post(`login/otpValidate?enteredOtp=${enteredOtp}&username=${username}`);
-      console.log(response);
       if (response.data.code === 200) {
-        console.log("OTP is valid" + response.status);
+        console.log("OTP is valid");
         navigate('/reset-password', { state: { username } });
       } else if (response.data.code === 304) {
-        console.log("OTP is invalid" + response.status);
-        setError(true);
+        console.log("OTP is invalid");
+        setSubmitFailed(true);
       }
     } catch (err) {
-      setError(true);
+      setSubmitFailed(true);
       console.error('Invalid OTP');
     }
   };
@@ -70,29 +70,29 @@ const OTPVerification = () => {
     try {
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
-          console.log(res.status);
           if (res.data.code === 200) {
-            setFailed(false);
+            setResetFailed(false);
             setTimeRemaining(120); // Reset to 2 minutes
             setIsOtpExpired(false);
           }
           else if (res.data.code === 404) {
             setIsOtpExpired(false);
-            setFailed(true);
-            setFailed(true);
+            setResetFailed(true);
           }
 
         })
         .catch(() => {
-          setError(true);
+          setResetError(true);
+          setIsOtpExpired(false);
+          setResetFailed(true);
           console.error("error occur");
         });
       console.log(`Sending OTP to ${username}`);
     } catch (err) {
-      setError(true);
+      setResetError(true);
       console.error('Failed to send OTP');
     }
-   
+
   };
 
   const formatTime = (seconds: number) => {
@@ -108,12 +108,12 @@ const OTPVerification = () => {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {submitFailed && !resetFailed ? (
           <p className="text-red-500 text-center">
             Invalid OTP. Please try again.
           </p>
-        )}
-        {(error && failed) && (
+        ) : null}
+        {(resetError && resetFailed) && (
           <p className="text-red-500 text-center">
             Failed to send OTP. Please try again.
           </p>
@@ -151,7 +151,7 @@ const OTPVerification = () => {
         </div>
 
         {/* Submit button */}
-        {!isOtpExpired ? (
+        {!isOtpExpired && !resetError ? (
           <button
             type="submit"
             className="w-full px-4 py-2 text-white bg-primary rounded-md shadow hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
