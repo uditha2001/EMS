@@ -25,8 +25,14 @@ public class LogginController {
     @Autowired
     private MailService mailService;
     @PostMapping("/authentication")
-    public LoginResponseDTO createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) throws IOException {
-            return jwtService.CreateJwtToken(loginRequestDTO);
+    public ResponseEntity<StandardResponse> createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) throws IOException {
+            LoginResponseDTO loginResponseDTO= jwtService.CreateJwtToken(loginRequestDTO);
+            if(loginResponseDTO!=null){
+                return new ResponseEntity<>(new StandardResponse(200,"login sucess",loginResponseDTO),HttpStatus.OK);
+            }
+            else{
+                return new ResponseEntity<>(new StandardResponse(304,"login failed","bad"),HttpStatus.NOT_ACCEPTABLE);
+            }
     }
     @PostMapping("/refresh-token")
     public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {

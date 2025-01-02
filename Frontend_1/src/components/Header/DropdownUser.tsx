@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
@@ -14,29 +14,29 @@ const DropdownUser = () => {
   const axiosPrivate = useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const [status, setStatus] = useState<null | statusObject>();
   const { auth, setAuth } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      const data = AuthService.logout(axiosPrivate)
-        .then(() => {
-          setAuth((prev) => ({
-            ...prev,
-            accessToken: '',
-            roles: [],
-          }));
-          navigate('/login');
-        })
-        .catch((error: any) => {
-          console.error('Logout failed', error);
-        });
-      navigate('/login');
-      return data;
-    } catch (error: any) {
-      console.error('Logout failed');
+      const response = await AuthService.logout(axiosPrivate)
+      if (response.data.code === 200) {
+        setAuth((prev) => ({
+          ...prev,
+          accessToken: '',
+          roles: [],
+        }));
+        localStorage.removeItem('user');
+        navigate('/login');
+        console.log("logout sucess");
+      }
+      else{
+        console.log("failed to logout");
+      }
     }
+    catch (error) {
+      console.log("failed to logout");
+    };
   };
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">

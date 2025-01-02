@@ -190,7 +190,7 @@ public class UserManagementServices {
         if(user!=null){
           try{
               String newPassword=getEncodePassword(password);
-              userManagementRepo.updatePassword(newPassword,username);
+              userManagementRepo.updatePassword(username,newPassword);
               return "ok";
           }
           catch(Exception e){

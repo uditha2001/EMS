@@ -13,26 +13,36 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      const data = await AuthService.login(username, password);
-      if (data != null) {
-        setAuth((prev: any) => {
-          return {
-            ...prev,
-            id: data.user['id'],
-            firstName: data.user['firstName'],
-            roles: data.user['roles'],
-            acessToken: data['accesstoken'],
-          };
-        });
-        console.log('data is not nll');
-        setShouldNavigate(true); // Trigger navigation
-      } else {
-        setDeActiveStatus(true);
-        console.log('data is null');
+      const response =await AuthService.login(username, password);
+      if (response != null) {
+        if(response.data.code===200){
+          localStorage.setItem('user', JSON.stringify(response.data.data));
+          setAuth((prev: any) => {
+            return {
+              ...prev,
+              id: response.data.data.user['id'],
+              firstName:response.data.data.user['firstName'],
+              roles: response.data.data.user['roles'],
+              acessToken: response.data.data['accesstoken'],
+            };
+          });
+          console.log(response.data.data['accesstoken']);
+          setShouldNavigate(true); // Trigger navigation
+        }
+        else if(response.data.code===304){
+          setDeActiveStatus(true);
+          console.log('data is null');
+      } 
       }
     } catch (error) {
-      console.error('Login failed');
-      setError(true);
+      if(error.response.data.code===304){ 
+        setDeActiveStatus(true);
+        setError(false);
+      }
+      else{
+        setError(true);
+        setDeActiveStatus(false);
+      }
     }
   };
 
