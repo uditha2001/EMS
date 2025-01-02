@@ -4,6 +4,7 @@ import com.example.examManagementBackend.userManagement.userManagementDTO.LoginR
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementServices.MailService;
+import com.example.examManagementBackend.userManagement.userManagementServices.UserManagementServices;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +20,8 @@ import java.io.IOException;
 public class LogginController {
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private UserManagementServices userManagementServices;
     @Autowired
     private MailService mailService;
     @PostMapping("/authentication")
@@ -53,9 +56,9 @@ public class LogginController {
                 return new ResponseEntity<>(new StandardResponse(404," not verify ",statusMessage), HttpStatus.BAD_REQUEST);
             }
     }
-    @GetMapping("/otpValidate")
-    public ResponseEntity<StandardResponse> otpValidate(@RequestParam Integer otp,@RequestParam String username) throws IOException {
-        String message=mailService.verifyOtp(otp,username);
+    @PostMapping("/otpValidate")
+    public ResponseEntity<StandardResponse> otpValidate(@RequestParam String enteredOtp,@RequestParam String username) throws IOException {
+        String message=mailService.verifyOtp(enteredOtp,username);
         if(message.equals("ok")){
             return new ResponseEntity<>(new StandardResponse(200,"verify ",message), HttpStatus.OK);
         }
@@ -64,6 +67,17 @@ public class LogginController {
             return new ResponseEntity<>(new StandardResponse(304,"verify ",statusMessage), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+    @PostMapping("/updatePassword")
+    public ResponseEntity<StandardResponse> updatePassword(@RequestParam String password,@RequestParam String username) throws IOException {
+        String message=userManagementServices.updatePassword(password,username);
+        if(message.equals("ok")){
+            return new ResponseEntity<>(new StandardResponse(200,"update password ",message), HttpStatus.OK);
+        }
+        else{
+            String statusMessage="update password faild!";
+            return new ResponseEntity<>(new StandardResponse(304,"update password ",statusMessage), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

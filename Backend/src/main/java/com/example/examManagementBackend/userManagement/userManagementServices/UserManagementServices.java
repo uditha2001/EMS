@@ -8,6 +8,7 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -184,7 +185,23 @@ public class UserManagementServices {
                 userEntity.isActive()
         );
     }
+    public String updatePassword(String password,String username){
+        UserEntity user=userManagementRepo.findByUsername(username);
+        if(user!=null){
+          try{
+              String newPassword=getEncodePassword(password);
+              userManagementRepo.updatePassword(newPassword,username);
+              return "ok";
+          }
+          catch(Exception e){
+              throw new RuntimeException("failed to update password");
+          }
 
+        }
+        else{
+            throw new UsernameNotFoundException("username not found");
+        }
+    }
 
 
 }
