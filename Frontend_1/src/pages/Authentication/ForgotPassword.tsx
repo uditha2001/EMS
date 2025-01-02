@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const ForgotPassword = () => {
   const [username, setUserName] = useState('');
   const [error, setError] = useState(false);
+  const [failed, setFailed] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -12,17 +13,24 @@ const ForgotPassword = () => {
     try {
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
-          console.log(res);
+          console.log(res.status);
+          if (res.status === 200) {
+            navigate('/otp-verification', { state: { username } });
+          }
+          else if (res.status === 404) {
+            setFailed(true);
+          }
+
         })
         .catch((error) => {
-          console.error(error);
+          setError(true);
+          setUserName('');
+          console.error("error occur");
         });
-
-
       console.log(`Sending OTP to ${username}`);
-      navigate('/otp-verification', { state: { username } });
     } catch (err) {
       setError(true);
+      setUserName('');
       console.error('Failed to send OTP');
     }
   };
@@ -33,11 +41,12 @@ const ForgotPassword = () => {
         Forgot Password
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {(error || failed) && (
           <p className="text-red-500 text-center">
             Failed to send OTP. Please try again.
           </p>
         )}
+
         <div>
           <label
             htmlFor="username"
@@ -77,7 +86,7 @@ const ForgotPassword = () => {
           Send OTP
         </button>
       </form>
-    </div>
+    </div >
   );
 };
 

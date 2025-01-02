@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 @Repository
 @EnableJpaRepositories
 public interface ForgotPasswordRepo extends JpaRepository<ForgotPasswordEntity, Long> {
@@ -18,4 +20,9 @@ public interface ForgotPasswordRepo extends JpaRepository<ForgotPasswordEntity, 
     @Transactional
     @Query("DELETE ForgotPasswordEntity fpe WHERE fpe.user.username= :username")
     void deletedatabyUser(@Param("username") String username);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ForgotPasswordEntity fpe SET fpe.otp= :otp,fpe.expirationDate= :date WHERE fpe.user.username= :username")
+    void updateNewOtp(@Param("otp") Integer otp, @Param("date") Date date, @Param("username") String username);
 }

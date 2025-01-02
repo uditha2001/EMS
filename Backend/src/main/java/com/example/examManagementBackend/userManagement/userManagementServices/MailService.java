@@ -80,8 +80,7 @@ public class MailService {
                     forgotPasswordRepo.save(forgotPasswordEntity);
                 }
                 else{
-                    forgotPasswordRepo.deletedatabyUser(userName);
-                    forgotPasswordRepo.save(forgotPasswordEntity);
+                    forgotPasswordRepo.updateNewOtp(otp,new Date(System.currentTimeMillis()+60*1000),userName);
                 }
 
                 sendMail(mailBody);
