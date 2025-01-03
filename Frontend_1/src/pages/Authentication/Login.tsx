@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import AuthService from '../../services/Auth-Service';
 import useAuth from '../../hooks/useAuth';
@@ -12,26 +13,36 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      const data = await AuthService.login(username, password);
-      if (data != null) {
-        setAuth((prev: any) => {
-          return {
-            ...prev,
-            id: data.user['id'],
-            firstName: data.user['firstName'],
-            roles: data.user['roles'],
-            acessToken: data['accesstoken'],
-          };
-        });
-        console.log('data is not nll');
-        setShouldNavigate(true); // Trigger navigation
-      } else {
-        setDeActiveStatus(true);
-        console.log('data is null');
+      const response =await AuthService.login(username, password);
+      if (response != null) {
+        if(response.data.code===200){
+          localStorage.setItem('user', JSON.stringify(response.data.data));
+          setAuth((prev: any) => {
+            return {
+              ...prev,
+              id: response.data.data.user['id'],
+              firstName:response.data.data.user['firstName'],
+              roles: response.data.data.user['roles'],
+              acessToken: response.data.data['accesstoken'],
+            };
+          });
+          console.log(response.data.data['accesstoken']);
+          setShouldNavigate(true); // Trigger navigation
+        }
+        else if(response.data.code===304){
+          setDeActiveStatus(true);
+          console.log('data is null');
+      } 
       }
     } catch (error) {
-      console.error('Login failed');
-      setError(true);
+      if(error.response.data.code===304){ 
+        setDeActiveStatus(true);
+        setError(false);
+      }
+      else{
+        setError(true);
+        setDeActiveStatus(false);
+      }
     }
   };
 
@@ -55,12 +66,12 @@ const Login = () => {
         <div className="relative">
           <label
             htmlFor="username"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="mb-3 block text-sm font-medium text-black dark:text-white"
           >
             User
           </label>
-          <div className="mt-1">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 top-5">
+          <div className="relative flex items-center">
+            <span className="absolute left-4 flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 250 200"
@@ -81,7 +92,7 @@ const Login = () => {
               value={username}
               onChange={(e) => setUserName(e.target.value)}
               required
-              className="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
             />
           </div>
         </div>
@@ -90,12 +101,12 @@ const Login = () => {
         <div className="relative">
           <label
             htmlFor="password"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="mb-3 block text-sm font-medium text-black dark:text-white"
           >
             Password
           </label>
-          <div className="mt-1">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 top-5">
+          <div className="relative flex items-center">
+            <span className="absolute left-4 flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 x="0px"
@@ -116,13 +127,13 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+              className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
             />
           </div>
         </div>
 
         <div className="text-center mt-4">
-          <Link to="/resetPassword" className="text-blue-500 hover:underline">
+          <Link to="/forgot-password" className="text-primary hover:underline">
             Forgot Password?
           </Link>
         </div>
@@ -131,7 +142,7 @@ const Login = () => {
         <div>
           <button
             type="submit"
-            className="w-full px-4 py-2 text-white bg-blue-600 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="w-full px-4 py-2 text-white bg-primary rounded-md shadow hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Sign In
           </button>

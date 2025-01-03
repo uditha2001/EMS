@@ -14,27 +14,35 @@ const AdminDashboard = () => {
 
         {/* User Details */}
         <div className="mt-4">
+          {/* Roles */}
           <p className="text-gray-800 dark:text-gray-200">
-            <strong>Roles:</strong> {roles?.length ? roles.join(', ') : 'N/A'}
+            <strong>Roles:</strong>{' '}
+            {roles?.length ? roles.join(', ') : 'No roles assigned'}
           </p>
 
           {/* Permissions */}
-          <h2>Your Permissions:</h2>
-          {permissions?.length ? (
-            <ul>
+          <h2 className="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
+            Your Permissions:
+          </h2>
+          {Array.isArray(permissions) && permissions.length > 0 ? (
+            <ul className="list-disc list-inside mt-2 text-gray-800 dark:text-gray-200">
               {permissions.map((permission) => (
-                <li key={permission.permissionId}>{permission.permissionName}</li>
+                <li key={permission.permissionId}>
+                  {permission.permissionName}
+                </li>
               ))}
             </ul>
           ) : (
-            <p>No permissions available.</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              No permissions available.
+            </p>
           )}
 
           {/* Access Token */}
           {accessToken && (
-            <p className="text-gray-800 dark:text-gray-200">
+            <p className="mt-4 text-gray-800 dark:text-gray-200">
               <strong>Access Token:</strong>{' '}
-              <span className="break-words whitespace-pre-wrap">
+              <span className="break-words whitespace-pre-wrap text-sm bg-gray-100 dark:bg-gray-700 rounded p-2 block">
                 {accessToken}
               </span>
             </p>
