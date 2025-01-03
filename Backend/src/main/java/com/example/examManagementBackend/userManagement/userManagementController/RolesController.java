@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @CrossOrigin
@@ -58,5 +59,11 @@ public class RolesController {
     public ResponseEntity<Void> deleteRole(@PathVariable Long roleId) {
         roleService.deleteRole(roleId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/permissions")
+    public ResponseEntity<Set<String>> getPermissionsForRoles(@RequestBody List<String> roleNames) {
+        Set<String> permissionNames = roleService.getPermissionsForRoles(roleNames);
+        return ResponseEntity.ok(permissionNames);
     }
 }

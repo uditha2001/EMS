@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -110,5 +111,28 @@ public class RoleService {
 
 
     }
+
+    // Fetch permissions based on role names
+    public Set<String> getPermissionsForRoles(List<String> roleNames) {
+        // Fetch role entities using role names
+        List<RolesEntity> roles = rolesRepository.findByRoleNameIn(roleNames);
+
+        Set<String> permissionNames = new HashSet<>();
+
+        // Loop through roles and get associated permissions
+        for (RolesEntity role : roles) {
+            Set<String> rolePermissionIds = rolePermissionRepository.findByRolesEntity(role).stream()
+                    .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionName())
+                    .collect(Collectors.toSet());
+
+            // Add the permissions for each role to the overall set of permissions
+            permissionNames.addAll(rolePermissionIds);
+        }
+
+        // Return the set of permissions (duplicates are already removed by the Set)
+        return permissionNames;
+    }
+
+
 
 }

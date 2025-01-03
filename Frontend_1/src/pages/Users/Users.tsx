@@ -6,6 +6,7 @@ import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox'; // Import SelectBox component for filtering roles
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useHasPermission from '../../hooks/useHasPermission';
 
 type User = {
   id: number;
@@ -30,6 +31,9 @@ const Users: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
   const axiosPrivate = useAxiosPrivate();
+  const hasDeletePermission = useHasPermission('Delete Users');
+  const hasCreatePermission = useHasPermission('Create Users');
+  const hasEditPermission = useHasPermission('Edit Users');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -131,12 +135,14 @@ const Users: React.FC = () => {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
         <div className="mb-6 flex justify-between items-center">
           <h3 className="font-medium text-black dark:text-white">Users</h3>
-          <Link
-            to="/usermanagement/users/create"
-            className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
-          >
-            Create User
-          </Link>
+          {hasCreatePermission && (
+            <Link
+              to="/usermanagement/users/create"
+              className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
+            >
+              Create User
+            </Link>
+          )}
         </div>
 
         {successMessage && (
@@ -247,18 +253,22 @@ const Users: React.FC = () => {
                     </button>
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    <Link
-                      to={`/usermanagement/users/edit/${user.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => openModal(user.id)}
-                      className="ml-4 text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    {hasEditPermission && (
+                      <Link
+                        to={`/usermanagement/users/edit/${user.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        onClick={() => openModal(user.id)}
+                        className="ml-4 text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

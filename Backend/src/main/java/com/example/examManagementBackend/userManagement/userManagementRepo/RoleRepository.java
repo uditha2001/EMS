@@ -9,6 +9,9 @@ import java.util.Optional;
 public interface RoleRepository extends JpaRepository<RolesEntity, Long> {
     Optional<RolesEntity> findByRoleName(String roleName);
 
+    // Custom query to find roles by role names
+    List<RolesEntity> findByRoleNameIn(List<String> roleNames);
+
 
 
 }

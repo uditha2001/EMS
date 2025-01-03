@@ -1,19 +1,18 @@
-// import { useContext } from 'react';
-// import AuthContext from '../context/AuthProvider';
+import { useContext } from 'react';
+import PermissionsContext from '../context/PermissionsProvider';
 
-// export const useHasPermission = (permissionName: string) => {
-//   const authContext = useContext(AuthContext);
+const useHasPermission = (permission: string) => {
+  const permissionsContext = useContext(PermissionsContext);
 
-//   if (!authContext) {
-//     console.warn(
-//       'AuthContext is not defined. Make sure you are using the AuthProvider.',
-//     );
-//     return false;
-//   }
+  // Handle case when PermissionsContext is undefined
+  if (!permissionsContext) {
+    return false;
+  }
 
-//   const { permissions } = authContext;
+  const { permissionsState } = permissionsContext;
 
-//   return permissions.some(
-//     (permission) => permission.permissionName === permissionName,
-//   );
-// };
+  // Check if the permission exists in the user's permissions
+  return permissionsState.permissions.includes(permission);
+};
+
+export default useHasPermission;
