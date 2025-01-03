@@ -1,4 +1,5 @@
-import { useState, createContext, ReactNode } from 'react';
+import { useState,createContext, ReactNode } from 'react';
+
 
 // Define the type for the auth state
 type AuthState = {
@@ -8,6 +9,7 @@ type AuthState = {
   roles?: string[];
   accessToken?: string;
 };
+
 
 // Define the type for the context value
 type AuthContextType = {
@@ -23,11 +25,15 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // Initialize auth state with the proper type
-  const [auth, setAuth] = useState<AuthState>({});
+  // Initialize auth state with default values
+  const [auth, setAuth] = useState<AuthState>({ accessToken: '' });
+
+
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
+    <AuthContext.Provider
+      value={{ auth, setAuth}}
+    >
       {children}
     </AuthContext.Provider>
   );

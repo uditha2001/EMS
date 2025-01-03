@@ -38,13 +38,11 @@ public class WebSecuirityConfiguration{
                         .requestMatchers(
                                  "/api/v1/login/authentication",
                                 "/api/v1/login/refresh-token",
-                                "/api/v1/login/logout"
-
+                                "/api/v1/login/logout",
+                                "/api/v1/login/verifyuser",
+                                "/api/v1/login/otpValidate",
+                                "/api/v1/login/updatePassword"
                                 ).permitAll()
-                        .requestMatchers("/api/v1/permissions/**").permitAll()
-                        .requestMatchers("/api/v1/roles/**").permitAll()
-                        .requestMatchers("/api/v1/user/**").permitAll()
-                        .requestMatchers("/api/v1/user/updateProfileImage/**").permitAll()
                         .anyRequest().authenticated()
 
 
@@ -57,7 +55,7 @@ public class WebSecuirityConfiguration{
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
                 http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
+                http.cors();
                 return http.build();
 
 

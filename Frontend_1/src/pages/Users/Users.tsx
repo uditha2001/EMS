@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage'; // Import SuccessMessage
 import ErrorMessage from '../../components/ErrorMessage'; // Import ErrorMessage
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox'; // Import SelectBox component for filtering roles
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 type User = {
   id: number;
@@ -29,11 +29,12 @@ const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/v1/user');
+        const response = await axiosPrivate.get('/user');
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (err: any) {
@@ -49,9 +50,7 @@ const Users: React.FC = () => {
   const handleDelete = async () => {
     if (selectedUserId !== null) {
       try {
-        await axios.delete(
-          `http://localhost:8080/api/v1/user/deleteUser/${selectedUserId}`,
-        );
+        await axiosPrivate.delete(`/user/deleteUser/${selectedUserId}`);
         setUsers(users.filter((user) => user.id !== selectedUserId));
         setIsModalOpen(false);
         setSuccessMessage('User deleted successfully!');
@@ -105,8 +104,8 @@ const Users: React.FC = () => {
 
   const toggleUserStatus = async (userId: number, newStatus: boolean) => {
     try {
-      await axios.put(
-        `http://localhost:8080/api/v1/user/users/${userId}/status?isActive=${newStatus}`,
+      await axiosPrivate.put(
+        `/user/users/${userId}/status?isActive=${newStatus}`,
       );
       setUsers(
         users.map((user) =>

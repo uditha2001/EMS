@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 type Permission = {
   permissionId: number;
@@ -32,13 +32,14 @@ const Roles: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     const fetchRolesAndPermissions = async () => {
       try {
         const [rolesResponse, permissionsResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/v1/roles/all'),
-          axios.get('http://localhost:8080/api/v1/permissions'),
+          axiosPrivate.get('/roles/all'),
+          axiosPrivate.get('/permissions'),
         ]);
         setRoles(rolesResponse.data);
         setPermissions(permissionsResponse.data);
@@ -53,6 +54,18 @@ const Roles: React.FC = () => {
   }, []);
 
   const getPermissionNames = (permissionIds: number[]): string => {
+    // Check if the role has all permissions
+    const hasAllPermissions =
+      permissions.length > 0 &&
+      permissions.every((permission) =>
+        permissionIds.includes(permission.permissionId),
+      );
+
+    if (hasAllPermissions) {
+      return 'All';
+    }
+
+    // Return comma-separated permission names for specific permissions
     return permissionIds
       .map(
         (id) =>
@@ -65,9 +78,7 @@ const Roles: React.FC = () => {
   const handleDelete = async () => {
     if (selectedRoleId !== null) {
       try {
-        await axios.delete(
-          `http://localhost:8080/api/v1/roles/delete/${selectedRoleId}`,
-        );
+        await axiosPrivate.delete(`/roles/delete/${selectedRoleId}`);
         setRoles(roles.filter((role) => role.roleId !== selectedRoleId));
         setIsModalOpen(false);
         setSuccessMessage('Role deleted successfully!');
