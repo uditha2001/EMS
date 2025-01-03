@@ -16,10 +16,9 @@ import java.util.Date;
 public interface ForgotPasswordRepo extends JpaRepository<ForgotPasswordEntity, Long> {
     @Query("SELECT fpe FROM ForgotPasswordEntity fpe where fpe.user.username= :username")
     ForgotPasswordEntity getdatabyUser(@Param("username") String username);
-    @Modifying
-    @Transactional
-    @Query("DELETE ForgotPasswordEntity fpe WHERE fpe.user.username= :username")
-    void deletedatabyUser(@Param("username") String username);
+
+    @Query("SELECT fpe FROM ForgotPasswordEntity fpe where fpe.user.userId= :userId")
+    ForgotPasswordEntity extractdatabyUser(@Param("userId") Long userId);
 
     @Modifying
     @Transactional

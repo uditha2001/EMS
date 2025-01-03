@@ -29,7 +29,7 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendMail(MailBody mailBody) {
+    public String sendMail(MailBody mailBody) {
         try {
             if (mailBody.to() == null || mailBody.to().isEmpty()) {
                 throw new IllegalArgumentException("Recipient email address cannot be null or empty.");
@@ -50,9 +50,10 @@ public class MailService {
             mailSender.send(message);
 
             System.out.println("Email sent successfully to " + mailBody.to());
+            return "ok";
         } catch (Exception e) {
-            // Log or handle exceptions
             System.err.println("Failed to send email: " + e.getMessage());
+            return "error";
         }
     }
 
@@ -74,17 +75,23 @@ public class MailService {
                 if(forgotPasswordEntity==null) {
                     forgotPasswordEntity=new ForgotPasswordEntity(
                             otp,
-                            new Date(System.currentTimeMillis()+60*1000),
+                            new Date(System.currentTimeMillis()+60*1000*3),
                             userEntity
                     );
                     forgotPasswordRepo.save(forgotPasswordEntity);
                 }
                 else{
-                    forgotPasswordRepo.updateNewOtp(otp,new Date(System.currentTimeMillis()+60*1000),userName);
+                    forgotPasswordRepo.updateNewOtp(otp,new Date(System.currentTimeMillis()+60*1000*3),userName);
                 }
 
-                sendMail(mailBody);
-                return "ok";
+                String status=sendMail(mailBody);
+                if(status.equals("ok")){
+                    return "ok";
+                }
+                else{
+                    return "eemail is invailid";
+                }
+
             }
             else{
                 return "email not exist";
@@ -99,21 +106,20 @@ public class MailService {
         return random.nextInt(100000,999999);
     }
 //verify the otp
-    public String verifyOtp(Integer otp,String username) {
-        ForgotPasswordEntity forgotPasswordEntity=forgotPasswordRepo.getdatabyUser(username);
+    public String verifyOtp(String otp,String username) {
+        Integer otp1=Integer.parseInt(otp);
+        UserEntity userEntity=userManagementRepo.findByUsername(username);
+        ForgotPasswordEntity forgotPasswordEntity=forgotPasswordRepo.extractdatabyUser(userEntity.getUserId());
         if(forgotPasswordEntity!=null) {
-            if(forgotPasswordEntity.getOtp()!=null && forgotPasswordEntity.getOtp().equals(otp)) {
+            if(forgotPasswordEntity.getOtp()!=null && forgotPasswordEntity.getOtp().equals(otp1)) {
                     if(forgotPasswordEntity.getExpirationDate().before(Date.from(Instant.now()))){
-                        forgotPasswordRepo.delete(forgotPasswordEntity);
                         return "otp expired";
                     }
                     else{
-                        forgotPasswordRepo.delete(forgotPasswordEntity);
                         return "ok";
                     }
                 }
                 else{
-                    forgotPasswordRepo.delete(forgotPasswordEntity);
                     return "404";
                 }
             }

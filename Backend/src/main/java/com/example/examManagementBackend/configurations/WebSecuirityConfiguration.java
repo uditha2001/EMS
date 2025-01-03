@@ -40,7 +40,8 @@ public class WebSecuirityConfiguration{
                                 "/api/v1/login/refresh-token",
                                 "/api/v1/login/logout",
                                 "/api/v1/login/verifyuser",
-                                "/api/v1/login/otpValidate"
+                                "/api/v1/login/otpValidate",
+                                "/api/v1/login/updatePassword"
                                 ).permitAll()
                         .anyRequest().authenticated()
 
