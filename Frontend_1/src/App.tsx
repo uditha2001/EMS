@@ -36,65 +36,36 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  return loading ? (
-    <Loader />
-  ) : (
+  const renderPage = (title: string, Component: JSX.Element) => (
+    <>
+      <PageTitle title={title} />
+      {Component}
+    </>
+  );
+
+  if (loading) return <Loader />;
+
+  return (
     <Routes>
-      <Route
-        index
-        element={
-          <>
-            <PageTitle title="Welcome | EMS" />
-            <Welcome />
-          </>
-        }
-      />
+      <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
+
       {/* Guest Layout */}
       <Route element={<GuestLayout />}>
-        {/* Login Route */}
-        <Route
-          path="/login"
-          element={
-            <>
-              <PageTitle title="Login | EMS" />
-              <Login />
-            </>
-          }
-        />
-
-        {/* Forgot Password Route */}
+        <Route path="/login" element={renderPage('Login | EMS', <Login />)} />
         <Route
           path="/forgot-password"
-          element={
-            <>
-              <PageTitle title="Forgot Password | EMS" />
-              <ForgotPassword />
-            </>
-          }
+          element={renderPage('Forgot Password | EMS', <ForgotPassword />)}
         />
-
-        {/* OTP Verification Route */}
         <Route
           path="/otp-verification"
-          element={
-            <>
-              <PageTitle title="Verify OTP | EMS" />
-              <OTPVerification />
-            </>
-          }
+          element={renderPage('Verify OTP | EMS', <OTPVerification />)}
         />
-
-        {/* Reset Password Route */}
         <Route
           path="/reset-password"
-          element={
-            <>
-              <PageTitle title="Reset Password | EMS" />
-              <ResetPassword />
-            </>
-          }
+          element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
 
@@ -104,114 +75,74 @@ function App() {
           <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
             <Route
               path="/dashboard"
-              element={
-                <>
-                  <PageTitle title="Dashboard | EMS" />
-                  <AdminDashboard />
-                </>
-              }
+              element={renderPage('Dashboard | EMS', <AdminDashboard />)}
             />
-          </Route>
-        </Route>
-
-        <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
-          <Route element={<RequireAuth />}>
             <Route
               path="/calendar"
-              element={
-                <>
-                  <PageTitle title="Calendar | EMS" />
-                  <Calendar />
-                </>
-              }
+              element={renderPage('Calendar | EMS', <Calendar />)}
             />
             <Route
               path="/profile"
-              element={
-                <>
-                  <PageTitle title="Profile | EMS" />
-                  <Profile />
-                </>
-              }
+              element={renderPage('Profile | EMS', <Profile />)}
             />
             <Route
               path="/settings"
-              element={
-                <>
-                  <PageTitle title="Settings | EMS" />
-                  <Settings />
-                </>
-              }
+              element={renderPage('Settings | EMS', <Settings />)}
             />
-          </Route>
-          <Route element={<RequireAuth allowedPermissions={['View Users']} />}>
-            <Route
-              path="/usermanagement/users"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <Users />
-                </>
-              }
-            />
-          </Route>
-          <Route
-            element={<RequireAuth allowedPermissions={['Create Users']} />}
-          >
-            <Route
-              path="/usermanagement/users/create"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <CreateUser />
-                </>
-              }
-            />
-          </Route>
-          <Route element={<RequireAuth allowedPermissions={['Edit Users']} />}>
-            <Route
-              path="/usermanagement/users/edit/:userId"
-              element={
-                <>
-                  <PageTitle title="Users | EMS" />
-                  <EditUser />
-                </>
-              }
-            />
-          </Route>
 
-          <Route element={<RequireAuth allowedPermissions={['view roles']} />}>
+            {/* User Management Routes */}
             <Route
-              path="/usermanagement/roles"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <Roles />
-                </>
-              }
-            />
-          </Route>
-          <Route element={<RequireAuth allowedPermissions={['create role']} />}>
+              element={<RequireAuth allowedPermissions={['View Users']} />}
+            >
+              <Route
+                path="/usermanagement/users"
+                element={renderPage('Users | EMS', <Users />)}
+              />
+            </Route>
+
             <Route
-              path="/usermanagement/roles/create"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <CreateRole />
-                </>
-              }
-            />
-          </Route>
-          <Route element={<RequireAuth allowedPermissions={['edit role']} />}>
+              element={<RequireAuth allowedPermissions={['Create Users']} />}
+            >
+              <Route
+                path="/usermanagement/users/create"
+                element={renderPage('Create User | EMS', <CreateUser />)}
+              />
+            </Route>
+
             <Route
-              path="/usermanagement/roles/edit/:roleId"
-              element={
-                <>
-                  <PageTitle title="Roles | EMS" />
-                  <EditRole />
-                </>
-              }
-            />
+              element={<RequireAuth allowedPermissions={['Edit Users']} />}
+            >
+              <Route
+                path="/usermanagement/users/edit/:userId"
+                element={renderPage('Edit User | EMS', <EditUser />)}
+              />
+            </Route>
+
+            {/* Role Management Routes */}
+            <Route
+              element={<RequireAuth allowedPermissions={['view roles']} />}
+            >
+              <Route
+                path="/usermanagement/roles"
+                element={renderPage('Roles | EMS', <Roles />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['create roles']} />}
+            >
+              <Route
+                path="/usermanagement/roles/create"
+                element={renderPage('Create Role | EMS', <CreateRole />)}
+              />
+            </Route>
+
+            <Route element={<RequireAuth allowedPermissions={['edit role']} />}>
+              <Route
+                path="/usermanagement/roles/edit/:roleId"
+                element={renderPage('Edit Role | EMS', <EditRole />)}
+              />
+            </Route>
           </Route>
         </Route>
       </Route>
