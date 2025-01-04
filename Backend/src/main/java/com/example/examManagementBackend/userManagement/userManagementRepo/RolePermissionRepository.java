@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.userManagement.userManagementRepo;
 
+import com.example.examManagementBackend.userManagement.userManagementEntity.PermissionEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolePermission;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,6 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
     @Query("SELECT rp FROM RolePermission rp WHERE rp.rolesEntity = :rolesEntity")
     List<RolePermission> findByRolesEntity(@Param("rolesEntity") RolesEntity rolesEntity);
 
-
+    boolean existsByRolesEntityAndPermissionEntity(RolesEntity role, PermissionEntity permission);
 
 }
