@@ -12,6 +12,7 @@ public interface PermissionRepository extends JpaRepository<PermissionEntity, Lo
 
     // Find permissions by category (permissionType)
     List<PermissionEntity> findByPermissionType(String category);
+    Optional<PermissionEntity> findByPermissionName(String name);
 
 
 }
