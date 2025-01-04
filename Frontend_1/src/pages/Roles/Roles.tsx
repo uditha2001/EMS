@@ -34,9 +34,9 @@ const Roles: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const axiosPrivate = useAxiosPrivate();
-  const hasDeletePermission = useHasPermission('delete role');
-  const hasCreatePermission = useHasPermission('create roles');
-  const hasEditPermission = useHasPermission('edit role');
+  const hasDeletePermission = useHasPermission('DELETE_ROLE');
+  const hasCreatePermission = useHasPermission('CREATE_ROLE');
+  const hasEditPermission = useHasPermission('UPDATE_ROLE');
 
   useEffect(() => {
     const fetchRolesAndPermissions = async () => {
