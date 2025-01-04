@@ -29,8 +29,17 @@ const RequireAuth: React.FC<RequireAuthProps> = ({
     // Redirect to login if the user is not authenticated
     return <Navigate to="/login" replace state={{ from: location }} />;
   } else if (!hasRoleAccess || !hasPermissionAccess) {
-    // Redirect to an unauthorized page if the user doesn't have role/permissions
-    return <Link to="/unauthorized" replace />;
+    // Render a message for unauthorized access
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <h1>Unauthorized</h1>
+        <p>You do not have access to view this page.</p>
+        <p>
+          Please contact the administrator if you believe this is an error, or{' '}
+          <Link to="/login">log in with a different account</Link>.
+        </p>
+      </div>
+    );
   }
 
   // Render child routes if the user is authenticated and has access
