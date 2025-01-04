@@ -91,9 +91,7 @@ function App() {
             />
 
             {/* User Management Routes */}
-            <Route
-              element={<RequireAuth allowedPermissions={['View Users']} />}
-            >
+            <Route element={<RequireAuth allowedPermissions={['READ_USER']} />}>
               <Route
                 path="/usermanagement/users"
                 element={renderPage('Users | EMS', <Users />)}
@@ -101,7 +99,7 @@ function App() {
             </Route>
 
             <Route
-              element={<RequireAuth allowedPermissions={['Create Users']} />}
+              element={<RequireAuth allowedPermissions={['CREATE_USER']} />}
             >
               <Route
                 path="/usermanagement/users/create"
@@ -110,7 +108,7 @@ function App() {
             </Route>
 
             <Route
-              element={<RequireAuth allowedPermissions={['Edit Users']} />}
+              element={<RequireAuth allowedPermissions={['UPDATE_USER']} />}
             >
               <Route
                 path="/usermanagement/users/edit/:userId"
@@ -119,9 +117,7 @@ function App() {
             </Route>
 
             {/* Role Management Routes */}
-            <Route
-              element={<RequireAuth allowedPermissions={['view roles']} />}
-            >
+            <Route element={<RequireAuth allowedPermissions={['READ_ROLE']} />}>
               <Route
                 path="/usermanagement/roles"
                 element={renderPage('Roles | EMS', <Roles />)}
@@ -129,7 +125,7 @@ function App() {
             </Route>
 
             <Route
-              element={<RequireAuth allowedPermissions={['create roles']} />}
+              element={<RequireAuth allowedPermissions={['CREATE_ROLE']} />}
             >
               <Route
                 path="/usermanagement/roles/create"
@@ -137,7 +133,9 @@ function App() {
               />
             </Route>
 
-            <Route element={<RequireAuth allowedPermissions={['edit role']} />}>
+            <Route
+              element={<RequireAuth allowedPermissions={['UPDATE_ROLE']} />}
+            >
               <Route
                 path="/usermanagement/roles/edit/:roleId"
                 element={renderPage('Edit Role | EMS', <EditRole />)}
