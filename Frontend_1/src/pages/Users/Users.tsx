@@ -31,9 +31,10 @@ const Users: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
   const axiosPrivate = useAxiosPrivate();
-  const hasDeletePermission = useHasPermission('Delete Users');
-  const hasCreatePermission = useHasPermission('Create Users');
-  const hasEditPermission = useHasPermission('Edit Users');
+  const hasDeletePermission = useHasPermission('DELETE_USER');
+  const hasCreatePermission = useHasPermission('CREATE_USER');
+  const hasEditPermission = useHasPermission('UPDATE_USER');
+  const hasChangePermission = useHasPermission('CHANGE_USER_STATUS');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -248,6 +249,7 @@ const Users: React.FC = () => {
                       className={`py-1 px-4 rounded ${
                         user.active ? 'bg-green-500' : 'bg-red-500'
                       } text-white`}
+                      disabled={!hasChangePermission}
                     >
                       {user.active ? 'Active' : 'Inactive'}
                     </button>
