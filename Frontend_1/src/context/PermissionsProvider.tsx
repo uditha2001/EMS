@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import useAuth from '../hooks/useAuth';
 import axios from 'axios';
+import useRefreshToken from '../hooks/useRefreshToken';
 
 type PermissionsState = {
   permissions: string[];
@@ -23,6 +24,7 @@ interface PermissionsProviderProps {
 
 export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
   const { auth } = useAuth();
+  const refreshToken = useRefreshToken();
   const [permissionsState, setPermissionsState] = useState<PermissionsState>({
     permissions: [],
     loading: false,
@@ -65,7 +67,14 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
 
       if (error.response?.status === 401) {
         console.error('Unauthorized: Token may be expired or invalid.');
-        // Add token refresh logic here, if needed
+
+        // Handle token refresh logic here
+        try {
+          await refreshToken(); // Fetch a new access token
+          fetchPermissions(); // Retry the request with the new token
+        } catch (err) {
+          console.warn('Failed to refresh token or unauthorized.');
+        }
       }
 
       setPermissionsState({
