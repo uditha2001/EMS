@@ -18,4 +18,6 @@ public interface UserManagementRepo extends JpaRepository<UserEntity,Long> {
     @Transactional
     @Query("UPDATE UserEntity ur set ur.password= :password WHERE ur.username= :username")
     void updatePassword(@Param("username") String username,@Param("password") String password);
+
+    boolean existsByUsername(String username);
 }
