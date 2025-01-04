@@ -20,8 +20,8 @@ import java.util.List;
         @ElementCollection
         private List<String> DegreeProgram;
 
-        @OneToMany(mappedBy = "courseEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-        private Set<DegreeProgramEntity> DegreePrograms;
+//        @OneToMany(mappedBy = "courseEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+//        private Set<DegreeProgramEntity> DegreePrograms;
 
 
         public CourseEntity() {
