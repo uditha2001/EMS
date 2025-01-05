@@ -83,7 +83,7 @@ public class JwtService implements UserDetailsService {
         authenticate(username,password);
         UserDetails userDetails=loadUserByUsername(username);
         UserEntity userEntity=userManagementRepo.findByUsername(username);
-        if(userEntity.isActive()){
+        if(userEntity!=null && userEntity.isActive()){
             String newGeneratedAccessToken  = jwtUtill.generateAccessToken(userDetails);
             String newGeneratedRefreshToken= jwtUtill.generateRefreshToken(userDetails);
             TokenEntity token =null;
@@ -145,7 +145,7 @@ public class JwtService implements UserDetailsService {
          return userdto.getRoles();
      }
      else{
-         rolesSet.add("ADMIN");
+         //rolesSet.add("ADMIN");
          return rolesSet;
      }
 

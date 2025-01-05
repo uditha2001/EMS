@@ -1,7 +1,7 @@
 import useAuth from '../../hooks/useAuth';
 
 const AdminDashboard = () => {
-  const { auth, permissions } = useAuth();
+  const { auth } = useAuth();
   const { firstName, roles, accessToken } = auth;
 
   return (
@@ -14,27 +14,17 @@ const AdminDashboard = () => {
 
         {/* User Details */}
         <div className="mt-4">
+          {/* Roles */}
           <p className="text-gray-800 dark:text-gray-200">
-            <strong>Roles:</strong> {roles?.length ? roles.join(', ') : 'N/A'}
+            <strong>Roles:</strong>{' '}
+            {roles?.length ? roles.join(', ') : 'No roles assigned'}
           </p>
-
-          {/* Permissions */}
-          <h2>Your Permissions:</h2>
-          {permissions?.length ? (
-            <ul>
-              {permissions.map((permission) => (
-                <li key={permission.permissionId}>{permission.permissionName}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>No permissions available.</p>
-          )}
 
           {/* Access Token */}
           {accessToken && (
-            <p className="text-gray-800 dark:text-gray-200">
+            <p className="mt-4 text-gray-800 dark:text-gray-200">
               <strong>Access Token:</strong>{' '}
-              <span className="break-words whitespace-pre-wrap">
+              <span className="break-words whitespace-pre-wrap text-sm bg-gray-100 dark:bg-gray-700 rounded p-2 block">
                 {accessToken}
               </span>
             </p>

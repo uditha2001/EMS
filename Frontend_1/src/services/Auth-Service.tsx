@@ -2,18 +2,19 @@ import { Axios } from "../common/Axios";
 
 class AuthService {
   static login(username: string, password: string) {
-    return Axios.post(`login/authentication`, {
-      username,
-      password,
-    }).then((response:any) => {
-      if (response.data["accesstoken"]) {
-        localStorage.setItem("user", JSON.stringify(response.data));
-        return response.data;
-      }
-      else{
-        return null;
-      }
-    });
+    try{
+      const response= Axios.post(`login/authentication`, {
+        username,
+        password,
+      })
+      console.log("hiii")
+      return response;
+    }
+    catch(error){
+      return null;
+    }
+    
+    
   }
 
   static logout(axiosInstance:any) {
@@ -25,13 +26,6 @@ class AuthService {
     return Promise.resolve(null); // If no user is found, return null
   }
 
-  static getCurrentUser() {
-    const user = localStorage.getItem("user");
-    if (user) {
-      return JSON.parse(user);
-    }
-    return null;
-  }
 }
 
 export default AuthService;

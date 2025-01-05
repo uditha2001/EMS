@@ -6,6 +6,7 @@ import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useHasPermission from '../../hooks/useHasPermission';
 
 type Permission = {
   permissionId: number;
@@ -33,6 +34,9 @@ const Roles: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const axiosPrivate = useAxiosPrivate();
+  const hasDeletePermission = useHasPermission('DELETE_ROLE');
+  const hasCreatePermission = useHasPermission('CREATE_ROLE');
+  const hasEditPermission = useHasPermission('UPDATE_ROLE');
 
   useEffect(() => {
     const fetchRolesAndPermissions = async () => {
@@ -131,12 +135,14 @@ const Roles: React.FC = () => {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
         <div className="mb-6 flex justify-between items-center">
           <h3 className="font-medium text-black dark:text-white">Roles</h3>
-          <Link
-            to="/usermanagement/roles/create"
-            className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
-          >
-            Create Role
-          </Link>
+          {hasCreatePermission && (
+            <Link
+              to="/usermanagement/roles/create"
+              className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
+            >
+              Create Role
+            </Link>
+          )}
         </div>
 
         {/* Search and Filter */}
@@ -210,19 +216,24 @@ const Roles: React.FC = () => {
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {getPermissionNames(role.permissionIds)}
                   </td>
+
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    <Link
-                      to={`/usermanagement/roles/edit/${role.roleId}`}
-                      className="text-primary hover:underline"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => openModal(role.roleId)}
-                      className="ml-4 text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    {hasEditPermission && (
+                      <Link
+                        to={`/usermanagement/roles/edit/${role.roleId}`}
+                        className="text-primary hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    )}
+                    {hasDeletePermission && (
+                      <button
+                        onClick={() => openModal(role.roleId)}
+                        className="ml-4 text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

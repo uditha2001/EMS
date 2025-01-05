@@ -28,6 +28,16 @@ public class RolePermission {
     @Column(nullable = false)
     private LocalDateTime grantedAt;
 
+    // No-arg constructor (required by JPA)
+    public RolePermission() {}
+
+    // All-args constructor for convenience
+    public RolePermission(RolesEntity rolesEntity, PermissionEntity permissionEntity) {
+        this.rolesEntity = rolesEntity;
+        this.permissionEntity = permissionEntity;
+    }
+
+
     public Long getRolePermissionId() {
         return rolePermissionId;
     }

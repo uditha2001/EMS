@@ -23,6 +23,7 @@ import Unauthorized from './components/Unauthorized';
 import ForgotPassword from './pages/Authentication/ForgotPassword';
 import ResetPassword from './pages/Authentication/ResetPassword';
 import OTPVerification from './pages/Authentication/OTPVerification';
+import CreateBulkUsers from './pages/Users/CreateBulkUsers';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,168 +37,122 @@ function App() {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  return loading ? (
-    <Loader />
-  ) : (
+  const renderPage = (title: string, Component: JSX.Element) => (
+    <>
+      <PageTitle title={title} />
+      {Component}
+    </>
+  );
+
+  if (loading) return <Loader />;
+
+  return (
     <Routes>
-      <Route
-        index
-        element={
-          <>
-            <PageTitle title="Welcome | EMS" />
-            <Welcome />
-          </>
-        }
-      />
+      <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
-        {/* Guest Layout */}
-        <Route element={<GuestLayout />}>
-          {/* Login Route */}
-          <Route
-            path="/login"
-            element={
-              <>
-                <PageTitle title="Login | EMS" />
-                <Login />
-              </>
-            }
-          />
 
-          {/* Forgot Password Route */}
-          <Route
-            path="/forgot-password"
-            element={
-              <>
-                <PageTitle title="Forgot Password | EMS" />
-                <ForgotPassword />
-              </>
-            }
-          />
-
-          {/* OTP Verification Route */}
-          <Route
-            path="/otp-verification"
-            element={
-              <>
-                <PageTitle title="Verify OTP | EMS" />
-                <OTPVerification />
-              </>
-            }
-          />
-
-          {/* Reset Password Route */}
-          <Route
-            path="/reset-password"
-            element={
-              <>
-                <PageTitle title="Reset Password | EMS" />
-                <ResetPassword />
-              </>
-            }
-          />
-        </Route>
+      {/* Guest Layout */}
+      <Route element={<GuestLayout />}>
+        <Route path="/login" element={renderPage('Login | EMS', <Login />)} />
+        <Route
+          path="/forgot-password"
+          element={renderPage('Forgot Password | EMS', <ForgotPassword />)}
+        />
+        <Route
+          path="/otp-verification"
+          element={renderPage('Verify OTP | EMS', <OTPVerification />)}
+        />
+        <Route
+          path="/reset-password"
+          element={renderPage('Reset Password | EMS', <ResetPassword />)}
+        />
+      </Route>
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
-        <Route element={<RequireAuth allowedRoles={['ADMIN', 'USER']} />}>
+        <Route element={<RequireAuth />}>
           <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
             <Route
               path="/dashboard"
-              element={
-                <>
-                  <PageTitle title="Dashboard | EMS" />
-                  <AdminDashboard />
-                </>
-              }
+              element={renderPage('Dashboard | EMS', <AdminDashboard />)}
             />
+            <Route
+              path="/calendar"
+              element={renderPage('Calendar | EMS', <Calendar />)}
+            />
+            <Route
+              path="/profile"
+              element={renderPage('Profile | EMS', <Profile />)}
+            />
+            <Route
+              path="/settings"
+              element={renderPage('Settings | EMS', <Settings />)}
+            />
+
+            {/* User Management Routes */}
+            <Route element={<RequireAuth allowedPermissions={['READ_USER']} />}>
+              <Route
+                path="/usermanagement/users"
+                element={renderPage('Users | EMS', <Users />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_USER']} />}
+            >
+              <Route
+                path="/usermanagement/users/create"
+                element={renderPage('Create User | EMS', <CreateUser />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_USER']} />}
+            >
+              <Route
+                path="/usermanagement/users/createbulk"
+                element={renderPage('Create User | EMS', <CreateBulkUsers />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['UPDATE_USER']} />}
+            >
+              <Route
+                path="/usermanagement/users/edit/:userId"
+                element={renderPage('Edit User | EMS', <EditUser />)}
+              />
+            </Route>
+
+            {/* Role Management Routes */}
+            <Route element={<RequireAuth allowedPermissions={['READ_ROLE']} />}>
+              <Route
+                path="/usermanagement/roles"
+                element={renderPage('Roles | EMS', <Roles />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_ROLE']} />}
+            >
+              <Route
+                path="/usermanagement/roles/create"
+                element={renderPage('Create Role | EMS', <CreateRole />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['UPDATE_ROLE']} />}
+            >
+              <Route
+                path="/usermanagement/roles/edit/:roleId"
+                element={renderPage('Edit Role | EMS', <EditRole />)}
+              />
+            </Route>
           </Route>
-          </Route>
-          <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
-          <Route element={<AuthenticatedLayout isAuthenticated={true} />}>
-          <Route
-            path="/calendar"
-            element={
-              <>
-                <PageTitle title="Calendar | EMS" />
-                <Calendar />
-              </>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <>
-                <PageTitle title="Profile | EMS" />
-                <Profile />
-              </>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <>
-                <PageTitle title="Settings | EMS" />
-                <Settings />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/users"
-            element={
-              <>
-                <PageTitle title="Users | EMS" />
-                <Users />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/users/create"
-            element={
-              <>
-                <PageTitle title="Users | EMS" />
-                <CreateUser />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/users/edit/:userId"
-            element={
-              <>
-                <PageTitle title="Users | EMS" />
-                <EditUser />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/roles"
-            element={
-              <>
-                <PageTitle title="Roles | EMS" />
-                <Roles />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/roles/create"
-            element={
-              <>
-                <PageTitle title="Roles | EMS" />
-                <CreateRole />
-              </>
-            }
-          />
-          <Route
-            path="/usermanagement/roles/edit/:roleId"
-            element={
-              <>
-                <PageTitle title="Roles | EMS" />
-                <EditRole />
-              </>
-            }
-          />
-      </Route>
-      </Route>
+        </Route>
       </Route>
     </Routes>
   );
