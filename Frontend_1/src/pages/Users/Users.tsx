@@ -209,9 +209,9 @@ const Users: React.FC = () => {
           <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
             <thead>
               <tr className="bg-gray-100 dark:bg-form-input">
-                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                {/* <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   ID
-                </th>
+                </th> */}
                 <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Username
                 </th>
@@ -238,9 +238,9 @@ const Users: React.FC = () => {
                   key={user.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                  {/* <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {user.id}
-                  </td>
+                  </td> */}
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {user.username}
                   </td>
@@ -259,7 +259,7 @@ const Users: React.FC = () => {
                       className={`py-1 px-4 rounded ${
                         user.active ? 'bg-green-500' : 'bg-red-500'
                       } text-white`}
-                      disabled={!hasChangePermission}
+                      disabled={!hasChangePermission || user.roles.includes('ADMIN')}
                     >
                       {user.active ? 'Active' : 'Inactive'}
                     </button>
