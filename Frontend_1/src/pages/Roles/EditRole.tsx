@@ -20,6 +20,7 @@ const EditRole: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const axiosPrivate = useAxiosPrivate();
+  const [isProtected, setIsProtected] = useState(false);
 
   useEffect(() => {
     // Fetch available permissions
@@ -39,10 +40,12 @@ const EditRole: React.FC = () => {
     axiosPrivate
       .get(`/roles/view/${roleId}`)
       .then((response) => {
-        const { roleName, description, permissionIds } = response.data;
+        const { roleName, description, permissionIds, permanent } =
+          response.data;
         setRoleName(roleName);
         setDescription(description);
         setPermissions(permissionIds);
+        setIsProtected(permanent);
       })
       .catch((error) => {
         setErrorMessage('Error fetching role details.');
@@ -142,6 +145,7 @@ const EditRole: React.FC = () => {
                   onChange={(e) => setRoleName(e.target.value.toUpperCase())}
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   required
+                  disabled={isProtected}
                 />
               </div>
 
@@ -156,6 +160,7 @@ const EditRole: React.FC = () => {
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   rows={3}
                   required
+                  disabled={isProtected}
                 ></textarea>
               </div>
             </div>
@@ -221,6 +226,7 @@ const EditRole: React.FC = () => {
                                     permission.permissionId,
                                   )
                                 }
+                                
                               />
                             </div>
                           ))}
@@ -239,12 +245,14 @@ const EditRole: React.FC = () => {
               >
                 Back
               </button>
-              <button
-                type="submit"
-                className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
-              >
-                Update Role
-              </button>
+              {!isProtected && (
+                <button
+                  type="submit"
+                  className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+                >
+                  Update Role
+                </button>
+              )}
             </div>
           </div>
         </form>
