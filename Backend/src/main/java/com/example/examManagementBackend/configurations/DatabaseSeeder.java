@@ -80,7 +80,7 @@ public class DatabaseSeeder {
 
             // Create admin user
             createUser("admin", "admin@example.com", "pwd", adminRole);
-            createUser("coordinator", "coordinator@example.com", "pwd", academyCoordinatorRole);
+            //createUser("coordinator", "coordinator@example.com", "pwd", academyCoordinatorRole);
         } catch (Exception e) {
             System.err.println("Error during database seeding: " + e.getMessage());
             e.printStackTrace();
@@ -105,8 +105,13 @@ public class DatabaseSeeder {
 
     private RolesEntity createRole(String name, String description) {
         return rolesRepository.findByRoleName(name)
-                .orElseGet(() -> rolesRepository.save(new RolesEntity(name, description)));
+                .orElseGet(() -> {
+                    RolesEntity newRole = new RolesEntity(name, description);
+                    newRole.setProtected(true); // Set isSeeded flag to true for seeded roles
+                    return rolesRepository.save(newRole);
+                });
     }
+
 
     private void assignPermissionToRole(RolesEntity role, PermissionEntity permission) {
         if (!rolePermissionRepository.existsByRolesEntityAndPermissionEntity(role, permission)) {
