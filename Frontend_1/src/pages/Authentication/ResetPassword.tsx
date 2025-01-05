@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Axios } from '../../common/Axios';
-
+import Loader from '../../common/Loader';
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
   const [isPasswordMatch, setIsPasswordMatch] = useState(true);
   const [passwordupdatestatus, setPasswordUpdateStatus] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // For confirmation modal
@@ -36,17 +37,20 @@ const ResetPassword = () => {
       return;
     }
     try {
+      setLoadingStatus(true)
       const res = await Axios.post(
         `login/updatePassword?password=${password}&username=${username}`
       );
       if (res.data.code === 200) {
-        console.log("Password updated successfully");
+        setLoadingStatus(false)
         setPasswordUpdateStatus(false);
         navigate('/login');
       } else {
+        setLoadingStatus(false)
         setPasswordUpdateStatus(true);
       }
     } catch (err) {
+      setLoadingStatus(false);
       setError(true);
       setPasswordUpdateStatus(true);
       setPassword('');

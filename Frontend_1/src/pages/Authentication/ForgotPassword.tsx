@@ -1,11 +1,12 @@
 import { Axios } from '../../common/Axios';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import Loader from '../../common/Loader';
 const ForgotPassword = () => {
   const [username, setUserName] = useState('');
   const [error, setError] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false); // State for custom confirmation modal
   const navigate = useNavigate();
 
@@ -24,20 +25,24 @@ const ForgotPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoadingStatus(true);
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
           if (res.status === 200) {
             localStorage.setItem("time", JSON.stringify(120));
+            setLoadingStatus(false);
             navigate('/otp-verification', { state: { username } });
           } else if (res.status === 404) {
             setFailed(true);
           }
         })
         .catch(() => {
+          setLoadingStatus(false)
           setError(true);
           setUserName('');
         });
     } catch (err) {
+      setLoadingStatus(false)
       setError(true);
       setUserName('');
     }
@@ -58,6 +63,7 @@ const ForgotPassword = () => {
 
   return (
     <div>
+      {loadingStatus ? <Loader/>:null}
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Forgot Password
       </h1>
