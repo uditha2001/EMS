@@ -46,7 +46,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(savedRole.getRoleId(), savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds);
+        return new RoleDTO(savedRole.getRoleId(), savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds,savedRole.isProtected());
     }
 
     // Update role
@@ -54,6 +54,10 @@ public class RoleService {
     public RoleDTO updateRole(Long roleId, String roleName, String roleDescription, Set<Long> permissionIds) {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+
+        if (role.isProtected()) {
+            throw new RuntimeException("Cannot update seeded role");
+        }
 
         role.setRoleName(roleName);
         role.setRoleDescription(roleDescription);
@@ -73,7 +77,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), updatedPermissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), updatedPermissionIds,role.isProtected());
     }
 
     // View role by ID
@@ -85,7 +89,7 @@ public class RoleService {
                 .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds, role.isProtected());
     }
 
     // Delete role
@@ -94,9 +98,18 @@ public class RoleService {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
+        // Check if the role is a seeded role, prevent deletion if true
+        if (role.isProtected()) {
+            throw new RuntimeException("Cannot delete a seeded role");
+        }
+
+        // Delete all role permissions associated with this role
         rolePermissionRepository.deleteAllByRolesEntity(role);
+
+        // Delete the role
         rolesRepository.delete(role);
     }
+
 
     // Get all roles
     public List<RoleDTO> getAllRoles() {
@@ -106,7 +119,7 @@ public class RoleService {
                     .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                     .collect(Collectors.toSet());
 
-            return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds);
+            return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds,role.isProtected());
         }).collect(Collectors.toList());
 
 
