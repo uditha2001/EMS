@@ -134,15 +134,25 @@ const Users: React.FC = () => {
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Users" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
-        <div className="mb-6 flex justify-between items-center">
-          <h3 className="font-medium text-black dark:text-white">Users</h3>
+        <div className="mb-6 flex justify-between items-center flex-wrap">
+          <h3 className="font-medium text-black dark:text-white w-full sm:w-auto">
+            Users List
+          </h3>
           {hasCreatePermission && (
-            <Link
-              to="/usermanagement/users/create"
-              className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
-            >
-              Create User
-            </Link>
+            <div className="ml-auto flex gap-4 w-full sm:w-auto mt-4 sm:mt-0">
+              <Link
+                to="/usermanagement/users/create"
+                className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90 w-full sm:w-auto mb-2 sm:mb-0"
+              >
+                Create User
+              </Link>
+              <Link
+                to="/usermanagement/users/createbulk"
+                className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90 w-full sm:w-auto"
+              >
+                Bulk User Creation
+              </Link>
+            </div>
           )}
         </div>
 
