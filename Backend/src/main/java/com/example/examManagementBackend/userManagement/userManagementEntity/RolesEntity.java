@@ -18,6 +18,8 @@ public class RolesEntity {
     Set<UserRoles> userRoles;
     @OneToMany(mappedBy = "rolesEntity")
     Set<RolePermission> rolePermissions;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isProtected = false; // Flag to indicate seeded roles
 
     public RolesEntity() {
     }
@@ -48,4 +50,11 @@ public class RolesEntity {
     }
 
 
+    public boolean isProtected() {
+        return isProtected;
+    }
+
+    public void setProtected(boolean isProtected) {
+        this.isProtected = isProtected;
+    }
 }
