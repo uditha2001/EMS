@@ -16,7 +16,7 @@ const CreateBulkUsers: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [successCount, setSuccessCount] = useState(0);
   const [errorCount, setErrorCount] = useState(0);
-  const [uploadType, setUploadType] = useState<'json' | 'excel'>('json'); // Track upload type
+  const [, setUploadType] = useState<'json' | 'excel'>('json'); // Track upload type
 
   // Handle file selection and process Excel or JSON
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,6 +104,7 @@ const CreateBulkUsers: React.FC = () => {
         );
       } else {
         setSuccessMessage('Bulk users upload completed successfully!');
+        navigate('/usermanagement/users');
       }
 
       setBulkUsers('');
@@ -169,7 +170,7 @@ const CreateBulkUsers: React.FC = () => {
             <button
               type="button"
               onClick={downloadExcelTemplate}
-              className="mt-2 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-400"
+              className="text-primary hover:underline"
             >
               Download Excel Template
             </button>
