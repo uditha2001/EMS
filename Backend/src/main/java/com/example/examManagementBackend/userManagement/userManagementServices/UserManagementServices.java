@@ -69,8 +69,8 @@ public class UserManagementServices {
           String text="credentials for your EMS account";
           MailBody mailBody=new MailBody(
                   userDTO.getEmail(),
-                  subject,
-                  text
+                  text,
+                  subject
           );
           mailService.sendMail(mailBody);
           return "User with roles created successfully";

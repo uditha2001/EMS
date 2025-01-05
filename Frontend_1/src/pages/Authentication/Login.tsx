@@ -3,16 +3,19 @@ import { useState } from 'react';
 import AuthService from '../../services/Auth-Service';
 import useAuth from '../../hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
+import Loader from '../../common/Loader';
 const Login = () => {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
   const [deActiveStatus, setDeActiveStatus] = useState(false);
   const [error, setError] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
+      setLoadingStatus(true);
       const response = await AuthService.login(username, password);
       if (response != null) {
         if (response.data.code === 200) {
@@ -26,7 +29,7 @@ const Login = () => {
               acessToken: response.data.data['accesstoken'],
             };
           });
-
+          setLoadingStatus(false);
           setShouldNavigate(true); // Trigger navigation
         }
         else if (response.data.code === 304) {
@@ -52,6 +55,7 @@ const Login = () => {
   }
   return (
     <div>
+     {loadingStatus? <Loader/>:null}
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Welcome to EMS
       </h1>
