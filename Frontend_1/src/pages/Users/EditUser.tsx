@@ -9,9 +9,10 @@ import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>(); // Get userId from route params
-  console.log(userId);
+  //console.log(userId);
 
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
@@ -44,6 +45,7 @@ const EditUser: React.FC = () => {
         .then((response) => {
           const user = response.data;
           setEmail(user.email);
+          setUsername(user.username);
           setFirstName(user.firstName);
           setLastName(user.lastName);
           setRoles(user.roles || []);
@@ -79,7 +81,7 @@ const EditUser: React.FC = () => {
     }
 
     const updatedUser = {
-      username: email,
+      username,
       password,
       email,
       firstName,
@@ -128,6 +130,20 @@ const EditUser: React.FC = () => {
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="mb-4.5">
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  required
+                />
+              </div>
+
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   Email
