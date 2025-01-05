@@ -129,7 +129,7 @@ const EditUser: React.FC = () => {
               onClose={() => setErrorMessage('')}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   Username
