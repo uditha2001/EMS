@@ -50,6 +50,11 @@ public class UserEntity {
 
     @Column(nullable = true)
     private String profileImage;  // Profile image (URL or file path)
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    private TokenEntity token;
+
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
+    private ForgotPasswordEntity forgotPassword;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isSeeded = true; // Flag to indicate seeded users

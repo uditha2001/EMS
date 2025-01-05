@@ -52,7 +52,6 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
         },
       );
 
-      console.log('Permissions fetched successfully:', permissions);
 
       setPermissionsState({
         permissions, // Store the array of permissions

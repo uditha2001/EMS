@@ -6,11 +6,27 @@ const OTPVerification = () => {
   const [resetError, setResetError] = useState(false);
   const [submitFailed, setSubmitFailed] = useState(false);
   const [resetFailed, setResetFailed] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes = 120 seconds
+  const currentTime = localStorage.getItem('time');
+  const [timeRemaining, setTimeRemaining] = useState(parseInt(currentTime ? currentTime : '120')); // 2 minutes = 120 seconds
   const [isOtpExpired, setIsOtpExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const username = location.state?.username;
+
+  
+  // useEffect(() => {
+  //   const handlePopState = (event:any) => {
+  //     const confirmation = window.confirm("Are you sure you want to navigate away?");
+  //     if (!confirmation) {
+  //       // Prevent navigation by pushing the current location back
+  //       window.history.pushState(null, '', window.location.href);
+  //     }
+  //   };
+
+  //   window.addEventListener('popstate', handlePopState);
+  //   return () => window.removeEventListener('popstate', handlePopState);
+  // }, []);
+
   useEffect(() => {
     let timer: any;
     if (timeRemaining > 0) {
@@ -22,6 +38,7 @@ const OTPVerification = () => {
       setIsOtpExpired(true); // OTP expired
       clearInterval(timer);
     }
+    localStorage.setItem("time", JSON.stringify(timeRemaining));
 
     return () => clearInterval(timer); // Clean up the timer on unmount
   }, [timeRemaining]);

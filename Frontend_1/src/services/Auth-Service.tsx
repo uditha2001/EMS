@@ -7,7 +7,6 @@ class AuthService {
         username,
         password,
       })
-      console.log("hiii")
       return response;
     }
     catch(error){
