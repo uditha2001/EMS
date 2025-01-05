@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -202,6 +203,47 @@ public class UserManagementServices {
             throw new UsernameNotFoundException("username not found");
         }
     }
+
+    // Add Bulk Users with validation for existing users
+    public void saveUsersWithRoles(List<UserDTO> users) {
+        for (UserDTO userDTO : users) {
+            // Check if the user already exists by username or email
+            boolean existingUserByUsername = userManagementRepo.existsByUsername(userDTO.getUsername());
+            Optional<UserEntity> existingUserByEmail = userManagementRepo.findByEmail(userDTO.getEmail());
+
+            // If user exists by username or email, skip this user
+            if (existingUserByUsername) {
+                throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists.");
+            }
+            if (existingUserByEmail.isPresent()) {
+                throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists.");
+            }
+
+            // Proceed to save new user if validation passes
+            UserEntity userEntity = new UserEntity(
+                    userDTO.getUsername(),
+                    userDTO.getEmail(),
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    0,
+                    true
+            );
+            userEntity.setPassword(getEncodePassword(userDTO.getPassword()));
+            userManagementRepo.save(userEntity);
+
+            // Save roles for each user
+            for (String roleName : userDTO.getRoles()) {
+                RolesEntity role = roleRepository.findByRoleName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                UserRoles userRole = new UserRoles();
+                userRole.setUser(userEntity);
+                userRole.setRole(role);
+                userRolesRepo.save(userRole);
+            }
+        }
+    }
+
+
 
 
 }
