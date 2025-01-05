@@ -23,6 +23,8 @@ const CreateUser: React.FC = () => {
   const axiosPrivate = useAxiosPrivate();
   const [emailVailidity, setEmailValidity] = useState(false);
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const [useEmailAsUsername, setUseEmailAsUsername] = useState(true);
+  const [username, setUsername] = useState('');
 
   useEffect(() => {
     axiosPrivate
@@ -62,13 +64,19 @@ const CreateUser: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !firstName || !lastName || !password) {
+    if (
+      !email ||
+      !firstName ||
+      !lastName ||
+      !password ||
+      (!useEmailAsUsername && !username)
+    ) {
       setErrorMessage('All fields are required.');
       return;
     }
 
     const newUser = {
-      username: email,
+      username: useEmailAsUsername ? email : username,
       password,
       email,
       firstName,
@@ -83,19 +91,19 @@ const CreateUser: React.FC = () => {
       setSuccessMessage('User created successfully!');
       setRoleName('');
       setEmail('');
+      setUsername('');
       setFirstName('');
       setLastName('');
       setPassword('');
       setRoles([]);
       setErrorMessage('');
-      setTimeout(() => navigate('/usermanagement/users'), 3000);
+      navigate('/usermanagement/users');
     } catch (error) {
       setErrorMessage('Failed to create user. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleBack = () => {
     window.history.back();
   };
@@ -122,7 +130,30 @@ const CreateUser: React.FC = () => {
               onClose={() => setErrorMessage('')}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="mb-4">
+              <Checkbox
+                label="Use Email as Username"
+                checked={useEmailAsUsername}
+                onChange={() => setUseEmailAsUsername(!useEmailAsUsername)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {!useEmailAsUsername && (
+                <div className="mb-4.5">
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    required={!useEmailAsUsername}
+                  />
+                </div>
+              )}
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   Email
@@ -245,7 +276,7 @@ const CreateUser: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between mt-6">
               <button
                 type="button"
                 onClick={handleBack}
@@ -255,7 +286,7 @@ const CreateUser: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+                className="rounded bg-primary py-2 px-6 font-medium text-white hover:bg-primary-dark"
               >
                 Create User
               </button>

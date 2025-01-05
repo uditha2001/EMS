@@ -23,6 +23,7 @@ import Unauthorized from './components/Unauthorized';
 import ForgotPassword from './pages/Authentication/ForgotPassword';
 import ResetPassword from './pages/Authentication/ResetPassword';
 import OTPVerification from './pages/Authentication/OTPVerification';
+import CreateBulkUsers from './pages/Users/CreateBulkUsers';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -104,6 +105,15 @@ function App() {
               <Route
                 path="/usermanagement/users/create"
                 element={renderPage('Create User | EMS', <CreateUser />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_USER']} />}
+            >
+              <Route
+                path="/usermanagement/users/createbulk"
+                element={renderPage('Create User | EMS', <CreateBulkUsers />)}
               />
             </Route>
 

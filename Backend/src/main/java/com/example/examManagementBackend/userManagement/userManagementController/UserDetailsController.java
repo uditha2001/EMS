@@ -133,5 +133,16 @@ public class UserDetailsController {
         return userService.getUserById(userId);
     }
 
+    @PostMapping("/addBulkUsers")
+    public ResponseEntity<?> addBulkUsers(@RequestBody List<UserDTO> users) {
+        try {
+            userService.saveUsersWithRoles(users);
+            return ResponseEntity.ok("Bulk users created successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create users: " + e.getMessage());
+        }
+    }
+
+
 
 }
