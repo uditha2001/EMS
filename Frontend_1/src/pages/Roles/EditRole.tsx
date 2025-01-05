@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Checkbox from '../../components/Checkbox';
 import SelectBox from '../../components/SelectBox';
@@ -10,6 +10,7 @@ import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 const EditRole: React.FC = () => {
   const { roleId } = useParams<{ roleId: string }>();
   //console.log(roleId);
+  const navigate = useNavigate();
   const [roleName, setRoleName] = useState('');
   const [description, setDescription] = useState('');
   const [permissions, setPermissions] = useState<number[]>([]);
@@ -98,8 +99,9 @@ const EditRole: React.FC = () => {
     axiosPrivate
       .put(`/roles/update/${roleId}`, updatedRole)
       .then(() => {
-        setSuccessMessage('Role updated successfully!');
         setErrorMessage('');
+        setSuccessMessage('Role updated successfully!');
+        setTimeout(() => navigate('/usermanagement/roles'), 1000);
       })
       .catch((error) => {
         setErrorMessage('Failed to update role. Please try again.');
@@ -226,7 +228,6 @@ const EditRole: React.FC = () => {
                                     permission.permissionId,
                                   )
                                 }
-                                
                               />
                             </div>
                           ))}
