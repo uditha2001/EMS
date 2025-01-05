@@ -155,26 +155,26 @@ const CreateBulkUsers: React.FC = () => {
             To upload bulk users, you can either upload a valid{' '}
             <strong>JSON</strong> or <strong>Excel</strong> file. Each file
             should contain a list of users with the following fields:
-            <ul className="ml-5 mt-2 text-sm text-black dark:text-white">
-              <li>username: Unique username</li>
-              <li>email: Valid email address</li>
-              <li>firstName: First name of the user</li>
-              <li>lastName: Last name of the user</li>
-              <li>password: Password for the user</li>
-              <li>roles: A JSON array of roles (e.g., ["ADMIN", "USER"])</li>
-            </ul>
-            <span className="mt-3 inline-block text-sm text-black dark:text-white">
-              If you're unsure about the format, you can download the Excel
-              template below:
-            </span>
-            <button
-              type="button"
-              onClick={downloadExcelTemplate}
-              className="text-primary hover:underline"
-            >
-              Download Excel Template
-            </button>
           </p>
+          <ul className="ml-5 mt-2 text-sm text-black dark:text-white">
+            <li>username: Unique username</li>
+            <li>email: Valid email address</li>
+            <li>firstName: First name of the user</li>
+            <li>lastName: Last name of the user</li>
+            <li>password: Password for the user</li>
+            <li>roles: A JSON array of roles (e.g., ["ADMIN", "USER"])</li>
+          </ul>
+          <span className="mt-3 inline-block text-sm text-black dark:text-white">
+            If you're unsure about the format, you can download the Excel
+            template below:
+          </span>
+          <button
+            type="button"
+            onClick={downloadExcelTemplate}
+            className="text-primary hover:underline"
+          >
+            Download Excel Template
+          </button>
         </div>
 
         <form onSubmit={handleSubmit}>
