@@ -5,10 +5,6 @@ import lombok.*;
 
 @Entity
 @Table(name = "courses")
-@Getter
-@Setter
-//@NoArgsConstructor
-@AllArgsConstructor
 public class CourseEntity {
 
     @Id
@@ -19,10 +15,10 @@ public class CourseEntity {
     private String courseCode;
 
     @Column(nullable = false)
-    private String CourseName;
+    private String courseName;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String courseDescription;
 
     @Column
     private Integer semester;
@@ -34,29 +30,30 @@ public class CourseEntity {
     public CourseEntity() {
     }
 
-    public CourseEntity(String name, String courseDescription) {
-        this.CourseName = name;
-        this.description = courseDescription;
+    public CourseEntity(String name, String courseCode, String courseDescription) {
+        this.courseName = name;
+        this.courseCode = courseCode;
+        this.courseDescription = courseDescription;
     }
 
     public String getCourseName() {
 
-        return CourseName;
+        return courseName;
     }
 
-    public void setRoleName(String CourseName) {
+    public void setCourseName(String CourseName) {
 
-        this.CourseName = CourseName;
+        this.courseName = CourseName;
     }
 
-    public String getdescription() {
+    public String getcourseDescription() {
 
-        return description;
+        return courseDescription;
     }
 
-    public void setdescription(String courseDescription) {
+    public void setcourseDescription(String courseDescription) {
 
-        this.description = courseDescription;
+        this.courseDescription = courseDescription;
     }
 
     public String getcourseCode() {
@@ -64,4 +61,11 @@ public class CourseEntity {
         return courseCode;
     }
 
+    public  void setcourseCode(String courseCode){
+        this.courseCode=courseCode;
+    }
+
+
+    public void setId(Long id) {
+    }
 }
