@@ -1,32 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Axios } from '../../common/Axios';
+import Loader from '../../common/Loader';
 const OTPVerification = () => {
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [resetError, setResetError] = useState(false);
   const [submitFailed, setSubmitFailed] = useState(false);
   const [resetFailed, setResetFailed] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
   const currentTime = localStorage.getItem('time');
   const [timeRemaining, setTimeRemaining] = useState(parseInt(currentTime ? currentTime : '120')); // 2 minutes = 120 seconds
   const [isOtpExpired, setIsOtpExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const username = location.state?.username;
-
   
-  // useEffect(() => {
-  //   const handlePopState = (event:any) => {
-  //     const confirmation = window.confirm("Are you sure you want to navigate away?");
-  //     if (!confirmation) {
-  //       // Prevent navigation by pushing the current location back
-  //       window.history.pushState(null, '', window.location.href);
-  //     }
-  //   };
-
-  //   window.addEventListener('popstate', handlePopState);
-  //   return () => window.removeEventListener('popstate', handlePopState);
-  // }, []);
-
+  
   useEffect(() => {
     let timer: any;
     if (timeRemaining > 0) {
@@ -67,15 +56,17 @@ const OTPVerification = () => {
     e.preventDefault();
     const enteredOtp = otp.join('');
     try {
+      setLoadingStatus(true);
       const response = await Axios.post(`login/otpValidate?enteredOtp=${enteredOtp}&username=${username}`);
       if (response.data.code === 200) {
-        console.log("OTP is valid");
+        setLoadingStatus(false)
         navigate('/reset-password', { state: { username } });
       } else if (response.data.code === 304) {
-        console.log("OTP is invalid");
+        setLoadingStatus(false)
         setSubmitFailed(true);
       }
     } catch (err) {
+      setLoadingStatus(false)
       setSubmitFailed(true);
       console.error('Invalid OTP');
     }
@@ -85,20 +76,24 @@ const OTPVerification = () => {
     // Reset OTP fields, timer, and expiry state
     setOtp(Array(6).fill(''));
     try {
+      setLoadingStatus(true)
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
           if (res.data.code === 200) {
+            setLoadingStatus(false)
             setResetFailed(false);
             setTimeRemaining(120); // Reset to 2 minutes
             setIsOtpExpired(false);
           }
           else if (res.data.code === 404) {
+            setLoadingStatus(false)
             setIsOtpExpired(false);
             setResetFailed(true);
           }
 
         })
         .catch(() => {
+          setLoadingStatus(false)
           setResetError(true);
           setIsOtpExpired(false);
           setResetFailed(true);
@@ -106,6 +101,7 @@ const OTPVerification = () => {
         });
       console.log(`Sending OTP to ${username}`);
     } catch (err) {
+      setLoadingStatus(false)
       setResetError(true);
       console.error('Failed to send OTP');
     }
@@ -120,6 +116,7 @@ const OTPVerification = () => {
 
   return (
     <div>
+      {loadingStatus ? <Loader/>:null}
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Verify OTP
       </h1>

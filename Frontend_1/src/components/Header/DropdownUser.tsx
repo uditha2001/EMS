@@ -1,10 +1,11 @@
-import {useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
 import AuthService from '../../services/Auth-Service';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useAuth from '../../hooks/useAuth';
+import Loader from '../../common/Loader';
 type statusObject = {
   code: string;
   message: string;
@@ -13,12 +14,13 @@ type statusObject = {
 const DropdownUser = () => {
   const axiosPrivate = useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  const [loadingStatus, setLoadingStatus] = useState(false);
   const { auth, setAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
+      setLoadingStatus(true);
       const response = await AuthService.logout(axiosPrivate)
       if (response.data.code === 200) {
         setAuth((prev) => ({
@@ -27,10 +29,11 @@ const DropdownUser = () => {
           roles: [],
         }));
         localStorage.removeItem('user');
+        setLoadingStatus(false)
         navigate('/login');
         console.log("logout sucess");
       }
-      else{
+      else {
         console.log("failed to logout");
       }
     }
@@ -40,6 +43,7 @@ const DropdownUser = () => {
   };
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
+      {loadingStatus ?<Loader/>:null}
       <Link
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="flex items-center gap-4"
