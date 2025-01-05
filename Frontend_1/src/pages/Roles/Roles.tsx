@@ -20,6 +20,7 @@ type Role = {
   roleName: string;
   permissionIds: number[];
   description: string;
+  permanent: boolean;
 };
 
 const Roles: React.FC = () => {
@@ -123,6 +124,9 @@ const Roles: React.FC = () => {
         ),
     );
 
+  const permanentRoles = filteredRoles.filter((role) => role.permanent);
+  const nonPermanentRoles = filteredRoles.filter((role) => !role.permanent);
+
   if (loading)
     return <div className="text-center mt-8 text-gray-500">Loading...</div>;
 
@@ -134,7 +138,7 @@ const Roles: React.FC = () => {
       <Breadcrumb pageName="Roles" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
         <div className="mb-6 flex justify-between items-center">
-          <h3 className="font-medium text-black dark:text-white">Roles</h3>
+          <h3 className="font-medium text-black dark:text-white">Role List</h3>
           {hasCreatePermission && (
             <Link
               to="/usermanagement/roles/create"
@@ -165,7 +169,7 @@ const Roles: React.FC = () => {
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             placeholder="Select category"
-            className="w-full sm:w-auto appearance-none rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 pr-10 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+            className="w-full sm:w-full appearance-none rounded border-[1.5px] border-stroke bg-transparent py-3 px-5 pr-10 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
           />
         </div>
 
@@ -183,6 +187,75 @@ const Roles: React.FC = () => {
           />
         )}
 
+        {/* Non-Permanent Roles Table */}
+        {/* Non-Permanent Roles Table */}
+        <div className="overflow-x-auto my-8">
+          {nonPermanentRoles.length > 0 ? (
+            <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
+              <thead>
+                <tr className="bg-gray-100 dark:bg-form-input">
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Role Name
+                  </th>
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Description
+                  </th>
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Permissions
+                  </th>
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {nonPermanentRoles.map((role) => (
+                  <tr
+                    key={role.roleId}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      {role.roleName}
+                    </td>
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      {role.description}
+                    </td>
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      {getPermissionNames(role.permissionIds)}
+                    </td>
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      {hasEditPermission && (
+                        <Link
+                          to={`/usermanagement/roles/edit/${role.roleId}`}
+                          className="text-primary hover:underline"
+                        >
+                          Edit
+                        </Link>
+                      )}
+                      {hasDeletePermission && (
+                        <button
+                          onClick={() => openModal(role.roleId)}
+                          className="ml-4 text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-4 text-gray-600 dark:text-gray-400">
+              No roles created yet.
+            </div>
+          )}
+        </div>
+
+        {/* Permanent Roles Table */}
+        <h4 className="font-medium text-black dark:text-white mb-4">
+          Permanent Roles
+        </h4>
         <div className="overflow-x-auto">
           <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
             <thead>
@@ -196,13 +269,10 @@ const Roles: React.FC = () => {
                 <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Permissions
                 </th>
-                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredRoles.map((role) => (
+              {permanentRoles.map((role) => (
                 <tr
                   key={role.roleId}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -216,32 +286,12 @@ const Roles: React.FC = () => {
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {getPermissionNames(role.permissionIds)}
                   </td>
-
-                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    {hasEditPermission && (
-                      <Link
-                        to={`/usermanagement/roles/edit/${role.roleId}`}
-                        className="text-primary hover:underline"
-                      >
-                        Edit
-                      </Link>
-                    )}
-                    {hasDeletePermission && (
-                      <button
-                        onClick={() => openModal(role.roleId)}
-                        className="ml-4 text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-
       {/* Confirmation Modal */}
       {isModalOpen && (
         <ConfirmationModal

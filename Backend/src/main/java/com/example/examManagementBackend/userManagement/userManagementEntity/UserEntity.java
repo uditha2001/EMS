@@ -56,6 +56,9 @@ public class UserEntity {
     @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
     private ForgotPasswordEntity forgotPassword;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private boolean isSeeded = true; // Flag to indicate seeded users
+
     public UserEntity() {
 
     }

@@ -68,8 +68,8 @@ public class MailService {
                 String text="otp for forgot password request ";
                 MailBody mailBody=new MailBody(
                         Email,
-                       subject,
-                        text
+                        text,
+                        subject
                 );
                 ForgotPasswordEntity forgotPasswordEntity=forgotPasswordRepo.getdatabyUser(userName);
                 if(forgotPasswordEntity==null) {

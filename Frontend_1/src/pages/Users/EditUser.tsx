@@ -9,9 +9,10 @@ import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
   const { userId } = useParams<{ userId: string }>(); // Get userId from route params
-  console.log(userId);
+  //console.log(userId);
 
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
@@ -44,6 +45,7 @@ const EditUser: React.FC = () => {
         .then((response) => {
           const user = response.data;
           setEmail(user.email);
+          setUsername(user.username);
           setFirstName(user.firstName);
           setLastName(user.lastName);
           setRoles(user.roles || []);
@@ -79,7 +81,7 @@ const EditUser: React.FC = () => {
     }
 
     const updatedUser = {
-      username: email,
+      username,
       password,
       email,
       firstName,
@@ -95,7 +97,7 @@ const EditUser: React.FC = () => {
         updatedUser,
       );
       setSuccessMessage('User updated successfully!');
-      setTimeout(() => navigate('/usermanagement/users'), 3000);
+      setTimeout(() => navigate('/usermanagement/users'), 1000);
     } catch (error) {
       setErrorMessage('Failed to update user. Please try again.');
     } finally {
@@ -127,7 +129,21 @@ const EditUser: React.FC = () => {
               onClose={() => setErrorMessage('')}
             />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="mb-4.5">
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  required
+                />
+              </div>
+
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   Email
@@ -230,15 +246,17 @@ const EditUser: React.FC = () => {
 
               {/* Roles as Checkboxes in a Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredRoles.map((role) => (
-                  <div key={role.roleId} className="flex items-center gap-2">
-                    <Checkbox
-                      label={role.roleName}
-                      checked={roles.includes(role.roleName)}
-                      onChange={() => handleRoleChange(role.roleName)}
-                    />
-                  </div>
-                ))}
+                {filteredRoles
+                  .filter((role) => role.roleName !== 'ADMIN') // Exclude ADMIN role
+                  .map((role) => (
+                    <div key={role.roleId} className="flex items-center gap-2">
+                      <Checkbox
+                        label={role.roleName}
+                        checked={roles.includes(role.roleName)}
+                        onChange={() => handleRoleChange(role.roleName)}
+                      />
+                    </div>
+                  ))}
               </div>
             </div>
 
