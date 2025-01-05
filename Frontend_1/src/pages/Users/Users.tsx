@@ -265,21 +265,29 @@ const Users: React.FC = () => {
                     </button>
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    {hasEditPermission && (
-                      <Link
-                        to={`/usermanagement/users/edit/${user.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        Edit
-                      </Link>
-                    )}
-                    {hasDeletePermission && (
-                      <button
-                        onClick={() => openModal(user.id)}
-                        className="ml-4 text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
+                    {user.roles.includes('ADMIN') ? (
+                      <span className="text-gray-500">
+                        No actions available
+                      </span>
+                    ) : (
+                      <>
+                        {hasEditPermission && (
+                          <Link
+                            to={`/usermanagement/users/edit/${user.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            Edit
+                          </Link>
+                        )}
+                        {hasDeletePermission && (
+                          <button
+                            onClick={() => openModal(user.id)}
+                            className="ml-4 text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>
