@@ -97,7 +97,7 @@ const EditUser: React.FC = () => {
         updatedUser,
       );
       setSuccessMessage('User updated successfully!');
-      setTimeout(() => navigate('/usermanagement/users'), 3000);
+      setTimeout(() => navigate('/usermanagement/users'), 1000);
     } catch (error) {
       setErrorMessage('Failed to update user. Please try again.');
     } finally {
