@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { useNavigate } from 'react-router-dom';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import * as XLSX from 'xlsx'; // Importing XLSX library
 
 const CreateBulkUsers: React.FC = () => {
-  const navigate = useNavigate();
   const axiosPrivate = useAxiosPrivate();
   const [bulkUsers, setBulkUsers] = useState<string>(''); // Users data in JSON format
   const [errorMessage, setErrorMessage] = useState('');
@@ -45,10 +43,10 @@ const CreateBulkUsers: React.FC = () => {
             const sheetName = workbook.SheetNames[0]; // Assuming data is in the first sheet
             const worksheet = workbook.Sheets[sheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
-            // Process the roles field in each row (parse into an array)
+            // Process the roles field in each row (parse into an array or empty array if not present)
             const processedData = jsonData.map((user: any) => ({
               ...user,
-              roles: JSON.parse(user.roles), // Ensure roles are an actual array
+              roles: user.roles ? JSON.parse(user.roles) : [], // Default to empty array if roles are empty or invalid
             }));
             setBulkUsers(JSON.stringify(processedData)); // Convert to JSON format
             setUploadType('excel');
@@ -104,7 +102,6 @@ const CreateBulkUsers: React.FC = () => {
         );
       } else {
         setSuccessMessage('Bulk users upload completed successfully!');
-        navigate('/usermanagement/users');
       }
 
       setBulkUsers('');
@@ -131,7 +128,7 @@ const CreateBulkUsers: React.FC = () => {
         firstName: 'First Name',
         lastName: 'Last Name',
         password: 'password123',
-        roles: '["ADMIN"]', // Example roles as a string (to be parsed into array in the backend)
+        roles: '["PAPER_CREATOR"]', // Example roles as a string (to be parsed into array in the backend)
       },
     ];
 
@@ -150,6 +147,8 @@ const CreateBulkUsers: React.FC = () => {
           <h3 className="font-medium text-black dark:text-white">
             Create Bulk Users
           </h3>
+        </div>
+        <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           {/* Instructions for the user */}
           <p className="mt-2 text-sm text-black dark:text-white">
             To upload bulk users, you can either upload a valid{' '}
@@ -162,7 +161,10 @@ const CreateBulkUsers: React.FC = () => {
             <li>firstName: First name of the user</li>
             <li>lastName: Last name of the user</li>
             <li>password: Password for the user</li>
-            <li>roles: A JSON array of roles (e.g., ["ADMIN", "USER"])</li>
+            <li>
+              roles: A JSON array of roles (e.g., ["PAPER_CREATOR",
+              "FIRST_MAKER"]) - can be empty
+            </li>
           </ul>
           <span className="mt-3 inline-block text-sm text-black dark:text-white">
             If you're unsure about the format, you can download the Excel
