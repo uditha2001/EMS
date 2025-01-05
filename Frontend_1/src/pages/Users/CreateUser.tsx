@@ -97,7 +97,7 @@ const CreateUser: React.FC = () => {
       setPassword('');
       setRoles([]);
       setErrorMessage('');
-      navigate('/usermanagement/users');
+      setTimeout(() => navigate('/usermanagement/users'), 1000);
     } catch (error) {
       setErrorMessage('Failed to create user. Please try again.');
     } finally {
