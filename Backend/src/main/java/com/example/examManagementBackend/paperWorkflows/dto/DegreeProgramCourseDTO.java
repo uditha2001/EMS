@@ -1,18 +1,19 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.sql.Timestamp;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class DegreeProgramDTO {
+public class DegreeProgramCourseDTO {
+    @NotEmpty
+    private String code;
     @NotEmpty
     private String name;
     @NotEmpty
     private String description;
+    @NotNull
+    private int semester;
+    @NotNull
+    private int degreeProgramId;
 }
