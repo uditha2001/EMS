@@ -11,28 +11,31 @@ on:
       - "main"
   schedule:
     - cron: "0 0 * * 0"
+  paths:
+    -Backend/**
+    -Frontend_1/**
+    -.github/workflows/codeql.yml
 
 jobs:
   analyze:
-    name: Analyze Code
+    name: Analyze and build Code
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [java, javascript-typescript]
+
 
     steps:
       # Step 1: Checkout the repository
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # Step 2: Set up Java for Java/Kotlin projects
       - name: Set up Java 21 (Adoptium)
-        uses: actions/setup-java@v3
+        uses: actions/setup-jdk@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: 21
+          distribution: 'corretto'
 
       # Step 3: Set up Node.js for JavaScript/TypeScript projects
       - name: Set up Node.js 20.18.1
@@ -44,20 +47,17 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
           queries: +security-extended
 
       # Step 5: Build Java Code (Maven Build in Backend Folder)
       - name: Build Java Code
-        if: ${{ matrix.language == 'java' }}
         run: |
           echo "Building Java project with Maven in the Backend folder..."
           cd Backend
-          mvn clean install -DskipTests
+          ./mvnw clean compile -DskipTests
 
       # Step 6: Build JavaScript Code (NPM Build in Frontend_1 Folder)
-      - name: Build JavaScript Code
-        if: ${{ matrix.language == 'javascript' }}
+      - name: Build frontend
         run: |
           echo "Building JavaScript project in Frontend_1 folder..."
           cd Frontend_1
