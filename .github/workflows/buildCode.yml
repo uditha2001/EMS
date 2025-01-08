@@ -24,7 +24,6 @@ on:
 
   permissions:
     contents: read
-    cache: write
 
 jobs:
   backend:
