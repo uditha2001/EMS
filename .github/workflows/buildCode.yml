@@ -1,4 +1,4 @@
-name: "codechecking"
+name: "Code Build Testing"
 
 on:
   push:
