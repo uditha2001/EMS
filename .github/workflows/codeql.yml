@@ -17,8 +17,8 @@ on:
     -.github/workflows/codeql.yml
 
 jobs:
-  analyze:
-    name: Analyze and build Code
+  backend:
+    name: Analyze and build backend Code
     runs-on: ubuntu-latest
 
 
@@ -37,12 +37,29 @@ jobs:
           java-version: 21
           distribution: 'corretto'
 
-      # Step 3: Set up Node.js for JavaScript/TypeScript projects
+  frontend:
+    name: build react frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        # Step 3: Set up Node.js for JavaScript/TypeScript projects
       - name: Set up Node.js 20.18.1
         uses: actions/setup-node@v3
         with:
           node-version: '20.18.1'
 
+  security:
+    name: check codeql security
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       # Step 4: Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
