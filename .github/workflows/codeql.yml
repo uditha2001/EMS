@@ -47,7 +47,7 @@ jobs:
         run: |
           echo "Building Java project with Maven in the Backend folder..."
           cd Backend
-          /opt/hostedtoolcache/CodeQL/*/x64/codeql/java/tools/autobuild -- ./mvnw clean compile -DskipTests
+          ./mvnw clean compile -DskipTests
 
   frontend:
     name: build react frontend
