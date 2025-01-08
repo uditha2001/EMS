@@ -43,6 +43,12 @@ jobs:
           java-version: 21
           distribution: 'corretto'
 
+      - name: Build Java Code
+        run: |
+          echo "Building Java project with Maven in the Backend folder..."
+          cd Backend
+          ./mvnw clean compile -DskipTests
+
   frontend:
     name: build react frontend
     runs-on: ubuntu-latest
@@ -58,6 +64,14 @@ jobs:
         with:
           node-version: '20.18.1'
 
+      - name: Build frontend
+        run: |
+          echo "Building JavaScript project in Frontend_1 folder..."
+          cd Frontend_1
+          npm install
+          npm run build # Ensure this step produces JavaScript files in `dist`
+
+
   security:
     name: check codeql security
     runs-on: ubuntu-latest
@@ -71,21 +85,6 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           queries: +security-extended
-
-      # Step 5: Build Java Code (Maven Build in Backend Folder)
-      - name: Build Java Code
-        run: |
-          echo "Building Java project with Maven in the Backend folder..."
-          cd Backend
-          ./mvnw clean compile -DskipTests
-
-      # Step 6: Build JavaScript Code (NPM Build in Frontend_1 Folder)
-      - name: Build frontend
-        run: |
-          echo "Building JavaScript project in Frontend_1 folder..."
-          cd Frontend_1
-          npm install
-          npm run build # Ensure this step produces JavaScript files in `dist`
 
       # Step 7: Perform CodeQL Analysis
       - name: Perform CodeQL Analysis
