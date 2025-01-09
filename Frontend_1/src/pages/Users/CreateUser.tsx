@@ -273,7 +273,7 @@ const CreateUser: React.FC = () => {
               {/* Roles as Checkboxes in a Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredRoles
-                  .filter((role) => role.roleName !== 'ADMIN') // Exclude ADMIN role
+                  //.filter((role) => role.roleName !== 'ADMIN') // Exclude ADMIN role
                   .map((role) => (
                     <div key={role.roleId} className="flex items-center gap-2">
                       <Checkbox

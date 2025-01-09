@@ -24,6 +24,12 @@ import ForgotPassword from './pages/Authentication/ForgotPassword';
 import ResetPassword from './pages/Authentication/ResetPassword';
 import OTPVerification from './pages/Authentication/OTPVerification';
 import CreateBulkUsers from './pages/Users/CreateBulkUsers';
+import DegreePrograms from './pages/DegreePrograms/DegreePrograms';
+import CreateDegreeProgram from './pages/DegreePrograms/CreateDegreeProgram';
+import EditDegreeProgram from './pages/DegreePrograms/EditDegreeProgram';
+import Courses from './pages/Courses/Courses';
+import CreateCourse from './pages/Courses/CreateCourse';
+import EditCourse from './pages/Courses/EditCourse';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -149,6 +155,72 @@ function App() {
               <Route
                 path="/usermanagement/roles/edit/:roleId"
                 element={renderPage('Edit Role | EMS', <EditRole />)}
+              />
+            </Route>
+
+            {/* Degree Programs Routes */}
+            <Route
+              element={
+                <RequireAuth allowedPermissions={['READ_DEGREE_PROGRAM']} />
+              }
+            >
+              <Route
+                path="/academic/degreeprograms"
+                element={renderPage(
+                  'Degree Programs | EMS',
+                  <DegreePrograms />,
+                )}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_DEGREE_PROGRAM']} />}
+            >
+              <Route
+                path="/academic/degreeprograms/create"
+                element={renderPage('Create Degree Program | EMS', <CreateDegreeProgram />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['UPDATE_DEGREE_PROGRAM']} />}
+            >
+              <Route
+                path="/academic/degreeprograms/edit/:degreeprogramId"
+                element={renderPage('Edit Degree Program | EMS', <EditDegreeProgram />)}
+              />
+            </Route>
+
+             {/* Courses Routes */}
+             <Route
+              element={
+                <RequireAuth allowedPermissions={['READ_COURSE']} />
+              }
+            >
+              <Route
+                path="/academic/courses"
+                element={renderPage(
+                  'Courses | EMS',
+                  <Courses />,
+                )}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['CREATE_COURSE']} />}
+            >
+              <Route
+                path="/academic/courses/create"
+                element={renderPage('Create Course | EMS', <CreateCourse />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['UPDATE_COURSE']} />}
+            >
+              <Route
+                path="/academic/courses/edit/:courseId"
+                element={renderPage('Edit Course | EMS', <EditCourse />)}
               />
             </Route>
           </Route>
