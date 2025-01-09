@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "degree_programs")
 @Entity
 @Data
 @NoArgsConstructor
