@@ -30,6 +30,10 @@ import EditDegreeProgram from './pages/DegreePrograms/EditDegreeProgram';
 import Courses from './pages/Courses/Courses';
 import CreateCourse from './pages/Courses/CreateCourse';
 import EditCourse from './pages/Courses/EditCourse';
+import CreatePaper from './pages/PaperSetting/CreatePaper';
+import ModeratePaper from './pages/PaperModeration/ModeratePaper';
+import TransferPaper from './pages/PaperTransfer/TransferPaper';
+import AssignRoles from './pages/RoleAssignments/AssignRoles';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -221,6 +225,48 @@ function App() {
               <Route
                 path="/academic/courses/edit/:courseId"
                 element={renderPage('Edit Course | EMS', <EditCourse />)}
+              />
+            </Route>
+
+               {/* Paper Workflow Routes */}
+               <Route
+              element={
+                <RequireAuth allowedPermissions={['CREATE_PAPER']} />
+              }
+            >
+              <Route
+                path="/paper/create"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <CreatePaper />,
+                )}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
+            >
+              <Route
+                path="/paper/moderate"
+                element={renderPage('Paper Moderation | EMS', <ModeratePaper />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['TRANSFER_PAPER']} />}
+            >
+              <Route
+                path="/paper/transfer"
+                element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
+              />
+            </Route>
+
+            <Route
+              element={<RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />}
+            >
+              <Route
+                path="/paper/roles"
+                element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
             </Route>
           </Route>
