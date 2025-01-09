@@ -111,7 +111,7 @@ const EditUser: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Users & Roles" />
+      <Breadcrumb pageName="Edit User" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
