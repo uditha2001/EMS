@@ -44,6 +44,8 @@ public class CoursesEntity {
     private DegreeProgramsEntity degreeProgramsEntity;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+    private List<PapersCoursesEntity> papersCoursesEntityList;
 
 
 }

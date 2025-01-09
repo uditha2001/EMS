@@ -40,6 +40,8 @@ public class ExamPaperEntity {
     private UserEntity user;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
     private List<ModerationsEntity> moderations;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
+    private List<PapersCoursesEntity> papersCourses;
 
 
 
