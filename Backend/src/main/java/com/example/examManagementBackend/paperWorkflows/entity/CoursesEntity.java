@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "Courses")
+@Table(name = "courses")
 @Entity
 @Data
 @NoArgsConstructor
@@ -40,7 +40,7 @@ public class CoursesEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="degree_program_id",referencedColumnName = "id",nullable = false,columnDefinition = "BIGINT")
+    @JoinColumn(name="degree_program_id",referencedColumnName = "id",nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;

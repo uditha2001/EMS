@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name = "academic_Years")
+@Table(name = "academic_years")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
