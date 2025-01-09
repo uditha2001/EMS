@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
+import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -59,6 +61,9 @@ public class UserEntity {
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isSeeded = true; // Flag to indicate seeded users
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ExamPaperEntity> examPapers;
 
     public UserEntity() {
 
