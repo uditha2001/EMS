@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -18,6 +22,21 @@ public class ModerationsEntity {
     private Long id;
     @Column(columnDefinition = "TEXT")
     private String feedback;
+    @CreatedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime updatedAt;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(referencedColumnName = "id",name = "exam_paper_id",nullable = false)
+    private ExamPaperEntity examPaper;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+
+
+
+
 
 
 }

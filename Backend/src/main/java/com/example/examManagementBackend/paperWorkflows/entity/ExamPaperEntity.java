@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -37,6 +38,11 @@ public class ExamPaperEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "createdBy",referencedColumnName = "userId")
     private UserEntity user;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
+    private List<ModerationsEntity> moderations;
+
+
+
 
 
 
