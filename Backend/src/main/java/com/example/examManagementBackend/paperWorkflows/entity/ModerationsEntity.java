@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +23,8 @@ public class ModerationsEntity {
     private Long id;
     @Column(columnDefinition = "TEXT")
     private String feedback;
+    @Column(nullable = false,columnDefinition = "ENUM")
+    private ModerationsStatus status;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
@@ -33,6 +36,8 @@ public class ModerationsEntity {
     private ExamPaperEntity examPaper;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(referencedColumnName = "userId",name="moderators")
+    private UserEntity moderator;
 
 
 
