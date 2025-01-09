@@ -41,7 +41,8 @@ public class WebSecuirityConfiguration{
                                 "/api/v1/login/logout",
                                 "/api/v1/login/verifyuser",
                                 "/api/v1/login/otpValidate",
-                                "/api/v1/login/updatePassword"
+                                "/api/v1/login/updatePassword",
+                                "/ws/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
 
