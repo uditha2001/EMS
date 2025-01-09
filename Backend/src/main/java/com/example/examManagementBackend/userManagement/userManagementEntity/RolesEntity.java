@@ -14,9 +14,9 @@ public class RolesEntity {
     private String roleName;
     @Column
     private String roleDescription;
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
     Set<UserRoles> userRoles;
-    @OneToMany(mappedBy = "rolesEntity")
+    @OneToMany(mappedBy = "rolesEntity",cascade = CascadeType.ALL)
     Set<RolePermission> rolePermissions;
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isProtected = false; // Flag to indicate seeded roles
