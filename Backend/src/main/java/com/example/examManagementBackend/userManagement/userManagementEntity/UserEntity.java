@@ -1,6 +1,9 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
+import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.ModerationsEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import jakarta.persistence.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -34,9 +38,10 @@ public class UserEntity {
     @Column(nullable = false,columnDefinition = "BOOLEAN DEFAULT 1")
     private boolean isActive;
     @CreatedDate
-    @Column(updatable = false,nullable = false)
+    @Column(updatable = false,nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     @OneToMany(mappedBy = "user")
     Set<UserRoles> userRoles;
@@ -58,6 +63,14 @@ public class UserEntity {
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isSeeded = true; // Flag to indicate seeded users
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<ExamPaperEntity> examPapers;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "moderator")
+    private List<ModerationsEntity> moderationsEntities;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "userId")
+    private List<RoleAssignmentEntity> roleAssignments;
 
     public UserEntity() {
 

@@ -1,7 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,25 +12,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "degree_programs")
 @Entity
-@Data
+@Table(name = "academic_years")
 @NoArgsConstructor
 @AllArgsConstructor
-public class DegreeProgramsEntity {
+@Data
+public class AcademicYearsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private String degreeName;
-    @Column(columnDefinition = "TEXT")
-    private String degreeDescription;
+    @Column(nullable = false,unique = true)
+    private String year;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
-    private List<CoursesEntity> coursesEntities;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "academicYearId")
+    private List<RoleAssignmentEntity> roleAssignments;
 }

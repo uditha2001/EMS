@@ -8,28 +8,28 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
+@Table(name = "papers_courses")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ExamInitializationEntity {
+public class PapersCoursesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Date examDate;
-    private String academicYear;
-    @Column(nullable = false)
-    private Enum<Exam_Initialization_status> status;
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name="paper_id")
+    private ExamPaperEntity examPaper;
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinColumn(name="course_id")
+    private CoursesEntity course;
     @CreatedDate
-    @Column(updatable = false,nullable = false)
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
-    @Column(nullable = false, updatable = false)
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-
 }
