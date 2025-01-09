@@ -1,7 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,28 +10,36 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "degree_programs")
 @Entity
-@Data
-@NoArgsConstructor
+@Table(name="exam_papper")
 @AllArgsConstructor
-public class DegreeProgramsEntity {
+@NoArgsConstructor
+@Data
+public class ExamPaperEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String degreeName;
-    @Column(columnDefinition = "TEXT")
-    private String degreeDescription;
+    private String filePath;
+    @Column(nullable = false,columnDefinition = "ENUM")
+    private ExamPaperStatus status;
     @CreatedDate
-    @Column(columnDefinition = "DATETIME")
+    @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
-    @Column(columnDefinition = "DATETIME")
+    @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
-    private List<CoursesEntity> coursesEntities;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "courseId",referencedColumnName = "id",nullable = false)
+    private CoursesEntity course;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "createdBy",referencedColumnName = "userId")
+    private UserEntity user;
+
+
+
+
+
 }

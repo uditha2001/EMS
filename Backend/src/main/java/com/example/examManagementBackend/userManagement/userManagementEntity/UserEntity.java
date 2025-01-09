@@ -34,9 +34,10 @@ public class UserEntity {
     @Column(nullable = false,columnDefinition = "BOOLEAN DEFAULT 1")
     private boolean isActive;
     @CreatedDate
-    @Column(updatable = false,nullable = false)
+    @Column(updatable = false,nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     @OneToMany(mappedBy = "user")
     Set<UserRoles> userRoles;
