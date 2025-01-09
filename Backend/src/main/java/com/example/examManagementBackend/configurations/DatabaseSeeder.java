@@ -59,6 +59,13 @@ public class DatabaseSeeder {
             PermissionEntity p16 = createPermission("DELETE_COURSE", "Allows deletion of courses", "Courses");
             PermissionEntity p17 = createPermission("READ_COURSE", "Allows viewing of courses", "Courses");
 
+            // Paper Permissions
+            PermissionEntity p18 = createPermission("CREATE_PAPER", "Allows creating new exam papers", "Paper Workflow");
+            PermissionEntity p19 = createPermission("MODERATE_PAPER", "Allows moderating exam papers", "Paper Workflow");
+            PermissionEntity p20 = createPermission("ASSIGN_EXAM_ROLE", "Allows assigning exam roles to users", "Paper Workflow");
+            PermissionEntity p21 = createPermission("TRANSFER_PAPER", "Allows transferring exam papers between departments", "Paper Workflow");
+
+
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -74,6 +81,10 @@ public class DatabaseSeeder {
             assignPermissionToRole(p1, p2, p3, p4, p5, p6, p7, p8, adminRole);
             assignPermissionToRole(p9, p10, p11, p12, p13, p14, p15, p16, adminRole);
             assignPermissionToRole(adminRole, p17);
+            assignPermissionToRole(adminRole, p18);
+            assignPermissionToRole(adminRole, p19);
+            assignPermissionToRole(adminRole, p20);
+            assignPermissionToRole(adminRole, p21);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
 
