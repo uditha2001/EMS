@@ -1,7 +1,9 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -20,6 +22,8 @@ public class RolesEntity {
     Set<RolePermission> rolePermissions;
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isProtected = false; // Flag to indicate seeded roles
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "role")
+    private List<RoleAssignmentEntity> roleAssignments;
 
     public RolesEntity() {
     }
