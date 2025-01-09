@@ -14,7 +14,7 @@ import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name="exam_papper")
+@Table(name="exam_paper")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -24,7 +24,7 @@ public class ExamPaperEntity {
     private Long id;
     @Column(nullable = false)
     private String filePath;
-    @Column(nullable = false,columnDefinition = "ENUM")
+    @Column(nullable = false)
     private ExamPaperStatus status;
     @CreatedDate
     @Column(nullable = false,columnDefinition = "DATETIME")

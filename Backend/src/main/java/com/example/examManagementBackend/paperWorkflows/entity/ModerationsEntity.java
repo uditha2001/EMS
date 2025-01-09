@@ -23,7 +23,7 @@ public class ModerationsEntity {
     private Long id;
     @Column(columnDefinition = "TEXT")
     private String feedback;
-    @Column(nullable = false,columnDefinition = "ENUM")
+    @Column(nullable = false)
     private ModerationsStatus status;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
