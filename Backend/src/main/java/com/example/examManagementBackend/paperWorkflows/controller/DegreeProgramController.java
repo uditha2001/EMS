@@ -1,7 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.service.DegreeProgramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +18,22 @@ public class DegreeProgramController {
     DegreeProgramService degreeProgramService;
 
     @GetMapping
-    public List<DegreeProgramEntity> getAllDegreePrograms(){
+    public List<DegreeProgramsEntity> getAllDegreePrograms(){
         return degreeProgramService.getAllDegreePrograms();
     }
 
     @PostMapping
-    public DegreeProgramEntity saveDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto){
+    public DegreeProgramsEntity saveDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto){
         return degreeProgramService.saveDegreeProgram(dto);
     }
 
     @GetMapping("/{id}")
-    public DegreeProgramEntity getOneDegreeProgram(@PathVariable("id") int id){
+    public DegreeProgramsEntity getOneDegreeProgram(@PathVariable("id") int id){
         return degreeProgramService.getOneDegreeProgram(id);
     }
 
     @PutMapping("/{id}")
-    public DegreeProgramEntity updateDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto, @PathVariable("id") int id){
+    public DegreeProgramsEntity updateDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto, @PathVariable("id") int id){
         return degreeProgramService.updateDegreeProgram(dto, id);
     }
 
