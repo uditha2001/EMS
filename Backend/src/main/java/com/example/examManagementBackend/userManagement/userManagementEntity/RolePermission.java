@@ -16,11 +16,13 @@ public class RolePermission {
     @Column(name = "role_permission_id")
     private Long rolePermissionId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+   // @ManyToOne(cascade = CascadeType.ALL) 
+    @ManyToOne
     @JoinColumn(name = "role_id")  // Ensure the column name matches the actual DB column
     private RolesEntity rolesEntity;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    //@ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "permission_id")  // Ensure the column name matches the actual DB column
     private PermissionEntity permissionEntity;
 
