@@ -29,24 +29,30 @@ const UploadedPapersTable: React.FC<UploadedPapersTableProps> = ({
             Uploaded Papers:
           </h3>
           <div className="overflow-x-auto rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
-            <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
               <thead>
-                <tr className="bg-gray-100 dark:bg-form-input text-left text-sm font-semibold text-gray-600">
-                  <th className="px-4 py-2">File Name</th>
-                  <th className="px-4 py-2">Preview</th>
-                  <th className="px-4 py-2">Action</th>
+                <tr className="bg-gray-100 dark:bg-form-input">
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    File Name
+                  </th>
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Preview
+                  </th>
+                  <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {uploadedPapers.map((paper, index) => (
                   <tr
                     key={index}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700 border-b"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-4 py-2 text-sm text-gray-700">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       {paper.name}
                     </td>
-                    <td className="px-4 py-2">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <div className="w-32 h-20">
                         <Worker
                           workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}
@@ -55,10 +61,10 @@ const UploadedPapersTable: React.FC<UploadedPapersTableProps> = ({
                         </Worker>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-center">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <button
                         onClick={() => handleDownload(paper.url, paper.name)}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+                        className="text-primary hover:underline"
                       >
                         Download
                       </button>
