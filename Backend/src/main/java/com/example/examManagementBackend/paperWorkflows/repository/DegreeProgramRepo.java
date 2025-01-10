@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.paperWorkflows.repo;
+package com.example.examManagementBackend.paperWorkflows.repository;
 
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
