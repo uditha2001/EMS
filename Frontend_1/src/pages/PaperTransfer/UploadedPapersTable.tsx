@@ -15,10 +15,14 @@ const UploadedPapersTable: React.FC<UploadedPapersTableProps> = ({
   uploadedPapers,
 }) => {
   const handleDownload = (url: string, fileName: string) => {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
+    if (url.startsWith('blob:')) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.click();
+    } else {
+      console.error('Invalid URL');
+    }
   };
 
   return (
