@@ -21,7 +21,7 @@ public class DegreeProgramCourseEntity {
 
     @ManyToOne
     @JoinColumn(name = "degree_program_id")
-    private DegreeProgramEntity degreeProgram;
+    private DegreeProgramsEntity degreeProgram;
 
     private int semester;
 

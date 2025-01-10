@@ -2,7 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramCourseDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramCourseEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramCourseRepo;
 import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class DegreeProgramCourseService {
 
     // Create a course
     public DegreeProgramCourseEntity createCourse(DegreeProgramCourseDTO dto) {
-        DegreeProgramEntity degreeProgram = degreeProgramRepo.findById(dto.getDegreeProgramId())
+        DegreeProgramsEntity degreeProgram = degreeProgramRepo.findById(dto.getDegreeProgramId())
                 .orElseThrow(() -> new RuntimeException("Degree Program not found with id: " + dto.getDegreeProgramId()));
 
         DegreeProgramCourseEntity course = new DegreeProgramCourseEntity();
