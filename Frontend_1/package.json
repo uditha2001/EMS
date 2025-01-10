@@ -24,7 +24,7 @@
     "jsvectormap": "^1.5.3",
     "match-sorter": "^6.3.1",
     "papaparse": "^5.4.1",
-    "pdfjs-dist": "^3.11.174",
+    "pdfjs-dist": "^4.2.67",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.1",
     "react-dom": "^18.2.0",
