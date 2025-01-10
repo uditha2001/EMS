@@ -7,12 +7,15 @@ public class RoleDTO {
     private String roleName;
     private String description;
     private Set<Long> permissionIds;
+    private boolean isProtected;
 
-    public RoleDTO(Long roleId,String roleName, String roleDescription, Set<Long> permissionIds) {
+    public RoleDTO(Long roleId,String roleName, String roleDescription, Set<Long> permissionIds,boolean isProtected ) {
         this.roleId = roleId;
         this.roleName = roleName;
         this.description = roleDescription;
         this.permissionIds = permissionIds;
+        this.isProtected=isProtected;
+
     }
 
     public Long getRoleId() {
@@ -41,5 +44,9 @@ public class RoleDTO {
 
     public void setPermissionIds(Set<Long> permissionIds) {
         this.permissionIds = permissionIds;
+    }
+
+    public boolean isPermanent() {
+        return isProtected;
     }
 }

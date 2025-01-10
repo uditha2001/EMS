@@ -5,8 +5,11 @@ import SelectBox from '../../components/SelectBox';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import { useNavigate } from 'react-router-dom';
+
 
 const CreateRole: React.FC = () => {
+  const navigate = useNavigate();
   const [roleName, setRoleName] = useState('');
   const [description, setDescription] = useState('');
   const [permissions, setPermissions] = useState<number[]>([]);
@@ -77,11 +80,12 @@ const CreateRole: React.FC = () => {
     axiosPrivate
       .post('/roles/create', newRole)
       .then(() => {
-        setSuccessMessage('Role created successfully!');
         setRoleName('');
         setDescription('');
         setPermissions([]);
         setErrorMessage('');
+        setSuccessMessage('Role created successfully!');
+        setTimeout(() => navigate('/usermanagement/roles'), 1000);
       })
       .catch((error) => {
         setErrorMessage('Failed to create role. Please try again.');
@@ -95,7 +99,7 @@ const CreateRole: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Roles & Permissions" />
+      <Breadcrumb pageName="Create Role" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
