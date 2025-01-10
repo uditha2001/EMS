@@ -43,7 +43,7 @@ public class FileUploadController {
 
             return ResponseEntity.ok("File uploaded and encrypted successfully!");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error uploading file: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error uploading file: ");
         }
     }
 
@@ -90,7 +90,7 @@ public class FileUploadController {
             encryptedPaperRepository.deleteById(id);
             return ResponseEntity.ok("Paper deleted successfully.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error deleting paper: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error deleting paper: ");
         }
     }
 }
