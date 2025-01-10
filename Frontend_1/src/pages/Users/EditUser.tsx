@@ -111,7 +111,7 @@ const EditUser: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Users & Roles" />
+      <Breadcrumb pageName="Edit User" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
@@ -247,7 +247,7 @@ const EditUser: React.FC = () => {
               {/* Roles as Checkboxes in a Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredRoles
-                  .filter((role) => role.roleName !== 'ADMIN') // Exclude ADMIN role
+                  //.filter((role) => role.roleName !== 'ADMIN') // Exclude ADMIN role
                   .map((role) => (
                     <div key={role.roleId} className="flex items-center gap-2">
                       <Checkbox

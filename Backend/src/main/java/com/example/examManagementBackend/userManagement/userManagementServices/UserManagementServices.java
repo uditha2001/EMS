@@ -135,12 +135,12 @@ public class UserManagementServices {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         // Check if the user has the ADMIN role
-        boolean isAdmin = userEntity.getUserRoles().stream()
-                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
-
-        if (isAdmin) {
-            throw new RuntimeException("Cannot delete a user with the ADMIN role.");
-        }
+//        boolean isAdmin = userEntity.getUserRoles().stream()
+//                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
+//
+//        if (isAdmin) {
+//            throw new RuntimeException("Cannot delete a user with the ADMIN role.");
+//        }
 
         // Delete associated roles
         List<UserRoles> userRoles = userRolesRepo.findByUser(userEntity);
@@ -155,12 +155,12 @@ public class UserManagementServices {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         // Check if the user has the ADMIN role
-        boolean isAdmin = userEntity.getUserRoles().stream()
-                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
-
-        if (isAdmin) {
-            throw new RuntimeException("Cannot update a user with the ADMIN role.");
-        }
+//        boolean isAdmin = userEntity.getUserRoles().stream()
+//                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
+//
+//        if (isAdmin) {
+//            throw new RuntimeException("Cannot update a user with the ADMIN role.");
+//        }
 
         userEntity.setUsername(userDTO.getUsername());
         userEntity.setEmail(userDTO.getEmail());

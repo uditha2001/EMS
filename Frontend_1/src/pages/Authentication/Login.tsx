@@ -33,17 +33,20 @@ const Login = () => {
           setShouldNavigate(true); // Trigger navigation
         }
         else if (response.data.code === 304) {
+          setLoadingStatus(false)
           setDeActiveStatus(true);
           console.log('data is null');
         }
       }
     } catch (error) {
       if (error.response.data.code === 304) {
+        setLoadingStatus(false)
         setDeActiveStatus(true);
         setError(false);
       }
       else {
         setError(true);
+        setLoadingStatus(false)
         setDeActiveStatus(false);
       }
     }

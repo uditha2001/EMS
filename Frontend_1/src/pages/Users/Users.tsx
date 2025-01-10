@@ -259,13 +259,15 @@ const Users: React.FC = () => {
                       className={`py-1 px-4 rounded ${
                         user.active ? 'bg-green-500' : 'bg-red-500'
                       } text-white`}
-                      disabled={!hasChangePermission || user.roles.includes('ADMIN')}
+                      disabled={
+                        !hasChangePermission || user.username.includes('admin')
+                      }
                     >
                       {user.active ? 'Active' : 'Inactive'}
                     </button>
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    {user.roles.includes('ADMIN') ? (
+                    {user.username.includes('admin') ? (
                       <span className="text-gray-500">
                         No actions available
                       </span>
@@ -304,7 +306,11 @@ const Users: React.FC = () => {
           onCancel={closeModal}
         />
       )}
+
+      {/* test push */}
+
     </div>
+    
   );
 };
 
