@@ -1,12 +1,14 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramCourseDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramCourseEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramCourseRepo;
 import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,12 +23,12 @@ public class DegreeProgramCourseService {
 
 
     // Create a course
-    public DegreeProgramCourseEntity createCourse(DegreeProgramCourseDTO dto) {
+    public CoursesEntity createCourse(DegreeProgramCourseDTO dto) {
         DegreeProgramsEntity degreeProgram = degreeProgramRepo.findById(dto.getDegreeProgramId())
                 .orElseThrow(() -> new RuntimeException("Degree Program not found with id: " + dto.getDegreeProgramId()));
 
-        DegreeProgramCourseEntity course = new DegreeProgramCourseEntity();
-        course.setDegreeProgram(degreeProgram);
+        CoursesEntity course = new CoursesEntity();
+        course.setDegreeProgramsEntity(degreeProgram);
         course.setName(dto.getName());
         course.setDescription(dto.getDescription());
         course.setCode(dto.getCode());
@@ -35,28 +37,26 @@ public class DegreeProgramCourseService {
         return courseRepo.save(course);
     }
 
-    public List<DegreeProgramCourseEntity> getAllCourses(){
+    public List<CoursesEntity> getAllCourses(){
         return courseRepo.findAll();
     }
 
     // Get a course by ID
-    public DegreeProgramCourseEntity getCourseById(int id) {
-        DegreeProgramCourseEntity course = courseRepo.findById(id)
+    public CoursesEntity getCourseById(int id) {
+        CoursesEntity course = courseRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + id));
 
         return course;
     }
 
     // Get all courses for a degree program
-    public List<DegreeProgramCourseEntity> getAllCoursesForDegreeProgram(int degreeProgramId) {
-        return courseRepo.findByDegreeProgramId(degreeProgramId)
-                .stream()
-                .collect(Collectors.toList());
+    public List<CoursesEntity> getAllCoursesForDegreeProgram(int degreeProgramId) {
+        return new ArrayList<>(courseRepo.findByDegreeProgramsEntityId(degreeProgramId));
     }
 
     // Update a course
-    public DegreeProgramCourseEntity updateCourse(int id, DegreeProgramCourseDTO updatedCourseDTO) {
-        DegreeProgramCourseEntity existingCourse = courseRepo.findById(id)
+    public CoursesEntity updateCourse(int id, DegreeProgramCourseDTO updatedCourseDTO) {
+        CoursesEntity existingCourse = courseRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + id));
 
         existingCourse.setCode(updatedCourseDTO.getCode());
@@ -69,7 +69,7 @@ public class DegreeProgramCourseService {
 
     // Delete a course
     public void deleteCourse(int id) {
-        DegreeProgramCourseEntity course = courseRepo.findById(id)
+        CoursesEntity course = courseRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + id));
         courseRepo.delete(course);
     }
