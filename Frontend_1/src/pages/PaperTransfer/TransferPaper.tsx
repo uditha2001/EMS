@@ -3,6 +3,7 @@ import FileInput from './FileInput';
 import UploadedPapersTable from './UploadedPapersTable';
 import PdfViewer from './PdfViewer';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 export default function TransferPaper() {
   const [file, setFile] = useState<File | null>(null);
@@ -61,33 +62,36 @@ export default function TransferPaper() {
   };
 
   return (
-    <div className="mx-auto max-w-270 p-6 font-sans">
-      <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">
-        Upload and View Exam Paper
-      </h2>
+    <div className="mx-auto max-w-270">
+      <Breadcrumb pageName="Paper Transfer" />
+      <div className="mx-auto max-w-270 p-6 font-sans">
+        {/* <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">
+          Upload and View Exam Paper
+        </h2> */}
 
-      <FileInput
-        handleFileChange={handleFileChange}
-        handleUpload={handleUpload}
-      />
+        <FileInput
+          handleFileChange={handleFileChange}
+          handleUpload={handleUpload}
+        />
 
-      {message && (
-        <p
-          className={`font-semibold text-center ${
-            message.includes('Error') || message.includes('Failed')
-              ? 'text-red-600'
-              : 'text-green-600'
-          }`}
-        >
-          {message}
-        </p>
-      )}
+        {message && (
+          <p
+            className={`font-semibold text-center ${
+              message.includes('Error') || message.includes('Failed')
+                ? 'text-red-600'
+                : 'text-green-600'
+            }`}
+          >
+            {message}
+          </p>
+        )}
 
-      {/* Always display the uploaded papers table */}
-      <UploadedPapersTable uploadedPapers={uploadedPapers} />
+        {/* Always display the uploaded papers table */}
+        <UploadedPapersTable uploadedPapers={uploadedPapers} />
 
-      {/* Display PDF viewer if fileUrl is set */}
-      {fileUrl && <PdfViewer fileUrl={fileUrl} />}
+        {/* Display PDF viewer if fileUrl is set */}
+        {fileUrl && <PdfViewer fileUrl={fileUrl} />}
+      </div>
     </div>
   );
 }
