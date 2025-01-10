@@ -1,6 +1,7 @@
 import { Viewer } from '@react-pdf-viewer/core';
 import { Worker } from '@react-pdf-viewer/core';
 import React from 'react';
+import DOMPurify from 'dompurify';
 
 interface UploadedPaper {
   name: string;
@@ -15,9 +16,10 @@ const UploadedPapersTable: React.FC<UploadedPapersTableProps> = ({
   uploadedPapers,
 }) => {
   const handleDownload = (url: string, fileName: string) => {
-    if (url.startsWith('blob:')) {
+    const sanitizedUrl = DOMPurify.sanitize(url);
+    if (sanitizedUrl.startsWith('blob:')) {
       const a = document.createElement('a');
-      a.href = url;
+      a.href = sanitizedUrl;
       a.download = fileName;
       a.click();
     } else {
