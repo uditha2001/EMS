@@ -9,9 +9,9 @@ const FileInput: React.FC<FileInputProps> = ({ handleFileChange, handleUpload })
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
       <div className="mb-4.5">
-        <label className="mb-2.5 block text-black dark:text-white">
+        {/* <label className="mb-2.5 block text-black dark:text-white">
           Upload PDF
-        </label>
+        </label> */}
         <input
           type="file"
           accept="application/pdf"
