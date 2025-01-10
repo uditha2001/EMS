@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
-import com.example.examManagementBackend.paperWorkflows.entity.CourseEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Moderation;
 import com.example.examManagementBackend.paperWorkflows.repo.CourseRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,22 +17,22 @@ public class CourseService {
     @Autowired
     private CourseRepo courseRepository;
 
-    public List<CourseEntity> getAllCourses() {
+    public List<Moderation> getAllCourses() {
 
         return courseRepository.findAll();
     }
 
-    public Optional<CourseEntity> getCourseById(Long id) {
+    public Optional<Moderation> getCourseById(Long id) {
 
         return courseRepository.findById(id);
     }
 
-    public CourseEntity createCourse(CourseEntity course) {
+    public CoursesEntity createCourse(CoursesEntity course) {
 
         return courseRepository.save(course);
     }
 
-    public CourseEntity updateCourse(Long id, CourseEntity course) {
+    public CoursesEntity updateCourse(Long id, CoursesEntity course) {
 
         course.setId(id);
         return courseRepository.save(course);

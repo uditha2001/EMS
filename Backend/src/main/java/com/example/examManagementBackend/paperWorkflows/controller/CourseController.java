@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
-import com.example.examManagementBackend.paperWorkflows.entity.CourseEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Moderation;
 import com.example.examManagementBackend.paperWorkflows.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,22 +16,22 @@ public class CourseController {
     private CourseService service;
 
     @GetMapping
-    public List<CourseEntity> getAllCourses() {
+    public List<Moderation> getAllCourses() {
         return service.getAllCourses();
     }
 
     @GetMapping("/{id}")
-    public CourseEntity getCourseById(@PathVariable Long id) {
+    public Moderation getCourseById(@PathVariable Long id) {
         return service.getCourseById(id).orElse(null);
     }
 
     @PostMapping
-    public CourseEntity createCourse(@RequestBody CourseEntity course) {
+    public CoursesEntity createCourse(@RequestBody CoursesEntity course) {
         return service.createCourse(course);
     }
 
     @PutMapping("/{id}")
-    public CourseEntity updateCourse(@PathVariable Long id, @RequestBody CourseEntity course) {
+    public CoursesEntity updateCourse(@PathVariable Long id, @RequestBody CoursesEntity course) {
         return service.updateCourse(id, course);
     }
 
