@@ -3,44 +3,50 @@ import { useState } from 'react';
 import AuthService from '../../services/Auth-Service';
 import useAuth from '../../hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
+import Loader from '../../common/Loader';
 const Login = () => {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
   const [deActiveStatus, setDeActiveStatus] = useState(false);
   const [error, setError] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      const response =await AuthService.login(username, password);
+      setLoadingStatus(true);
+      const response = await AuthService.login(username, password);
       if (response != null) {
-        if(response.data.code===200){
+        if (response.data.code === 200) {
           localStorage.setItem('user', JSON.stringify(response.data.data));
           setAuth((prev: any) => {
             return {
               ...prev,
               id: response.data.data.user['id'],
-              firstName:response.data.data.user['firstName'],
+              firstName: response.data.data.user['firstName'],
               roles: response.data.data.user['roles'],
               acessToken: response.data.data['accesstoken'],
             };
           });
-          console.log(response.data.data['accesstoken']);
+          setLoadingStatus(false);
           setShouldNavigate(true); // Trigger navigation
         }
-        else if(response.data.code===304){
+        else if (response.data.code === 304) {
+          setLoadingStatus(false)
           setDeActiveStatus(true);
           console.log('data is null');
-      } 
+        }
       }
     } catch (error) {
-      if(error.response.data.code===304){ 
+      if (error.response.data.code === 304) {
+        setLoadingStatus(false)
         setDeActiveStatus(true);
         setError(false);
       }
-      else{
+      else {
         setError(true);
+        setLoadingStatus(false)
         setDeActiveStatus(false);
       }
     }
@@ -52,6 +58,7 @@ const Login = () => {
   }
   return (
     <div>
+     {loadingStatus? <Loader/>:null}
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Welcome to EMS
       </h1>

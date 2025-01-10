@@ -1,42 +1,69 @@
 import { Axios } from '../../common/Axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import Loader from '../../common/Loader';
 const ForgotPassword = () => {
   const [username, setUserName] = useState('');
   const [error, setError] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loadingStatus,setLoadingStatus]=useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false); // State for custom confirmation modal
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const preventGoForward = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", preventGoForward);
+
+    return () => {
+      window.removeEventListener("popstate", preventGoForward);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoadingStatus(true);
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
-          console.log(res.status);
           if (res.status === 200) {
+            localStorage.setItem("time", JSON.stringify(120));
+            setLoadingStatus(false);
             navigate('/otp-verification', { state: { username } });
-          }
-          else if (res.status === 404) {
+          } else if (res.status === 404) {
             setFailed(true);
           }
-
         })
         .catch(() => {
+          setLoadingStatus(false)
           setError(true);
           setUserName('');
-          console.error("error occur");
         });
-      console.log(`Sending OTP to ${username}`);
     } catch (err) {
+      setLoadingStatus(false)
       setError(true);
       setUserName('');
-      console.error('Failed to send OTP');
     }
+  };
+
+  const handleBackToLogin = () => {
+    setShowConfirmation(true); // Show the confirmation modal
+  };
+
+  const confirmNavigation = () => {
+    setShowConfirmation(false);
+    navigate('/login'); // Navigate to login on confirmation
+  };
+
+  const cancelNavigation = () => {
+    setShowConfirmation(false); // Hide the confirmation modal
   };
 
   return (
     <div>
+      {loadingStatus ? <Loader/>:null}
       <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
         Forgot Password
       </h1>
@@ -56,18 +83,7 @@ const ForgotPassword = () => {
           </label>
           <div className="relative">
             <span className="absolute left-4 flex items-center top-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 360 240"
-                xmlSpace="preserve"
-                className="w-14 h-14"
-                fill="currentColor"
-              >
-                <path
-                  fill="#282828"
-                  d="M135.832 140.848h-70.9c-2.9 0-5.6-1.6-7.4-4.5-1.4-2.3-1.4-5.7 0-8.6l4-8.2c2.8-5.6 9.7-9.1 14.9-9.5 1.7-.1 5.1-.8 8.5-1.6 2.5-.6 3.9-1 4.7-1.3-.2-.7-.6-1.5-1.1-2.2-6-4.7-9.6-12.6-9.6-21.1 0-14 9.6-25.3 21.5-25.3s21.5 11.4 21.5 25.3c0 8.5-3.6 16.4-9.6 21.1-.5.7-.9 1.4-1.1 2.1.8.3 2.2.7 4.6 1.3 3 .7 6.6 1.3 8.4 1.5 5.3.5 12.1 3.8 14.9 9.4l3.9 7.9c1.5 3 1.5 6.8 0 9.1-1.6 2.9-4.4 4.6-7.2 4.6zm-35.4-78.2c-9.7 0-17.5 9.6-17.5 21.3 0 7.4 3.1 14.1 8.2 18.1.1.1.3.2.4.4 1.4 1.8 2.2 3.8 2.2 5.9 0 .6-.2 1.2-.7 1.6-.4.3-1.4 1.2-7.2 2.6-2.7.6-6.8 1.4-9.1 1.6-4.1.4-9.6 3.2-11.6 7.3l-3.9 8.2c-.8 1.7-.9 3.7-.2 4.8.8 1.3 2.3 2.6 4 2.6h70.9c1.7 0 3.2-1.3 4-2.6.6-1 .7-3.4-.2-5.2l-3.9-7.9c-2-4-7.5-6.8-11.6-7.2-2-.2-5.8-.8-9-1.6-5.8-1.4-6.8-2.3-7.2-2.5-.4-.4-.7-1-.7-1.6 0-2.1.8-4.1 2.2-5.9.1-.1.2-.3.4-.4 5.1-3.9 8.2-10.7 8.2-18-.2-11.9-8-21.5-17.7-21.5z"
-                />
-              </svg>
+              {/* Your SVG icon */}
             </span>
             <input
               id="username"
@@ -86,7 +102,44 @@ const ForgotPassword = () => {
           Send OTP
         </button>
       </form>
-    </div >
+
+      <div className="mt-4 text-center">
+        <button
+          onClick={handleBackToLogin}
+          className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-primary hover:text-white dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-600 dark:hover:text-white"
+        >
+          Back to Login
+        </button>
+      </div>
+
+      {/* Custom Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
+            <h2 className="text-lg font-bold text-black dark:text-white mb-4">
+              Confirm Navigation
+            </h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-6">
+              Are you sure you want to go back to the login page? Unsaved changes will be lost.
+            </p>
+            <div className="flex justify-between">
+              <button
+                onClick={confirmNavigation}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Yes
+              </button>
+              <button
+                onClick={cancelNavigation}
+                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

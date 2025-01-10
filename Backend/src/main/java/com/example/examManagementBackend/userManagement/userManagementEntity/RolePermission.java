@@ -16,17 +16,27 @@ public class RolePermission {
     @Column(name = "role_permission_id")
     private Long rolePermissionId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "role_id")  // Ensure the column name matches the actual DB column
     private RolesEntity rolesEntity;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "permission_id")  // Ensure the column name matches the actual DB column
     private PermissionEntity permissionEntity;
 
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime grantedAt;
+
+    // No-arg constructor (required by JPA)
+    public RolePermission() {}
+
+    // All-args constructor for convenience
+    public RolePermission(RolesEntity rolesEntity, PermissionEntity permissionEntity) {
+        this.rolesEntity = rolesEntity;
+        this.permissionEntity = permissionEntity;
+    }
+
 
     public Long getRolePermissionId() {
         return rolePermissionId;

@@ -6,6 +6,7 @@ import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox'; // Import SelectBox component for filtering roles
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useHasPermission from '../../hooks/useHasPermission';
 
 type User = {
   id: number;
@@ -30,6 +31,10 @@ const Users: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
   const axiosPrivate = useAxiosPrivate();
+  const hasDeletePermission = useHasPermission('DELETE_USER');
+  const hasCreatePermission = useHasPermission('CREATE_USER');
+  const hasEditPermission = useHasPermission('UPDATE_USER');
+  const hasChangePermission = useHasPermission('CHANGE_USER_STATUS');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -129,14 +134,26 @@ const Users: React.FC = () => {
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Users" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
-        <div className="mb-6 flex justify-between items-center">
-          <h3 className="font-medium text-black dark:text-white">Users</h3>
-          <Link
-            to="/usermanagement/users/create"
-            className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
-          >
-            Create User
-          </Link>
+        <div className="mb-6 flex justify-between items-center flex-wrap">
+          <h3 className="font-medium text-black dark:text-white w-full sm:w-auto">
+            Users List
+          </h3>
+          {hasCreatePermission && (
+            <div className="ml-auto flex gap-4 w-full sm:w-auto mt-4 sm:mt-0">
+              <Link
+                to="/usermanagement/users/create"
+                className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90 w-full sm:w-auto mb-2 sm:mb-0"
+              >
+                Create User
+              </Link>
+              <Link
+                to="/usermanagement/users/createbulk"
+                className="inline-block bg-primary text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90 w-full sm:w-auto"
+              >
+                Bulk User Creation
+              </Link>
+            </div>
+          )}
         </div>
 
         {successMessage && (
@@ -192,9 +209,9 @@ const Users: React.FC = () => {
           <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
             <thead>
               <tr className="bg-gray-100 dark:bg-form-input">
-                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                {/* <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   ID
-                </th>
+                </th> */}
                 <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Username
                 </th>
@@ -221,9 +238,9 @@ const Users: React.FC = () => {
                   key={user.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                  {/* <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {user.id}
-                  </td>
+                  </td> */}
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {user.username}
                   </td>
@@ -242,23 +259,38 @@ const Users: React.FC = () => {
                       className={`py-1 px-4 rounded ${
                         user.active ? 'bg-green-500' : 'bg-red-500'
                       } text-white`}
+                      disabled={
+                        !hasChangePermission || user.username.includes('admin')
+                      }
                     >
                       {user.active ? 'Active' : 'Inactive'}
                     </button>
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    <Link
-                      to={`/usermanagement/users/edit/${user.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => openModal(user.id)}
-                      className="ml-4 text-red-600 hover:underline"
-                    >
-                      Delete
-                    </button>
+                    {user.username.includes('admin') ? (
+                      <span className="text-gray-500">
+                        No actions available
+                      </span>
+                    ) : (
+                      <>
+                        {hasEditPermission && (
+                          <Link
+                            to={`/usermanagement/users/edit/${user.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            Edit
+                          </Link>
+                        )}
+                        {hasDeletePermission && (
+                          <button
+                            onClick={() => openModal(user.id)}
+                            className="ml-4 text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

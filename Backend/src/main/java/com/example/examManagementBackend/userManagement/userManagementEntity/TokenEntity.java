@@ -9,7 +9,7 @@ public class TokenEntity {
     private Long token_id;
     private String refreshToken;
     private String acessToken;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private UserEntity user;
 

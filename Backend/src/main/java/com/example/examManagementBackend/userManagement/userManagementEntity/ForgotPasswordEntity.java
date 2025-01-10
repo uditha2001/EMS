@@ -15,7 +15,7 @@ public class ForgotPasswordEntity {
     private Integer otp;
     @Column(nullable = false)
     private Date expirationDate;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private UserEntity user;
 
