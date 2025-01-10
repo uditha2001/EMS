@@ -234,7 +234,7 @@ function App() {
               />
             </Route>
             <Route
-              element={<RequireAuth allowedPermissions={['UPDATE_COURSE']} />}
+              element={<RequireAuth allowedPermissions={['ACADEMIC_YEAR']} />}
             >
               <Route
                 path="/academic/academicyears"
