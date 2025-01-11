@@ -14,8 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/paper")
 public class PapersHandelingController {
 
+    private final PapersHandelingService papersHandelingService;
     @Autowired
-    PapersHandelingService papersHandelingService;
+    public PapersHandelingController(PapersHandelingService papersHandelingService) {
+        this.papersHandelingService = papersHandelingService;
+    }
+
     @PostMapping("/generateKeys")
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request) {
         return papersHandelingService.generateKeys(request);
