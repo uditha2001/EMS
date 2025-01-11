@@ -2,13 +2,12 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
-import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramRepo;
+import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class DegreeProgramService {
