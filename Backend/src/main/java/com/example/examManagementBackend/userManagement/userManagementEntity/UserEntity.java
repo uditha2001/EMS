@@ -71,6 +71,7 @@ public class UserEntity {
     private List<ModerationsEntity> moderationsEntities;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "userId")
     private List<RoleAssignmentEntity> roleAssignments;
+    @Column(columnDefinition = "LONGTEXT")
     private String publicKey;
     public UserEntity() {
 
