@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface DegreeProgramRepo extends JpaRepository<DegreeProgramsEntity, Integer> {
-    Optional<DegreeProgramsEntity> findById(int id);
+public interface DegreeProgramRepo extends JpaRepository<DegreeProgramsEntity, Long> {
+    Optional<DegreeProgramsEntity> findById(Long id);
 }
