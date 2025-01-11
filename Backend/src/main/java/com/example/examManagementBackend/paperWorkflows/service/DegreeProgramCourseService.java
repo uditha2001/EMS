@@ -3,14 +3,13 @@ package com.example.examManagementBackend.paperWorkflows.service;
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramCourseDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
-import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramCourseRepo;
-import com.example.examManagementBackend.paperWorkflows.repo.DegreeProgramRepo;
+import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramCourseRepo;
+import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DegreeProgramCourseService {
