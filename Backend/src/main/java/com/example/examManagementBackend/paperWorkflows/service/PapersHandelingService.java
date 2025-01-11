@@ -11,7 +11,7 @@ import java.util.Base64;
 @Service
 public class PapersHandelingService {
 
-    public ResponseEntity<StandardResponse> generateKey(){
+    public ResponseEntity<StandardResponse> generateKeys(){
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(2048);
