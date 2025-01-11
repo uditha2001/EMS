@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.Base64;
 @Service
 public class PapersHandelingService {
 
-    public ResponseEntity<StandardResponse> generateKeys(){
+    public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(2048);
