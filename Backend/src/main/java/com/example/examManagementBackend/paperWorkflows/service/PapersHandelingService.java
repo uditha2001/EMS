@@ -1,13 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
-import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
-import com.example.examManagementBackend.userManagement.userManagementEntity.TokenEntity;
-import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
-import com.example.examManagementBackend.userManagement.userManagementRepo.TokenRepo;
-import com.example.examManagementBackend.utill.JwtUtill;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,11 +11,6 @@ import java.util.Base64;
 
 @Service
 public class PapersHandelingService {
-    @Autowired
-    TokenRepo tokenRepo;
-    @Autowired
-    JwtUtill jwtUtill;
-
 
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
         try {
@@ -45,23 +34,7 @@ public class PapersHandelingService {
 
     }
 
-    public String getUserName(HttpServletRequest request){
-        final String authorizationHeader = request.getHeader("Authorization");
-        String acesssToken=null;
-        String userName=null;
-        String refreshToken=null;
-        TokenEntity token=null;
-        LoginResponseDTO loginResponseDTO=null;
-        UserEntity userEntity=null;
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            acesssToken= authorizationHeader.substring(7);
-            token=tokenRepo.findByAcessToken(acesssToken);
-            refreshToken=token.getRefreshToken();
-            userName=jwtUtill.extractUserName(refreshToken);
-        }
-        return userName;
 
-    }
 
 
 }
