@@ -32,7 +32,9 @@ public class CoursesEntity {
     @Column(nullable = false)
     private Integer level;
     @Column(nullable = false)
-    private int semester;
+    private String semester;
+    @Column(nullable = false)
+    private Boolean isActive;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
