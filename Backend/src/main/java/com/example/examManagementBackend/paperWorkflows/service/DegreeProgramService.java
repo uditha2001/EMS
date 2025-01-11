@@ -3,7 +3,6 @@ package com.example.examManagementBackend.paperWorkflows.service;
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,8 +12,11 @@ import java.util.stream.Collectors;
 @Service
 public class DegreeProgramService {
 
-    @Autowired
-    private DegreeProgramRepo degreeProgramRepo;
+    private final DegreeProgramRepo degreeProgramRepo;
+
+    public DegreeProgramService(DegreeProgramRepo degreeProgramRepo) {
+        this.degreeProgramRepo = degreeProgramRepo;
+    }
 
     /**
      * Get all degree programs and convert them to DTOs.
@@ -42,7 +44,7 @@ public class DegreeProgramService {
     /**
      * Get a single degree program by ID and convert it to a DTO.
      */
-    public DegreeProgramDTO getOneDegreeProgram(int id) {
+    public DegreeProgramDTO getOneDegreeProgram(long id) {
         DegreeProgramsEntity entity = degreeProgramRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
         return convertToDTO(entity);
@@ -51,7 +53,7 @@ public class DegreeProgramService {
     /**
      * Update an existing degree program.
      */
-    public DegreeProgramDTO updateDegreeProgram(DegreeProgramDTO dto, int id) {
+    public DegreeProgramDTO updateDegreeProgram(DegreeProgramDTO dto, long id) {
         DegreeProgramsEntity existingProgram = degreeProgramRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
 
@@ -66,7 +68,7 @@ public class DegreeProgramService {
     /**
      * Delete a degree program by ID.
      */
-    public void deleteDegreeProgram(int id) {
+    public void deleteDegreeProgram(long id) {
         DegreeProgramsEntity existingProgram = degreeProgramRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
 
