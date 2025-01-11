@@ -9,8 +9,8 @@ import AcademicYearList from './AcademicYearList';
 interface AcademicYear {
   id: number;
   year: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export default function AcademicYears() {
@@ -29,10 +29,12 @@ export default function AcademicYears() {
   const fetchAcademicYears = async () => {
     try {
       setLoading(true);
-      const response = await axiosPrivate.get<AcademicYear[]>(
-        '/academic-years',
-      );
-      setAcademicYears(response.data);
+      const response = await axiosPrivate.get('/academic-years');
+      if (response.data.code === 200) {
+        setAcademicYears(response.data.data); // Use `data` field
+      } else {
+        setErrorMessage('Unexpected response structure.');
+      }
       setLoading(false);
     } catch (error) {
       setErrorMessage('Error fetching academic years.');
