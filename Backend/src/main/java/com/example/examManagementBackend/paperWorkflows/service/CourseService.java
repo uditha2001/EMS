@@ -2,7 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.Moderation;
-import com.example.examManagementBackend.paperWorkflows.repo.CourseRepo;
+import com.example.examManagementBackend.paperWorkflows.repository.CourseRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
