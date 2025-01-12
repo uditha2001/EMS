@@ -1,7 +1,10 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
+import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.PaperHandelingRepo;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -25,11 +28,13 @@ public class PapersHandelingService {
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
     private final PaperHandelingRepo paperHandelingRepo;
+    private final CoursesRepository coursesRepository;
     @Autowired
-    public PapersHandelingService(JwtService jwtService,UserManagementRepo userManagementRepo,PaperHandelingRepo paperHandelingRepo) {
+    public PapersHandelingService(JwtService jwtService,UserManagementRepo userManagementRepo,PaperHandelingRepo paperHandelingRepo,CoursesRepository coursesRepository) {
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
         this.paperHandelingRepo = paperHandelingRepo;
+        this.coursesRepository = coursesRepository;
     }
     //genarate RSA keypairs
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
@@ -76,10 +81,15 @@ public class PapersHandelingService {
             if(isFileNameExist){
                 Object[] objects=jwtService.getUserNameAndToken(request);
                 String userName = (String) objects[0];
+                UserEntity userEntity=userManagementRepo.findByUsername(userName);
+                CoursesEntity coursesEntity=coursesRepository.findBycode(CourseCode);
                 ExamPaperEntity examPaperEntity=new ExamPaperEntity(
 
                 );
                 examPaperEntity.setFilePath(filePath.toString());
+                examPaperEntity.setCourse(coursesEntity);
+                examPaperEntity.setUser(userEntity);
+                paperHandelingRepo.save(examPaperEntity);
                 Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             }
             return new ResponseEntity<>(
