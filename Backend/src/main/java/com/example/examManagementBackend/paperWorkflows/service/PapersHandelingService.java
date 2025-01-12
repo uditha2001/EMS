@@ -63,7 +63,7 @@ public class PapersHandelingService {
     }
 
     //save encrypted file
-    public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName,HttpServletRequest request) {
+    public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName,String CourseCode,HttpServletRequest request) {
         try{
             Path uploadDir = Paths.get(System.getProperty("user.home"), "uploads");
             if (!Files.exists(uploadDir)) {

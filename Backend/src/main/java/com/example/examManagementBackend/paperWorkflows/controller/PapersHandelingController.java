@@ -28,10 +28,9 @@ public class PapersHandelingController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<StandardResponse> upload(@RequestParam("paperFile") MultipartFile paperFile,@RequestParam("fileName") String fileName,HttpServletRequest request) {
+    public ResponseEntity<StandardResponse> upload(@RequestParam("paperFile") MultipartFile paperFile,@RequestParam("fileName")String fileName,@RequestParam("courseCode") String courseCode,HttpServletRequest request) {
         String OriginalFileName=fileName;
-
-        return papersHandelingService.saveFile(paperFile,OriginalFileName,request);
+        return papersHandelingService.saveFile(paperFile,OriginalFileName,courseCode,request);
     }
 
 }
