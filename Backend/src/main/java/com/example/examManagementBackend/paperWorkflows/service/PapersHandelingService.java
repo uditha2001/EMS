@@ -10,6 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.*;
 import java.util.Base64;
 
@@ -22,6 +27,7 @@ public class PapersHandelingService {
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
     }
+    //genarate RSA keypairs
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
@@ -53,16 +59,27 @@ public class PapersHandelingService {
 
     }
 
-
+    //save encrypted file
     public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName) {
         try{
+            Path uploadDir = Paths.get(System.getProperty("user.home"), "uploads");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir); // Create directory if it doesn't exist
+            }
 
+            Path filePath = uploadDir.resolve(originalFileName);
+            Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "File uploaded successfully", null),
+                    HttpStatus.CREATED
+            );
         }
         catch(Exception e){
             return new ResponseEntity<StandardResponse>(
                     new StandardResponse(500,"key generation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+
     }
 }
