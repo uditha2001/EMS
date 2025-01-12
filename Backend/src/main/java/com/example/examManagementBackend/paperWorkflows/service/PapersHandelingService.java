@@ -15,17 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.Cipher;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 
 @Service
 public class PapersHandelingService {
@@ -40,7 +34,6 @@ public class PapersHandelingService {
         this.paperHandelingRepo = paperHandelingRepo;
         this.coursesRepository = coursesRepository;
     }
-
     //save encrypted file
     public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName,String CourseCode,HttpServletRequest request) {
         try{
@@ -87,7 +80,9 @@ public class PapersHandelingService {
 
     }
 
-
-
+    //send file to the requested user
+    public ResponseEntity<StandardResponse> sendFile(MultipartFile paperFile, String CourseCode,HttpServletRequest request) {
+        return null;
+    }
 
 }

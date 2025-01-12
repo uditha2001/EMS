@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 
+import com.example.examManagementBackend.paperWorkflows.service.CryptographyService;
 import com.example.examManagementBackend.paperWorkflows.service.PapersHandelingService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,12 +18,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class PapersHandelingController {
 
     private final PapersHandelingService papersHandelingService;
+    private final CryptographyService cryptographyService;
     @Autowired
-    public PapersHandelingController(PapersHandelingService papersHandelingService) {
+    public PapersHandelingController(PapersHandelingService papersHandelingService, CryptographyService cryptographyService) {
         this.papersHandelingService = papersHandelingService;
+        this.cryptographyService = cryptographyService;
     }
 
-
+    @PostMapping("/generateKeys")
+    public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request) {
+        return cryptographyService.generateAESKey(request);
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<StandardResponse> upload(@RequestParam("paperFile") MultipartFile paperFile,@RequestParam("fileName")String fileName,@RequestParam("courseCode") String courseCode,HttpServletRequest request) {
