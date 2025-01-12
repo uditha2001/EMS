@@ -33,7 +33,7 @@ public class ExamPaperEntity {
     @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "courseId",referencedColumnName = "id",nullable = false)
+    @JoinColumn(name = "courseId",referencedColumnName = "code",nullable = false)
     private CoursesEntity course;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "createdBy",referencedColumnName = "username")
