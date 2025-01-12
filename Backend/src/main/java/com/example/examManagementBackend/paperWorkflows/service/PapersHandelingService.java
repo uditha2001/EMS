@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.io.File;
+import javax.crypto.Cipher;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -118,6 +118,7 @@ public class PapersHandelingService {
 
     }
 
+    //genrate symetric key and encrypted it
     public ResponseEntity<StandardResponse> generateAESKey(HttpServletRequest request) {
         try {
             Object[] objects=jwtService.getUserNameAndToken(request);
@@ -128,10 +129,16 @@ public class PapersHandelingService {
             byte[] aesKey = secretKey.getEncoded();
             String publicKeyString=userManagementRepo.getPublicKey(userName);
             PublicKey publickey=getUserPublicKey(publicKeyString);
-
-
+            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, publickey);
+            byte[] encryptedKey = cipher.doFinal(aesKey);
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"key creaion sucessfull",encryptedKey),HttpStatus.CREATED
+            );
         } catch (Exception e) {
-            e.printStackTrace();
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"key creation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
