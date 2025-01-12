@@ -71,6 +71,11 @@ public class PapersHandelingService {
     //save encrypted file
     public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName,String CourseCode,HttpServletRequest request) {
         try{
+            // Validate the originalFileName to ensure it does not contain path separators or parent directory references
+            if (originalFileName.contains("..") || originalFileName.contains("/") || originalFileName.contains("\\")) {
+                throw new IllegalArgumentException("Invalid filename");
+            }
+
             Path uploadDir = Paths.get(System.getProperty("user.home"), "uploads");
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir); // Create directory if it doesn't exist
