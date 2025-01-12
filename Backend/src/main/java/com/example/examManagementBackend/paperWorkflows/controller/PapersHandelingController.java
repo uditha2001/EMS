@@ -22,10 +22,7 @@ public class PapersHandelingController {
         this.papersHandelingService = papersHandelingService;
     }
 
-    @PostMapping("/generateKeys")
-    public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request) {
-        return papersHandelingService.generateKeys(request);
-    }
+
 
     @PostMapping("/upload")
     public ResponseEntity<StandardResponse> upload(@RequestParam("paperFile") MultipartFile paperFile,@RequestParam("fileName")String fileName,@RequestParam("courseCode") String courseCode,HttpServletRequest request) {
