@@ -3,6 +3,7 @@ import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 interface AcademicYear {
   id: string;
@@ -47,27 +48,32 @@ const AssignRoles: React.FC = () => {
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignments>({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
-    axios
+    setIsLoading(true);
+    axiosPrivate
       .get('http://localhost:8080/api/v1/academic-years')
       .then((response) => setAcademicYears(response.data.data))
       .catch((error) => console.error('Error fetching academic years', error));
 
-    axios
+    axiosPrivate
       .get('http://localhost:8080/degreePrograms')
       .then((response) => setDegreePrograms(response.data))
       .catch((error) => console.error('Error fetching degree programs', error));
 
-    axios
+    axiosPrivate
       .get('http://localhost:8080/api/v1/user')
       .then((response) => setUsers(response.data))
-      .catch((error) => console.error('Error fetching users', error));
+      .catch((error) => console.error('Error fetching users', error))
+      .finally(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
     if (selectedDegreeProgram) {
-      axios
+      setIsLoading(true);
+      axiosPrivate
         .get(
           `http://localhost:8080/api/v1/courses?degreeProgramId=${selectedDegreeProgram}`,
         )
@@ -83,11 +89,12 @@ const AssignRoles: React.FC = () => {
               };
               return acc;
             },
-            {},
+            {} as RoleAssignments,
           );
           setRoleAssignments(initialAssignments);
         })
-        .catch((error) => console.error('Error fetching courses', error));
+        .catch((error) => console.error('Error fetching courses', error))
+        .finally(() => setIsLoading(false));
     } else {
       setCourses([]);
       setRoleAssignments({});
@@ -107,65 +114,57 @@ const AssignRoles: React.FC = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Prepare payload based on current role assignments
+    if (!selectedAcademicYear || !selectedDegreeProgram) {
+      setErrorMessage('Please select both academic year and degree program.');
+      return;
+    }
+
     const payload = Object.keys(roleAssignments)
       .map((courseId) => {
         const assignments = [
           {
-            roleId: 1, // Example role ID for PAPER_CREATOR
+            roleId: 1,
             courseId,
             userId: roleAssignments[courseId].PAPER_CREATOR,
-            academicYearId: selectedAcademicYear,
-            isAuthorized: true,
           },
           {
-            roleId: 2, // Example role ID for PAPER_MODERATOR
+            roleId: 2,
             courseId,
             userId: roleAssignments[courseId].PAPER_MODERATOR,
-            academicYearId: selectedAcademicYear,
-            isAuthorized: true,
           },
           {
-            roleId: 3, // Example role ID for FIRST_MAKER
+            roleId: 3,
             courseId,
             userId: roleAssignments[courseId].FIRST_MAKER,
-            academicYearId: selectedAcademicYear,
-            isAuthorized: true,
           },
           {
-            roleId: 4, // Example role ID for SECOND_MAKER
+            roleId: 4,
             courseId,
             userId: roleAssignments[courseId].SECOND_MAKER,
-            academicYearId: selectedAcademicYear,
-            isAuthorized: true,
           },
         ]
           .filter((assignment) => assignment.userId) // Filter out empty userIds
           .map((assignment) => ({
             ...assignment,
+            academicYearId: selectedAcademicYear,
+            isAuthorized: true,
           }));
 
         return assignments;
       })
       .flat();
 
-    // Send the data to the backend using the bulk assignment API
-    axios
+    axiosPrivate
       .post('http://localhost:8080/api/role-assignments/bulk', payload)
       .then((response) => {
         if (response.status === 201) {
           setSuccessMessage('Roles assigned successfully!');
+          setErrorMessage('');
         }
       })
       .catch((error) => {
         setErrorMessage('Error assigning roles');
         console.error('Error assigning roles:', error);
-        if (error.response) {
-          console.error('Response Error:', error.response.data);
-        }
-        if (error.request) {
-          console.error('Request Error:', error.request);
-        }
       });
   };
 
@@ -177,7 +176,7 @@ const AssignRoles: React.FC = () => {
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Assign Roles" />
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
             Assign Exam Roles
@@ -196,7 +195,7 @@ const AssignRoles: React.FC = () => {
               onClose={() => setErrorMessage('')}
             />
 
-            {/* First Section: Academic Year and Degree Program */}
+            {/* Academic Year and Degree Program */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
@@ -205,7 +204,8 @@ const AssignRoles: React.FC = () => {
                 <select
                   value={selectedAcademicYear}
                   onChange={(e) => setSelectedAcademicYear(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke  bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+                  required
                 >
                   <option value="">Select Academic Year</option>
                   {academicYears.map((year) => (
@@ -223,7 +223,8 @@ const AssignRoles: React.FC = () => {
                 <select
                   value={selectedDegreeProgram}
                   onChange={(e) => setSelectedDegreeProgram(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+                  required
                 >
                   <option value="">Select Degree Program</option>
                   {degreePrograms.map((program) => (
@@ -235,8 +236,8 @@ const AssignRoles: React.FC = () => {
               </div>
             </div>
 
-            {/* Second Section: Role Assignments */}
-            {courses.length > 0 && (
+            {/* Role Assignments Table */}
+            {courses.length > 0 && !isLoading && (
               <div className="overflow-x-auto my-8">
                 <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                   <thead>
@@ -291,13 +292,12 @@ const AssignRoles: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                              className="w-full py-3 px-5 text-black bg-transparent outline-none transition focus:ring-0 dark:text-white dark:bg-transparent dark:focus:ring-0 appearance-none"
                             >
                               <option value="">Select User</option>
                               {users.map((user) => (
                                 <option key={user.id} value={user.id}>
-                                  {user.firstName} {user.lastName} (
-                                  {user.username})
+                                  {user.firstName} {user.lastName}
                                 </option>
                               ))}
                             </select>
