@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.repository.PaperHandelingRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -22,11 +23,12 @@ import java.util.Base64;
 public class PapersHandelingService {
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
-
+    private final PaperHandelingRepo paperHandelingRepo;
     @Autowired
-    public PapersHandelingService(JwtService jwtService,UserManagementRepo userManagementRepo) {
+    public PapersHandelingService(JwtService jwtService,UserManagementRepo userManagementRepo,PaperHandelingRepo paperHandelingRepo) {
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
+        this.paperHandelingRepo = paperHandelingRepo;
     }
     //genarate RSA keypairs
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
