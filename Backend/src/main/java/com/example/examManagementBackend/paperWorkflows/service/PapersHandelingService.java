@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.*;
 import java.util.Base64;
@@ -53,7 +54,15 @@ public class PapersHandelingService {
     }
 
 
+    public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName) {
+        try{
 
 
-
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"key generation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }

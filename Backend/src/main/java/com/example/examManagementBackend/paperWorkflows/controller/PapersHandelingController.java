@@ -31,6 +31,6 @@ public class PapersHandelingController {
     public ResponseEntity<StandardResponse> upload(@RequestParam("paperFile") MultipartFile paperFile,@RequestParam("fileName") String fileName,HttpServletRequest request) {
         String OriginalFileName=fileName;
 
-        return null;
+        return papersHandelingService.saveFile(paperFile,OriginalFileName);
     }
 }
