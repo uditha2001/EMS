@@ -78,7 +78,7 @@ public class PapersHandelingService {
 
             Path filePath = uploadDir.resolve(originalFileName);
             boolean isFileNameExist=paperHandelingRepo.existsByfilePath(filePath.toString());
-            if(isFileNameExist){
+            if(!isFileNameExist){
                 Object[] objects=jwtService.getUserNameAndToken(request);
                 String userName = (String) objects[0];
                 UserEntity userEntity=userManagementRepo.findByUsername(userName);
@@ -90,18 +90,27 @@ public class PapersHandelingService {
                 examPaperEntity.setCourse(coursesEntity);
                 examPaperEntity.setUser(userEntity);
                 paperHandelingRepo.save(examPaperEntity);
+                return new ResponseEntity<>(
+                        new StandardResponse(200, "File uploaded successfully", null),
+                        HttpStatus.CREATED
+                );
+            } else if (isFileNameExist) {
                 Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                return new ResponseEntity<>(
+                        new StandardResponse(200, "File uploaded successfully", null),
+                        HttpStatus.CREATED
+                );
             }
-            return new ResponseEntity<>(
-                    new StandardResponse(200, "File uploaded successfully", null),
-                    HttpStatus.CREATED
-            );
+
         }
         catch(Exception e){
             return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"key generation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+                    new StandardResponse(500,"file upload faile",null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500,"file upload fail",null), HttpStatus.INTERNAL_SERVER_ERROR
+        );
 
     }
 
