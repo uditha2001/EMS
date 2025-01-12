@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Service
@@ -116,16 +118,30 @@ public class PapersHandelingService {
 
     }
 
-    public ResponseEntity<StandardResponse> generateAESKey(){
+    public ResponseEntity<StandardResponse> generateAESKey(HttpServletRequest request) {
         try {
+            Object[] objects=jwtService.getUserNameAndToken(request);
+            String userName = (String) objects[0];
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(256);
             SecretKey secretKey = keyGen.generateKey();
             byte[] aesKey = secretKey.getEncoded();
+            String publicKeyString=userManagementRepo.getPublicKey(userName);
+            PublicKey publickey=getUserPublicKey(publicKeyString);
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public PublicKey getUserPublicKey(String PublicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] publicKeyBytes = Base64.getDecoder().decode(PublicKey);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(keySpec);
+        return publicKey;
+
     }
 
 
