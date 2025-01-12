@@ -24,37 +24,7 @@ public class CryptographyService {
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
     }
-    //genrate rsa keys
-    public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request){
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            KeyPair keyPair = keyGen.generateKeyPair();
-            PrivateKey privateKey = keyPair.getPrivate();
-            PublicKey publicKey = keyPair.getPublic();
-            String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-            String[] keys = {privateKeyString, publicKeyString};
-            Object[] objects=jwtService.getUserNameAndToken(request);
-            String userName = (String) objects[0];
-            if(userName!=null){
-                userManagementRepo.updatePublicKey(userName,publicKeyString);
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(200,"key generation sucess",keys), HttpStatus.CREATED
-                );
-            }
 
-        }
-        catch(NoSuchAlgorithmException e){
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"key generation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(500,"key generation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
-        );
-
-    }
     //genrate symetric key and encrypted it
     public ResponseEntity<StandardResponse> generateAESKey(HttpServletRequest request) {
         try {
@@ -88,5 +58,26 @@ public class CryptographyService {
 
     }
 
-
+//save public key in the database
+    public ResponseEntity<StandardResponse> savePublicKey(PublicKey publicKey,HttpServletRequest request) {
+        try{
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            Object[] objects=jwtService.getUserNameAndToken(request);
+            String userName = (String) objects[0];
+            if(userName!=null){
+                userManagementRepo.updatePublicKey(userName,publicKeyString);
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(200,"key stored sucess",null), HttpStatus.OK
+                );
+            }
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"key stored failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+     return new ResponseEntity<StandardResponse>(
+             new StandardResponse(500,"key stored failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+     );
+    }
 }

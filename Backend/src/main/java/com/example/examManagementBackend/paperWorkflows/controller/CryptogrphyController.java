@@ -4,9 +4,9 @@ import com.example.examManagementBackend.paperWorkflows.service.CryptographyServ
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.PublicKey;
 
 @RestController
 @RequestMapping("api/v1/crypto")
@@ -18,5 +18,10 @@ public class CryptogrphyController {
     @GetMapping("/generateKeys")
     public ResponseEntity<StandardResponse> generateKeys(HttpServletRequest request) {
         return cryptographyService.generateAESKey(request);
+    }
+
+    @PostMapping("/savePublicKey")
+    public ResponseEntity<StandardResponse> savePublicKey(HttpServletRequest request, @RequestParam("publicKey") PublicKey publicKey) {
+        return cryptographyService.savePublicKey(publicKey,request);
     }
 }
