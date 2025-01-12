@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.PaperHandelingRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
@@ -75,7 +76,10 @@ public class PapersHandelingService {
             if(isFileNameExist){
                 Object[] objects=jwtService.getUserNameAndToken(request);
                 String userName = (String) objects[0];
+                ExamPaperEntity examPaperEntity=new ExamPaperEntity(
 
+                );
+                examPaperEntity.setFilePath(filePath.toString());
                 Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
             }
             return new ResponseEntity<>(
