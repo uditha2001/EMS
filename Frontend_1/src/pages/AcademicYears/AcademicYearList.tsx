@@ -4,7 +4,7 @@ interface AcademicYear {
 }
 
 interface AcademicYearListProps {
-  academicYears: AcademicYear[];
+  academicYears: AcademicYear[] | null | undefined; // Allow null or undefined
   loading: boolean;
   handleEdit: (id: number) => void;
   handleDelete: (id: number) => void;
@@ -16,13 +16,18 @@ export default function AcademicYearList({
   handleEdit,
   handleDelete,
 }: AcademicYearListProps) {
-  // Sort the academic years in descending order by the year
-  const sortedAcademicYears = academicYears.sort((a, b) => {
-    const yearA = a.year.split('/')[0]; // Get the first part (e.g., "2023")
-    const yearB = b.year.split('/')[0]; // Get the first part (e.g., "2024")
+  // Ensure academicYears is always treated as an array
+  const safeAcademicYears = Array.isArray(academicYears) ? academicYears : [];
 
-    return parseInt(yearB) - parseInt(yearA); // Compare in descending order
-  });
+  // Sort the academic years in descending order by the year
+  const sortedAcademicYears = safeAcademicYears
+    .slice() // Create a copy to avoid mutating the original array
+    .sort((a, b) => {
+      const yearA = a.year.split('/')[0]; // Get the first part (e.g., "2023")
+      const yearB = b.year.split('/')[0]; // Get the first part (e.g., "2024")
+
+      return parseInt(yearB) - parseInt(yearA); // Compare in descending order
+    });
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
