@@ -63,7 +63,7 @@ public class PapersHandelingService {
     }
 
     //save encrypted file
-    public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName) {
+    public ResponseEntity<StandardResponse> saveFile(MultipartFile paperFile, String originalFileName,HttpServletRequest request) {
         try{
             Path uploadDir = Paths.get(System.getProperty("user.home"), "uploads");
             if (!Files.exists(uploadDir)) {
@@ -71,8 +71,13 @@ public class PapersHandelingService {
             }
 
             Path filePath = uploadDir.resolve(originalFileName);
-            Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            boolean isFileNameExist=paperHandelingRepo.existsByfilePath(filePath.toString());
+            if(isFileNameExist){
+                Object[] objects=jwtService.getUserNameAndToken(request);
+                String userName = (String) objects[0];
 
+                Files.copy(paperFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
             return new ResponseEntity<>(
                     new StandardResponse(200, "File uploaded successfully", null),
                     HttpStatus.CREATED

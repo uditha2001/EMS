@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 @EnableJpaRepositories
 public interface PaperHandelingRepo extends JpaRepository<ExamPaperEntity, Long> {
-
+  boolean existsByfilePath(String filePath);
 }
