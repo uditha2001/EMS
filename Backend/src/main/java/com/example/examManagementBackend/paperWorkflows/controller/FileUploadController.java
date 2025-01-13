@@ -96,7 +96,9 @@ public class FileUploadController {
                             paper.isShared(),
                             paper.getCourseCode(),
                             paper.getRemarks(),
-                            paper.getSharedAt()))
+                            paper.getSharedAt(),
+                            paper.getCreator(),
+                            paper.getModerator()))
                     .collect(Collectors.toList());
 
             return new ResponseEntity<>(new StandardResponse(200, "Papers retrieved successfully.", paperDTOs), HttpStatus.OK);
