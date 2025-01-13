@@ -8,7 +8,6 @@ interface QuestionProps {
   handlePartChange: (qIndex: number, pIndex: number, value: string) => void;
   addPart: (index: number) => void;
   removePart: (qIndex: number, pIndex: number) => void;
-  removeQuestion: (index: number) => void;
 }
 
 const Question: React.FC<QuestionProps> = ({
@@ -18,7 +17,6 @@ const Question: React.FC<QuestionProps> = ({
   handlePartChange,
   addPart,
   removePart,
-  removeQuestion,
 }) => {
   return (
     <div className="mb-6">
