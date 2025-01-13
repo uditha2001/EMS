@@ -17,10 +17,12 @@ public class EncryptedPaper {
 
     private String fileName;
 
+    private String courseCode;
+
+    private String remarks;
+
     @Lob
     private byte[] encryptedData; // Store encrypted PDF data as Base64 encoded string
-
-
 
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
@@ -33,9 +35,6 @@ public class EncryptedPaper {
     @Column(nullable = false)
     private boolean isShared = false; // Sharing status
 
-    @Column(length = 1024)
-    private String encryptionKey; // Encryption key for secure sharing
-
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime sharedAt; // Timestamp when the paper was shared
@@ -47,7 +46,7 @@ public class EncryptedPaper {
         this.fileName = fileName;
         this.encryptedData = encryptedData;
         this.creator = creator;
-        this.encryptionKey = encryptionKey;
+
     }
 
     // Getters and setters...
@@ -100,13 +99,6 @@ public class EncryptedPaper {
         isShared = shared;
     }
 
-    public String getEncryptionKey() {
-        return encryptionKey;
-    }
-
-    public void setEncryptionKey(String encryptionKey) {
-        this.encryptionKey = encryptionKey;
-    }
 
     public LocalDateTime getSharedAt() {
         return sharedAt;
@@ -114,6 +106,22 @@ public class EncryptedPaper {
 
     public void setSharedAt(LocalDateTime sharedAt) {
         this.sharedAt = sharedAt;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
 
