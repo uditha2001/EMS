@@ -35,18 +35,24 @@ public class CryptographyService {
             SecretKey secretKey = keyGen.generateKey();
             byte[] aesKey = secretKey.getEncoded();
             String publicKeyString=userManagementRepo.getPublicKey(userName);
-            PublicKey publickey=getUserPublicKey(publicKeyString);
-            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, publickey);
-            byte[] encryptedKey = cipher.doFinal(aesKey);
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"key creaion sucessfull",encryptedKey),HttpStatus.CREATED
-            );
+            if(publicKeyString!=null){
+                PublicKey publickey=getUserPublicKey(publicKeyString);
+                Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+                cipher.init(Cipher.ENCRYPT_MODE, publickey);
+                byte[] encryptedKey = cipher.doFinal(aesKey);
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(200,"key creaion sucessfull",encryptedKey),HttpStatus.CREATED
+                );
+            }
+
         } catch (Exception e) {
             return new ResponseEntity<StandardResponse>(
                     new StandardResponse(500,"key creation failed",null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500,"can't find the public key",null), HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     public PublicKey getUserPublicKey(String PublicKey) throws NoSuchAlgorithmException, InvalidKeySpecException {
