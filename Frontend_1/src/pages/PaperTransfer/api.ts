@@ -7,12 +7,16 @@ const api = {
   uploadFile: (
     file: File,
     creatorId: number,
-    moderatorId: number,
+    courseCode: string,
+    remarks : string,
+    moderatorId: number
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
-    formData.append('moderatorId', moderatorId.toString()); // Ensure userId is passed correctly
+    formData.append('moderatorId', moderatorId.toString()); 
+    formData.append('courseCode', courseCode);
+    formData.append('remarks', remarks);
     return axios
       .post(`${API_BASE_URL}/papers/upload`, formData)
       .then((res) => res.data.data)
