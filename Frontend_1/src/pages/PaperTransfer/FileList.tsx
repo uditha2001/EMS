@@ -3,13 +3,16 @@ import { EncryptedPaper } from '../../types/transferpaper';
 import api from './api';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import useAuth from '../../hooks/useAuth';
 
 const FileList: React.FC = () => {
+  const { auth } = useAuth();
   const [files, setFiles] = useState<EncryptedPaper[]>([]);
   const [message] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const moderatorId = Number(auth.id);
 
   useEffect(() => {
     fetchFiles();
@@ -29,14 +32,19 @@ const FileList: React.FC = () => {
 
   const handleDownload = async (id: number) => {
     try {
-      const blob = await api.downloadFile(id);
+      // Trigger the file download
+      await api.downloadFile(id, moderatorId);
 
-      // Optional: You can log or display success messages
-      console.log('File downloaded successfully:', blob);
+      // Display success feedback to the user
       setSuccessMessage('File downloaded successfully.');
+      console.log('File downloaded successfully.');
     } catch (error: any) {
+      // Log the error and display error feedback
       console.error('Error in handleDownload:', error);
-      setErrorMessage(error.message || 'Error downloading file.');
+
+      // Extract error message or fallback to a default one
+      const errorMessage = error?.message || 'Error downloading file.';
+      setErrorMessage(errorMessage);
     }
   };
 
