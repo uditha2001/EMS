@@ -35,7 +35,7 @@ public class CryptographyService {
             PublicKey publicKey = keyPair.getPublic();
             String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
             String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-            userManagementRepo.updatePublicKey(publicKeyString,userName);
+            userManagementRepo.updatePublicKey(userName,publicKeyString);
 
         } catch (Exception e) {
             return "failed to create key pair";
