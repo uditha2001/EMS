@@ -1,128 +1,126 @@
-import axios from 'axios';
+import { useState } from 'react';
 import { EncryptedPaper } from '../../types/transferpaper';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const useApi = () => {
+  const axiosPrivate = useAxiosPrivate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-const api = {
-  uploadFile: (
+  const uploadFile = async (
     file: File,
     creatorId: number,
     courseCode: string,
-    remarks : string,
-    moderatorId: number
+    remarks: string,
+    moderatorId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
-    formData.append('moderatorId', moderatorId.toString()); 
+    formData.append('moderatorId', moderatorId.toString());
     formData.append('courseCode', courseCode);
     formData.append('remarks', remarks);
-    return axios
-      .post(`${API_BASE_URL}/papers/upload`, formData)
-      .then((res) => res.data.data)
-      .catch((error) => {
-        console.error('Upload failed:', error);
-        throw new Error(
-          error?.response?.data?.message || 'Failed to upload the file',
-        );
-      });
-  },
 
-  getAllFiles: (): Promise<EncryptedPaper[]> =>
-    axios
-      .get(`${API_BASE_URL}/papers`)
-      .then((res) => {
-        if (Array.isArray(res.data.data)) {
-          return res.data.data; // Directly return the array of EncryptedPaper objects
-        } else {
-          throw new Error('Unexpected data format.');
-        }
-      })
-      .catch((error) => {
-        console.error('Fetching files failed:', error);
-        throw new Error(
-          error?.response?.data?.message || 'Failed to fetch files',
-        );
-      }),
-
-  downloadFile: async (id: number, moderatorId: number): Promise<void> => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/papers/download/${id}?moderatorId=${moderatorId}`,
-        {
-          responseType: 'blob', // Ensures the response is treated as binary data
+      const res = await axiosPrivate.post('/papers/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // Ensure this header is properly set
         },
+      });
+      return res.data.data;
+    } catch (error: any) {
+      console.error('Upload failed with error:', error);
+      if (error?.response) {
+        console.error('Response error data:', error.response.data);
+      }
+      throw new Error(
+        error?.response?.data?.message || 'Failed to upload the file',
       );
+    }
+  };
 
+  const getAllFiles = async (): Promise<EncryptedPaper[]> => {
+    try {
+      setLoading(true);
+      const res = await axiosPrivate.get('/papers');
+      if (Array.isArray(res.data.data)) {
+        return res.data.data;
+      } else {
+        throw new Error('Unexpected data format.');
+      }
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to fetch files');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to fetch files',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadFile = async (
+    id: number,
+    moderatorId: number,
+  ): Promise<void> => {
+    try {
+      const response = await axiosPrivate.get(
+        `/papers/download/${id}?moderatorId=${moderatorId}`,
+        { responseType: 'blob' },
+      );
       const contentDisposition = response.headers['content-disposition'];
-      let filename = 'file.pdf'; // Default filename
-
+      let filename = 'file.pdf';
       if (contentDisposition) {
-        // Extract the filename from content-disposition header
         const matches = /filename="([^"]+)"/.exec(contentDisposition);
         if (matches && matches[1]) {
-          filename = decodeURIComponent(matches[1]); // Decode for special characters
+          filename = decodeURIComponent(matches[1]);
         }
       }
 
       const blob = new Blob([response.data], {
         type: response.headers['content-type'],
       });
-
-      // Validate blob data
-      if (!blob || blob.size === 0) {
+      if (!blob || blob.size === 0)
         throw new Error('No data returned from the server.');
-      }
 
-      // Trigger file download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-
-      // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error: any) {
-      console.error('Error in downloadFile:', error);
-
-      // Extract detailed error message
-      const errorMessage =
-        error?.response?.data?.message ||
-        error.message ||
-        'Unknown error occurred.';
-      throw new Error(`Failed to download file: ${errorMessage}`);
+      setError(error?.response?.data?.message || 'Failed to download file');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to download file',
+      );
     }
-  },
+  };
 
-  deleteFile: (id: number): Promise<{ message: string }> =>
-    axios
-      .delete(`${API_BASE_URL}/papers/${id}`)
-      .then((res) => res.data.data)
-      .catch((error) => {
-        console.error('Delete failed:', error);
-        throw new Error(
-          error?.response?.data?.message || 'Failed to delete the file',
-        );
-      }),
+  const deleteFile = async (id: number): Promise<{ message: string }> => {
+    try {
+      const res = await axiosPrivate.delete(`/papers/${id}`);
+      return res.data.data;
+    } catch (error) {
+      const axiosError = error as any;
+      setError(
+        axiosError?.response?.data?.message || 'Failed to delete the file',
+      );
+      throw new Error(
+        axiosError?.response?.data?.message || 'Failed to delete the file',
+      );
+    }
+  };
 
-  getPublicKey: (userId: number): Promise<string> =>
-    axios
-      .get(`${API_BASE_URL}/papers/public-key?userId=${userId}`)
-      .then((res) => {
-        if (res.data && res.data.data) {
-          return res.data.data; // Ensure you're returning the public key from the response's `data` property
-        }
-        throw new Error('No public key found in response');
-      })
-      .catch((error) => {
-        console.error('Fetching public key failed:', error);
-        throw new Error(
-          error?.response?.data?.message || 'Failed to fetch public key',
-        );
-      }),
+  return {
+    uploadFile,
+    getAllFiles,
+    downloadFile,
+    deleteFile,
+    loading,
+    error,
+  };
 };
 
-export default api;
+export default useApi;
