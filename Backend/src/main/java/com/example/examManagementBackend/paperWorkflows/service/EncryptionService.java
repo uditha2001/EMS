@@ -99,7 +99,7 @@ public class EncryptionService {
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
         // Encrypt AES key with creator's and moderator's public key
-        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
         rsaCipher.init(Cipher.ENCRYPT_MODE, creatorKeyPair.getPublic());
         byte[] encryptedAesKeyForCreator = rsaCipher.doFinal(aesKey.getEncoded());
 
