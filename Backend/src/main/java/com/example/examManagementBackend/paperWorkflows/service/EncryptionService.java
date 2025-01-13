@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
@@ -135,7 +136,7 @@ public class EncryptionService {
         byte[] encryptedFileData = Arrays.copyOfRange(decodedData, 16 + 2 * RSA_KEY_SIZE / 8, decodedData.length);
 
         // Decrypt AES key with the user's private key (either creator or moderator)
-        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
         rsaCipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
         byte[] aesKeyBytes;
         try {
@@ -145,11 +146,11 @@ public class EncryptionService {
         }
 
         SecretKey aesKey = new SecretKeySpec(aesKeyBytes, AES_ALGORITHM);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
 
         // Decrypt data with AES
-        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        aesCipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
+        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding");
+        aesCipher.init(Cipher.DECRYPT_MODE, aesKey, gcmSpec);
         return aesCipher.doFinal(encryptedFileData);
     }
 
