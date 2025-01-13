@@ -35,7 +35,9 @@ const FileUpload: React.FC = () => {
         const allUsers = response.data;
 
         const filteredModerators = allUsers.filter(
-          (user: any) => user.roles.includes('PAPER_MODERATOR') && user.active,
+          (user: any) =>
+            user.roles.includes('PAPER_MODERATOR') ||
+            (user.roles.includes('PAPER_CREATOR') && user.active),
         );
 
         setModerators(filteredModerators);
