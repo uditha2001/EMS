@@ -24,6 +24,24 @@ public class CryptographyService {
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
     }
+    //genarate ssh key pair
+    public String genrateRsaKeyPair(String userName){
+        try {
+            // Generate RSA key pair
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            keyGen.initialize(2048); // Key size (2048 bits is standard for SSH)
+            KeyPair keyPair = keyGen.generateKeyPair();
+            PrivateKey privateKey = keyPair.getPrivate();
+            PublicKey publicKey = keyPair.getPublic();
+            String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            userManagementRepo.updatePublicKey(userName,publicKeyString);
+
+        } catch (Exception e) {
+            return "failed to create key pair";
+        }
+        return "success";
+    }
 
     //genrate symetric key and encrypted it
     public ResponseEntity<StandardResponse> generateAESKey(HttpServletRequest request) {
