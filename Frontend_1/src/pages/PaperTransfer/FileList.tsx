@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { EncryptedPaper } from '../../types/transferpaper';
-import api from './api';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
+import useApi from './api';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -13,6 +13,8 @@ const FileList: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const moderatorId = Number(auth.id);
+  const { getAllFiles, downloadFile, deleteFile } = useApi();
+
 
   useEffect(() => {
     fetchFiles();
@@ -21,7 +23,7 @@ const FileList: React.FC = () => {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const response = await api.getAllFiles();
+      const response = await getAllFiles();
       setFiles(response);
     } catch (error: any) {
       setErrorMessage('Error fetching files: ' + error.message);
@@ -33,7 +35,7 @@ const FileList: React.FC = () => {
   const handleDownload = async (id: number) => {
     try {
       // Trigger the file download
-      await api.downloadFile(id, moderatorId);
+      await downloadFile(id, moderatorId);
 
       // Display success feedback to the user
       setSuccessMessage('File downloaded successfully.');
@@ -50,7 +52,7 @@ const FileList: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await api.deleteFile(id);
+      const response = await deleteFile(id);
       const successMessage = response?.message || 'File deleted successfully.';
       setSuccessMessage(successMessage);
       fetchFiles();
