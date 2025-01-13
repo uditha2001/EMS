@@ -79,6 +79,8 @@ public class UserEntity {
     @OneToMany(mappedBy = "moderator", cascade = CascadeType.ALL)
     private List<EncryptedPaper> moderatedPapers; // Papers moderated by the user
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String publicKey;
     public UserEntity() {
 
     }
