@@ -23,4 +23,12 @@ public interface UserManagementRepo extends JpaRepository<UserEntity,Long> {
 
     boolean existsByUsername(String username);
     Optional<UserEntity> findByEmail(String email);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE UserEntity  ur set ur.publicKey= :publickey WHERE  ur.username= :username")
+    void updatePublicKey(@Param("username") String username,@Param("publickey") String publickey);
+
+    @Query("select ur.publicKey FROM UserEntity  ur where ur.username= :username")
+    String getPublicKey(@Param("username") String username);
 }

@@ -25,7 +25,7 @@ public class ExamPaperEntity {
     @Column(nullable = false)
     private String filePath;
     @Column(nullable = false)
-    private ExamPaperStatus status;
+    private ExamPaperStatus status=ExamPaperStatus.DRAFT;
     @CreatedDate
     @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
@@ -36,7 +36,7 @@ public class ExamPaperEntity {
     @JoinColumn(name = "courseId",referencedColumnName = "id",nullable = false)
     private CoursesEntity course;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "createdBy",referencedColumnName = "userId")
+    @JoinColumn(name = "createdBy",referencedColumnName = "username")
     private UserEntity user;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
     private List<ModerationsEntity> moderations;

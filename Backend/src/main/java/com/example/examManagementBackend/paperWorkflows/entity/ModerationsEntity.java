@@ -24,7 +24,7 @@ public class ModerationsEntity {
     @Column(columnDefinition = "TEXT")
     private String feedback;
     @Column(nullable = false)
-    private ModerationsStatus status;
+    private ModerationsStatus status=ModerationsStatus.PENDING;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;

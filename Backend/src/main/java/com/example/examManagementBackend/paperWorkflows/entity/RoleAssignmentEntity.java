@@ -26,7 +26,7 @@ public class RoleAssignmentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private Boolean isAuthorized;
+    private Boolean isAuthorized=false;
 
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
