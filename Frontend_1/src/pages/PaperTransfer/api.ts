@@ -41,12 +41,12 @@ const api = {
         );
       }),
 
-  downloadFile: async (id: number): Promise<Blob> => {
+  downloadFile: async (id: number, moderatorId: number): Promise<void> => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/papers/download/${id}`,
+        `${API_BASE_URL}/papers/download/${id}?moderatorId=${moderatorId}`,
         {
-          responseType: 'blob',
+          responseType: 'blob', // Ensures the response is treated as binary data
         },
       );
 
@@ -57,11 +57,13 @@ const api = {
         // Extract the filename from content-disposition header
         const matches = /filename="([^"]+)"/.exec(contentDisposition);
         if (matches && matches[1]) {
-          filename = decodeURIComponent(matches[1]); // Handle special characters
+          filename = decodeURIComponent(matches[1]); // Decode for special characters
         }
       }
 
-      const blob = response.data;
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
 
       // Validate blob data
       if (!blob || blob.size === 0) {
@@ -79,14 +81,14 @@ const api = {
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-
-      return blob; // Return the blob for further use if needed
     } catch (error: any) {
       console.error('Error in downloadFile:', error);
 
       // Extract detailed error message
       const errorMessage =
-        error?.response?.data?.message || error.message || 'Unknown error';
+        error?.response?.data?.message ||
+        error.message ||
+        'Unknown error occurred.';
       throw new Error(`Failed to download file: ${errorMessage}`);
     }
   },
