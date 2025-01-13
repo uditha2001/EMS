@@ -17,7 +17,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Table(name="role_assignment")
+@Table(
+        name = "role_assignment",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"academic_year_id", "course_id", "role_id"})
+)
 public class RoleAssignmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,19 +35,19 @@ public class RoleAssignmentEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="course_id")
+    @JoinColumn(name="course_id",nullable = false)
     private CoursesEntity course;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="role_id")
+    @ManyToOne(cascade = CascadeType.ALL )
+    @JoinColumn(name = "role_id", nullable = false)
     private RolesEntity role;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="user_id",nullable = false)
     private UserEntity userId;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="acedemic_year_id")
+    @JoinColumn(name="acedemic_year_id",nullable = false)
     private AcademicYearsEntity academicYearId;
 
 

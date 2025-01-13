@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -146,6 +147,27 @@ public class RoleService {
         return permissionNames;
     }
 
+    public List<RoleDTO> getAllRolesWithoutPermissions() {
+        List<RolesEntity> roles = rolesRepository.findAll();
+        return roles.stream().map(role -> {
+            // Only create RoleDTO without permissionIds
+            return new RoleDTO(role.getRoleId(), role.getRoleName(), role.getRoleDescription(), null, role.isProtected());
+        }).collect(Collectors.toList());
+    }
+
+    // Method to get roles with specific names
+    public List<RoleDTO> getSpecificRoles() {
+        // List of specific role names you want to fetch
+        List<String> roleNames = Arrays.asList("PAPER_CREATOR", "PAPER_MODERATOR", "FIRST_MAKER", "SECOND_MAKER");
+
+        // Fetch roles by name
+        List<RolesEntity> roles = rolesRepository.findByRoleNameIn(roleNames);
+
+        // Map roles to DTOs without permissions
+        return roles.stream().map(role -> {
+            return new RoleDTO(role.getRoleId(), role.getRoleName(), role.getRoleDescription(), null, role.isProtected());
+        }).collect(Collectors.toList());
+    }
 
 
 }
