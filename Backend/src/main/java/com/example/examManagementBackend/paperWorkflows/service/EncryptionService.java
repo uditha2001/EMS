@@ -100,7 +100,7 @@ public class EncryptionService {
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
 
         // Encrypt AES key with creator's and moderator's public key
-        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
         rsaCipher.init(Cipher.ENCRYPT_MODE, creatorKeyPair.getPublic());
         byte[] encryptedAesKeyForCreator = rsaCipher.doFinal(aesKey.getEncoded());
 
@@ -108,8 +108,9 @@ public class EncryptionService {
         byte[] encryptedAesKeyForModerator = rsaCipher.doFinal(aesKey.getEncoded());
 
         // Encrypt data with AES
-        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
+        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+        aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, gcmSpec);
         byte[] encryptedData = aesCipher.doFinal(data);
 
         // Combine IV, encrypted AES keys, and encrypted data
