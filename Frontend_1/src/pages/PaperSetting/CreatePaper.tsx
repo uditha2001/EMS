@@ -1,39 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
+import Question from './Question';
+import { useQuestions } from '../../hooks/useQuestions';
 
 export default function CreatePaper() {
-  const [questions, setQuestions] = useState([
-    { question: '', parts: [''] }
-  ]);
-
-  const handleQuestionChange = (index: number, value: string) => {
-    const newQuestions = [...questions];
-    newQuestions[index].question = value;
-    setQuestions(newQuestions);
-  };
-
-  const handlePartChange = (qIndex: number, pIndex: number, value: string) => {
-    const newQuestions = [...questions];
-    newQuestions[qIndex].parts[pIndex] = value;
-    setQuestions(newQuestions);
-  };
-
-  const addPart = (index: number) => {
-    const newQuestions = [...questions];
-    newQuestions[index].parts.push('');
-    setQuestions(newQuestions);
-  };
-
-  const removePart = (qIndex: number, pIndex: number) => {
-    const newQuestions = [...questions];
-    newQuestions[qIndex].parts.splice(pIndex, 1);
-    setQuestions(newQuestions);
-  };
-
-  const removeQuestion = (index: number) => {
-    const newQuestions = [...questions];
-    newQuestions.splice(index, 1);
-    setQuestions(newQuestions);
-  };
+  const {
+    questions,
+    handleQuestionChange,
+    handlePartChange,
+    addPart,
+    removePart,
+    addQuestion,
+    removeQuestion,
+  } = useQuestions();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,89 +202,36 @@ export default function CreatePaper() {
           </h2>
 
           {questions.map((question, qIndex) => (
-            <div key={qIndex} className="mb-6">
-              {/* Question Input */}
-              <div className="mb-4">
-                <label
-                  htmlFor={`question-${qIndex}`}
-                  className="block text-sm font-medium text-black dark:text-white"
-                >
-                  Question {qIndex + 1}
-                </label>
-                <input
-                  id={`question-${qIndex}`}
-                  name={`question-${qIndex}`}
-                  type="text"
-                  value={question.question}
-                  onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
-                  required
-                  placeholder="Enter Question"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-                />
-              </div>
-
-              {/* Parts Section */}
-              {question.parts.map((part, pIndex) => (
-                <div key={pIndex} className="mb-4">
-                  <label
-                    htmlFor={`part-${qIndex}-${pIndex}`}
-                    className="block text-sm font-medium text-black dark:text-white"
-                  >
-                    Part {pIndex + 1}
-                  </label>
-                  <textarea
-                    id={`part-${qIndex}-${pIndex}`}
-                    name={`part-${qIndex}-${pIndex}`}
-                    rows={4}
-                    value={part}
-                    onChange={(e) =>
-                      handlePartChange(qIndex, pIndex, e.target.value)
-                    }
-                    required
-                    placeholder="Enter Part"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePart(qIndex, pIndex)}
-                    className="text-red-500 text-sm mt-2"
-                  >
-                    Remove Part
-                  </button>
-                </div>
-              ))}
-
-              {/* Add Part Button */}
-              <button
-                type="button"
-                onClick={() => addPart(qIndex)}
-                className="text-blue-500 text-sm mt-2"
-              >
-                Add Part
-              </button>
-
-              {/* Remove Question Button */}
-              <button
-                type="button"
-                onClick={() => removeQuestion(qIndex)}
-                className="text-red-500 text-sm mt-2"
-              >
-                Remove Question
-              </button>
-            </div>
+            <Question
+              key={qIndex}
+              qIndex={qIndex}
+              question={question}
+              handleQuestionChange={handleQuestionChange}
+              handlePartChange={handlePartChange}
+              addPart={addPart}
+              removePart={removePart}
+            />
           ))}
 
-          {/* Add Question Button */}
-          <button
-            type="button"
-            onClick={() => setQuestions([...questions, { question: '', parts: [''] }])}
-            className="text-blue-500 text-sm mt-4"
-          >
-            Add Question
-          </button>
+          <div className="flex mt-4">
+            <button
+              type="button"
+              onClick={addQuestion}
+              className="text-blue-500 text-sm"
+            >
+              Add Question
+            </button>
+
+            <button
+              type="button"
+              onClick={() => removeQuestion(questions.length - 1)}
+              className="text-red-500 text-sm ml-4"
+            >
+              Remove Question
+            </button>
+          </div>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md"
