@@ -23,18 +23,6 @@ public class FileService {
     @Autowired
     public UserManagementRepo userRepository;
 
-    public String uploadAndEncryptFile(MultipartFile file, Long creatorId) throws Exception {
-        Optional<UserEntity> userEntityOptional = userRepository.findById(creatorId);
-        if (userEntityOptional.isEmpty()) {
-            throw new Exception("User not found for ID: " + creatorId);
-        }
-
-        UserEntity creator = userEntityOptional.get();
-        encryptionService.ensureKeyPairExists(creatorId);
-
-        byte[] fileBytes = file.getBytes();
-        return encryptionService.encrypt(creatorId, fileBytes);
-    }
 
     public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId) {
         EncryptedPaper encryptedPaper = new EncryptedPaper();
@@ -42,12 +30,8 @@ public class FileService {
         encryptedPaper.setEncryptedData(encryptedFile.getBytes());
         encryptedPaper.setCreator(userRepository.findById(creatorId).orElseThrow(() -> new RuntimeException("User not found")));
         encryptedPaper.setModerator(userRepository.findById(moderatorId).orElseThrow(() -> new RuntimeException("Moderator not found")));
-        encryptedPaper.setEncryptionKey(encryptionService.getPublicKeyForUser(creatorId));
+        //encryptedPaper.setEncryptionKey(encryptionService.getPublicKeyForUser(creatorId));
         encryptedPaperRepository.save(encryptedPaper);
-    }
-
-    public byte[] decryptFile(Long moderatorId, byte[] encryptedData) throws Exception {
-        return encryptionService.decrypt(moderatorId, encryptedData);
     }
 
     public EncryptedPaper getEncryptedPaperById(Long id) {
