@@ -26,6 +26,8 @@ public class FileUploadController {
     public ResponseEntity<StandardResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("creatorId") Long creatorId,
+            @RequestParam("courseCode") String courseCode,
+            @RequestParam("remarks") String remarks,
             @RequestParam("moderatorId") Long moderatorId) {
         try {
             // Ensure only creator can upload the paper
@@ -43,7 +45,7 @@ public class FileUploadController {
 
             // Encrypt and save file
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId,moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId,courseCode,remarks);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -91,7 +93,8 @@ public class FileUploadController {
                             paper.getId(),
                             paper.getFileName(),
                             paper.isShared(),
-                            paper.getEncryptionKey(),
+                            paper.getCourseCode(),
+                            paper.getRemarks(),
                             paper.getSharedAt()))
                     .collect(Collectors.toList());
 
@@ -111,13 +114,4 @@ public class FileUploadController {
         }
     }
 
-    @GetMapping("/public-key")
-    public ResponseEntity<StandardResponse> getPublicKey(@RequestParam("creatorId") Long creatorId) {
-        try {
-            String publicKey = fileService.getPublicKeyForUser(creatorId);
-            return new ResponseEntity<>(new StandardResponse(200, "Public key retrieved successfully.", publicKey), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new StandardResponse(500, "Error fetching public key: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 }
