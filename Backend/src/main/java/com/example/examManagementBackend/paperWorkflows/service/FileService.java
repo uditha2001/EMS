@@ -65,5 +65,13 @@ public class FileService {
     public String getPublicKeyForUser(Long creatorId) {
         return encryptionService.getPublicKeyForUser(creatorId);
     }
-}
 
+    public String uploadAndEncryptFileForUsers(MultipartFile file, Long creatorId, Long moderatorId) throws Exception {
+        byte[] fileBytes = file.getBytes();
+        return encryptionService.encryptForMultipleUsers(creatorId, moderatorId, fileBytes);
+    }
+
+    public byte[] decryptFileForUser(Long userId, byte[] encryptedData) throws Exception {
+        return encryptionService.decryptForUser(userId, encryptedData);
+    }
+}
