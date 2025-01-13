@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EncryptedPaper } from '../../types/transferpaper';
+import { Paper } from '../../types/transferpaper';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const useApi = () => {
@@ -39,7 +39,7 @@ const useApi = () => {
     }
   };
 
-  const getAllFiles = async (): Promise<EncryptedPaper[]> => {
+  const getAllFiles = async (): Promise<Paper[]> => {
     try {
       setLoading(true);
       const res = await axiosPrivate.get('/papers');
