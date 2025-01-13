@@ -79,8 +79,15 @@ public class UserEntity {
     @OneToMany(mappedBy = "moderator", cascade = CascadeType.ALL)
     private List<EncryptedPaper> moderatedPapers; // Papers moderated by the user
 
-    @Column(columnDefinition = "LONGTEXT")
+//    @Column(columnDefinition = "LONGTEXT")
+//    private String publicKey;
+
+    @Column(name = "public_key",columnDefinition = "LONGTEXT")
     private String publicKey;
+
+    @Column(name = "private_key",columnDefinition = "LONGTEXT")
+    private String privateKey;
+
     public UserEntity() {
 
     }
@@ -211,6 +218,32 @@ public class UserEntity {
 
     public void setModeratedPapers(List<EncryptedPaper> moderatedPapers) {
         this.moderatedPapers = moderatedPapers;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "userId=" + userId +
+                ", username='" + username + '\'' +
+                ", publicKey='" + publicKey + '\'' +
+                ", privateKey='" + privateKey + '\'' +
+                '}';
     }
 
 
