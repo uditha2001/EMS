@@ -136,7 +136,7 @@ public class EncryptionService {
         byte[] encryptedFileData = Arrays.copyOfRange(decodedData, 16 + 2 * RSA_KEY_SIZE / 8, decodedData.length);
 
         // Decrypt AES key with the user's private key (either creator or moderator)
-        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
         rsaCipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
         byte[] aesKeyBytes;
         try {
