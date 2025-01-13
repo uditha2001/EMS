@@ -5,11 +5,9 @@ interface PartProps {
   pIndex: number;
   part: string;
   handlePartChange: (qIndex: number, pIndex: number, value: string) => void;
-  addPart: (index: number) => void;
-  removePart: (qIndex: number, pIndex: number) => void;
 }
 
-const Part: React.FC<PartProps> = ({ qIndex, pIndex, part, handlePartChange, addPart, removePart }) => {
+const Part: React.FC<PartProps> = ({ qIndex, pIndex, part, handlePartChange}) => {
   return (
     <div className="mb-4">
       <label
@@ -28,13 +26,7 @@ const Part: React.FC<PartProps> = ({ qIndex, pIndex, part, handlePartChange, add
         placeholder="Enter Part"
         className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white ml-5"
       />
-      <button
-        type="button"
-        onClick={() => removePart(qIndex, pIndex)}
-        className="text-red-500 text-sm mt-2 ml-5"
-      >
-        Remove Part
-      </button>
+     
     </div>
   );
 };
