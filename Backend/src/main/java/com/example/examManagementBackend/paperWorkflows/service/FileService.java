@@ -24,13 +24,14 @@ public class FileService {
     public UserManagementRepo userRepository;
 
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId,String courseCode,String remarks) {
         EncryptedPaper encryptedPaper = new EncryptedPaper();
         encryptedPaper.setFileName(fileName);
         encryptedPaper.setEncryptedData(encryptedFile.getBytes());
         encryptedPaper.setCreator(userRepository.findById(creatorId).orElseThrow(() -> new RuntimeException("User not found")));
         encryptedPaper.setModerator(userRepository.findById(moderatorId).orElseThrow(() -> new RuntimeException("Moderator not found")));
-        //encryptedPaper.setEncryptionKey(encryptionService.getPublicKeyForUser(creatorId));
+        encryptedPaper.setCourseCode(courseCode);
+        encryptedPaper.setCourseCode(remarks);
         encryptedPaperRepository.save(encryptedPaper);
     }
 
@@ -46,9 +47,6 @@ public class FileService {
         encryptedPaperRepository.deleteById(id);
     }
 
-    public String getPublicKeyForUser(Long creatorId) {
-        return encryptionService.getPublicKeyForUser(creatorId);
-    }
 
     public String uploadAndEncryptFileForUsers(MultipartFile file, Long creatorId, Long moderatorId) throws Exception {
         byte[] fileBytes = file.getBytes();
