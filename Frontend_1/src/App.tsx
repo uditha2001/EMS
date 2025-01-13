@@ -35,7 +35,6 @@ import ModeratePaper from './pages/PaperModeration/ModeratePaper';
 import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
-import PublicKeyPage from './pages/PaperTransfer/PublicKeyPage';
 import CryptographyService from './services/CryptographyService';
 
 function App() {
@@ -274,10 +273,6 @@ function App() {
               <Route
                 path="/paper/transfer"
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
-              />
-              <Route
-                path="/paper/public-key"
-                element={renderPage('Paper Transfer | EMS', <PublicKeyPage />)}
               />
             </Route>
 
