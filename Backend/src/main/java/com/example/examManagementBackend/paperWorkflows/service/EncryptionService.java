@@ -32,6 +32,7 @@ public class EncryptionService {
 
     private final Map<Long, KeyPair> userKeyPairs = new HashMap<>();
 
+    // Generate a new key pair for the user if it doesn't already exist
     public void generateKeyPairForUser(Long userId) throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(RSA_ALGORITHM);
         keyPairGenerator.initialize(RSA_KEY_SIZE);
@@ -42,25 +43,28 @@ public class EncryptionService {
         String privateKey = Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
 
         // Retrieve the user entity and save the keys
-        UserEntity userEntity = userEntityRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity userEntity = userEntityRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         userEntity.setPublicKey(publicKey);
         userEntity.setPrivateKey(privateKey);
         userEntityRepository.save(userEntity);
 
-        // Also store in memory for fast access
+        // Cache the key pair for faster access
         userKeyPairs.put(userId, keyPair);
     }
 
+    // Ensure that the user's key pair exists, if not, generate a new one
     public void ensureKeyPairExists(Long userId) throws NoSuchAlgorithmException {
         if (!userKeyPairs.containsKey(userId)) {
             generateKeyPairForUser(userId);
         }
     }
 
+    // Retrieve the key pair for a user from cache or database
     public KeyPair getKeyPairForUser(Long userId) throws NoSuchAlgorithmException {
-        // Fetch the user entity and load the key pair from the database if not in memory
         if (!userKeyPairs.containsKey(userId)) {
-            UserEntity userEntity = userEntityRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            UserEntity userEntity = userEntityRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             byte[] publicKeyBytes = Base64.getDecoder().decode(userEntity.getPublicKey());
             byte[] privateKeyBytes = Base64.getDecoder().decode(userEntity.getPrivateKey());
 
@@ -77,6 +81,7 @@ public class EncryptionService {
         return userKeyPairs.get(userId);
     }
 
+    // Encrypt the data using RSA for key exchange and AES for data encryption
     public String encrypt(Long userId, byte[] data) throws Exception {
         ensureKeyPairExists(userId);
         KeyPair keyPair = userKeyPairs.get(userId);
@@ -108,6 +113,7 @@ public class EncryptionService {
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
     }
 
+    // Decrypt the data using RSA and AES keys
     public byte[] decrypt(Long userId, byte[] encryptedData) throws Exception {
         ensureKeyPairExists(userId);
         KeyPair keyPair = userKeyPairs.get(userId);
@@ -133,13 +139,84 @@ public class EncryptionService {
         return aesCipher.doFinal(encryptedFileData);
     }
 
+    // Retrieve the public key for a user
     public String getPublicKeyForUser(Long userId) {
         try {
             ensureKeyPairExists(userId);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Public key generation failed", e);
         }
         return Base64.getEncoder().encodeToString(userKeyPairs.get(userId).getPublic().getEncoded());
     }
-}
 
+    // Encrypt data for multiple users (creator and moderator)
+    public String encryptForMultipleUsers(Long creatorId, Long moderatorId, byte[] data) throws Exception {
+        ensureKeyPairExists(creatorId);
+        ensureKeyPairExists(moderatorId);
+
+        KeyPair creatorKeyPair = userKeyPairs.get(creatorId);
+        KeyPair moderatorKeyPair = userKeyPairs.get(moderatorId);
+
+        // Generate AES key and IV
+        KeyGenerator keyGen = KeyGenerator.getInstance(AES_ALGORITHM);
+        keyGen.init(AES_KEY_SIZE);
+        SecretKey aesKey = keyGen.generateKey();
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes(iv);
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+        // Encrypt AES key with creator's and moderator's public key
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        rsaCipher.init(Cipher.ENCRYPT_MODE, creatorKeyPair.getPublic());
+        byte[] encryptedAesKeyForCreator = rsaCipher.doFinal(aesKey.getEncoded());
+
+        rsaCipher.init(Cipher.ENCRYPT_MODE, moderatorKeyPair.getPublic());
+        byte[] encryptedAesKeyForModerator = rsaCipher.doFinal(aesKey.getEncoded());
+
+        // Encrypt data with AES
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
+        byte[] encryptedData = aesCipher.doFinal(data);
+
+        // Combine IV, encrypted AES keys, and encrypted data
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(iv);
+        outputStream.write(encryptedAesKeyForCreator); // Creator's encrypted AES key
+        outputStream.write(encryptedAesKeyForModerator); // Moderator's encrypted AES key
+        outputStream.write(encryptedData);
+
+        return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+    }
+
+    // Decrypt data for a specific user (creator or moderator)
+    public byte[] decryptForUser(Long userId, byte[] encryptedData) throws Exception {
+        ensureKeyPairExists(userId);
+        KeyPair keyPair = userKeyPairs.get(userId);
+
+        byte[] decodedData = Base64.getDecoder().decode(encryptedData);
+
+        // Extract IV, encrypted AES keys, and encrypted file data
+        byte[] iv = Arrays.copyOfRange(decodedData, 0, 16);
+        byte[] encryptedAesKeyForCreator = Arrays.copyOfRange(decodedData, 16, 16 + RSA_KEY_SIZE / 8);
+        byte[] encryptedAesKeyForModerator = Arrays.copyOfRange(decodedData, 16 + RSA_KEY_SIZE / 8, 16 + 2 * RSA_KEY_SIZE / 8);
+        byte[] encryptedFileData = Arrays.copyOfRange(decodedData, 16 + 2 * RSA_KEY_SIZE / 8, decodedData.length);
+
+        // Decrypt AES key with the user's private key (either creator or moderator)
+        Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        rsaCipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
+        byte[] aesKeyBytes;
+        try {
+            aesKeyBytes = rsaCipher.doFinal(encryptedAesKeyForCreator); // Try creator's key
+        } catch (Exception e) {
+            aesKeyBytes = rsaCipher.doFinal(encryptedAesKeyForModerator); // Fallback to moderator's key
+        }
+
+        SecretKey aesKey = new SecretKeySpec(aesKeyBytes, AES_ALGORITHM);
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+        // Decrypt data with AES
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aesCipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
+        return aesCipher.doFinal(encryptedFileData);
+    }
+}
