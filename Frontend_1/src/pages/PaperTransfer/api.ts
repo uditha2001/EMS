@@ -6,13 +6,13 @@ const API_BASE_URL = 'http://localhost:8080/api/v1';
 const api = {
   uploadFile: (
     file: File,
-    userId: number,
-    moderator: number,
+    creatorId: number,
+    moderatorId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('userId', userId.toString());
-    formData.append('moderator', moderator.toString()); // Ensure userId is passed correctly
+    formData.append('creatorId', creatorId.toString());
+    formData.append('moderatorId', moderatorId.toString()); // Ensure userId is passed correctly
     return axios
       .post(`${API_BASE_URL}/papers/upload`, formData)
       .then((res) => res.data.data)
