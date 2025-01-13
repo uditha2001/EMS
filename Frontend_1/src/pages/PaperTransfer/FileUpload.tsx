@@ -13,6 +13,8 @@ interface Moderator {
 
 const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [courseCode, setCourseCode] = useState<string>('');
+  const [remarks, setRemarks] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -22,14 +24,12 @@ const FileUpload: React.FC = () => {
   );
   const userId = 1; // Current user ID
 
-  // Fetch moderators on component mount
   useEffect(() => {
     const fetchModerators = async () => {
       try {
         const response = await axios.get('http://localhost:8080/api/v1/user');
         const allUsers = response.data;
 
-        // Filter users with the role "PAPER_MODERATOR" and active=true
         const filteredModerators = allUsers.filter(
           (user: any) => user.roles.includes('PAPER_MODERATOR') && user.active,
         );
@@ -37,7 +37,7 @@ const FileUpload: React.FC = () => {
         setModerators(filteredModerators);
 
         if (filteredModerators.length > 0) {
-          setSelectedModerator(filteredModerators[0].id); // Default to the first moderator
+          setSelectedModerator(filteredModerators[0].id);
         }
       } catch (error: any) {
         setErrorMessage('Failed to fetch moderators: ' + error.message);
@@ -56,14 +56,12 @@ const FileUpload: React.FC = () => {
       }
 
       if (selectedFile.size > 10 * 1024 * 1024) {
-        setErrorMessage(
-          'File size exceeds limit. Maximum allowed size is 10 MB.',
-        );
+        setErrorMessage('File size exceeds limit. Maximum allowed size is 10 MB.');
         return;
       }
 
       setFile(selectedFile);
-      setErrorMessage(''); // Clear any previous error
+      setErrorMessage('');
     }
   };
 
@@ -76,18 +74,34 @@ const FileUpload: React.FC = () => {
       setErrorMessage('Please select a moderator!');
       return;
     }
+    if (!courseCode.trim()) {
+      setErrorMessage('Course code is required!');
+      return;
+    }
+    if (!remarks.trim()) {
+      setErrorMessage('Remarks are required!');
+      return;
+    }
 
     setIsUploading(true);
-    setErrorMessage(''); // Clear any previous error
+    setErrorMessage('');
 
     try {
-      const response = await api.uploadFile(file, userId, selectedModerator);
+      const response = await api.uploadFile(
+        file,
+        userId,
+        courseCode,
+        remarks,
+        selectedModerator,
+      );
       if (response?.message) {
         setErrorMessage(response.message);
       } else {
         setSuccessMessage('File uploaded successfully.');
       }
-      setFile(null); // Clear the selected file after upload
+      setFile(null);
+      setCourseCode('');
+      setRemarks('');
     } catch (error: any) {
       setErrorMessage('Failed to upload the file: ' + error.message);
     } finally {
@@ -97,7 +111,6 @@ const FileUpload: React.FC = () => {
 
   return (
     <div className="mb-6">
-      {/* Success and Error Messages */}
       <SuccessMessage
         message={successMessage}
         onClose={() => setSuccessMessage('')}
@@ -107,34 +120,70 @@ const FileUpload: React.FC = () => {
         onClose={() => setErrorMessage('')}
       />
 
-      <label className="mb-2.5 block text-black dark:text-white">
-        Upload Paper
-      </label>
-      <input
-        type="file"
-        onChange={handleFileChange}
-        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-      />
-      {file && (
-        <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          <p>File Selected: {file.name}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left Column */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Upload Paper
+          </label>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+          />
+          {file && (
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p>File Selected: {file.name}</p>
+            </div>
+          )}
         </div>
-      )}
 
-      <label className="mt-4 block text-black dark:text-white">
-        Select Moderator
-      </label>
-      <select
-        value={selectedModerator || ''}
-        onChange={(e) => setSelectedModerator(Number(e.target.value))}
-        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-      >
-        {moderators.map((moderator) => (
-          <option key={moderator.id} value={moderator.id}>
-            {moderator.firstName} {moderator.lastName} ({moderator.username})
-          </option>
-        ))}
-      </select>
+        {/* Right Column */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Course Code
+          </label>
+          <input
+            type="text"
+            value={courseCode}
+            onChange={(e) => setCourseCode(e.target.value)}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+            placeholder="Enter course code"
+          />
+        </div>
+
+        {/* Left Column */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Remarks
+          </label>
+          <textarea
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+            placeholder="Enter remarks"
+            rows={3}
+          ></textarea>
+        </div>
+
+        {/* Right Column */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Select Moderator
+          </label>
+          <select
+            value={selectedModerator || ''}
+            onChange={(e) => setSelectedModerator(Number(e.target.value))}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+          >
+            {moderators.map((moderator) => (
+              <option key={moderator.id} value={moderator.id}>
+                {moderator.firstName} {moderator.lastName} ({moderator.username})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       <button
         type="button"
