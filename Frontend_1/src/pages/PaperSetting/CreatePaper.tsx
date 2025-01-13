@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Question from './Question';
 import { useQuestions } from '../../hooks/useQuestions';
 
+type paperDetails={
+  degreeName:string,
+  degreeType:string,
+  Level:string,
+  semester:string,
+  month:string,
+  year:string,
+  courseCode:string,
+  courseName:string,
+  duration:string,
+  questions:{question:string,parts:string[]}[]
+}
 export default function CreatePaper() {
   const {
     questions,
@@ -12,10 +24,25 @@ export default function CreatePaper() {
     addQuestion,
     removeQuestion,
   } = useQuestions();
-
+  const [paper,setPaper]=useState<paperDetails | null>(null);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form Submitted", questions);
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const newPaper = {
+      degreeName: formData.get('degreeName') as string,
+      degreeType: formData.get('degreeType') as string,
+      Level: formData.get('Level') as string,
+      semester: formData.get('semester') as string,
+      month: formData.get('month') as string,
+      year: formData.get('year') as string,
+      courseCode: formData.get('courseCode') as string,
+      courseName: formData.get('courseName') as string,
+      duration: formData.get('duration') as string,
+      questions: questions,
+    };
+  
+    console.log(newPaper);
+    setPaper(newPaper);
   };
 
   return (
@@ -221,14 +248,14 @@ export default function CreatePaper() {
             >
               Add Question
             </button>
-
-            <button
+          {questions.length>0 ?    <button
               type="button"
               onClick={() => removeQuestion(questions.length - 1)}
               className="text-red-500 text-sm ml-4"
             >
               Remove Question
-            </button>
+            </button> : null}
+         
           </div>
         </div>
 
