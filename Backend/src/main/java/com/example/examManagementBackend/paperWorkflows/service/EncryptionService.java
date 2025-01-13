@@ -82,16 +82,6 @@ public class EncryptionService {
         return userKeyPairs.get(userId);
     }
 
-    // Retrieve the public key for a user
-    public String getPublicKeyForUser(Long userId) {
-        try {
-            ensureKeyPairExists(userId);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Public key generation failed", e);
-        }
-        return Base64.getEncoder().encodeToString(userKeyPairs.get(userId).getPublic().getEncoded());
-    }
-
     // Encrypt data for multiple users (creator and moderator)
     public String encryptForMultipleUsers(Long creatorId, Long moderatorId, byte[] data) throws Exception {
         ensureKeyPairExists(creatorId);
