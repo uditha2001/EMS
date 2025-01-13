@@ -42,7 +42,7 @@ public class FileUploadController {
             }
 
             // Encrypt and save file
-            String encryptedFile = fileService.uploadAndEncryptFile(file, creatorId);
+            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId,moderatorId);
             fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId);
 
             return ResponseEntity.ok()
@@ -53,24 +53,32 @@ public class FileUploadController {
         }
     }
 
+    // FileUploadController.java
+
     @GetMapping("/download/{id}")
-    public ResponseEntity<?> downloadEncryptedFile(@PathVariable Long id, @RequestParam("moderatorId") Long moderatorId) {
-        EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
-
-        if (encryptedPaper == null) {
-            return new ResponseEntity<>(new StandardResponse(404, "Paper not found.", null), HttpStatus.NOT_FOUND);
-        }
-
+    public ResponseEntity<?> downloadEncryptedFile(
+            @PathVariable Long id,
+            @RequestParam("moderatorId") Long moderatorId) {
         try {
-            // Decrypt file using moderator's private key
-            byte[] decryptedBytes = fileService.decryptFile(moderatorId, encryptedPaper.getEncryptedData());
+            // Fetch the encrypted paper
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
 
+            // Validate the existence of the paper
+            if (encryptedPaper == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
+            }
+
+            // Decrypt the file using the moderator's key
+            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getEncryptedData());
+
+            // Return the decrypted file as a downloadable response
             return ResponseEntity.ok()
                     .header("Content-Disposition", "attachment; filename=" + encryptedPaper.getFileName())
-                    .header("Content-Type", "application/pdf")
-                    .body(decryptedBytes);
+                    .body(decryptedData);
         } catch (Exception e) {
-            return new ResponseEntity<>(new StandardResponse(500, "Error decrypting the file: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error downloading file: " + e.getMessage(), null));
         }
     }
 
