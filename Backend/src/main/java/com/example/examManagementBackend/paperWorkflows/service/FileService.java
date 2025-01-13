@@ -21,61 +21,49 @@ public class FileService {
     private EncryptedPaperRepository encryptedPaperRepository;
 
     @Autowired
-    private UserManagementRepo userRepository;
+    public UserManagementRepo userRepository;
 
-    // Method to upload and encrypt file
-    public String uploadAndEncryptFile(MultipartFile file, Long userId) throws Exception {
-        // Ensure the user exists and fetch the user entity
-        Optional<UserEntity> userEntityOptional = userRepository.findById(userId);
+    public String uploadAndEncryptFile(MultipartFile file, Long creatorId) throws Exception {
+        Optional<UserEntity> userEntityOptional = userRepository.findById(creatorId);
         if (userEntityOptional.isEmpty()) {
-            throw new Exception("User not found for ID: " + userId);
+            throw new Exception("User not found for ID: " + creatorId);
         }
+
         UserEntity creator = userEntityOptional.get();
+        encryptionService.ensureKeyPairExists(creatorId);
 
-        // Ensure the user's key pair exists
-        encryptionService.ensureKeyPairExists(userId);
-
-        // Read file bytes
         byte[] fileBytes = file.getBytes();
-
-        // Encrypt the file
-        return encryptionService.encrypt(userId, fileBytes);
+        return encryptionService.encrypt(creatorId, fileBytes);
     }
 
-    // Method to save the encrypted paper
-    public void saveEncryptedPaper(String encryptedFile, Long userId, String fileName,Long moderator) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId) {
         EncryptedPaper encryptedPaper = new EncryptedPaper();
         encryptedPaper.setFileName(fileName);
-        encryptedPaper.setEncryptedData(encryptedFile.getBytes()); // Store as byte array
-        encryptedPaper.setCreator(userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")));
-        encryptedPaper.setModerator(userRepository.findById(moderator).orElseThrow(() -> new RuntimeException("Moderator not found")));
-        encryptedPaper.setEncryptionKey(encryptionService.getPublicKeyForUser(userId)); // Optional if needed for reference
-
+        encryptedPaper.setEncryptedData(encryptedFile.getBytes());
+        encryptedPaper.setCreator(userRepository.findById(creatorId).orElseThrow(() -> new RuntimeException("User not found")));
+        encryptedPaper.setModerator(userRepository.findById(moderatorId).orElseThrow(() -> new RuntimeException("Moderator not found")));
+        encryptedPaper.setEncryptionKey(encryptionService.getPublicKeyForUser(creatorId));
         encryptedPaperRepository.save(encryptedPaper);
     }
 
-    // Method to decrypt file
-    public byte[] decryptFile(Long userId, byte[] encryptedData) throws Exception {
-        return encryptionService.decrypt(userId, encryptedData);
+    public byte[] decryptFile(Long moderatorId, byte[] encryptedData) throws Exception {
+        return encryptionService.decrypt(moderatorId, encryptedData);
     }
 
-    // Method to get a paper by ID
     public EncryptedPaper getEncryptedPaperById(Long id) {
         return encryptedPaperRepository.findById(id).orElse(null);
     }
 
-    // Method to get all encrypted papers
     public List<EncryptedPaper> getAllEncryptedPapers() {
         return encryptedPaperRepository.findAll();
     }
 
-    // Method to delete paper by ID
     public void deletePaperById(Long id) {
         encryptedPaperRepository.deleteById(id);
     }
 
-    // Method to get public key for user
-    public String getPublicKeyForUser(Long userId) {
-        return encryptionService.getPublicKeyForUser(userId);
+    public String getPublicKeyForUser(Long creatorId) {
+        return encryptionService.getPublicKeyForUser(creatorId);
     }
 }
+
