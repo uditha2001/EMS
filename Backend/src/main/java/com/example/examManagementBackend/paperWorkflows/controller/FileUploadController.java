@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
@@ -95,7 +96,9 @@ public class FileUploadController {
                             paper.isShared(),
                             paper.getCourseCode(),
                             paper.getRemarks(),
-                            paper.getSharedAt()))
+                            paper.getSharedAt(),
+                            paper.getCreator(),
+                            paper.getModerator()))
                     .collect(Collectors.toList());
 
             return new ResponseEntity<>(new StandardResponse(200, "Papers retrieved successfully.", paperDTOs), HttpStatus.OK);

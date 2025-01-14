@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { EncryptedPaper } from '../../types/transferpaper';
-import api from './api';
+import { Paper } from '../../types/transferpaper';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
+import useApi from './api';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
-  const [files, setFiles] = useState<EncryptedPaper[]>([]);
-  const [message] = useState<string>('');
+  const [files, setFiles] = useState<Paper[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const moderatorId = Number(auth.id);
+  const { getAllFiles, downloadFile, deleteFile } = useApi();
 
   useEffect(() => {
     fetchFiles();
@@ -21,10 +21,10 @@ const FileList: React.FC = () => {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const response = await api.getAllFiles();
+      const response = await getAllFiles();
       setFiles(response);
     } catch (error: any) {
-      setErrorMessage('Error fetching files: ' + error.message);
+      setErrorMessage('Error fetching files: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -32,39 +32,25 @@ const FileList: React.FC = () => {
 
   const handleDownload = async (id: number) => {
     try {
-      // Trigger the file download
-      await api.downloadFile(id, moderatorId);
-
-      // Display success feedback to the user
+      await downloadFile(id, moderatorId);
       setSuccessMessage('File downloaded successfully.');
-      console.log('File downloaded successfully.');
     } catch (error: any) {
-      // Log the error and display error feedback
-      console.error('Error in handleDownload:', error);
-
-      // Extract error message or fallback to a default one
-      const errorMessage = error?.message || 'Error downloading file.';
-      setErrorMessage(errorMessage);
+      setErrorMessage(error?.message || 'Error downloading file.');
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
-      const response = await api.deleteFile(id);
-      const successMessage = response?.message || 'File deleted successfully.';
-      setSuccessMessage(successMessage);
+      const response = await deleteFile(id);
+      setSuccessMessage(response?.message || 'File deleted successfully.');
       fetchFiles();
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        'Error deleting file: ' + error.message;
-      setErrorMessage(errorMessage);
+      setErrorMessage(error?.message || 'Error deleting file.');
     }
   };
 
   return (
     <div className="mb-6">
-      {/* Success and Error Messages */}
       <SuccessMessage
         message={successMessage}
         onClose={() => setSuccessMessage('')}
@@ -80,18 +66,11 @@ const FileList: React.FC = () => {
         <table className="min-w-full table-auto text-left">
           <thead>
             <tr>
-              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
-                File Name
-              </th>
-              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
-                Size
-              </th>
-              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
-                Date Uploaded
-              </th>
-              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
-                Actions
-              </th>
+              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">File Name</th>
+              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">Creator</th>
+              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">Moderator</th>
+              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">Date Uploaded</th>
+              <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -102,15 +81,6 @@ const FileList: React.FC = () => {
                   className="py-4 px-6 text-center text-gray-500 dark:text-gray-400"
                 >
                   Loading files...
-                </td>
-              </tr>
-            ) : message ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="py-4 px-6 text-center text-red-500 dark:text-red-400"
-                >
-                  {message}
                 </td>
               </tr>
             ) : files.length === 0 ? (
@@ -129,17 +99,17 @@ const FileList: React.FC = () => {
                   className="border-t border-stroke dark:border-strokedark"
                 >
                   <td className="py-4 px-6">{file.fileName}</td>
-                  <td className="py-4 px-6">N/A</td>
+                  <td className="py-4 px-6">{file.creator.firstName}</td>
+                  <td className="py-4 px-6">{file.moderator.firstName}</td>
                   <td className="py-4 px-6">
                     {file.sharedAt &&
                       new Date(file.sharedAt).toLocaleDateString('en-US', {
-                        weekday: 'short', // Short day name (Mon, Tue, etc.)
-                        year: 'numeric', // Full year (2025)
-                        month: 'short', // Short month name (Jan, Feb, etc.)
-                        day: 'numeric', // Day of the month (1, 2, 3, etc.)
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
                       })}
                   </td>
-
                   <td className="py-4 px-6">
                     <button
                       type="button"

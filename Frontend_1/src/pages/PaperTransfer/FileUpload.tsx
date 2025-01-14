@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import api from './api';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import axios from 'axios';
+import useAuth from '../../hooks/useAuth';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useApi from './api';
 
 interface Moderator {
   id: number;
@@ -12,6 +13,7 @@ interface Moderator {
 }
 
 const FileUpload: React.FC = () => {
+  const { auth } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [courseCode, setCourseCode] = useState<string>('');
   const [remarks, setRemarks] = useState<string>('');
@@ -22,16 +24,20 @@ const FileUpload: React.FC = () => {
   const [selectedModerator, setSelectedModerator] = useState<number | null>(
     null,
   );
-  const userId = 1; // Current user ID
+  const userId = Number(auth.id); // Current user ID
+  const axiosPrivate = useAxiosPrivate();
+  const { uploadFile } = useApi();
 
   useEffect(() => {
     const fetchModerators = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/v1/user');
+        const response = await axiosPrivate.get('/user');
         const allUsers = response.data;
 
         const filteredModerators = allUsers.filter(
-          (user: any) => user.roles.includes('PAPER_MODERATOR') && user.active,
+          (user: any) =>
+            user.roles.includes('PAPER_MODERATOR') ||
+            (user.roles.includes('PAPER_CREATOR') && user.active),
         );
 
         setModerators(filteredModerators);
@@ -56,7 +62,9 @@ const FileUpload: React.FC = () => {
       }
 
       if (selectedFile.size > 10 * 1024 * 1024) {
-        setErrorMessage('File size exceeds limit. Maximum allowed size is 10 MB.');
+        setErrorMessage(
+          'File size exceeds limit. Maximum allowed size is 10 MB.',
+        );
         return;
       }
 
@@ -87,7 +95,7 @@ const FileUpload: React.FC = () => {
     setErrorMessage('');
 
     try {
-      const response = await api.uploadFile(
+      const response = await uploadFile(
         file,
         userId,
         courseCode,
@@ -178,7 +186,8 @@ const FileUpload: React.FC = () => {
           >
             {moderators.map((moderator) => (
               <option key={moderator.id} value={moderator.id}>
-                {moderator.firstName} {moderator.lastName} ({moderator.username})
+                {moderator.firstName} {moderator.lastName} ({moderator.username}
+                )
               </option>
             ))}
           </select>
