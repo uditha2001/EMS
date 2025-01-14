@@ -10,17 +10,15 @@ public class EncryptedPaperDTO {
     private String fileName;
     private boolean isShared;
     private LocalDateTime sharedAt;
-    private String courseCode;
     private String remarks;
     private UserDTO creator;
     private UserDTO moderator;
 
     // Constructor for converting entity to DTO
-    public EncryptedPaperDTO(Long id, String fileName, boolean isShared, String courseCode, String remarks, LocalDateTime sharedAt, UserEntity creator, UserEntity moderator) {
+    public EncryptedPaperDTO(Long id, String fileName, boolean isShared, String remarks, LocalDateTime sharedAt, UserEntity creator, UserEntity moderator) {
         this.id = id;
         this.fileName = fileName;
         this.isShared = isShared;
-        this.courseCode = courseCode;
         this.remarks = remarks;
         this.sharedAt = sharedAt;
         this.creator = new UserDTO(creator.getUserId(), creator.getFirstName(), creator.getLastName());
@@ -60,13 +58,6 @@ public class EncryptedPaperDTO {
         this.sharedAt = sharedAt;
     }
 
-    public String getCourseCode() {
-        return courseCode;
-    }
-
-    public void setCourseCode(String courseCode) {
-        this.courseCode = courseCode;
-    }
 
     public String getRemarks() {
         return remarks;
