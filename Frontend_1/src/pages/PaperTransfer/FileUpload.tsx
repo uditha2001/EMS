@@ -65,14 +65,6 @@ const FileUpload: React.FC = () => {
     fetchModeratorsAndCourses();
   }, []);
 
-  useEffect(() => {
-    if (selectedCourses.length === 0 && courses.length > 0) {
-      setErrorMessage('Please ensure at least one course is selected.');
-    } else {
-      setErrorMessage('');
-    }
-  }, [selectedCourses, courses]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
@@ -114,19 +106,28 @@ const FileUpload: React.FC = () => {
       return;
     }
 
+    const currentYear = new Date().getFullYear(); // Get the current year
+    const courseCodes = courses
+      .filter((course) => selectedCourses.includes(course.id))
+      .map((course) => course.code)
+      .join('_'); // Concatenate selected course codes
+
+    const renamedFileName = `${courseCodes}_${currentYear}.pdf`; // Create the new file name
+    const renamedFile = new File([file], renamedFileName, { type: file.type });
+
+    console.log('Renamed File Name:', renamedFileName); // For debugging
+
     setErrorMessage('');
     setIsUploading(true);
 
     try {
       const response = await uploadFile(
-        file,
+        renamedFile,
         userId,
         selectedCourses,
         remarks,
         selectedModerator,
       );
-
-      console.log('Selected Courses:', selectedCourses);
 
       if (response?.message) {
         setErrorMessage(response.message);
@@ -143,9 +144,17 @@ const FileUpload: React.FC = () => {
 
   const resetForm = () => {
     setFile(null);
-    setSelectedCourses([]); // Reset courses
+    setSelectedCourses([]);
     setRemarks('');
-    setSelectedModerator(null); // Reset moderator
+    setSelectedModerator(null);
+  };
+
+  const toggleCourseSelection = (courseId: number) => {
+    setSelectedCourses((prevSelectedCourses) =>
+      prevSelectedCourses.includes(courseId)
+        ? prevSelectedCourses.filter((id) => id !== courseId)
+        : [...prevSelectedCourses, courseId],
+    );
   };
 
   return (
@@ -191,35 +200,27 @@ const FileUpload: React.FC = () => {
           ></textarea>
         </div>
 
-        {/* Course Selection */}
+        {/* Course Selection with Checkboxes */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
             Select Courses
           </label>
-          {courses.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">
-              No courses available.
-            </p>
-          ) : (
-            <select
-              multiple
-              value={selectedCourses.map(String)}
-              onChange={(e) => {
-                const selected = Array.from(
-                  e.target.selectedOptions,
-                  (option) => Number(option.value),
-                );
-                setSelectedCourses(selected); // Update state regardless of selection
-              }}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-            >
-              {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.code} - {course.name}
-                </option>
-              ))}
-            </select>
-          )}
+          <div className="border-[1.5px] border-stroke bg-gray py-2 px-4 rounded-md dark:border-form-strokedark dark:bg-form-input">
+            {courses.map((course) => (
+              <label
+                key={course.id}
+                className="block mb-2 text-black dark:text-white"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCourses.includes(course.id)}
+                  onChange={() => toggleCourseSelection(course.id)}
+                  className="mr-2"
+                />
+                {course.code} - {course.name}
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* Moderator Selection */}
