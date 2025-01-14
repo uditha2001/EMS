@@ -10,7 +10,7 @@ const useApi = () => {
   const uploadFile = async (
     file: File,
     creatorId: number,
-    courseCode: string,
+    courseIds: number[],
     remarks: string,
     moderatorId: number,
   ): Promise<{ message: string }> => {
@@ -18,26 +18,36 @@ const useApi = () => {
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
-    formData.append('courseCode', courseCode);
     formData.append('remarks', remarks);
-
+  
+    // Log courseIds to verify
+    console.log("Selected Course IDs:", courseIds);
+  
+    // Append courseIds individually
+    courseIds.forEach(courseId => formData.append('courseIds', courseId.toString()));
+  
     try {
       const res = await axiosPrivate.post('/papers/upload', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Ensure this header is properly set
+          'Content-Type': 'multipart/form-data',
         },
       });
       return res.data.data;
     } catch (error: any) {
-      console.error('Upload failed with error:', error);
-      if (error?.response) {
-        console.error('Response error data:', error.response.data);
+      if (error.response) {
+        console.error('Error uploading file:', error.response.data?.message);
+        setError(error.response.data?.message || 'Failed to upload the file');
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+        setError('No response from server');
+      } else {
+        console.error('Error setting up the request:', error.message);
+        setError('Request setup error');
       }
-      throw new Error(
-        error?.response?.data?.message || 'Failed to upload the file',
-      );
+      throw new Error(error.message);
     }
   };
+  
 
   const getAllFiles = async (): Promise<Paper[]> => {
     try {
