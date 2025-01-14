@@ -19,13 +19,15 @@ const useApi = () => {
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
-  
+
     // Log courseIds to verify
-    console.log("Selected Course IDs:", courseIds);
-  
+    console.log('Selected Course IDs:', courseIds);
+
     // Append courseIds individually
-    courseIds.forEach(courseId => formData.append('courseIds', courseId.toString()));
-  
+    courseIds.forEach((courseId) =>
+      formData.append('courseIds', courseId.toString()),
+    );
+
     try {
       const res = await axiosPrivate.post('/papers/upload', formData, {
         headers: {
@@ -47,7 +49,6 @@ const useApi = () => {
       throw new Error(error.message);
     }
   };
-  
 
   const getAllFiles = async (): Promise<Paper[]> => {
     try {
