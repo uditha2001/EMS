@@ -73,9 +73,17 @@ public class FileService {
     }
 
     private String saveFileToStorage(String encryptedFile, String fileName) {
+        // Validate the file name to prevent path traversal
+        if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw new IllegalArgumentException("Invalid file name");
+        }
+
         // Store the encrypted file to a location and return the file path
         try {
-            Path path = Paths.get(UPLOAD_DIR + fileName);
+            Path path = Paths.get(UPLOAD_DIR).resolve(fileName).normalize();
+            if (!path.startsWith(Paths.get(UPLOAD_DIR).normalize())) {
+                throw new IllegalArgumentException("Invalid file name");
+            }
             Files.write(path, encryptedFile.getBytes()); // Save file bytes
             return path.toString(); // Return file path
         } catch (IOException e) {
