@@ -12,10 +12,15 @@ interface Moderator {
   lastName: string;
 }
 
+interface Course {
+  id: number;
+  code: string;
+  name: string;
+}
+
 const FileUpload: React.FC = () => {
   const { auth } = useAuth();
   const [file, setFile] = useState<File | null>(null);
-  const [courseCode, setCourseCode] = useState<string>('');
   const [remarks, setRemarks] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -24,16 +29,21 @@ const FileUpload: React.FC = () => {
   const [selectedModerator, setSelectedModerator] = useState<number | null>(
     null,
   );
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
   const userId = Number(auth.id); // Current user ID
   const axiosPrivate = useAxiosPrivate();
   const { uploadFile } = useApi();
 
   useEffect(() => {
-    const fetchModerators = async () => {
+    const fetchModeratorsAndCourses = async () => {
       try {
-        const response = await axiosPrivate.get('/user');
-        const allUsers = response.data;
+        const [usersResponse, coursesResponse] = await Promise.all([
+          axiosPrivate.get('/user'),
+          axiosPrivate.get('/courses'),
+        ]);
 
+        const allUsers = usersResponse.data;
         const filteredModerators = allUsers.filter(
           (user: any) =>
             user.roles.includes('PAPER_MODERATOR') ||
@@ -45,13 +55,23 @@ const FileUpload: React.FC = () => {
         if (filteredModerators.length > 0) {
           setSelectedModerator(filteredModerators[0].id);
         }
+
+        setCourses(coursesResponse.data.data);
       } catch (error: any) {
-        setErrorMessage('Failed to fetch moderators: ' + error.message);
+        setErrorMessage('Failed to fetch data: ' + error.message);
       }
     };
 
-    fetchModerators();
+    fetchModeratorsAndCourses();
   }, []);
+
+  useEffect(() => {
+    if (selectedCourses.length === 0 && courses.length > 0) {
+      setErrorMessage('Please ensure at least one course is selected.');
+    } else {
+      setErrorMessage('');
+    }
+  }, [selectedCourses, courses]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -78,43 +98,54 @@ const FileUpload: React.FC = () => {
       setErrorMessage('Please select a file first!');
       return;
     }
+
     if (!selectedModerator) {
       setErrorMessage('Please select a moderator!');
       return;
     }
-    if (!courseCode.trim()) {
-      setErrorMessage('Course code is required!');
+
+    if (selectedCourses.length === 0) {
+      setErrorMessage('Please select at least one course!');
       return;
     }
+
     if (!remarks.trim()) {
       setErrorMessage('Remarks are required!');
       return;
     }
 
-    setIsUploading(true);
     setErrorMessage('');
+    setIsUploading(true);
 
     try {
       const response = await uploadFile(
         file,
         userId,
-        courseCode,
+        selectedCourses,
         remarks,
         selectedModerator,
       );
+
+      console.log('Selected Courses:', selectedCourses);
+
       if (response?.message) {
         setErrorMessage(response.message);
       } else {
         setSuccessMessage('File uploaded successfully.');
+        resetForm();
       }
-      setFile(null);
-      setCourseCode('');
-      setRemarks('');
     } catch (error: any) {
       setErrorMessage('Failed to upload the file: ' + error.message);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFile(null);
+    setSelectedCourses([]); // Reset courses
+    setRemarks('');
+    setSelectedModerator(null); // Reset moderator
   };
 
   return (
@@ -129,7 +160,7 @@ const FileUpload: React.FC = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left Column */}
+        {/* File Upload */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
             Upload Paper
@@ -146,21 +177,7 @@ const FileUpload: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column */}
-        <div>
-          <label className="mb-2.5 block text-black dark:text-white">
-            Course Code
-          </label>
-          <input
-            type="text"
-            value={courseCode}
-            onChange={(e) => setCourseCode(e.target.value)}
-            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-            placeholder="Enter course code"
-          />
-        </div>
-
-        {/* Left Column */}
+        {/* Remarks */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
             Remarks
@@ -174,7 +191,38 @@ const FileUpload: React.FC = () => {
           ></textarea>
         </div>
 
-        {/* Right Column */}
+        {/* Course Selection */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Select Courses
+          </label>
+          {courses.length === 0 ? (
+            <p className="text-gray-600 dark:text-gray-400">
+              No courses available.
+            </p>
+          ) : (
+            <select
+              multiple
+              value={selectedCourses.map(String)}
+              onChange={(e) => {
+                const selected = Array.from(
+                  e.target.selectedOptions,
+                  (option) => Number(option.value),
+                );
+                setSelectedCourses(selected); // Update state regardless of selection
+              }}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+            >
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.code} - {course.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Moderator Selection */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
             Select Moderator
