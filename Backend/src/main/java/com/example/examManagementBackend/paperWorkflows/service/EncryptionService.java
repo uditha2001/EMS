@@ -21,8 +21,11 @@ import java.util.*;
 @Service
 public class EncryptionService {
 
-    @Autowired
-    private UserManagementRepo userEntityRepository;
+
+    private final UserManagementRepo userEntityRepository;
+    public EncryptionService(UserManagementRepo userEntityRepository) {
+        this.userEntityRepository = userEntityRepository;
+    }
 
     private static final String RSA_ALGORITHM = "RSA";
     private static final String AES_ALGORITHM = "AES";
