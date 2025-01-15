@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@CrossOrigin
+
 @RestController
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
@@ -27,10 +27,16 @@ public class FileUploadController {
     public ResponseEntity<StandardResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("creatorId") Long creatorId,
-            @RequestParam("courseCode") String courseCode,
+            @RequestParam("courseIds") List<Long> courseIds,
             @RequestParam("remarks") String remarks,
             @RequestParam("moderatorId") Long moderatorId) {
         try {
+            // Validate courseIds
+            if (courseIds == null || courseIds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "At least one course must be selected.", null));
+            }
+
             // Ensure only creator can upload the paper
             Optional<UserEntity> userEntityOptional = fileService.userRepository.findById(creatorId);
             if (userEntityOptional.isEmpty()) {
@@ -45,8 +51,8 @@ public class FileUploadController {
             }
 
             // Encrypt and save file
-            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId,moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId,courseCode,remarks);
+            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -56,26 +62,22 @@ public class FileUploadController {
         }
     }
 
-    // FileUploadController.java
+
 
     @GetMapping("/download/{id}")
     public ResponseEntity<?> downloadEncryptedFile(
             @PathVariable Long id,
             @RequestParam("moderatorId") Long moderatorId) {
         try {
-            // Fetch the encrypted paper
             EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
 
-            // Validate the existence of the paper
             if (encryptedPaper == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            // Decrypt the file using the moderator's key
-            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getEncryptedData());
+            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
 
-            // Return the decrypted file as a downloadable response
             return ResponseEntity.ok()
                     .header("Content-Disposition", "attachment; filename=" + encryptedPaper.getFileName())
                     .body(decryptedData);
@@ -84,6 +86,7 @@ public class FileUploadController {
                     .body(new StandardResponse(500, "Error downloading file: " + e.getMessage(), null));
         }
     }
+
 
     @GetMapping
     public ResponseEntity<StandardResponse> getAllPapers() {
@@ -94,7 +97,6 @@ public class FileUploadController {
                             paper.getId(),
                             paper.getFileName(),
                             paper.isShared(),
-                            paper.getCourseCode(),
                             paper.getRemarks(),
                             paper.getSharedAt(),
                             paper.getCreator(),
@@ -116,5 +118,4 @@ public class FileUploadController {
             return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

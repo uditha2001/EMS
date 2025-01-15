@@ -54,7 +54,6 @@ public class EncryptionService {
         userKeyPairs.put(userId, keyPair);
     }
 
-
     // Ensure that the user's key pair exists, if not, generate a new one
     public void ensureKeyPairExists(Long userId) throws NoSuchAlgorithmException {
         if (!userKeyPairs.containsKey(userId)) {
@@ -83,7 +82,7 @@ public class EncryptionService {
         return userKeyPairs.get(userId);
     }
 
-    // Encrypt data for multiple users (creator and moderator)
+    // Encrypt data for multiple users (creator and moderator) and return as String
     public String encryptForMultipleUsers(Long creatorId, Long moderatorId, byte[] data) throws Exception {
         ensureKeyPairExists(creatorId);
         ensureKeyPairExists(moderatorId);
@@ -120,11 +119,12 @@ public class EncryptionService {
         outputStream.write(encryptedAesKeyForModerator); // Moderator's encrypted AES key
         outputStream.write(encryptedData);
 
+        // Return the combined data as Base64 String
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
     }
 
-    // Decrypt data for a specific user (creator or moderator)
-    public byte[] decryptForUser(Long userId, byte[] encryptedData) throws Exception {
+    // Decrypt data for a specific user (creator or moderator) using String input
+    public byte[] decryptForUser(Long userId, String encryptedData) throws Exception {
         ensureKeyPairExists(userId);
         KeyPair keyPair = userKeyPairs.get(userId);
 
@@ -155,7 +155,6 @@ public class EncryptionService {
         return aesCipher.doFinal(encryptedFileData);
     }
 
-
     @PostConstruct
     public void loadAllUserKeys() {
         userEntityRepository.findAll().forEach(userEntity -> {
@@ -170,6 +169,4 @@ public class EncryptionService {
             }
         });
     }
-
-
 }
