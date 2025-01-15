@@ -7,7 +7,7 @@ export interface PaperResponse {
 export interface Paper {
   id: number;                      // Unique identifier for the paper
   fileName: string;                // Name of the file
-  courseCode: string;              // Associated course code
+  courseIds: number[];              // Associated course code
   remarks: string | null;          // Remarks about the paper (nullable)
   sharedAt: string;                // Date and time the paper was shared
   creator: User;                   // Creator details
