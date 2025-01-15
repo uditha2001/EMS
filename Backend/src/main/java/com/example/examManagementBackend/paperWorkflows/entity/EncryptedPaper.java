@@ -44,7 +44,6 @@ public class EncryptedPaper {
     @Column(nullable = false)
     private boolean isShared = false; // Sharing status
 
-    @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime sharedAt; // Timestamp when the paper was shared
 
