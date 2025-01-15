@@ -4,6 +4,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from './api';
+import Checkbox from '../../components/Checkbox';
 
 interface Moderator {
   id: number;
@@ -205,20 +206,14 @@ const FileUpload: React.FC = () => {
           <label className="mb-2.5 block text-black dark:text-white">
             Select Courses
           </label>
-          <div className="border-[1.5px] border-stroke bg-gray py-2 px-4 rounded-md dark:border-form-strokedark dark:bg-form-input">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {courses.map((course) => (
-              <label
+              <Checkbox
                 key={course.id}
-                className="block mb-2 text-black dark:text-white"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCourses.includes(course.id)}
-                  onChange={() => toggleCourseSelection(course.id)}
-                  className="mr-2"
-                />
-                {course.code} - {course.name}
-              </label>
+                label={`${course.code} - ${course.name}`}
+                checked={selectedCourses.includes(course.id)}
+                onChange={() => toggleCourseSelection(course.id)}
+              />
             ))}
           </div>
         </div>
