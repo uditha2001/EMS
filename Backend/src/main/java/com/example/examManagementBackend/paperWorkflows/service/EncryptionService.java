@@ -4,7 +4,6 @@ import com.example.examManagementBackend.userManagement.userManagementEntity.Use
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.annotation.PostConstruct;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
