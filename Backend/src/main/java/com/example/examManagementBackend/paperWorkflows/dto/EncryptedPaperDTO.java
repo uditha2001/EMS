@@ -9,18 +9,18 @@ public class EncryptedPaperDTO {
     private Long id;
     private String fileName;
     private boolean isShared;
-    private LocalDateTime sharedAt;
+    private LocalDateTime createdAt;
     private String remarks;
     private UserDTO creator;
     private UserDTO moderator;
 
     // Constructor for converting entity to DTO
-    public EncryptedPaperDTO(Long id, String fileName, boolean isShared, String remarks, LocalDateTime sharedAt, UserEntity creator, UserEntity moderator) {
+    public EncryptedPaperDTO(Long id, String fileName, boolean isShared, String remarks, LocalDateTime createdAt, UserEntity creator, UserEntity moderator) {
         this.id = id;
         this.fileName = fileName;
         this.isShared = isShared;
         this.remarks = remarks;
-        this.sharedAt = sharedAt;
+        this.createdAt = createdAt;
         this.creator = new UserDTO(creator.getUserId(), creator.getFirstName(), creator.getLastName());
         this.moderator = new UserDTO(moderator.getUserId(), moderator.getFirstName(), moderator.getLastName());
     }
@@ -50,12 +50,12 @@ public class EncryptedPaperDTO {
         isShared = shared;
     }
 
-    public LocalDateTime getSharedAt() {
-        return sharedAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSharedAt(LocalDateTime sharedAt) {
-        this.sharedAt = sharedAt;
+    public void setCharedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
 

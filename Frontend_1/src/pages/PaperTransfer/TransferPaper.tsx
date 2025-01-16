@@ -10,14 +10,12 @@ export default function TransferPaper() {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            Transfer Paper Management
+            Paper Transactions
           </h3>
         </div>
 
         <div className="p-6.5">
-          {/* Success and Error Messages */}
-          {/* You can integrate SuccessMessage and ErrorMessage components here if needed */}
-
+         
           {/* File Upload Section */}
           <div className="mb-6">
             <FileUpload />
