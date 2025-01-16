@@ -9,7 +9,7 @@ export interface Paper {
   fileName: string;                // Name of the file
   courseIds: number[];              // Associated course code
   remarks: string | null;          // Remarks about the paper (nullable)
-  sharedAt: string;                // Date and time the paper was shared
+  createdAt: string;                // Date and time the paper was shared
   creator: User;                   // Creator details
   moderator: User;                 // Moderator details
   shared: boolean;                 // Whether the paper is shared
