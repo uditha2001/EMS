@@ -265,19 +265,26 @@ const Feedback = () => {
                                         Name of the moderator
                                     </div>
                                 </td>
-                                <td className="h-full border  px-4 font-bold" colSpan={1}>
+                                <td className="h-full border  px-4 font-bold" colSpan={2}>
                                     <div className="flex items-end justify-center h-27">
                                         Signature
                                     </div>
                                 </td>
-                                <td className="h-full border px-4 font-bold" colSpan={2}>
+                                <td className="h-full border px-4 font-bold" colSpan={1}>
                                     <div className="flex items-end justify-center h-27">
                                         Date
                                     </div>
                                 </td>
+                                <tr>
 
-
-
+                                </tr>
+                                <tr>
+                                    <td colSpan={5} className="font-bold text-center text-title-lg">
+                                        <div className="mb-4 flex gap-4 items-center justify-center">
+                                            Follow up Action by Examiner/s
+                                        </div>
+                                        </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
