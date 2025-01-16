@@ -33,6 +33,7 @@ public class CourseService {
                         course.getLevel(),
                         course.getSemester(),
                         course.getIsActive(),
+                        course.getCourseType().name(), // Convert enum to string
                         course.getCreatedAt(),
                         course.getUpdatedAt(),
                         course.getDegreeProgramsEntity().getId()
@@ -58,6 +59,7 @@ public class CourseService {
         course.setLevel(dto.getLevel());
         course.setSemester(dto.getSemester());
         course.setIsActive(dto.getIsActive());
+        course.setCourseType(CoursesEntity.CourseType.valueOf(dto.getCourseType())); // Convert string to enum
         course.setDegreeProgramsEntity(degreeProgram);
 
         return coursesRepository.save(course);
@@ -78,6 +80,7 @@ public class CourseService {
                 course.getLevel(),
                 course.getSemester(),
                 course.getIsActive(),
+                course.getCourseType().name(), // Convert enum to string
                 course.getCreatedAt(),
                 course.getUpdatedAt(),
                 course.getDegreeProgramsEntity().getId()
