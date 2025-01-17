@@ -11,6 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(
+        name = "question_structure",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"encrypted_paper_id", "questionNumber"})
+)
 public class QuestionStructureEntity {
 
     @Id
