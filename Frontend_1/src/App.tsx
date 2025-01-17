@@ -35,9 +35,9 @@ import ModeratePaper from './pages/PaperModeration/ModeratePaper';
 import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
-import CryptographyService from './services/CryptographyService';
 import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
 import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
+import Feedback from './pages/PaperModeration/Feedback';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -82,11 +82,7 @@ function App() {
           path="/reset-password"
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
-        <Route element={<CryptographyService />} />
-        <Route
-          path="/encrypt"
-          element={renderPage('Encrypt | EMS', <CryptographyService />)}
-        />
+
       </Route>
 
       {/* Authenticated Routes */}
@@ -276,6 +272,10 @@ function App() {
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
                 )}
+              />
+              <Route
+                path="/paper/feedback"
+                element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
 
