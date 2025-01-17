@@ -39,7 +39,6 @@ const UseRefreshToken = () => {
         roles: data.user?.roles || [],
         accessToken: newAccessToken,
       }));
-      console.log(data.user);
       return newAccessToken;
     } catch {
       console.error('Error refreshing token.');
