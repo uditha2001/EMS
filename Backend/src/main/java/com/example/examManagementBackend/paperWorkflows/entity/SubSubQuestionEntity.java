@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(
+        name = "sub_sub_question_structure",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"sub_question_id", "subSubQuestionNumber"})
+)
 public class SubSubQuestionEntity {
 
     @Id
@@ -21,7 +25,7 @@ public class SubSubQuestionEntity {
 
     private int subSubQuestionNumber;
 
-    private int marks; // Marks for this sub-subquestion
+    private float marks; // Marks for this sub-subquestion
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
