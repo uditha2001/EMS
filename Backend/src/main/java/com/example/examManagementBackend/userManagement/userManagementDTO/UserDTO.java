@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementDTO;
 
+import jakarta.validation.constraints.Email;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,22 +9,25 @@ public class UserDTO {
     private Long id; // User ID
      private String username;
      private String password;
+     @Email
      private String  email;
      private String firstName;
      private String lastName;
+    private boolean isActive;
     private List<String> roles;
 
     public UserDTO(){
 
     }
 
-    public UserDTO(Long id, String username, String email, String firstName, String lastName, List<String> roles) {
+    public UserDTO(Long id, String username, String email, String firstName, String lastName, List<String> roles,boolean isActive) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.roles = roles;
+        this.isActive=isActive;
     }
 
 
@@ -82,6 +87,14 @@ public class UserDTO {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }
 

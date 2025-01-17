@@ -22,7 +22,7 @@ public class PermissionEntity {
     //@OneToMany(mappedBy = "rolePermission")
     ///Set<RolePermission> rolePermissions;
 
-    @OneToMany(mappedBy = "permissionEntity") // Make sure this matches the field in RolePermission
+    @OneToMany(mappedBy = "permissionEntity",cascade = CascadeType.ALL) // Make sure this matches the field in RolePermission
     private Set<RolePermission> rolePermissions = new HashSet<>(); // Or List<RolePermission>
 
 

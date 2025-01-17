@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
 
+import com.example.examManagementBackend.userManagement.userManagementDTO.MailBody;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -8,22 +9,30 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
 public class UserManagementServices {
-    @Autowired
-    UserManagementRepo userManagementRepo;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserRolesRepository userRolesRepo;
-    @Autowired
-    private RoleRepository roleRepository;
+    private final  UserManagementRepo userManagementRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRolesRepository userRolesRepo;
+    private final RoleRepository roleRepository;
+    private final MailService mailService;
+
+    public UserManagementServices(UserManagementRepo userManagementRepo, PasswordEncoder passwordEncoder,UserRolesRepository userRolesRepo, RoleRepository roleRepository, MailService mailService) {
+        this.userManagementRepo = userManagementRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.userRolesRepo = userRolesRepo;
+        this.roleRepository = roleRepository;
+        this.mailService = mailService;
+    }
+
 
     public String saveUser(UserDTO user){
         UserEntity userEntity = new UserEntity(user.getUsername(),user.getEmail(),user.getFirstName(),user.getLastName(),0,true);
@@ -37,28 +46,43 @@ public class UserManagementServices {
     }
 
     public String saveUserWithRoles(UserDTO userDTO) {
-        UserEntity userEntity = new UserEntity(
-                userDTO.getUsername(),
-                userDTO.getEmail(),
-                userDTO.getFirstName(),
-                userDTO.getLastName(),
-                0,
-                true
-        );
-        userEntity.setPassword(getEncodePassword(userDTO.getPassword()));
-        userManagementRepo.save(userEntity);
 
-        // Save roles
-        for (String roleName : userDTO.getRoles()) {
-            RolesEntity role = roleRepository.findByRoleName(roleName).orElseThrow(
-                    () -> new RuntimeException("Role not found: " + roleName));
-            UserRoles userRole = new UserRoles();
-            userRole.setUser(userEntity);
-            userRole.setRole(role);
-            userRolesRepo.save(userRole);
-        }
+      try{
+          UserEntity userEntity = new UserEntity(
+                  userDTO.getUsername(),
+                  userDTO.getEmail(),
+                  userDTO.getFirstName(),
+                  userDTO.getLastName(),
+                  0,
+                  true
+          );
+          userEntity.setPassword(getEncodePassword(userDTO.getPassword()));
+          userManagementRepo.save(userEntity);
 
-        return "User with roles created successfully";
+          // Save roles
+          for (String roleName : userDTO.getRoles()) {
+              RolesEntity role = roleRepository.findByRoleName(roleName).orElseThrow(
+                      () -> new RuntimeException("Role not found: " + roleName));
+              UserRoles userRole = new UserRoles();
+              userRole.setUser(userEntity);
+              userRole.setRole(role);
+              userRolesRepo.save(userRole);
+          }
+          String subject="your ems password is "+userDTO.getPassword()+" and user name is "+userDTO.getUsername();
+          String text="credentials for your EMS account";
+          MailBody mailBody=new MailBody(
+                  userDTO.getEmail(),
+                  text,
+                  subject
+          );
+          mailService.sendMail(mailBody);
+          return "User with roles created successfully";
+
+      }
+      catch (Exception e){
+          throw new RuntimeException(e.getMessage());
+      }
+
     }
 
     // Assign a role to a user
@@ -101,7 +125,9 @@ public class UserManagementServices {
                             user.getEmail(),
                             user.getFirstName(),
                             user.getLastName(),
-                            roles
+                            roles,
+                            user.isActive()
+
                     );
                 })
                 .toList();
@@ -110,6 +136,14 @@ public class UserManagementServices {
     // Delete user by ID
     public String deleteUser(Long userId) {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if the user has the ADMIN role
+//        boolean isAdmin = userEntity.getUserRoles().stream()
+//                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
+//
+//        if (isAdmin) {
+//            throw new RuntimeException("Cannot delete a user with the ADMIN role.");
+//        }
 
         // Delete associated roles
         List<UserRoles> userRoles = userRolesRepo.findByUser(userEntity);
@@ -122,6 +156,14 @@ public class UserManagementServices {
 
     public String updateUserWithRoles(Long userId, UserDTO userDTO) {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if the user has the ADMIN role
+//        boolean isAdmin = userEntity.getUserRoles().stream()
+//                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
+//
+//        if (isAdmin) {
+//            throw new RuntimeException("Cannot update a user with the ADMIN role.");
+//        }
 
         userEntity.setUsername(userDTO.getUsername());
         userEntity.setEmail(userDTO.getEmail());
@@ -146,6 +188,100 @@ public class UserManagementServices {
 
         return "User with roles updated successfully";
     }
+
+    public String updateUserStatus(Long userId, boolean isActive) {
+        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        userEntity.setActive(isActive); // Update the user's active status
+        userManagementRepo.save(userEntity); // Save the updated user entity
+
+        return "User status updated successfully";
+    }
+
+    public UserDTO getUserById(Long userId) {
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Safely map the UserEntity to a UserDTO
+        List<String> roles = userEntity.getUserRoles().stream()
+                .map(userRole -> {
+                    if (userRole != null && userRole.getRole() != null) {
+                        return userRole.getRole().getRoleName();
+                    }
+                    return null;
+                })
+                .filter(roleName -> roleName != null) // Exclude null role names
+                .toList();
+
+        // Create and return UserDTO
+        return new UserDTO(
+                userEntity.getUserId(),
+                userEntity.getUsername(),
+                userEntity.getEmail(),
+                userEntity.getFirstName(),
+                userEntity.getLastName(),
+                roles,
+                userEntity.isActive()
+        );
+    }
+    public String updatePassword(String password,String username){
+        UserEntity user=userManagementRepo.findByUsername(username);
+        if(user!=null){
+          try{
+              String newPassword=getEncodePassword(password);
+              userManagementRepo.updatePassword(username,newPassword);
+              return "ok";
+          }
+          catch(Exception e){
+              throw new RuntimeException("failed to update password");
+          }
+
+        }
+        else{
+            throw new UsernameNotFoundException("username not found");
+        }
+    }
+
+    // Add Bulk Users with validation for existing users
+    public void saveUsersWithRoles(List<UserDTO> users) {
+        for (UserDTO userDTO : users) {
+            // Check if the user already exists by username or email
+            boolean existingUserByUsername = userManagementRepo.existsByUsername(userDTO.getUsername());
+            Optional<UserEntity> existingUserByEmail = userManagementRepo.findByEmail(userDTO.getEmail());
+
+            // If user exists by username or email, skip this user
+            if (existingUserByUsername) {
+                throw new RuntimeException("User with username " + userDTO.getUsername() + " already exists.");
+            }
+            if (existingUserByEmail.isPresent()) {
+                throw new RuntimeException("User with email " + userDTO.getEmail() + " already exists.");
+            }
+
+            // Proceed to save new user if validation passes
+            UserEntity userEntity = new UserEntity(
+                    userDTO.getUsername(),
+                    userDTO.getEmail(),
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    0,
+                    true
+            );
+            userEntity.setPassword(getEncodePassword(userDTO.getPassword()));
+            userManagementRepo.save(userEntity);
+
+            // Save roles for each user
+            for (String roleName : userDTO.getRoles()) {
+                RolesEntity role = roleRepository.findByRoleName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                UserRoles userRole = new UserRoles();
+                userRole.setUser(userEntity);
+                userRole.setRole(role);
+                userRolesRepo.save(userRole);
+            }
+        }
+    }
+
+
 
 
 }

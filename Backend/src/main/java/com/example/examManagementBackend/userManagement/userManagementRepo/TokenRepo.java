@@ -23,4 +23,8 @@ public interface TokenRepo extends JpaRepository<TokenEntity, Long> {
     @Query("UPDATE TokenEntity te SET te.acessToken= :newTokenValue WHERE te.token_id= :tokenId")
     void updateacessTokenValueById(@Param("tokenId") Long tokenId, @Param("newTokenValue") String newTokenValue);
     TokenEntity findByAcessToken(String accessToken);
+    @Modifying
+    @Transactional
+    @Query("DELETE TokenEntity te WHERE te.acessToken=:acesstoken")
+    void deletebyAcessToken(@Param("acesstoken") String acesstoken);
 }

@@ -7,12 +7,15 @@ import './css/satoshi.css';
 import 'jsvectormap/dist/css/jsvectormap.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import { AuthProvider } from './context/AuthProvider';
+import { PermissionsProvider } from './context/PermissionsProvider';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
     <Router>
-        <App /> 
+      <AuthProvider>
+        <PermissionsProvider>
+          <App />
+        </PermissionsProvider>
+      </AuthProvider>
     </Router>
-  </AuthProvider>
   </React.StrictMode>,
 );

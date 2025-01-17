@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Checkbox from '../../components/Checkbox';
 import SelectBox from '../../components/SelectBox';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import { useNavigate } from 'react-router-dom';
+
 
 const CreateRole: React.FC = () => {
+  const navigate = useNavigate();
   const [roleName, setRoleName] = useState('');
   const [description, setDescription] = useState('');
   const [permissions, setPermissions] = useState<number[]>([]);
@@ -16,10 +19,11 @@ const CreateRole: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
-    axios
-      .get('http://localhost:8080/api/v1/permissions')
+    axiosPrivate
+      .get('/permissions')
       .then((response) => {
         setAvailablePermissions(response.data);
         setIsLoading(false);
@@ -73,14 +77,15 @@ const CreateRole: React.FC = () => {
       permissionIds: permissions,
     };
 
-    axios
-      .post('http://localhost:8080/api/v1/roles/create', newRole)
+    axiosPrivate
+      .post('/roles/create', newRole)
       .then(() => {
-        setSuccessMessage('Role created successfully!');
         setRoleName('');
         setDescription('');
         setPermissions([]);
         setErrorMessage('');
+        setSuccessMessage('Role created successfully!');
+        setTimeout(() => navigate('/usermanagement/roles'), 1000);
       })
       .catch((error) => {
         setErrorMessage('Failed to create role. Please try again.');
@@ -94,7 +99,7 @@ const CreateRole: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Roles & Permissions" />
+      <Breadcrumb pageName="Create Role" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
@@ -127,7 +132,7 @@ const CreateRole: React.FC = () => {
                   type="text"
                   placeholder="Enter role name"
                   value={roleName}
-                  onChange={(e) => setRoleName(e.target.value)}
+                  onChange={(e) => setRoleName(e.target.value.toUpperCase())}
                   className="w-full rounded border-[1.5px] border-stroke  bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                   required
                 />
@@ -199,9 +204,8 @@ const CreateRole: React.FC = () => {
                               .includes(searchTerm.toLowerCase()),
                           )
                           .map((permission) => (
-                            <div className="mb-2">
+                            <div className="mb-2" key={permission.permissionId}>
                               <Checkbox
-                                key={permission.permissionId}
                                 label={permission.permissionName}
                                 checked={permissions.includes(
                                   permission.permissionId,

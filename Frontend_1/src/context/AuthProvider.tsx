@@ -1,27 +1,42 @@
-import { useState, createContext,ReactNode } from "react";
+import { useState,createContext, ReactNode } from 'react';
+
+
+// Define the type for the auth state
+type AuthState = {
+  id?: string;
+  firstName?: string;
+  username?: string;
+  roles?: string[];
+  accessToken?: string;
+};
+
 
 // Define the type for the context value
-interface AuthContextType {
-    auth: Record<string, unknown>;
-    setAuth: React.Dispatch<React.SetStateAction<Record<string, unknown>>>;
-}
+type AuthContextType = {
+  auth: AuthState;
+  setAuth: React.Dispatch<React.SetStateAction<AuthState>>;
+};
 
 // Create the context with a default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
-    children: ReactNode;
+  children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [auth, setAuth] = useState<Record<string, unknown>>({});
+  // Initialize auth state with default values
+  const [auth, setAuth] = useState<AuthState>({ accessToken: '' });
 
-    return (
-        <AuthContext.Provider value={{ auth, setAuth }}>
-            {children}
-        </AuthContext.Provider>
-    );
+
+
+  return (
+    <AuthContext.Provider
+      value={{ auth, setAuth}}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
-
 
 export default AuthContext;

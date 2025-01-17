@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,7 +47,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds);
+        return new RoleDTO(savedRole.getRoleId(), savedRole.getRoleName(), savedRole.getRoleDescription(), assignedPermissionIds,savedRole.isProtected());
     }
 
     // Update role
@@ -53,6 +55,10 @@ public class RoleService {
     public RoleDTO updateRole(Long roleId, String roleName, String roleDescription, Set<Long> permissionIds) {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+
+        if (role.isProtected()) {
+            throw new RuntimeException("Cannot update seeded role");
+        }
 
         role.setRoleName(roleName);
         role.setRoleDescription(roleDescription);
@@ -72,7 +78,7 @@ public class RoleService {
                         .orElseThrow(() -> new RuntimeException("Permission not found with ID: " + permissionId)))
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), updatedPermissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), updatedPermissionIds,role.isProtected());
     }
 
     // View role by ID
@@ -84,7 +90,7 @@ public class RoleService {
                 .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                 .collect(Collectors.toSet());
 
-        return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
+        return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds, role.isProtected());
     }
 
     // Delete role
@@ -93,9 +99,18 @@ public class RoleService {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
+        // Check if the role is a seeded role, prevent deletion if true
+        if (role.isProtected()) {
+            throw new RuntimeException("Cannot delete a seeded role");
+        }
+
+        // Delete all role permissions associated with this role
         rolePermissionRepository.deleteAllByRolesEntity(role);
+
+        // Delete the role
         rolesRepository.delete(role);
     }
+
 
     // Get all roles
     public List<RoleDTO> getAllRoles() {
@@ -105,10 +120,54 @@ public class RoleService {
                     .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionId()) // Ensure this method exists in Permission
                     .collect(Collectors.toSet());
 
-            return new RoleDTO(role.getRoleName(), role.getRoleDescription(), permissionIds);
+            return new RoleDTO(role.getRoleId(),role.getRoleName(), role.getRoleDescription(), permissionIds,role.isProtected());
         }).collect(Collectors.toList());
 
 
     }
+
+    // Fetch permissions based on role names
+    public Set<String> getPermissionsForRoles(List<String> roleNames) {
+        // Fetch role entities using role names
+        List<RolesEntity> roles = rolesRepository.findByRoleNameIn(roleNames);
+
+        Set<String> permissionNames = new HashSet<>();
+
+        // Loop through roles and get associated permissions
+        for (RolesEntity role : roles) {
+            Set<String> rolePermissionIds = rolePermissionRepository.findByRolesEntity(role).stream()
+                    .map(rolePermission -> rolePermission.getPermissionEntity().getPermissionName())
+                    .collect(Collectors.toSet());
+
+            // Add the permissions for each role to the overall set of permissions
+            permissionNames.addAll(rolePermissionIds);
+        }
+
+        // Return the set of permissions (duplicates are already removed by the Set)
+        return permissionNames;
+    }
+
+    public List<RoleDTO> getAllRolesWithoutPermissions() {
+        List<RolesEntity> roles = rolesRepository.findAll();
+        return roles.stream().map(role -> {
+            // Only create RoleDTO without permissionIds
+            return new RoleDTO(role.getRoleId(), role.getRoleName(), role.getRoleDescription(), null, role.isProtected());
+        }).collect(Collectors.toList());
+    }
+
+    // Method to get roles with specific names
+    public List<RoleDTO> getSpecificRoles() {
+        // List of specific role names you want to fetch
+        List<String> roleNames = Arrays.asList("PAPER_CREATOR", "PAPER_MODERATOR", "FIRST_MAKER", "SECOND_MAKER");
+
+        // Fetch roles by name
+        List<RolesEntity> roles = rolesRepository.findByRoleNameIn(roleNames);
+
+        // Map roles to DTOs without permissions
+        return roles.stream().map(role -> {
+            return new RoleDTO(role.getRoleId(), role.getRoleName(), role.getRoleDescription(), null, role.isProtected());
+        }).collect(Collectors.toList());
+    }
+
 
 }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import useAuth from '../hooks/useAuth';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
 
 interface Role {
   id: number;
@@ -31,21 +32,23 @@ interface UserProfile {
 }
 
 const Profile: React.FC = () => {
+  const { auth } = useAuth();
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const userId = 1; // Replace with dynamic user ID logic if required
+  const userId = auth.id;
+  const axiosPrivate = useAxiosPrivate();
 
-  const baseUrl = `http://localhost:8080/api/v1/user`;
+  console.log(userId);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
 
-        const imageResponse = await axios.get(
-          `${baseUrl}/getProfileImage/${userId}`,
+        const imageResponse = await axiosPrivate.get(
+          `user/getProfileImage/${userId}`,
           { responseType: 'arraybuffer' },
         );
         const base64Image = btoa(
@@ -58,8 +61,8 @@ const Profile: React.FC = () => {
           `data:${imageResponse.headers['content-type']};base64,${base64Image}`,
         );
 
-        const userResponse = await axios.get<UserProfile>(
-          `${baseUrl}/userProfile/${userId}`,
+        const userResponse = await axiosPrivate.get<UserProfile>(
+          `user/userProfile/${userId}`,
         );
         setUserData(userResponse.data);
       } catch (err) {
@@ -82,7 +85,7 @@ const Profile: React.FC = () => {
       <div>
         {/* Profile Header */}
         <div className="max-w-5xl mx-auto p-8 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark text-center mb-8">
-        <div className="relative mb-4 flex justify-center items-center">
+          <div className="relative mb-4 flex justify-center items-center">
             {profileImage ? (
               <img
                 src={profileImage}
@@ -107,12 +110,15 @@ const Profile: React.FC = () => {
           </p>
         </div>
 
-      
         {/* Roles and Responsibilities */}
         <div className="max-w-5xl mx-auto p-8  rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Roles and Responsibilities</h3>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+            Roles and Responsibilities
+          </h3>
           <div className="mb-4">
-            <h4 className="font-medium text-gray-800 dark:text-white">Current Assigned Roles</h4>
+            <h4 className="font-medium text-gray-800 dark:text-white">
+              Current Assigned Roles
+            </h4>
             {userData?.roles?.length ? (
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 {userData.roles.map((role) => (
@@ -125,7 +131,9 @@ const Profile: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <h4 className="font-medium text-gray-800 dark:text-white">Played Roles</h4>
+            <h4 className="font-medium text-gray-800 dark:text-white">
+              Played Roles
+            </h4>
             {userData?.playedRoles?.length ? (
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 {userData.playedRoles.map((role) => (
@@ -138,7 +146,9 @@ const Profile: React.FC = () => {
           </div>
 
           <div className="mb-4">
-            <h4 className="font-medium text-gray-800 dark:text-white">Responsibilities</h4>
+            <h4 className="font-medium text-gray-800 dark:text-white">
+              Responsibilities
+            </h4>
             {userData?.responsibilities?.length ? (
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
                 {userData.responsibilities.map((resp) => (
@@ -146,14 +156,18 @@ const Profile: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-500">No responsibilities assigned</p>
+              <p className="text-sm text-gray-500">
+                No responsibilities assigned
+              </p>
             )}
           </div>
         </div>
 
         {/* My Workloads Section */}
         <div className="max-w-5xl mx-auto p-8  rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark mb-8">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">My Workloads</h3>
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+            My Workloads
+          </h3>
           {userData?.workloads?.length ? (
             <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
               {userData.workloads.map((work) => (
@@ -172,7 +186,6 @@ const Profile: React.FC = () => {
           <Link
             to="/settings"
             className="inline-block bg-primary  text-gray py-2 px-6 rounded font-medium hover:bg-opacity-90"
-           
           >
             Edit Profile
           </Link>

@@ -20,7 +20,7 @@ const PersistLogin = () => {
                 setLoading(false);
             }
         };
-        !auth?.accesstoken ? verifyRefreshToken() : setLoading(false);
+        !auth.accessToken ? verifyRefreshToken() : setLoading(false);
         
     }, []);
         

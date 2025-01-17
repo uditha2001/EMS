@@ -227,3 +227,19 @@ span.flatpickr-weekday,
 [x-cloak] {
   display: none !important;
 }
+
+.table {
+  @apply table-auto w-full border-collapse border border-gray-200 dark:border-strokedark;
+}
+
+.tr {
+  @apply bg-gray-100 dark:bg-form-input;
+}
+
+.th {
+  @apply border border-gray-300 dark:border-strokedark px-4 py-2 text-left;
+}
+
+.td {
+  @apply border border-gray-300 dark:border-strokedark px-4 py-2;
+}

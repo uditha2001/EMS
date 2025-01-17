@@ -122,6 +122,27 @@ public class UserDetailsController {
         }
     }
 
+    @PutMapping("/users/{userId}/status")
+    public ResponseEntity<String> updateUserStatus(@PathVariable Long userId, @RequestParam boolean isActive) {
+        String response = userService.updateUserStatus(userId, isActive);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/getUserById/{userId}")
+    public UserDTO getUserById(@PathVariable Long userId) {
+        return userService.getUserById(userId);
+    }
+
+    @PostMapping("/addBulkUsers")
+    public ResponseEntity<?> addBulkUsers(@RequestBody List<UserDTO> users) {
+        try {
+            userService.saveUsersWithRoles(users);
+            return ResponseEntity.ok("Bulk users created successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create users: " + e.getMessage());
+        }
+    }
+
 
 
 }

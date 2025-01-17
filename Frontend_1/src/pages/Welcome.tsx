@@ -1,17 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AOS from 'aos'; // Import AOS for animations
 import 'aos/dist/aos.css'; // Import the AOS CSS
 
 const WelcomePage: React.FC = () => {
+  // Background images array
+  const bgImages = [
+    'src/images/welcome1.jpg', // Replace with your first image path
+    'src/images/welcome2.jpg', // Replace with your second image path
+    'src/images/welcome3.jpg', // Replace with your third image path
+  ];
+
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
   useEffect(() => {
     AOS.init(); // Initialize AOS when the component mounts
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Cycle through background images
+      setCurrentBgIndex((prevIndex) => (prevIndex + 1) % bgImages.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [bgImages.length]);
+
   return (
     <div
       className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('src/images/welcome.jpg')" }} // Replace with your image path
+      style={{ backgroundImage: `url(${bgImages[currentBgIndex]})` }}
     >
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/60"></div>
@@ -46,9 +64,9 @@ const WelcomePage: React.FC = () => {
         </p>
 
         {/* Buttons with animations */}
-        <div className="flex justify-center space-x-6">
+        <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
           <Link
-            to="/login"
+            to="/dashboard"
             className="inline-flex items-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
             data-aos="zoom-in"
             data-aos-duration="1500"
