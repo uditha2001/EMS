@@ -22,7 +22,7 @@ public class CoursesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String code;
     @Column(nullable = false)
     private String name;
@@ -32,7 +32,9 @@ public class CoursesEntity {
     @Column(nullable = false)
     private Integer level;
     @Column(nullable = false)
-    private int semester;
+    private String semester;
+    @Column(nullable = false)
+    private Boolean isActive;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;

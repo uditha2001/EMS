@@ -12,42 +12,51 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name="exam_paper")
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class ExamPaperEntity {
+public class EncryptedPaper {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String filePath;
+    private String fileName;
+
+    private String remarks;
+
     @Column(nullable = false)
-    private ExamPaperStatus status=ExamPaperStatus.DRAFT;
+    private String filePath;
+
+//    @Lob
+//    private byte[] encryptedData; // Store encrypted PDF data as Base64 encoded string
+
+    @ManyToOne
+    @JoinColumn(name = "creator_id", nullable = false)
+    private UserEntity creator; // Reference to the creator of the paper
+
+    @ManyToOne
+    @JoinColumn(name = "moderator_id", nullable = true)
+    private UserEntity moderator; // Reference to the moderator (optional initially)
+
+    @Column(nullable = false)
+    private boolean isShared = false; // Sharing status
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime sharedAt; // Timestamp when the paper was shared
+
     @CreatedDate
     @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
     @Column(nullable = false,columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "courseId",referencedColumnName = "id",nullable = false)
-    private CoursesEntity course;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "createdBy",referencedColumnName = "username")
-    private UserEntity user;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
     private List<ModerationsEntity> moderations;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
     private List<PapersCoursesEntity> papersCourses;
-
-
-
-
-
-
 
 
 }

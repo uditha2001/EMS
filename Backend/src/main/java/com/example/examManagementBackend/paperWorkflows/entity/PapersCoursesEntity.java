@@ -20,16 +20,25 @@ public class PapersCoursesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name="paper_id")
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)  // Adjust cascade type
+    @JoinColumn(name = "paper_id")
     private ExamPaperEntity examPaper;
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinColumn(name="course_id")
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)  // Adjust cascade type
+    @JoinColumn(name = "encrypted_paper_id",referencedColumnName = "id")
+    private EncryptedPaper encryptedPaper;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)  // Adjust cascade type
+    @JoinColumn(name = "course_id")
     private CoursesEntity course;
+
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 }
+

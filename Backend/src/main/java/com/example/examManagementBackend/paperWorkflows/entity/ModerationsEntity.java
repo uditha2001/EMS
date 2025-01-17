@@ -24,7 +24,7 @@ public class ModerationsEntity {
     @Column(columnDefinition = "TEXT")
     private String feedback;
     @Column(nullable = false)
-    private ModerationsStatus status;
+    private ModerationsStatus status=ModerationsStatus.PENDING;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
@@ -34,7 +34,9 @@ public class ModerationsEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "id",name = "exam_paper_id",nullable = false)
     private ExamPaperEntity examPaper;
-
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(referencedColumnName = "id",name = "encrypted_paper_id",nullable = false)
+    private EncryptedPaper encryptedPaper;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "userId",name="moderators")
     private UserEntity moderator;
