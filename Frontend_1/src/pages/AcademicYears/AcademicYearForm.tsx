@@ -51,8 +51,38 @@ export default function AcademicYearForm({
               onChange={handleInputChange}
               placeholder="e.g., 2023/2024"
               required
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
             />
+
+            <label
+              htmlFor="year"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Level
+            </label>
+            <select
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none mb-4"
+                >
+                   <option value="" disabled selected>Select Level</option>
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+            </select>
+
+            <label
+              htmlFor="year"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Semester
+            </label>
+            <select
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none mb-4"
+                >
+                   <option value="" disabled selected>Select Level</option>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                  <option value="3">Both</option>
+            </select>
           </div>
 
           {/* Form Buttons */}
@@ -70,7 +100,7 @@ export default function AcademicYearForm({
               type="submit"
               className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90"
             >
-              {editId !== null ? 'Update Year' : 'Add Year'}
+              {editId !== null ? 'Update Data' : 'Add Data'}
             </button>
           </div>
         </div>
