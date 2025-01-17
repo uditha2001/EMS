@@ -3,27 +3,24 @@ import { useState,useEffect } from "react";
 type FormData = {
     answer: string;
     comment: string;
-};
+    id:number;
+}
 
-const PaperFeedbackTable = () => {
-    const [data,setData]=useState({});
+const PaperFeedbackTable = ({getDataFromTable}:any) => {
     const [formData, setFormData] = useState<{ [key: string]: FormData }>({
-        item1: { answer: "", comment: "" },
-        item2: { answer: "", comment: "" },
-        item3: { answer: "", comment: "" },
-        item4: { answer: "", comment: "" },
-        item5: { answer: "", comment: "" },
-        item6: { answer: "", comment: "" },
-        item7: { answer: "", comment: "" },
-        item8: { answer: "", comment: "" },
-        item9: { answer: "", comment: "" }
+        item1: { answer: "", comment: "", id: 1 },
+        item2: { answer: "", comment: "", id: 2 },
+        item3: { answer: "", comment: "", id: 3 },
+        item4: { answer: "", comment: "", id: 4 },
+        item5: { answer: "", comment: "", id: 5 },
+        item6: { answer: "", comment: "", id: 6 },
+        item7: { answer: "", comment: "", id: 7 },
+        item8: { answer: "", comment: "", id: 8 },
+        item9: { answer: "", comment: "", id: 9 }
     });
-
-    useEffect(() => {
-        setData(formData);
-        console.log(data);
-    }
-    );
+    useEffect(()=>{
+        getDataFromTable(formData);
+    },[formData])
     const handleRadioChange = (item: string, value: string) => {
         setFormData(prevData => ({
             ...prevData,
@@ -70,6 +67,7 @@ const PaperFeedbackTable = () => {
                                     name={`item${i}`} 
                                     value="yes" 
                                     checked={formData[`item${i}`]?.answer === 'yes'}
+                                    required
                                     onChange={() => handleRadioChange(`item${i}`, 'yes')}
                                 />
                             </td>
@@ -79,6 +77,7 @@ const PaperFeedbackTable = () => {
                                     name={`item${i}`} 
                                     value="no" 
                                     checked={formData[`item${i}`]?.answer === 'no'}
+                                    required
                                     onChange={() => handleRadioChange(`item${i}`, 'no')}
                                 />
                             </td>

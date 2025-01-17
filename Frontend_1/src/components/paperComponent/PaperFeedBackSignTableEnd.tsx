@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const PaperFeedbackQuestionTable = (getTableData:any) => {
+const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
   const [formData, setFormData] = useState({
     generalComment: "",
     agreeAndAddressed: "",
@@ -9,13 +9,15 @@ const PaperFeedbackQuestionTable = (getTableData:any) => {
     learningOutcomes: "",
     courseContent: "",
   });
+  useEffect(()=>{
+    getModerateData(formData);
+  },[formData]);
 
   const handleInputChange = (key: string, value: string, index: number | null = null) => {
     if (index !== null) {
       const updatedNames = [...formData.names];
       updatedNames[index] = value;
       setFormData({ ...formData, names: updatedNames,});
-      getTableData(formData);
       console.log(formData);
     } else {
       setFormData({ ...formData, [key]: value });

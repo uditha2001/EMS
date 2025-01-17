@@ -1,43 +1,77 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
-import PaperFeedbackTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
-import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
+import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
+import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
 
 type questionData = {
     answer: string;
     comment: string;
+    id: number;
 };
+type finalData = {
+    Question: questionData[];
+    generalComment: string;
+    names: string[];
+    learningOutcomes: string;
+    courseContent: string;
+
+}
 const Feedback = () => {
     const [QuestionData, setQuestionData] = useState<{ [key: string]: questionData }>({
-            item1: { answer: "", comment: "" },
-            item2: { answer: "", comment: "" },
-            item3: { answer: "", comment: "" },
-            item4: { answer: "", comment: "" },
-            item5: { answer: "", comment: "" },
-            item6: { answer: "", comment: "" },
-            item7: { answer: "", comment: "" },
-            item8: { answer: "", comment: "" },
-            item9: { answer: "", comment: "" }
+        item1: { answer: "", comment: "", id: 1 },
+        item2: { answer: "", comment: "", id: 2 },
+        item3: { answer: "", comment: "", id: 3 },
+        item4: { answer: "", comment: "", id: 4 },
+        item5: { answer: "", comment: "", id: 5 },
+        item6: { answer: "", comment: "", id: 6 },
+        item7: { answer: "", comment: "", id: 7 },
+        item8: { answer: "", comment: "", id: 8 },
+        item9: { answer: "", comment: "", id: 9 }
+    });
+    const [formData, setFormData] = useState<finalData>();
+    useEffect(() => {
+
+    },[formData])
+    
+    const [moderatorData, setModeratorData] = useState({
+        generalComment: "",
+        names: ["", "", "", ""],
+        learningOutcomes: "",
+        courseContent: "",
+    });
+
+    const handleQuestionsData = (Data: { answer: string; comment: string; id: number }[]) => {
+        const updatedData = { ...QuestionData };
+        Object.values(Data).forEach((item) => {
+            const key = `item${item.id}`;
+            if (updatedData[key]) {
+                updatedData[key] = {
+                    ...updatedData[key],
+                    answer: item.answer,
+                    comment: item.comment,
+                };
+            }
         });
-    const [tableQuestion,setTableEndData]=useState([]);
-    function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
-        event.preventDefault();
-        // Implement form submission logic here
-        console.log("Form submitted");
+
+        setQuestionData(updatedData); // Update the state with the modified object
+    }
+    const handleModerateData = (Data: { generalComment: string; names: string[]; learningOutcomes: string; courseContent: string }) => {
+        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, names: Data.names, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent }));
     }
 
-const handleQuestionsData=(data:any)=>{
-}
-const handleComment=(data:any)=>{
-    setQuestionData((prevData) => ({
-        ...prevData,
-        [data.comment]: { ...prevData[data.comment], comment: data.comment }
-    }));
-}
-const handleTableEndData=(data:any)=>{
-    setTableEndData(data);
-}
+    function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
+        event.preventDefault();
+        setFormData((prevData) => ({
+            ...prevData,
+            Question: Object.values(QuestionData),
+            generalComment: moderatorData.generalComment,
+            names: moderatorData.names,
+            learningOutcomes: moderatorData.learningOutcomes,
+            courseContent: moderatorData.courseContent,
+        })
+        )
 
+    }
 
     return (
         <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
@@ -110,8 +144,8 @@ const handleTableEndData=(data:any)=>{
                             </div>
                         </div>
                     </div>
-                   <PaperFeedbackTable/>
-                   <PaperFeedbackQuestionTable getTableData={handleTableEndData}/>
+                    <PaperFeedbackQuestionTable getDataFromTable={handleQuestionsData} />
+                    <PaperFeedbackSignEndTable getModerateData={handleModerateData} />
                 </div>
 
                 <div className="flex justify-center mt-6">
