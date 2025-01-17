@@ -1,4 +1,5 @@
 import { FormEvent } from "react";
+import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 
 const Feedback = () => {
     function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -9,6 +10,7 @@ const Feedback = () => {
 
     return (
         <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
+            <Breadcrumb pageName="Feedback" />
             <h1 className="text-center font-bold text-title-lg">
                 Evaluation Form for Moderation of Examination papers
                 <br /> Department of Computer Science-University of Ruhuna
@@ -27,7 +29,7 @@ const Feedback = () => {
                         <select
                             id="degreeProgram"
                             name="degreeProgram"
-                            className="w-2/3 h-8 border-2 border-gray-300 p-1 rounded-md  dark:text-black"
+                            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
                         >
                             <option>Computer Science</option>
                         </select>
@@ -413,7 +415,7 @@ const Feedback = () => {
 
                             </tbody>
                         </table>
-                        
+
                     </div>
 
 
