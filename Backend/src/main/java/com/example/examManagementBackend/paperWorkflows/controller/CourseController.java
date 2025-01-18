@@ -49,8 +49,8 @@ public class CourseController {
     }
     //get course details using degree program id
     @GetMapping("/byDegreeProgram")
-    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(@RequestBody DegreeProgramDTO dto) {
-        return  coursesService.getCourseByDegreeProgram(dto);
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(@RequestParam String degreeName) {
+        return  coursesService.getCourseByDegreeProgram(degreeName);
     }
 
     @PutMapping("/{id}")

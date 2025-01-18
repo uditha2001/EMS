@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CoursesRepository extends JpaRepository<CoursesEntity, Long> {
     CoursesEntity findBycode(String code);
-    @Query("SELECT ce FROM CoursesEntity ce WHERE ce.degreeProgramsEntity.id= :degreeId")
-    CoursesEntity getdataByDegreeId(@Param("degreeId") Long degreeId);
+    @Query("SELECT ce FROM CoursesEntity ce WHERE ce.degreeProgramsEntity.degreeName= :degreeName")
+    CoursesEntity getdataByDegreeName(@Param("degreeName") String degreeName);
 }

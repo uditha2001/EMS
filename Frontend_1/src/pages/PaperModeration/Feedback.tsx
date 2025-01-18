@@ -33,8 +33,7 @@ const Feedback = () => {
     const [formData, setFormData] = useState<finalData>();
     const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
     useEffect(() => {
-        const courses=await Axios.get("/")
-        console.log(selectedDegreeProgram);
+      console.log(degreeName);
     }, [selectedDegreeProgram])
     useEffect(() => {
     }

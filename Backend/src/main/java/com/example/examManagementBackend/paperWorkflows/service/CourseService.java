@@ -113,8 +113,8 @@ public class CourseService {
 
         coursesRepository.delete(course);
     }
-    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(DegreeProgramDTO dto) {
-        CoursesEntity coursesEntity=coursesRepository.getdataByDegreeId(dto.getId());
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(String degreeProgram) {
+        CoursesEntity coursesEntity=coursesRepository.getdataByDegreeName(degreeProgram);
         if(coursesEntity!=null) {
             return new ResponseEntity<StandardResponse>(
                     new StandardResponse(200,"sucess",coursesEntity), HttpStatus.OK
