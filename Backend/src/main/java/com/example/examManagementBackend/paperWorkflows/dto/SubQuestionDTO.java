@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class SubQuestionDTO {
+    private Long subQuestionId;
     private int subQuestionNumber;
     private QuestionType questionType;
     private float marks;
