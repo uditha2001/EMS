@@ -41,7 +41,6 @@ const Feedback = () => {
                 if (courses.status === 200) {
                     const data = Array.isArray(courses.data.data) ? courses.data.data : [courses.data.data];
                     setCourseData(data);
-                    console.log(data);
                 }
                 else if (courses.status === 500) {
                     console.log("No courses found");
