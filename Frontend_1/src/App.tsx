@@ -36,6 +36,7 @@ import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
 import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
+import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
 import Feedback from './pages/PaperModeration/Feedback';
 
 function App() {
@@ -252,6 +253,13 @@ function App() {
               <Route
                 path="/paper/create"
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
+              />
+              <Route
+                path="/paper/create/structure"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <CreatePaperStructure />,
+                )}
               />
             </Route>
 

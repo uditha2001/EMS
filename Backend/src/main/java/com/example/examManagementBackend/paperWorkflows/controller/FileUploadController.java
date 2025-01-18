@@ -98,7 +98,7 @@ public class FileUploadController {
                             paper.getFileName(),
                             paper.isShared(),
                             paper.getRemarks(),
-                            paper.getSharedAt(),
+                            paper.getCreatedAt(),
                             paper.getCreator(),
                             paper.getModerator()))
                     .collect(Collectors.toList());
@@ -118,4 +118,29 @@ public class FileUploadController {
             return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/view/{id}")
+    public ResponseEntity<?> viewEncryptedFile(
+            @PathVariable Long id,
+            @RequestParam("moderatorId") Long moderatorId) {
+        try {
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
+
+            if (encryptedPaper == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
+            }
+
+            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "inline; filename=" + encryptedPaper.getFileName())
+                    .body(decryptedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error viewing file: " + e.getMessage(), null));
+        }
+    }
+
 }
