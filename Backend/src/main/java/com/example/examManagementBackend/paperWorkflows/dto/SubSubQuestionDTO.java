@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class SubSubQuestionDTO {
+    private Long subSubQuestionId;
     private int subSubQuestionNumber;
     private QuestionType questionType;
     private float marks;
