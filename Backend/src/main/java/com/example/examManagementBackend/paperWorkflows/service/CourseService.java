@@ -1,13 +1,18 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,5 +113,34 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + id));
 
         coursesRepository.delete(course);
+    }
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(String degreeProgram) {
+        List<CoursesEntity> coursesEntity=coursesRepository.getdataByDegreeName(degreeProgram);
+        if(coursesEntity!=null) {
+            List<CourseDTO> courseDTO=new ArrayList<CourseDTO>();
+            for(CoursesEntity coursesEntity1 : coursesEntity){
+                CourseDTO courseDTO1=new CourseDTO( );
+                courseDTO1.setId(coursesEntity1.getId());
+                courseDTO1.setCode(coursesEntity1.getCode());
+                courseDTO1.setName(coursesEntity1.getName());
+                courseDTO1.setDescription(coursesEntity1.getDescription());
+                courseDTO1.setLevel(coursesEntity1.getLevel());
+                courseDTO1.setSemester(coursesEntity1.getSemester());
+                courseDTO1.setIsActive(coursesEntity1.getIsActive());
+                courseDTO1.setCourseType(coursesEntity1.getCourseType().name());
+                courseDTO1.setCreatedAt(coursesEntity1.getCreatedAt());
+                courseDTO1.setUpdatedAt(coursesEntity1.getUpdatedAt());
+                courseDTO.add(courseDTO1);
+            }
+
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"sucess",courseDTO), HttpStatus.OK
+            );
+        }
+        else{
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"failed",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
