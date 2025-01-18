@@ -15,7 +15,7 @@ const CreateCourse: React.FC = () => {
   useEffect(() => {
     const key = `${level}-${semester}-${degree}`;
     const courseCodeMapping: Record<string, string> = {
-      "1-1-BCS": "CSC11",
+     "1-1-BCS": "CSC11",
       "1-2-BCS": "CSC12",
       "2-1-BCS": "CSC21",
       "2-2-BCS": "CSC22",
@@ -27,12 +27,12 @@ const CreateCourse: React.FC = () => {
       "2-2-BSC": "COM22",
       "3-1-BSC": "COM31",
       "3-2-BSC": "COM32",
-      "4-1-BCS.Hons": "CSCS41",
-      "4-2-BCS.Hons": "CSCS42",
-      "3-1-BSC.Hons": "COMS31",
-      "3-2-BSC.Hons": "COMS32",
-      "4-1-BSC.Hons": "COMS41",
-      "4-2-BSC.Hons": "COMS42",
+      "4-1-BCS.hons": "CSCS41",
+      "4-2-BCS.hons": "CSCS42",
+      "3-1-BSC.hons": "COMS31",
+      "3-2-BSC.hons": "COMS32",
+      "4-1-BSC.hons": "COMS41",
+      "4-2-BSC.hons": "COMS42",
     };
     setCourseCodePrefix(courseCodeMapping[key] || "");
   }, [level, semester, degree]);
@@ -86,7 +86,7 @@ const CreateCourse: React.FC = () => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Level:</label>
           <div className="flex space-x-4">
-            {[1, 2, 3].map((lvl) => (
+            {[1, 2, 3, 4].map((lvl) => (
               <label key={lvl} className="flex items-center text-sm">
                 <input
                   type="radio"
