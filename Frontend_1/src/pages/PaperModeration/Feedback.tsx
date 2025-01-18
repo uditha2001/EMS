@@ -31,9 +31,14 @@ const Feedback = () => {
     const [degreeName, setDegreeName] = useState<any[]>([]);
     const Axios = useAxiosPrivate();
     const [formData, setFormData] = useState<finalData>();
+    const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
     useEffect(() => {
-
-    }, [formData])
+        const courses=await Axios.get("/")
+        console.log(selectedDegreeProgram);
+    }, [selectedDegreeProgram])
+    useEffect(() => {
+    }
+        , [degreeName])
     useEffect(() => {
         const fetchDegreePrograms = async () => {
             try {
@@ -42,7 +47,6 @@ const Feedback = () => {
                     setDegreeName((prev) => ({ ...prev, ...degreeData.data }));
                     const arrayData = Array.isArray(degreeData.data) ? degreeData.data : [degreeData.data];
                     setDegreeName(arrayData);
-                    console.log(degreeData);
 
                 }
             } catch (error) {
@@ -58,6 +62,9 @@ const Feedback = () => {
         learningOutcomes: "",
         courseContent: "",
     });
+    const handleDegreeName = (event: any) => {
+        setSelectedDegreeProgram(event.target.value);
+    }
 
     const handleQuestionsData = (Data: { answer: string; comment: string; id: number }[]) => {
         const updatedData = { ...QuestionData };
@@ -112,11 +119,15 @@ const Feedback = () => {
                         </label>
                         <select
                             id="degreeProgram"
-                            name="degreeProgram"
+                            name={selectedDegreeProgram}
                             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                            onChange={handleDegreeName}
                         >
+                            <option value="" disabled selected>
+                                -- Select a degree --
+                            </option>
                             {degreeName.map((degree) => (
-                                <option key={degree.id} value={degree.id}>
+                                <option key={degree.id} value={degree.name}>
                                     {degree.name}
                                 </option>
                             ))}
