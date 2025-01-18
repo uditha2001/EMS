@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import { useParams } from 'react-router-dom';
+import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 interface SubSubQuestion {
   subSubQuestionNumber: number;
@@ -25,12 +26,14 @@ interface Question {
 }
 
 const CreatePaperStructure: React.FC = () => {
+  const { paperId } = useParams<{ paperId: string }>();
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isMarksBalanced, setIsMarksBalanced] = useState(true);
+  const axiosPrivate = useAxiosPrivate();
 
   const initializeQuestions = () => {
     const initialQuestions = Array.from(
@@ -186,8 +189,8 @@ const CreatePaperStructure: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(
-        'http://localhost:8080/api/v1/questions/15',
+      await axiosPrivate.post(
+        `http://localhost:8080/api/v1/structure/${paperId}`,
         questions,
         {
           headers: {
