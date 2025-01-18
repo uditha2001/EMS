@@ -49,7 +49,7 @@ public class CourseController {
     //get course details using degree program id
     @GetMapping("/byDegreeProgram")
     public ResponseEntity<StandardResponse> getCourseByDegreeProgram(@RequestParam String degreeId) {
-     return  null;
+        
     }
 
     @PutMapping("/{id}")
