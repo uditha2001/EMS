@@ -34,7 +34,7 @@ public class CourseController {
     public ResponseEntity<StandardResponse> saveCourse(@Valid @RequestBody CourseDTO dto) {
         CoursesEntity savedCourse = coursesService.saveCourse(dto);
         return new ResponseEntity<>(
-                new StandardResponse(201, "Course created successfully", savedCourse),
+                new StandardResponse(200, "Course created successfully", savedCourse),
                 HttpStatus.CREATED
         );
     }
