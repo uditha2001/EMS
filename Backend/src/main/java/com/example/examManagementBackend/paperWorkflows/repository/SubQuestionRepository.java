@@ -4,7 +4,10 @@ import com.example.examManagementBackend.paperWorkflows.entity.SubQuestionEntity
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SubQuestionRepository extends JpaRepository<SubQuestionEntity, Long> {
-    // Additional query methods (if needed) can be added here.
+    List<SubQuestionEntity> findByQuestionStructure_Id(Long questionStructureId);
+
 }
