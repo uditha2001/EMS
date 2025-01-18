@@ -1,4 +1,3 @@
-import FileUpload from './FileUpload';
 import FileList from './FileList';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
@@ -15,14 +14,6 @@ export default function TransferPaper() {
         </div>
 
         <div className="p-6.5">
-          {/* File Upload Section */}
-          <div className="mb-6">
-            <FileUpload />
-          </div>
-
-          {/* Divider between File Upload and File List */}
-          <div className="my-6 border-t border-gray-300"></div>
-
           {/* File List Section */}
           <div className="mb-6">
             <FileList />
