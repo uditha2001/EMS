@@ -36,10 +36,11 @@ const CreateCourse: React.FC = () => {
     setCourseDescription("");
   };
 
-  // Validate and update the course code suffix
-  const handleCourseCodeSuffixChange = (value: string) => {
-    if (/^\d{2,3}$/.test(value) || value === "") {
-      setCourseCodeSuffix(value);
+  // Handle course code suffix change
+  const handleCourseCodeSuffixChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d{0,3}$/.test(value)) {
+      setCourseCodeSuffix(value); // Allow up to 3 digits
     }
   };
 
@@ -121,7 +122,7 @@ const CreateCourse: React.FC = () => {
               type="text"
               value={courseCodeSuffix}
               placeholder="Suffix (2-3 digits)"
-              onChange={(e) => handleCourseCodeSuffixChange(e.target.value)}
+              onChange={handleCourseCodeSuffixChange}
               className="w-2/3 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
