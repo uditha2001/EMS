@@ -46,6 +46,11 @@ public class CourseController {
                 HttpStatus.OK
         );
     }
+    //get course details using degree program id
+    @GetMapping("/byDegreeProgram")
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(@RequestParam String degreeId) {
+     return  null;
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<StandardResponse> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseDTO dto) {

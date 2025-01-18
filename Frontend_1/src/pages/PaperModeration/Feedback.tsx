@@ -40,7 +40,9 @@ const Feedback = () => {
                 const degreeData = await Axios.get("/degreePrograms");
                 if (degreeData.data) {
                     setDegreeName((prev) => ({ ...prev, ...degreeData.data }));
-                    console.log(degreeData.data);
+                    const arrayData = Array.isArray(degreeData.data) ? degreeData.data : [degreeData.data];
+                    setDegreeName(arrayData);
+                    console.log(degreeData);
 
                 }
             } catch (error) {
@@ -111,15 +113,15 @@ const Feedback = () => {
                         <select
                             id="degreeProgram"
                             name="degreeProgram"
-                            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+                            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                         >
-                          {degreeName.map((degree) => (
+                            {degreeName.map((degree) => (
                                 <option key={degree.id} value={degree.id}>
                                     {degree.name}
                                 </option>
-                            )
-                            )}
+                            ))}
                         </select>
+
                     </div>
 
                     {/* Examination */}
