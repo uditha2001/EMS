@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/questions")
+@RequestMapping("/api/v1/structure")
 public class QuestionController {
 
     @Autowired
@@ -27,4 +27,15 @@ public class QuestionController {
                 null // No additional data to return
         ));
     }
+
+    @GetMapping("/{paperId}")
+    public ResponseEntity<StandardResponse> getQuestionStructure(@PathVariable Long paperId) {
+        List<QuestionStructureDTO> questionStructure = questionService.getQuestionStructure(paperId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Question structure retrieved successfully.",
+                questionStructure
+        ));
+    }
+
 }
