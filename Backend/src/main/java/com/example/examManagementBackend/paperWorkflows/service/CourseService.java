@@ -1,11 +1,15 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -108,5 +112,18 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + id));
 
         coursesRepository.delete(course);
+    }
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(DegreeProgramDTO dto) {
+        CoursesEntity coursesEntity=coursesRepository.getdataByDegreeId(dto.getId());
+        if(coursesEntity!=null) {
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"sucess",coursesEntity), HttpStatus.OK
+            );
+        }
+        else{
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"failed",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
