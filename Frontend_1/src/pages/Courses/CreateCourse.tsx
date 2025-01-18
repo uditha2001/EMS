@@ -21,6 +21,18 @@ const CreateCourse: React.FC = () => {
       "2-2-BCS": "CSC22",
       "3-1-BCS": "CSC31",
       "3-2-BCS": "CSC32",
+      "1-1-BSC": "COM11",
+      "1-2-BSC": "COM12",
+      "2-1-BSC": "COM21",
+      "2-2-BSC": "COM22",
+      "3-1-BSC": "COM31",
+      "3-2-BSC": "COM32",
+      "4-1-BCS.Hons": "CSCS41",
+      "4-2-BCS.Hons": "CSCS42",
+      "3-1-BSC.Hons": "COMS31",
+      "3-2-BSC.Hons": "COMS32",
+      "4-1-BSC.Hons": "COMS41",
+      "4-2-BSC.Hons": "COMS42",
     };
     setCourseCodePrefix(courseCodeMapping[key] || "");
   }, [level, semester, degree]);
