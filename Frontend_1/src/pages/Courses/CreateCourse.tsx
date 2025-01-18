@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const CreateCourse: React.FC = () => {
   const [level, setLevel] = useState<string>("");
@@ -11,7 +11,7 @@ const CreateCourse: React.FC = () => {
   const [courseDescription, setCourseDescription] = useState<string>("");
 
   // Update course code prefix based on level, semester, and degree
-  const updateCourseCodePrefix = () => {
+  useEffect(() => {
     const key = `${level}-${semester}-${degree}`;
     const courseCodeMapping: Record<string, string> = {
       "1-1-BCS": "CSC11",
@@ -22,7 +22,7 @@ const CreateCourse: React.FC = () => {
       "3-2-BCS": "CSC32",
     };
     setCourseCodePrefix(courseCodeMapping[key] || "");
-  };
+  }, [level, semester, degree]);
 
   // Reset the form
   const resetForm = () => {
@@ -49,7 +49,7 @@ const CreateCourse: React.FC = () => {
       alert("Please enter a valid course code suffix (2 or 3 digits).");
       return;
     }
-    alert("Form submitted successfully!");
+    alert(`Form submitted successfully! Course Code: ${courseCodePrefix}${courseCodeSuffix}`);
   };
 
   return (
@@ -67,10 +67,7 @@ const CreateCourse: React.FC = () => {
                   name="level"
                   value={lvl}
                   checked={level === lvl.toString()}
-                  onChange={() => {
-                    setLevel(lvl.toString());
-                    updateCourseCodePrefix();
-                  }}
+                  onChange={() => setLevel(lvl.toString())}
                   className="mr-2"
                 />
                 Level {lvl}
@@ -84,10 +81,7 @@ const CreateCourse: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">Semester:</label>
           <select
             value={semester}
-            onChange={(e) => {
-              setSemester(e.target.value);
-              updateCourseCodePrefix();
-            }}
+            onChange={(e) => setSemester(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">--Select Semester--</option>
@@ -101,10 +95,7 @@ const CreateCourse: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">Degree:</label>
           <select
             value={degree}
-            onChange={(e) => {
-              setDegree(e.target.value);
-              updateCourseCodePrefix();
-            }}
+            onChange={(e) => setDegree(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">--Select Degree--</option>
