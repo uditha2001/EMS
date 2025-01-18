@@ -3,53 +3,88 @@ package com.example.examManagementBackend.paperWorkflows.service;
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DegreeProgramService {
 
-    @Autowired
-    DegreeProgramRepo repo;
+    private final DegreeProgramRepo degreeProgramRepo;
 
-    public List<DegreeProgramsEntity> getAllDegreePrograms(){
-        List<DegreeProgramsEntity> degreeProgramList = repo.findAll();
-        return  degreeProgramList;
+    public DegreeProgramService(DegreeProgramRepo degreeProgramRepo) {
+        this.degreeProgramRepo = degreeProgramRepo;
     }
 
-    public DegreeProgramsEntity saveDegreeProgram(DegreeProgramDTO dto){
+    /**
+     * Get all degree programs and convert them to DTOs.
+     */
+    public List<DegreeProgramDTO> getAllDegreePrograms() {
+        return degreeProgramRepo.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Save a new degree program.
+     */
+    public DegreeProgramDTO saveDegreeProgram(DegreeProgramDTO dto) {
         DegreeProgramsEntity entity = new DegreeProgramsEntity();
         entity.setDegreeName(dto.getName());
         entity.setDegreeDescription(dto.getDescription());
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setUpdatedAt(null); // Initially null for new records
 
-        return repo.save(entity);
+        DegreeProgramsEntity savedEntity = degreeProgramRepo.save(entity);
+        return convertToDTO(savedEntity);
     }
 
-    public DegreeProgramsEntity getOneDegreeProgram(int id){
-        DegreeProgramsEntity entity = repo.findById(id).orElseThrow(() -> new RuntimeException("Degree Program not found with id: " + id));
-        return entity;
+    /**
+     * Get a single degree program by ID and convert it to a DTO.
+     */
+    public DegreeProgramDTO getOneDegreeProgram(long id) {
+        DegreeProgramsEntity entity = degreeProgramRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
+        return convertToDTO(entity);
     }
 
-    public DegreeProgramsEntity updateDegreeProgram(DegreeProgramDTO dto, int id){
-
-        DegreeProgramsEntity existingProgram = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Degree Program not found with id: " + id));
+    /**
+     * Update an existing degree program.
+     */
+    public DegreeProgramDTO updateDegreeProgram(DegreeProgramDTO dto, long id) {
+        DegreeProgramsEntity existingProgram = degreeProgramRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
 
         existingProgram.setDegreeName(dto.getName());
         existingProgram.setDegreeDescription(dto.getDescription());
-        existingProgram.setUpdatedAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+        existingProgram.setUpdatedAt(LocalDateTime.now());
 
-        return repo.save(existingProgram);
+        DegreeProgramsEntity updatedEntity = degreeProgramRepo.save(existingProgram);
+        return convertToDTO(updatedEntity);
     }
 
-    public void deleteDegreeProgram(int id) {
-        DegreeProgramsEntity existingProgram = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Degree Program not found with id: " + id));
+    /**
+     * Delete a degree program by ID.
+     */
+    public void deleteDegreeProgram(long id) {
+        DegreeProgramsEntity existingProgram = degreeProgramRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Degree Program not found with ID: " + id));
 
-        repo.delete(existingProgram);
+        degreeProgramRepo.delete(existingProgram);
     }
 
+    /**
+     * Convert DegreeProgramsEntity to DegreeProgramDTO.
+     */
+    private DegreeProgramDTO convertToDTO(DegreeProgramsEntity entity) {
+        return new DegreeProgramDTO(
+                entity.getId(),
+                entity.getDegreeName(),
+                entity.getDegreeDescription(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
 }

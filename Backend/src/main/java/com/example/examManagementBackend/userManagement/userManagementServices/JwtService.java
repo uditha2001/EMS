@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class JwtService implements UserDetailsService {
+public class JwtService implements UserDetailsService{
 
     @Autowired
     private UserManagementRepo userManagementRepo;
@@ -120,6 +120,7 @@ public class JwtService implements UserDetailsService {
 
        return null;
     }
+
     private void authenticate(String username, String password){
         try{
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
@@ -153,20 +154,16 @@ public class JwtService implements UserDetailsService {
 
     //refresh the acess token using refresh token
     public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final String authorizationHeader = request.getHeader("Authorization");
-        String acesssToken=null;
+        UserEntity userEntity=null;
         String userName=null;
         String refreshToken=null;
         TokenEntity token=null;
         LoginResponseDTO loginResponseDTO=null;
-        UserEntity userEntity=null;
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            acesssToken= authorizationHeader.substring(7);
-            token=tokenRepo.findByAcessToken(acesssToken);
-            refreshToken=token.getRefreshToken();
-            userName=jwtUtill.extractUserName(refreshToken);
-        }
-        if(userName!=null){
+        Object[] test=getUserNameAndToken(request);
+        userName=(String)test[0];
+        refreshToken=(String)test[1];
+        token=(TokenEntity)test[2];
+        if(userName!=null && refreshToken!=null && token!=null){
             UserDetails userDetails=loadUserByUsername(userName);
             userEntity=userManagementRepo.findByUsername(userName);
             UserDTO userDTO=new UserDTO(
@@ -195,6 +192,23 @@ public class JwtService implements UserDetailsService {
 
         return loginResponseDTO;
     }
+
+    public Object[] getUserNameAndToken(HttpServletRequest request){
+        final String authorizationHeader = request.getHeader("Authorization");
+        String acesssToken=null;
+        String userName=null;
+        String refreshToken=null;
+        TokenEntity token=null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            acesssToken= authorizationHeader.substring(7);
+            token=tokenRepo.findByAcessToken(acesssToken);
+            refreshToken=token.getRefreshToken();
+            userName=jwtUtill.extractUserName(refreshToken);
+        }
+        return new Object[] {userName,refreshToken,token};
+
+    }
+
 
     public String cleanTokens(HttpServletRequest request){
         final String authorizationHeader = request.getHeader("Authorization");

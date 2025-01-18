@@ -22,33 +22,55 @@ public class CoursesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+
+    @Column(nullable = false, unique = true)
     private String code;
+
     @Column(nullable = false)
     private String name;
+
     @Column(columnDefinition = "TEXT")
     @Size(max = 40000)
     private String description;
+
     @Column(nullable = false)
     private Integer level;
+
     @Column(nullable = false)
-    private int semester;
+    private String semester;
+
+    @Column(nullable = false)
+    private Boolean isActive;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CourseType courseType; // Added courseType field
+
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
+
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
+
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="degree_program_id",referencedColumnName = "id",nullable = false)
+    @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<PapersCoursesEntity> papersCoursesEntityList;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<RoleAssignmentEntity> roleAssignmentList;
 
-
-
+    // Enum for Course Type
+    public enum CourseType {
+        THEORY,
+        PRACTICAL,
+        BOTH
+    }
 }

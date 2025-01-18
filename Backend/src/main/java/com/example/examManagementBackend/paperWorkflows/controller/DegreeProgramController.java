@@ -1,7 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.service.DegreeProgramService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,36 +10,50 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/degreeProgram")
+@RequestMapping("/api/v1/degreePrograms")
 public class DegreeProgramController {
 
     @Autowired
-    DegreeProgramService degreeProgramService;
+    private DegreeProgramService degreeProgramService;
 
+    /**
+     * Get all degree programs.
+     */
     @GetMapping
-    public List<DegreeProgramsEntity> getAllDegreePrograms(){
-        return degreeProgramService.getAllDegreePrograms();
+    public ResponseEntity<List<DegreeProgramDTO>> getAllDegreePrograms() {
+        return ResponseEntity.ok(degreeProgramService.getAllDegreePrograms());
     }
 
+    /**
+     * Save a new degree program.
+     */
     @PostMapping
-    public DegreeProgramsEntity saveDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto){
-        return degreeProgramService.saveDegreeProgram(dto);
+    public ResponseEntity<DegreeProgramDTO> saveDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto) {
+        return ResponseEntity.status(201).body(degreeProgramService.saveDegreeProgram(dto));
     }
 
+    /**
+     * Get a single degree program by ID.
+     */
     @GetMapping("/{id}")
-    public DegreeProgramsEntity getOneDegreeProgram(@PathVariable("id") int id){
-        return degreeProgramService.getOneDegreeProgram(id);
+    public ResponseEntity<DegreeProgramDTO> getOneDegreeProgram(@PathVariable("id") int id) {
+        return ResponseEntity.ok(degreeProgramService.getOneDegreeProgram(id));
     }
 
+    /**
+     * Update an existing degree program by ID.
+     */
     @PutMapping("/{id}")
-    public DegreeProgramsEntity updateDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto, @PathVariable("id") int id){
-        return degreeProgramService.updateDegreeProgram(dto, id);
+    public ResponseEntity<DegreeProgramDTO> updateDegreeProgram(@Valid @RequestBody DegreeProgramDTO dto, @PathVariable("id") int id) {
+        return ResponseEntity.ok(degreeProgramService.updateDegreeProgram(dto, id));
     }
 
+    /**
+     * Delete a degree program by ID.
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteDegreeProgram(@PathVariable int id){
+    public ResponseEntity<String> deleteDegreeProgram(@PathVariable("id") int id) {
         degreeProgramService.deleteDegreeProgram(id);
-        return ResponseEntity.ok("Deleted sucessfully with degreeProgramId: " + id);
+        return ResponseEntity.ok("Degree program deleted successfully with ID: " + id);
     }
-
 }

@@ -19,16 +19,19 @@ import java.util.Optional;
 
 @Service
 public class UserManagementServices {
-    @Autowired
-    UserManagementRepo userManagementRepo;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserRolesRepository userRolesRepo;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    MailService mailService;
+    private final  UserManagementRepo userManagementRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRolesRepository userRolesRepo;
+    private final RoleRepository roleRepository;
+    private final MailService mailService;
+
+    public UserManagementServices(UserManagementRepo userManagementRepo, PasswordEncoder passwordEncoder,UserRolesRepository userRolesRepo, RoleRepository roleRepository, MailService mailService) {
+        this.userManagementRepo = userManagementRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.userRolesRepo = userRolesRepo;
+        this.roleRepository = roleRepository;
+        this.mailService = mailService;
+    }
 
 
     public String saveUser(UserDTO user){

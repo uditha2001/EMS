@@ -91,6 +91,8 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p22);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
+            assignPermissionToRole(paperCreatorRole,p21);
+            assignPermissionToRole(paperModeratorRole,p21);
 
 
             // Create admin user

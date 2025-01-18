@@ -1,27 +1,29 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CourseDTO {
-
-
-
-        @NotEmpty
         private Long id;
-        @NotEmpty
+        @NotEmpty(message = "Code cannot be empty")
         private String code;
-        @NotEmpty
+        @NotEmpty(message = "Name cannot be empty")
         private String name;
-        @NotNull
-        @Size(max = 40000)
         private String description;
-        @NotNull
         private Integer level;
-        @NotEmpty
-        private int semester;
-    }
+        private String semester;
+        private Boolean isActive;
+        @NotEmpty(message = "Course type cannot be empty")
+        private String courseType; // Added courseType field as String for flexibility
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private Long degreeProgramId; // Reference to DegreeProgramsEntity
 
+}

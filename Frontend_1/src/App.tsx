@@ -35,6 +35,9 @@ import ModeratePaper from './pages/PaperModeration/ModeratePaper';
 import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
+import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
+import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
+import Feedback from './pages/PaperModeration/Feedback';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -79,6 +82,7 @@ function App() {
           path="/reset-password"
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
+
       </Route>
 
       {/* Authenticated Routes */}
@@ -250,6 +254,13 @@ function App() {
                 path="/paper/create"
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
+              <Route
+                path="/paper/create/structure"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <CreatePaperStructure />,
+                )}
+              />
             </Route>
 
             <Route
@@ -262,6 +273,10 @@ function App() {
                   <ModeratePaper />,
                 )}
               />
+              <Route
+                path="/paper/feedback"
+                element={renderPage('Feedback | EMS', <Feedback />)}
+              />
             </Route>
 
             <Route
@@ -270,6 +285,13 @@ function App() {
               <Route
                 path="/paper/transfer"
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
+              />
+              <Route
+                path="/paper/transfer/history"
+                element={renderPage(
+                  'Transaction History | EMS',
+                  <TransactionHistory />,
+                )}
               />
             </Route>
 

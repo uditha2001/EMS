@@ -1,96 +1,146 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
+import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
-import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
-import com.example.examManagementBackend.paperWorkflows.service.EncryptionService;
+import com.example.examManagementBackend.paperWorkflows.service.FileService;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/papers")
 public class FileUploadController {
 
     @Autowired
-    private EncryptionService encryptionService;
+    private FileService fileService;
 
-    @Autowired
-    private EncryptedPaperRepository encryptedPaperRepository;
-
-    // Endpoint to handle file upload and encryption
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<StandardResponse> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("creatorId") Long creatorId,
+            @RequestParam("courseIds") List<Long> courseIds,
+            @RequestParam("remarks") String remarks,
+            @RequestParam("moderatorId") Long moderatorId) {
         try {
-            // Check if the file is a PDF
-            if (!file.getContentType().equals("application/pdf")) {
-                return ResponseEntity.badRequest().body("Please upload a valid PDF file.");
+            // Validate courseIds
+            if (courseIds == null || courseIds.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "At least one course must be selected.", null));
             }
 
-            // Encrypt the file content
-            byte[] fileBytes = file.getBytes();
-            String encryptedFile = encryptionService.encrypt(fileBytes);
+            // Ensure only creator can upload the paper
+            Optional<UserEntity> userEntityOptional = fileService.userRepository.findById(creatorId);
+            if (userEntityOptional.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Invalid creator ID.", null));
+            }
 
-            // Create a new EncryptedPaper entity
-            EncryptedPaper encryptedPaper = new EncryptedPaper(file.getOriginalFilename(), encryptedFile);
+            // Validate file type
+            if (!"application/pdf".equals(file.getContentType())) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Invalid file type. Only PDF files are allowed.", null));
+            }
 
-            // Save the encrypted paper in the database
-            encryptedPaperRepository.save(encryptedPaper);
+            // Encrypt and save file
+            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks);
 
-            return ResponseEntity.ok("File uploaded and encrypted successfully!");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error uploading file: ");
-        }
-    }
-
-    // Endpoint to download a file by ID
-    @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadEncryptedFile(@PathVariable Long id) {
-        EncryptedPaper encryptedPaper = encryptedPaperRepository.findById(id).orElse(null);
-
-        if (encryptedPaper == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            byte[] encryptedBytes = Base64.getDecoder().decode(encryptedPaper.getEncryptedData());
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + encryptedPaper.getFileName())
-                    .body(encryptedBytes);
+                    .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error decrypting the file.".getBytes());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error uploading file: " + e.getMessage(), null));
         }
     }
 
-    // New Endpoint to get all papers
-    @GetMapping("/papers")
-    public ResponseEntity<List<EncryptedPaper>> getAllPapers() {
-        try {
-            List<EncryptedPaper> papers = encryptedPaperRepository.findAll();
-            return ResponseEntity.ok(papers);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
-    }
 
-    // New Endpoint to delete a paper by ID
-    @DeleteMapping("/papers/{id}")
-    public ResponseEntity<String> deletePaper(@PathVariable Long id) {
+
+    @GetMapping("/download/{id}")
+    public ResponseEntity<?> downloadEncryptedFile(
+            @PathVariable Long id,
+            @RequestParam("moderatorId") Long moderatorId) {
         try {
-            EncryptedPaper encryptedPaper = encryptedPaperRepository.findById(id).orElse(null);
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
 
             if (encryptedPaper == null) {
-                return ResponseEntity.status(404).body("Paper not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            encryptedPaperRepository.deleteById(id);
-            return ResponseEntity.ok("Paper deleted successfully.");
+            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=" + encryptedPaper.getFileName())
+                    .body(decryptedData);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error deleting paper: ");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error downloading file: " + e.getMessage(), null));
         }
     }
+
+
+    @GetMapping
+    public ResponseEntity<StandardResponse> getAllPapers() {
+        try {
+            List<EncryptedPaper> papers = fileService.getAllEncryptedPapers();
+            List<EncryptedPaperDTO> paperDTOs = papers.stream()
+                    .map(paper -> new EncryptedPaperDTO(
+                            paper.getId(),
+                            paper.getFileName(),
+                            paper.isShared(),
+                            paper.getRemarks(),
+                            paper.getCreatedAt(),
+                            paper.getCreator(),
+                            paper.getModerator()))
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(new StandardResponse(200, "Papers retrieved successfully.", paperDTOs), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new StandardResponse(500, "Error retrieving papers: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<StandardResponse> deletePaper(@PathVariable Long id) {
+        try {
+            fileService.deletePaperById(id);
+            return new ResponseEntity<>(new StandardResponse(200, "Paper deleted successfully.", null), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/view/{id}")
+    public ResponseEntity<?> viewEncryptedFile(
+            @PathVariable Long id,
+            @RequestParam("moderatorId") Long moderatorId) {
+        try {
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
+
+            if (encryptedPaper == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
+            }
+
+            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "inline; filename=" + encryptedPaper.getFileName())
+                    .body(decryptedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error viewing file: " + e.getMessage(), null));
+        }
+    }
+
 }
