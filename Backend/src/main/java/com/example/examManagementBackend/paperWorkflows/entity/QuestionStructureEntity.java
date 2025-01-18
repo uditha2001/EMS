@@ -43,4 +43,5 @@ public class QuestionStructureEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionStructure")
     private List<SubQuestionEntity> subQuestions;
+
 }
