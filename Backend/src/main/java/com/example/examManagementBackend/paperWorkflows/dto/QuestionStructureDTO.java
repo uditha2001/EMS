@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class QuestionStructureDTO {
+    private Long questionId;
     private int questionNumber;
     private QuestionType questionType;
     private int totalMarks;
