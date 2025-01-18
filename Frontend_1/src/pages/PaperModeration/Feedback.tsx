@@ -29,12 +29,32 @@ const Feedback = () => {
         item9: { answer: "", comment: "", id: 9 }
     });
     const [degreeName, setDegreeName] = useState<any[]>([]);
+    const [courseData, setCourseData] = useState<any[]>([]);
     const Axios = useAxiosPrivate();
     const [formData, setFormData] = useState<finalData>();
     const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
+    const [selectedCourseCode,setSelectedCourseCode]=useState<string>("");
     useEffect(() => {
-      console.log(degreeName);
+        const fetchCourses = async () => {
+            try {
+                const courses = await Axios.get(`/courses/byDegreeProgram?degreeName=${selectedDegreeProgram}`);
+                if (courses.status === 200) {
+                    const data = Array.isArray(courses.data.data) ? courses.data.data : [courses.data.data];
+                    setCourseData(data);
+                    console.log(data);
+                }
+                else if (courses.status === 500) {
+                    console.log("No courses found");
+                }
+            }
+            catch (error) {
+                console.log("failed to load courses");
+            }
+
+        }
+        fetchCourses();
     }, [selectedDegreeProgram])
+
     useEffect(() => {
     }
         , [degreeName])
@@ -43,7 +63,6 @@ const Feedback = () => {
             try {
                 const degreeData = await Axios.get("/degreePrograms");
                 if (degreeData.data) {
-                    setDegreeName((prev) => ({ ...prev, ...degreeData.data }));
                     const arrayData = Array.isArray(degreeData.data) ? degreeData.data : [degreeData.data];
                     setDegreeName(arrayData);
 
@@ -63,6 +82,9 @@ const Feedback = () => {
     });
     const handleDegreeName = (event: any) => {
         setSelectedDegreeProgram(event.target.value);
+    }
+    const handleCourseCode=(event:any)=>{
+        setSelectedCourseCode(event.target.value);
     }
 
     const handleQuestionsData = (Data: { answer: string; comment: string; id: number }[]) => {
@@ -155,13 +177,18 @@ const Feedback = () => {
                                 <label htmlFor="code" className="font-bold w-32">
                                     Course Code
                                 </label>
-                                <input
+                                <select
                                     id="code"
-                                    name="code"
-                                    type="text"
-                                    className="h-8 border-2 border-gray-300 p-2 rounded-md flex-grow"
-                                    placeholder="Course Code"
-                                />
+                                    name={selectedCourseCode}
+                                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                    onChange={handleCourseCode}
+                                >
+                                    {courseData.map((course) => (
+                                        <option key={course.id} value={course.code}>
+                                            {course.code}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             {/* Course Title */}
                             <div className="flex items-center gap-2">

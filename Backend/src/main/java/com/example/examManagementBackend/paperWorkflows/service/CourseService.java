@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -114,10 +115,26 @@ public class CourseService {
         coursesRepository.delete(course);
     }
     public ResponseEntity<StandardResponse> getCourseByDegreeProgram(String degreeProgram) {
-        CoursesEntity coursesEntity=coursesRepository.getdataByDegreeName(degreeProgram);
+        List<CoursesEntity> coursesEntity=coursesRepository.getdataByDegreeName(degreeProgram);
         if(coursesEntity!=null) {
+            List<CourseDTO> courseDTO=new ArrayList<CourseDTO>();
+            for(CoursesEntity coursesEntity1 : coursesEntity){
+                CourseDTO courseDTO1=new CourseDTO( );
+                courseDTO1.setId(coursesEntity1.getId());
+                courseDTO1.setCode(coursesEntity1.getCode());
+                courseDTO1.setName(coursesEntity1.getName());
+                courseDTO1.setDescription(coursesEntity1.getDescription());
+                courseDTO1.setLevel(coursesEntity1.getLevel());
+                courseDTO1.setSemester(coursesEntity1.getSemester());
+                courseDTO1.setIsActive(coursesEntity1.getIsActive());
+                courseDTO1.setCourseType(coursesEntity1.getCourseType().name());
+                courseDTO1.setCreatedAt(coursesEntity1.getCreatedAt());
+                courseDTO1.setUpdatedAt(coursesEntity1.getUpdatedAt());
+                courseDTO.add(courseDTO1);
+            }
+
             return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"sucess",coursesEntity), HttpStatus.OK
+                    new StandardResponse(200,"sucess",courseDTO), HttpStatus.OK
             );
         }
         else{
