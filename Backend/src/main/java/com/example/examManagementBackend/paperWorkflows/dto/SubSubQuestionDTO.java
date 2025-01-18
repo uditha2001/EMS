@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.QuestionModerationStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.QuestionType;
 import lombok.Data;
 
@@ -7,5 +8,7 @@ import lombok.Data;
 public class SubSubQuestionDTO {
     private int subSubQuestionNumber;
     private QuestionType questionType;
-    private int marks;
+    private float marks;
+    private String moderatorComment;
+    private QuestionModerationStatus status = QuestionModerationStatus.PENDING;
 }
