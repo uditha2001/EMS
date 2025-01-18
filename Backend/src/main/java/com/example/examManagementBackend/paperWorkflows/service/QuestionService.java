@@ -71,6 +71,7 @@ public class QuestionService {
 
         return questionEntities.stream().map(entity -> {
             QuestionStructureDTO dto = new QuestionStructureDTO();
+            dto.setQuestionId(entity.getId());
             dto.setQuestionNumber(entity.getQuestionNumber());
             dto.setQuestionType(entity.getQuestionType());
             dto.setTotalMarks(entity.getTotalMarks());
@@ -79,6 +80,7 @@ public class QuestionService {
 
             List<SubQuestionDTO> subQuestions = entity.getSubQuestions().stream().map(subEntity -> {
                 SubQuestionDTO subDto = new SubQuestionDTO();
+                subDto.setSubQuestionId(subEntity.getId());
                 subDto.setSubQuestionNumber(subEntity.getSubQuestionNumber());
                 subDto.setQuestionType(subEntity.getQuestionType());
                 subDto.setMarks(subEntity.getMarks());
@@ -87,6 +89,7 @@ public class QuestionService {
 
                 List<SubSubQuestionDTO> subSubQuestions = subEntity.getSubSubQuestions().stream().map(subSubEntity -> {
                     SubSubQuestionDTO subSubDto = new SubSubQuestionDTO();
+                    subSubDto.setSubSubQuestionId(subSubEntity.getId());
                     subSubDto.setSubSubQuestionNumber(subSubEntity.getSubSubQuestionNumber());
                     subSubDto.setQuestionType(subSubEntity.getQuestionType());
                     subSubDto.setMarks(subSubEntity.getMarks());
