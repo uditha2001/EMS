@@ -15,7 +15,6 @@ export default function TransferPaper() {
         </div>
 
         <div className="p-6.5">
-         
           {/* File Upload Section */}
           <div className="mb-6">
             <FileUpload />
