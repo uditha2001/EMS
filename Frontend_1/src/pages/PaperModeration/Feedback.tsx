@@ -2,7 +2,7 @@ import { FormEvent, useState, useEffect } from "react";
 import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
 import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
-
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 type questionData = {
     answer: string;
     comment: string;
@@ -28,11 +28,28 @@ const Feedback = () => {
         item8: { answer: "", comment: "", id: 8 },
         item9: { answer: "", comment: "", id: 9 }
     });
+    const [degreeName, setDegreeName] = useState<any[]>([]);
+    const Axios = useAxiosPrivate();
     const [formData, setFormData] = useState<finalData>();
     useEffect(() => {
 
-    },[formData])
-    
+    }, [formData])
+    useEffect(() => {
+        const fetchDegreePrograms = async () => {
+            try {
+                const degreeData = await Axios.get("/degreePrograms");
+                if (degreeData.data) {
+                    setDegreeName((prev) => ({ ...prev, ...degreeData.data }));
+                    console.log(degreeData.data);
+
+                }
+            } catch (error) {
+                console.log("failed to load degree programs");
+            }
+        };
+        fetchDegreePrograms();
+    }, [])
+
     const [moderatorData, setModeratorData] = useState({
         generalComment: "",
         names: ["", "", "", ""],
@@ -96,7 +113,12 @@ const Feedback = () => {
                             name="degreeProgram"
                             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
                         >
-                            <option>Computer Science</option>
+                          {degreeName.map((degree) => (
+                                <option key={degree.id} value={degree.id}>
+                                    {degree.name}
+                                </option>
+                            )
+                            )}
                         </select>
                     </div>
 

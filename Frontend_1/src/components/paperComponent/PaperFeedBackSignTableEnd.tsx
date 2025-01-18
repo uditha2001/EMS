@@ -112,7 +112,7 @@ const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
                         ({index + 1})
                       </label>
                       <textarea
-                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
+                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y mt-3"
                         placeholder="Add comment"
                         rows={2}
                         id={`name${index + 1}`}
