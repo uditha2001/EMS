@@ -4,11 +4,12 @@ const CreateCourse: React.FC = () => {
   const [level, setLevel] = useState<string>("");
   const [semester, setSemester] = useState<string>("");
   const [degree, setDegree] = useState<string>("");
-  const [courseCodePrefix, setCourseCodePrefix] = useState<string>(""); // First part of course code
-  const [courseCodeSuffix, setCourseCodeSuffix] = useState<string>(""); // Second part of course code
+  const [courseCodePrefix, setCourseCodePrefix] = useState<string>("");
+  const [courseCodeSuffix, setCourseCodeSuffix] = useState<string>("");
   const [courseName, setCourseName] = useState<string>("");
   const [courseType, setCourseType] = useState<string>("");
   const [courseDescription, setCourseDescription] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   // Update course code prefix based on level, semester, and degree
   useEffect(() => {
@@ -44,12 +45,24 @@ const CreateCourse: React.FC = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!courseCodeSuffix) {
-      alert("Please enter a valid course code suffix (2 or 3 digits).");
+
+    // Validate required fields
+    if (
+      !level ||
+      !semester ||
+      !degree ||
+      !courseCodeSuffix ||
+      !courseName ||
+      !courseType ||
+      !courseDescription
+    ) {
+      setShowModal(true);
       return;
     }
+
     alert(`Form submitted successfully! Course Code: ${courseCodePrefix}${courseCodeSuffix}`);
   };
 
@@ -181,6 +194,22 @@ const CreateCourse: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4 text-red-600">Incomplete Fields</h3>
+            <p className="mb-4 text-gray-700">Please complete all fields before submitting the form.</p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
