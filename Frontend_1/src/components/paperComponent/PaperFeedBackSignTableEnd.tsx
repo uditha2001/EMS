@@ -18,7 +18,6 @@ const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
       const updatedNames = [...formData.names];
       updatedNames[index] = value;
       setFormData({ ...formData, names: updatedNames,});
-      console.log(formData);
     } else {
       setFormData({ ...formData, [key]: value });
     }
@@ -29,8 +28,8 @@ const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
       <table className="table-auto w-full border-collapse border border-gray-300">
         <tbody>
           <tr>
-            <td colSpan={5} className="font-bold text-center text-title-lg">
-              <div className="mb-4 flex gap-4 items-center justify-center">
+            <td colSpan={5}>
+              <div className="mb-4 flex gap-4 items-center justify-center font-bold text-center text-title-lg">
                 General Comment on Question Paper and Marking Scheme
               </div>
               <textarea

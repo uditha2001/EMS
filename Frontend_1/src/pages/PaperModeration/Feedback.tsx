@@ -14,8 +14,14 @@ type finalData = {
     names: string[];
     learningOutcomes: string;
     courseContent: string;
+    degreeProgram: string;
+    courseCode: string;
+    courseName: string;
+    examination: string;
+
 
 }
+
 const Feedback = () => {
     const [QuestionData, setQuestionData] = useState<{ [key: string]: questionData }>({
         item1: { answer: "", comment: "", id: 1 },
@@ -33,7 +39,9 @@ const Feedback = () => {
     const Axios = useAxiosPrivate();
     const [formData, setFormData] = useState<finalData>();
     const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
-    const [selectedCourseCode,setSelectedCourseCode]=useState<string>("");
+    const [selectedCourseCode, setSelectedCourseCode] = useState<string>("");
+    const [selectedCourseName, setSelectedCourseName] = useState<string>("");
+    const [examination, setExamination] = useState<string>("");
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -41,6 +49,7 @@ const Feedback = () => {
                 if (courses.status === 200) {
                     const data = Array.isArray(courses.data.data) ? courses.data.data : [courses.data.data];
                     setCourseData(data);
+                    handleCourseCode(null, data[0]?.code);
                 }
                 else if (courses.status === 500) {
                     console.log("No courses found");
@@ -55,8 +64,14 @@ const Feedback = () => {
     }, [selectedDegreeProgram])
 
     useEffect(() => {
+        handleCourseName();
+    }, [selectedCourseCode])
+
+    useEffect(() => {
+        console.log(formData);
     }
-        , [degreeName])
+        , [formData])
+
     useEffect(() => {
         const fetchDegreePrograms = async () => {
             try {
@@ -82,9 +97,24 @@ const Feedback = () => {
     const handleDegreeName = (event: any) => {
         setSelectedDegreeProgram(event.target.value);
     }
-    const handleCourseCode=(event:any)=>{
-        setSelectedCourseCode(event.target.value);
+    const handleCourseCode = (event: any, code: string) => {
+        if (event !== null) {
+            setSelectedCourseCode(event.target.value);
+        }
+        else {
+            setSelectedCourseCode(code);
+        }
     }
+    const handleCourseName = () => {
+        Object.values(courseData).forEach((course) => {
+            if (course.code === selectedCourseCode) {
+                setSelectedCourseName(course.name);
+                console.log(course.name);
+            }
+        }
+        )
+    }
+
 
     const handleQuestionsData = (Data: { answer: string; comment: string; id: number }[]) => {
         const updatedData = { ...QuestionData };
@@ -114,8 +144,11 @@ const Feedback = () => {
             names: moderatorData.names,
             learningOutcomes: moderatorData.learningOutcomes,
             courseContent: moderatorData.courseContent,
-        })
-        )
+            degreeProgram: selectedDegreeProgram,
+            courseCode: selectedCourseCode || "",
+            courseName: selectedCourseName || "",
+            examination: examination || ""
+        }))
 
     }
 
@@ -140,10 +173,11 @@ const Feedback = () => {
                         <select
                             id="degreeProgram"
                             name={selectedDegreeProgram}
+                            value={selectedDegreeProgram}
                             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                             onChange={handleDegreeName}
                         >
-                            <option value="" disabled selected>
+                            <option value="" disabled>
                                 -- Select a degree --
                             </option>
                             {degreeName.map((degree) => (
@@ -166,6 +200,7 @@ const Feedback = () => {
                             type="text"
                             className="w-2/3 h-8 border-2 border-gray-300 p-2 rounded-md"
                             placeholder="Examination"
+                            onChange={(event) => setExamination(event.target.value)}
                         />
                     </div>
                     <div className="flex flex-col gap-4">
@@ -178,9 +213,9 @@ const Feedback = () => {
                                 </label>
                                 <select
                                     id="code"
-                                    name={selectedCourseCode}
+                                    name="courseCode"
                                     className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                                    onChange={handleCourseCode}
+                                    onChange={(event) => handleCourseCode(event, "")}
                                 >
                                     {courseData.map((course) => (
                                         <option key={course.id} value={course.code}>
@@ -198,8 +233,10 @@ const Feedback = () => {
                                     id="title"
                                     name="title"
                                     type="text"
+                                    value={selectedCourseName ? selectedCourseName : ""}
+                                    disabled
                                     className="h-8 border-2 border-gray-300 p-2 rounded-md flex-grow"
-                                    placeholder="Course Title"
+                                    placeholder={selectedCourseName}
                                 />
                             </div>
                         </div>
