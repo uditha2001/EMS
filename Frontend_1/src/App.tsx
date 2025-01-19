@@ -39,6 +39,7 @@ import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
 import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
 import Feedback from './pages/PaperModeration/Feedback';
 import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
+import FileUpdate from './pages/PaperTransfer/FileUpdate';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -105,7 +106,6 @@ function App() {
               path="/settings"
               element={renderPage('Settings | EMS', <Settings />)}
             />
-           
 
             {/* User Management Routes */}
             <Route element={<RequireAuth allowedPermissions={['READ_USER']} />}>
@@ -294,6 +294,10 @@ function App() {
                   'Paper Transfer | EMS',
                   <CreateTransaction />,
                 )}
+              />
+              <Route
+                path="/paper/transfer/edit/:fileId"
+                element={renderPage('Paper Transfer | EMS', <FileUpdate />)}
               />
               <Route
                 path="/paper/transfer/history"
