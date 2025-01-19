@@ -170,12 +170,13 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
           </tr>
           <tr>
             <td colSpan={5}>
-              <div className="mb-4 flex flex-col gap-2 items-center justify-center text-center  ">
-                <div className="font-bold text-title-lg">
+              <div className="mb-4 w-full">
+                <div className="font-bold text-title-lg justify-center text-center">
                   General Comment on Question Paper and Marking Scheme
                 </div>
-                <p className="text-balance">{finalData.generalComment}</p>
+                <span className="ml-6 mr-6">* {finalData.generalComment}</span>
               </div>
+
 
             </td>
           </tr>
@@ -218,15 +219,15 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
           </tr>
           <tr>
             <td colSpan={2} className="border border-gray-300  py-2">
-              <div className="flex gap-1">
-                <p className="font-bold">(a) Agree and Addressed:</p>
-                <p>{finalData.agreeAndAddressed}</p>
+              <div >
+                <p className="font-bold mr-5">(a) Agree and Addressed:</p>
+                <p className="ml-4">{finalData.agreeAndAddressed}</p>
               </div>
             </td>
             <td colSpan={3} className="border border-gray-300  py-2">
-              <div className="flex gap-1">
-                <p className="font-bold">(b) Not Agree and Reasons:</p>
-                <p>{finalData.notAgreeAndReasons}</p>
+              <div>
+                <p className="font-bold mr-5">(b) Not Agree and Reasons:</p>
+                <p className="ml-4">{finalData.notAgreeAndReasons}</p>
               </div>
             </td>
           </tr>
