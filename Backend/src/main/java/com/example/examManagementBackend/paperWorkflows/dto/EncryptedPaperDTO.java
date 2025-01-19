@@ -1,9 +1,15 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+
+@Data
 public class EncryptedPaperDTO {
 
     private Long id;
@@ -13,9 +19,21 @@ public class EncryptedPaperDTO {
     private String remarks;
     private UserDTO creator;
     private UserDTO moderator;
+    private Long academicYear;
+    private List<CourseDTO> courses;
 
     // Constructor for converting entity to DTO
-    public EncryptedPaperDTO(Long id, String fileName, boolean isShared, String remarks, LocalDateTime createdAt, UserEntity creator, UserEntity moderator) {
+    public EncryptedPaperDTO(
+            Long id,
+            String fileName,
+            boolean isShared,
+            String remarks,
+            LocalDateTime createdAt,
+            UserEntity creator,
+            UserEntity moderator,
+            AcademicYearsEntity academicYear,
+            List<CoursesEntity> courses
+    ) {
         this.id = id;
         this.fileName = fileName;
         this.isShared = isShared;
@@ -23,64 +41,10 @@ public class EncryptedPaperDTO {
         this.createdAt = createdAt;
         this.creator = new UserDTO(creator.getUserId(), creator.getFirstName(), creator.getLastName());
         this.moderator = new UserDTO(moderator.getUserId(), moderator.getFirstName(), moderator.getLastName());
-    }
-
-    // Getters and setters...
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public boolean isShared() {
-        return isShared;
-    }
-
-    public void setShared(boolean shared) {
-        isShared = shared;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCharedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-
-    public String getRemarks() {
-        return remarks;
-    }
-
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-    public UserDTO getCreator() {
-        return creator;
-    }
-
-    public void setCreator(UserDTO creator) {
-        this.creator = creator;
-    }
-
-    public UserDTO getModerator() {
-        return moderator;
-    }
-
-    public void setModerator(UserDTO moderator) {
-        this.moderator = moderator;
+        this.academicYear = (academicYear != null) ? academicYear.getId() : null;
+        this.courses = courses.stream()
+                .map(course -> new CourseDTO(course.getId(), course.getName(),course.getCode()))
+                .toList();
     }
 
     // Nested DTO for user details
@@ -117,6 +81,19 @@ public class EncryptedPaperDTO {
 
         public void setLastName(String lastName) {
             this.lastName = lastName;
+        }
+    }
+
+    @Data// Nested DTO for course details
+    public static class CourseDTO {
+        private Long id;
+        private String name;
+        private String code;
+
+        public CourseDTO(Long id, String name,String code) {
+            this.id = id;
+            this.name = name;
+            this.code = code;
         }
     }
 }
