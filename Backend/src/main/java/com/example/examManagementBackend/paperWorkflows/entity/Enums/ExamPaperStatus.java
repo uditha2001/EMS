@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.paperWorkflows.entity;
+package com.example.examManagementBackend.paperWorkflows.entity.Enums;
 
 public enum ExamPaperStatus {
     DRAFT,
