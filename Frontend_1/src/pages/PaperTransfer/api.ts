@@ -13,12 +13,14 @@ const useApi = () => {
     courseIds: number[],
     remarks: string,
     moderatorId: number,
+    academicYearId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
+    formData.append('academicYearId', academicYearId.toString());
 
     // Log courseIds to verify
     console.log('Selected Course IDs:', courseIds);
@@ -49,6 +51,39 @@ const useApi = () => {
       throw new Error(error.message);
     }
   };
+  const updateFile = async (
+    fileId: number, // ID of the file being updated
+    file: File, // New file data
+    remarks: string, // Updated remarks
+  ): Promise<{ message: string }> => {
+    // Check if file is valid
+    if (!file) {
+      setError('File is required.');
+      return Promise.reject(new Error('File is required.'));
+    }
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('remarks', remarks);
+  
+    try {
+      setLoading(true);
+      const res = await axiosPrivate.put(`/papers/${fileId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setLoading(false);
+      return res.data.data; // Assuming res.data.data contains the message
+    } catch (error: any) {
+      setLoading(false);
+      // More robust error handling
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Failed to update the file';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+  };
+  
+  
 
   const getAllFiles = async (): Promise<Paper[]> => {
     try {
@@ -129,6 +164,7 @@ const useApi = () => {
     getAllFiles,
     downloadFile,
     deleteFile,
+    updateFile,
     loading,
     error,
   };
