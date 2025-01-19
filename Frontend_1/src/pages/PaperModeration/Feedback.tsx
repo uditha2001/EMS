@@ -12,7 +12,6 @@ type questionData = {
 type finalData = {
     Question: questionData[];
     generalComment: string;
-    names: string[];
     learningOutcomes: string;
     courseContent: string;
     degreeProgram: string;
@@ -139,8 +138,8 @@ const Feedback = () => {
 
         setQuestionData(updatedData); // Update the state with the modified object
     }
-    const handleModerateData = (Data: { generalComment: string; names: string[]; learningOutcomes: string; courseContent: string ;agreeAndAddressed:string;notAgreeAndReasons:string}) => {
-        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, names: Data.names, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent ,agreeAndAddressed:Data.agreeAndAddressed,notAgreeAndReasons:Data.notAgreeAndReasons}));
+    const handleModerateData = (Data: { generalComment: string; learningOutcomes: string; courseContent: string ;agreeAndAddressed:string;notAgreeAndReasons:string}) => {
+        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent ,agreeAndAddressed:Data.agreeAndAddressed,notAgreeAndReasons:Data.notAgreeAndReasons}));
     }
 
     function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -149,7 +148,6 @@ const Feedback = () => {
             ...prevData,
             Question: Object.values(QuestionData),
             generalComment: moderatorData.generalComment,
-            names: moderatorData.names,
             learningOutcomes: moderatorData.learningOutcomes,
             courseContent: moderatorData.courseContent,
             degreeProgram: selectedDegreeProgram,

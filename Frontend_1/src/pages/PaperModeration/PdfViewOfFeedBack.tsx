@@ -8,7 +8,6 @@ type questionData = {
 type finalData = {
   Question: questionData[];
   generalComment: string;
-  names: string[];
   learningOutcomes: string;
   courseContent: string;
   degreeProgram: string;
@@ -171,9 +170,13 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
           </tr>
           <tr>
             <td colSpan={5}>
-              <div className="mb-4 flex gap-4 items-center justify-center font-bold text-center text-title-lg">
-                General Comment on Question Paper and Marking Scheme
+              <div className="mb-4 flex flex-col gap-2 items-center justify-center text-center  ">
+                <div className="font-bold text-title-lg">
+                  General Comment on Question Paper and Marking Scheme
+                </div>
+                <p className="text-balance">{finalData.generalComment}</p>
               </div>
+
             </td>
           </tr>
           <tr>
