@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
@@ -13,11 +12,10 @@ export default function ModeratePaper() {
     paperId: string;
     moderatorId: string;
   }>();
-  
+
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [questionStructure, setQuestionStructure] = useState<any>(null);
 
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const axiosPrivate = useAxiosPrivate();
 
   const fetchPdf = async () => {
@@ -183,7 +181,7 @@ export default function ModeratePaper() {
       <div className="flex-1 bg-white rounded-lg shadow-lg overflow-hidden">
         {pdfUrl ? (
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-            <Viewer fileUrl={pdfUrl} plugins={[defaultLayoutPluginInstance]} />
+            <Viewer fileUrl={pdfUrl} />
           </Worker>
         ) : (
           <div className="flex justify-center items-center h-full text-xl text-gray-500">
