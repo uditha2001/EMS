@@ -166,6 +166,12 @@ const FileList: React.FC = () => {
                         >
                           Set Structure
                         </Link>
+                        <Link
+                          to={`/paper/transfer/edit/${file.id}`}
+                          className="ml-4 text-green-600 hover:text-opacity-80"
+                        >
+                          Modify
+                        </Link>
                       </>
                     )}
                     {viewType === 'receiver' && (
