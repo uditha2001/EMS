@@ -1,7 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
-import com.example.examManagementBackend.paperWorkflows.entity.QuestionModerationStatus;
-import com.example.examManagementBackend.paperWorkflows.entity.QuestionType;
+
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionModerationStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionType;
 import lombok.Data;
 
 
