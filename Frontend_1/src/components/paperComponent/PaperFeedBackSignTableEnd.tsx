@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
 
-const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
+const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
   const [formData, setFormData] = useState({
     generalComment: "",
     agreeAndAddressed: "",
     notAgreeAndReasons: "",
-    names: ["", "", "", ""],
     learningOutcomes: "",
     courseContent: "",
   });
-  useEffect(()=>{
+  useEffect(() => {
     getModerateData(formData);
-  },[formData]);
+  }, [formData]);
 
   const handleInputChange = (key: string, value: string, index: number | null = null) => {
     if (index !== null) {
-      const updatedNames = [...formData.names];
-      updatedNames[index] = value;
-      setFormData({ ...formData, names: updatedNames,});
+
     } else {
       setFormData({ ...formData, [key]: value });
     }
@@ -98,55 +95,48 @@ const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
             </td>
           </tr>
           <tr>
-            <td colSpan={2} className="align-top pr-4">
-              <div>
-                <h2 className="font-bold ml-4">Name</h2>
-                <ul className="space-y-2">
-                  {formData.names.map((name, index) => (
-                    <li className="flex items-center" key={index}>
-                      <label
-                        className="font-bold mr-2"
-                        htmlFor={`name${index + 1}`}
-                      >
-                        ({index + 1})
-                      </label>
-                      <textarea
-                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y mt-3"
-                        placeholder="Add comment"
-                        rows={2}
-                        id={`name${index + 1}`}
-                        value={name}
-                        onChange={(e) =>
-                          handleInputChange("names", e.target.value, index)
-                        }
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </td>
-            <td colSpan={2} className="align-top pl-8">
-              <div>
-                <h2 className="font-bold ml-4">Sign</h2>
-                <ul className="space-y-2">
-                  {[...Array(4)].map((_, index) => (
-                    <li className="flex items-center h-20" key={index}>
-                      -------------------
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </td>
-            <td colSpan={2} className="align-top pl-8">
-              <div>
-                <h2 className="font-bold ml-8">Date</h2>
-                <ul className="space-y-2">
-                  {[...Array(4)].map((_, index) => (
-                    <li className="flex items-center h-20" key={index}>
-                      -------------------
-                    </li>
-                  ))}
-                </ul>
+            <td colSpan={5}>
+              <div className="flex justify-between">
+                {/* Name Column */}
+                <div className="flex-1 pr-4">
+                  <h2 className="font-bold ml-4">Name</h2>
+                  <ul className="space-y-4">
+                    {[...Array(4)].map((_, index) => (
+                      <li className="flex items-center h-20" key={index}>
+                        <label className="font-bold mr-2" htmlFor={`name${index + 1}`}>
+                          ({index + 1})
+                        </label>
+                        <div className="flex flex-col items-start space-y-4">
+                          <label className="ml-2">---------------------</label>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Sign Column */}
+                <div className="flex-1 pl-4">
+                  <h2 className="font-bold ml-4">Sign</h2>
+                  <ul className="space-y-4">
+                    {[...Array(4)].map((_, index) => (
+                      <li className="flex items-center h-20" key={index}>
+                        -------------------
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Date Column */}
+                <div className="flex-1 pl-4">
+                  <h2 className="font-bold ml-8">Date</h2>
+                  <ul className="space-y-4">
+                    {[...Array(4)].map((_, index) => (
+                      <li className="flex items-center h-20" key={index}>
+                        -------------------
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </td>
           </tr>
@@ -206,4 +196,4 @@ const PaperFeedbackQuestionTable = ({getModerateData}:any) => {
   );
 };
 
-export default PaperFeedbackQuestionTable;
+export default PaperFeedBackSignTableEnd;

@@ -3,7 +3,7 @@ import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
 import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import PdfGenerator from "../../components/paperComponent/PdfGenerator";
+import PdfViewOfFeedBack from "./PdfViewOfFeedBack";
 type questionData = {
     answer: string;
     comment: string;
@@ -19,6 +19,8 @@ type finalData = {
     courseCode: string;
     courseName: string;
     examination: string;
+    agreeAndAddressed: string;
+    notAgreeAndReasons: string;
 
 
 }
@@ -38,12 +40,12 @@ const Feedback = () => {
     const [degreeName, setDegreeName] = useState<any[]>([]);
     const [courseData, setCourseData] = useState<any[]>([]);
     const Axios = useAxiosPrivate();
-    const [formData, setFormData] = useState<finalData>();
+    const [formData, setFormData] = useState<finalData | null>(null);
     const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
     const [selectedCourseCode, setSelectedCourseCode] = useState<string>("");
     const [selectedCourseName, setSelectedCourseName] = useState<string>("");
     const [examination, setExamination] = useState<string>("");
-    const [showPdf, setShowPdf] = useState<boolean>(false);
+    const [pdfRequest,setPdfRequest] = useState<boolean>(false);
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -70,8 +72,8 @@ const Feedback = () => {
     }, [selectedCourseCode])
 
     useEffect(() => {
+        console.log("runing");
         console.log(formData);
-        setShowPdf(true);
         
     }
         , [formData])
@@ -97,6 +99,8 @@ const Feedback = () => {
         names: ["", "", "", ""],
         learningOutcomes: "",
         courseContent: "",
+        agreeAndAddressed: "",
+        notAgreeAndReasons: ""
     });
     const handleDegreeName = (event: any) => {
         setSelectedDegreeProgram(event.target.value);
@@ -135,8 +139,8 @@ const Feedback = () => {
 
         setQuestionData(updatedData); // Update the state with the modified object
     }
-    const handleModerateData = (Data: { generalComment: string; names: string[]; learningOutcomes: string; courseContent: string }) => {
-        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, names: Data.names, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent }));
+    const handleModerateData = (Data: { generalComment: string; names: string[]; learningOutcomes: string; courseContent: string ;agreeAndAddressed:string;notAgreeAndReasons:string}) => {
+        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, names: Data.names, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent ,agreeAndAddressed:Data.agreeAndAddressed,notAgreeAndReasons:Data.notAgreeAndReasons}));
     }
 
     function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
@@ -151,19 +155,17 @@ const Feedback = () => {
             degreeProgram: selectedDegreeProgram,
             courseCode: selectedCourseCode || "",
             courseName: selectedCourseName || "",
-            examination: examination || ""
+            examination: examination || "",
+            agreeAndAddressed: moderatorData.agreeAndAddressed || "",
+            notAgreeAndReasons: moderatorData.notAgreeAndReasons || ""
         }))
+        setPdfRequest(true);
 
     }
-    if(showPdf){
-        return (
-            <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
-                <Breadcrumb pageName="Feedback" />
-                <PdfGenerator Component={PaperFeedbackQuestionTable} />
-            </div>
-        );
+    if(pdfRequest && formData){
+       return <PdfViewOfFeedBack {...formData} />
     }
-
+ 
     return (
         <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
             <Breadcrumb pageName="Feedback" />

@@ -1,13 +1,13 @@
 import { useState,useEffect } from "react";
 
-type FormData = {
+type childFormData = {
     answer: string;
     comment: string;
     id:number;
 }
 
-const PaperFeedbackTable = ({getDataFromTable}:any) => {
-    const [formData, setFormData] = useState<{ [key: string]: FormData }>({
+const PaperFeedbackQuestionTable = ({getDataFromTable}:any) => {
+    const [childformData, setchildFormData] = useState<{ [key: string]: childFormData }>({
         item1: { answer: "", comment: "", id: 1 },
         item2: { answer: "", comment: "", id: 2 },
         item3: { answer: "", comment: "", id: 3 },
@@ -19,17 +19,17 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
         item9: { answer: "", comment: "", id: 9 }
     });
     useEffect(()=>{
-        getDataFromTable(formData);
-    },[formData])
+        getDataFromTable(childformData);
+    },[childformData])
     const handleRadioChange = (item: string, value: string) => {
-        setFormData(prevData => ({
+        setchildFormData(prevData => ({
             ...prevData,
             [item]: { ...prevData[item], answer: value }
         }));
     };
 
     const handleCommentChange = (item: string, value: string) => {
-        setFormData(prevData => ({
+        setchildFormData(prevData => ({
             ...prevData,
             [item]: { ...prevData[item], comment: value }
         }));
@@ -66,7 +66,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                     type="radio" 
                                     name={`item${i}`} 
                                     value="yes" 
-                                    checked={formData[`item${i}`]?.answer === 'yes'}
+                                    checked={childformData[`item${i}`]?.answer === 'yes'}
                                     required
                                     onChange={() => handleRadioChange(`item${i}`, 'yes')}
                                 />
@@ -76,7 +76,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                     type="radio" 
                                     name={`item${i}`} 
                                     value="no" 
-                                    checked={formData[`item${i}`]?.answer === 'no'}
+                                    checked={childformData[`item${i}`]?.answer === 'no'}
                                     required
                                     onChange={() => handleRadioChange(`item${i}`, 'no')}
                                 />
@@ -86,7 +86,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                     className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
                                     placeholder="Add comment"
                                     rows={3}
-                                    value={formData[`item${i}`]?.comment}
+                                    value={childformData[`item${i}`]?.comment}
                                     onChange={(e) => handleCommentChange(`item${i}`, e.target.value)}
                                 />
                             </td>
@@ -101,7 +101,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 type="radio" 
                                 name="item8" 
                                 value="yes" 
-                                checked={formData.item8?.answer === 'yes'}
+                                checked={childformData.item8?.answer === 'yes'}
                                 onChange={() => handleRadioChange('item8', 'yes')}
                             />
                         </td>
@@ -110,7 +110,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 type="radio" 
                                 name="item8" 
                                 value="no" 
-                                checked={formData.item8?.answer === 'no'}
+                                checked={childformData.item8?.answer === 'no'}
                                 onChange={() => handleRadioChange('item8', 'no')}
                             />
                         </td>
@@ -119,7 +119,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
                                 placeholder="Add comment"
                                 rows={3}
-                                value={formData.item8?.comment}
+                                value={childformData.item8?.comment}
                                 onChange={(e) => handleCommentChange('item8', e.target.value)}
                             />
                         </td>
@@ -132,7 +132,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 type="radio" 
                                 name="item9" 
                                 value="yes" 
-                                checked={formData.item9?.answer === 'yes'}
+                                checked={childformData.item9?.answer === 'yes'}
                                 onChange={() => handleRadioChange('item9', 'yes')}
                             />
                         </td>
@@ -141,7 +141,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 type="radio" 
                                 name="item9" 
                                 value="no" 
-                                checked={formData.item9?.answer === 'no'}
+                                checked={childformData.item9?.answer === 'no'}
                                 onChange={() => handleRadioChange('item9', 'no')}
                             />
                         </td>
@@ -150,7 +150,7 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
                                 className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
                                 placeholder="Add comment"
                                 rows={3}
-                                value={formData.item9?.comment}
+                                value={childformData.item9?.comment}
                                 onChange={(e) => handleCommentChange('item9', e.target.value)}
                             />
                         </td>
@@ -161,4 +161,4 @@ const PaperFeedbackTable = ({getDataFromTable}:any) => {
     );
 }
 
-export default PaperFeedbackTable;
+export default PaperFeedbackQuestionTable;
