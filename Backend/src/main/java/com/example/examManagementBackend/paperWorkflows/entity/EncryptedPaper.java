@@ -57,6 +57,8 @@ public class EncryptedPaper {
     private List<ModerationsEntity> moderations;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
     private List<PapersCoursesEntity> papersCourses;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
+    private List<QuestionStructureEntity> questionStructures; // List of question structures
 
 
 }

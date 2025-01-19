@@ -4,8 +4,10 @@ import com.example.examManagementBackend.paperWorkflows.entity.QuestionStructure
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface QuestionStructureRepository extends JpaRepository<QuestionStructureEntity, Long> {
-    // Additional query methods (if needed) can be added here.
+    List<QuestionStructureEntity> findByEncryptedPaperId(Long paperId);
 }
 
