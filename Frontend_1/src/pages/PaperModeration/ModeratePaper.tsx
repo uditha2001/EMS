@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import Loader from '../../common/Loader';
 import { useParams } from 'react-router-dom';
