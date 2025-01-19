@@ -3,6 +3,7 @@ import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
 import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import PdfGenerator from "../../components/paperComponent/PdfGenerator";
 type questionData = {
     answer: string;
     comment: string;
@@ -42,6 +43,7 @@ const Feedback = () => {
     const [selectedCourseCode, setSelectedCourseCode] = useState<string>("");
     const [selectedCourseName, setSelectedCourseName] = useState<string>("");
     const [examination, setExamination] = useState<string>("");
+    const [showPdf, setShowPdf] = useState<boolean>(false);
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -69,6 +71,8 @@ const Feedback = () => {
 
     useEffect(() => {
         console.log(formData);
+        setShowPdf(true);
+        
     }
         , [formData])
 
@@ -150,6 +154,14 @@ const Feedback = () => {
             examination: examination || ""
         }))
 
+    }
+    if(showPdf){
+        return (
+            <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
+                <Breadcrumb pageName="Feedback" />
+                <PdfGenerator Component={PaperFeedbackQuestionTable} />
+            </div>
+        );
     }
 
     return (
