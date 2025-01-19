@@ -13,6 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(
+        name = "sub_question_structure",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"question_structure_id", "subQuestionNumber"})
+)
 public class SubQuestionEntity {
 
     @Id
@@ -25,7 +29,7 @@ public class SubQuestionEntity {
 
     private int subQuestionNumber;
 
-    private int marks; // Marks for this subquestion
+    private float marks; // Marks for this subquestion
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

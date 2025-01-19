@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionStructureDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.SubQuestionDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.SubSubQuestionDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.QuestionStructureEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.SubQuestionEntity;
@@ -59,5 +61,51 @@ public class QuestionService {
 
         questionStructureRepository.saveAll(questionEntities);
     }
+
+    public List<QuestionStructureDTO> getQuestionStructure(Long paperId) {
+        List<QuestionStructureEntity> questionEntities = questionStructureRepository.findByEncryptedPaperId(paperId);
+
+        if (questionEntities.isEmpty()) {
+            throw new RuntimeException("Question structure not found for paper ID: " + paperId);
+        }
+
+        return questionEntities.stream().map(entity -> {
+            QuestionStructureDTO dto = new QuestionStructureDTO();
+            dto.setQuestionId(entity.getId());
+            dto.setQuestionNumber(entity.getQuestionNumber());
+            dto.setQuestionType(entity.getQuestionType());
+            dto.setTotalMarks(entity.getTotalMarks());
+            dto.setModeratorComment(entity.getModeratorComment());
+            dto.setStatus(entity.getStatus());
+
+            List<SubQuestionDTO> subQuestions = entity.getSubQuestions().stream().map(subEntity -> {
+                SubQuestionDTO subDto = new SubQuestionDTO();
+                subDto.setSubQuestionId(subEntity.getId());
+                subDto.setSubQuestionNumber(subEntity.getSubQuestionNumber());
+                subDto.setQuestionType(subEntity.getQuestionType());
+                subDto.setMarks(subEntity.getMarks());
+                subDto.setModeratorComment(entity.getModeratorComment());
+                subDto.setStatus(entity.getStatus());
+
+                List<SubSubQuestionDTO> subSubQuestions = subEntity.getSubSubQuestions().stream().map(subSubEntity -> {
+                    SubSubQuestionDTO subSubDto = new SubSubQuestionDTO();
+                    subSubDto.setSubSubQuestionId(subSubEntity.getId());
+                    subSubDto.setSubSubQuestionNumber(subSubEntity.getSubSubQuestionNumber());
+                    subSubDto.setQuestionType(subSubEntity.getQuestionType());
+                    subSubDto.setMarks(subSubEntity.getMarks());
+                    subSubDto.setModeratorComment(entity.getModeratorComment());
+                    subSubDto.setStatus(entity.getStatus());
+                    return subSubDto;
+                }).collect(Collectors.toList());
+
+                subDto.setSubSubQuestions(subSubQuestions);
+                return subDto;
+            }).collect(Collectors.toList());
+
+            dto.setSubQuestions(subQuestions);
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
 }
 
