@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionModerationStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -105,6 +105,7 @@ function App() {
               path="/settings"
               element={renderPage('Settings | EMS', <Settings />)}
             />
+           
 
             {/* User Management Routes */}
             <Route element={<RequireAuth allowedPermissions={['READ_USER']} />}>
