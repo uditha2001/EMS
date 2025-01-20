@@ -33,7 +33,11 @@ export default function ModeratePaper() {
   const fetchQuestionStructure = async () => {
     try {
       const response = await axiosPrivate.get(`structure/${paperId}`);
-      setQuestionStructure(response.data);
+      if (response.data && Object.keys(response.data).length > 0) {
+        setQuestionStructure(response.data);
+      } else {
+        console.log('Question structure is empty. Not updating the state.');
+      }
     } catch (error) {
       console.error('Error fetching question structure:', error);
     }
@@ -199,8 +203,8 @@ export default function ModeratePaper() {
             onSubmitModeration={updateModerationForMainQuestion}
           />
         ) : (
-          <div className="flex justify-center items-center text-xl text-gray-500 dark:text-gray-300">
-            <Loader />
+          <div className="text-center text-gray-500 dark:text-gray-400 mt-6">
+            No question structure available for this paper
           </div>
         )}
       </div>
