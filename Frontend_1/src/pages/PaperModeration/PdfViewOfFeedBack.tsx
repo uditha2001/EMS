@@ -5,6 +5,7 @@ type questionData = {
   answer: string;
   comment: string;
   id: number;
+  question: string;
 };
 
 type finalData = {

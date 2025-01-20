@@ -8,6 +8,7 @@ type questionData = {
     answer: string;
     comment: string;
     id: number;
+    question?: string[];
 };
 type finalData = {
     Question: questionData[];
@@ -132,7 +133,17 @@ const Feedback = () => {
                     ...updatedData[key],
                     answer: item.answer,
                     comment: item.comment,
+                    question: ["Does the exam paper provide clear instructions to the candidates?",
+                         "Do the Questions reflect the learning outcomes adequately?"
+                         , "Are the questions clear and easily understandable?"
+                         , "Is there any repetition of questions?"
+                        ,"Are the marks allocated for questions and sections appropriate?",
+                        "Is the time given to attend each question/section adequate?",
+                    "Are the questions up to the standard and appropriate to the level being assessed?",
+                    " Are the answers correct/justifiable?",
+                    " Is the marking scheme clear and fair?"]
                 };
+                
             }
         });
 
