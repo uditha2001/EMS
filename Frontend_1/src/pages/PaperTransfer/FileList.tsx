@@ -179,7 +179,7 @@ const FileList: React.FC = () => {
                         to={`/paper/moderate/${file.id}/${moderatorId}`}
                         className="ml-4 text-green-600 hover:text-opacity-80"
                       >
-                        Modarate
+                        Moderate
                       </Link>
                     )}
                   </td>
