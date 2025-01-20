@@ -4,7 +4,7 @@ type questionData = {
   answer: string;
   comment: string;
   id: number;
-  question?: string[];
+  questions?: string[];
 };
 
 type finalData = {
