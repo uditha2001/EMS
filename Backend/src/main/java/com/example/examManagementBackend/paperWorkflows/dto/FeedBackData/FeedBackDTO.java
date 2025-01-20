@@ -9,7 +9,7 @@ import org.aspectj.weaver.patterns.TypePatternQuestions;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedBackDTO {
-    private QuestionObj questionObj;
+    private QuestionObj[] questionObj;
     private String genaralComment;
     private String learningOutcomes;
     private String courseContent;
