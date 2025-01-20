@@ -6,6 +6,7 @@ import com.example.examManagementBackend.paperWorkflows.service.ModerationServic
 import com.example.examManagementBackend.paperWorkflows.service.PdfGenrationService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,15 @@ public class ModerationController {
     //generate the pdf and save data;
     @PostMapping("/saveFeedBackData")
     public ResponseEntity<StandardResponse> saveFeedBackData(@RequestBody FeedBackDTO dto) {
-        return pdfGenrationService.genratePdf(dto);
+       try{
+          return pdfGenrationService.genratePdf(dto);
+       }
+       catch(Exception e){
+           return new ResponseEntity<StandardResponse> (
+                   new StandardResponse(500,"failed to create pdf",null), HttpStatus.INTERNAL_SERVER_ERROR
+           );
+       }
+
     }
 }
 
