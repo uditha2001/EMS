@@ -61,11 +61,11 @@ const useApi = () => {
       setError('File is required.');
       return Promise.reject(new Error('File is required.'));
     }
-  
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('remarks', remarks);
-  
+
     try {
       setLoading(true);
       const res = await axiosPrivate.put(`/papers/${fileId}`, formData, {
@@ -77,13 +77,13 @@ const useApi = () => {
       setLoading(false);
       // More robust error handling
       const errorMessage =
-        error?.response?.data?.message || error?.message || 'Failed to update the file';
+        error?.response?.data?.message ||
+        error?.message ||
+        'Failed to update the file';
       setError(errorMessage);
       throw new Error(errorMessage);
     }
   };
-  
-  
 
   const getAllFiles = async (): Promise<Paper[]> => {
     try {
@@ -159,6 +159,7 @@ const useApi = () => {
     }
   };
 
+  
   return {
     uploadFile,
     getAllFiles,
