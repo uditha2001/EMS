@@ -40,6 +40,7 @@ import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
 import Feedback from './pages/PaperModeration/Feedback';
 import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
 import FileUpdate from './pages/PaperTransfer/FileUpdate';
+import EditPaperStructure from './pages/PaperSetting/EditPaperStructure';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -260,6 +261,13 @@ function App() {
                 element={renderPage(
                   'Paper Setting | EMS',
                   <CreatePaperStructure />,
+                )}
+              />
+              <Route
+                path="/paper/edit/structure/:paperId"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <EditPaperStructure />,
                 )}
               />
             </Route>
