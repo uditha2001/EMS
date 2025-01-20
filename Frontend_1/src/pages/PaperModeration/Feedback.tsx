@@ -3,7 +3,6 @@ import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
 import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import PdfViewOfFeedBack from "./PdfViewOfFeedBack";
 type questionData = {
     answer: string;
     comment: string;
@@ -172,7 +171,29 @@ const Feedback = () => {
 
     }
     if (pdfRequest && formData) {
-        return <PdfViewOfFeedBack {...formData} />
+        const sendData = async () => {
+            try {
+                const response = await Axios.post("/moderation/saveFeedBackData", {
+                    Question: formData.Question,
+                    generalComment: formData.generalComment,
+                    learningOutcomes: formData.learningOutcomes,
+                    courseContent: formData.courseContent,
+                    degreeProgram: formData.degreeProgram,
+                    courseCode: formData.courseCode,
+                    courseName: formData.courseName,
+                    examination: formData.examination,
+                    agreeAndAddressed: formData.agreeAndAddressed,
+                    notAgreeAndReasons: formData.notAgreeAndReasons
+                });
+                if (response.status === 200) {
+                    console.log("success");
+                }
+            } catch (error) {
+                console.log("failed to send data");
+            }
+        };
+        sendData();
+        console.log(formData);
     }
 
     return (
