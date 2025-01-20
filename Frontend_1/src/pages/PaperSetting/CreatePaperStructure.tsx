@@ -190,7 +190,7 @@ const CreatePaperStructure: React.FC = () => {
 
     try {
       await axiosPrivate.post(
-        `http://localhost:8080/api/v1/structure/${paperId}`,
+        `/structure/${paperId}`,
         questions,
         {
           headers: {
