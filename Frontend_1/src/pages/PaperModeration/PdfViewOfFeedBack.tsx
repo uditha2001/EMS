@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
 
 type questionData = {
   answer: string;
   comment: string;
   id: number;
-  question: string;
+  question?: string[];
 };
 
 type finalData = {
