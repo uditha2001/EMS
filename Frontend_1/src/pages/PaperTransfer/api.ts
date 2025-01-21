@@ -159,13 +159,28 @@ const useApi = () => {
     }
   };
 
-  
+  const getStructureData = async (fileId: number) => {
+    try {
+      const response = await axiosPrivate.get(`/structure/${fileId}`);
+      if (response.status === 200) {
+        return response.data; // Contains the structure data in `data`
+      } else {
+        throw new Error('Failed to fetch structure data.');
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Error fetching structure data.',
+      );
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
     downloadFile,
     deleteFile,
     updateFile,
+    getStructureData,
     loading,
     error,
   };
