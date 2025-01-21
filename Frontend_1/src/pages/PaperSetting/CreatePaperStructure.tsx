@@ -66,11 +66,18 @@ const CreatePaperStructure: React.FC = () => {
 
       subQuestion.subSubQuestions[subSubQuestionIndex] = {
         ...subSubQuestion,
-        [name]: name === 'marks' ? parseInt(value, 10) || 0 : value,
+        [name]:
+          name === 'marks'
+            ? parseFloat(parseFloat(value).toFixed(1)) || 0
+            : value,
       };
 
       // Recalculate sub-question marks
       subQuestion.marks = calculateSubQuestionMarks(subQuestion);
+
+      // Recalculate main question marks
+      const question = updatedQuestions[questionIndex];
+      question.totalMarks = calculateQuestionMarks(question);
     } else if (subQuestionIndex !== undefined) {
       // Sub-Question update
       const question = updatedQuestions[questionIndex];
@@ -78,10 +85,13 @@ const CreatePaperStructure: React.FC = () => {
 
       question.subQuestions[subQuestionIndex] = {
         ...subQuestion,
-        [name]: name === 'marks' ? parseInt(value, 10) || 0 : value,
+        [name]:
+          name === 'marks'
+            ? parseFloat(parseFloat(value).toFixed(1)) || 0
+            : value,
       };
 
-      // Recalculate question marks
+      // Recalculate main question marks
       question.totalMarks = calculateQuestionMarks(question);
     } else {
       // Question update
