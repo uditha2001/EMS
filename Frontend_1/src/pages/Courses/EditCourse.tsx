@@ -13,6 +13,8 @@ const EditCourse: React.FC = () => {
   const [searchCode, setSearchCode] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [verifyData, setVerifyData] = useState<boolean>(false);
+  const [showNotFound, setShowNotFound] = useState<boolean>(false);
+
 
   // Sample data for courses (Replace with actual data fetching)
   const [courses, setCourses] = useState<Record<string, any>>({
@@ -66,11 +68,14 @@ const EditCourse: React.FC = () => {
       setCourseName(course.courseName);
       setCourseType(course.courseType);
       setCourseDescription(course.courseDescription);
+      setShowNotFound(false); // Hide the pop-up if a course is found
     } else {
-      alert("Course not found!");
+      setShowNotFound(true); // Show the pop-up for not found
       resetForm();
     }
   };
+  
+  
 
   // Reset the form
   const resetForm = () => {
@@ -289,6 +294,23 @@ const EditCourse: React.FC = () => {
           </div>
         </div>
       )}
+
+
+      {/* Not Found Modal */}
+{showNotFound && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h3 className="text-xl font-bold mb-4 text-red-600">Course Not Found</h3>
+      <p className="mb-4">The course code you entered does not exist in the database. Please check and try again.</p>
+      <button
+        onClick={() => setShowNotFound(false)}
+        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
 
       {/* Verification Modal */}
       {verifyData && (
