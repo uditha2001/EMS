@@ -36,7 +36,9 @@ import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
 import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
+import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
 import Feedback from './pages/PaperModeration/Feedback';
+import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,7 +83,6 @@ function App() {
           path="/reset-password"
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
-
       </Route>
 
       {/* Authenticated Routes */}
@@ -104,6 +105,7 @@ function App() {
               path="/settings"
               element={renderPage('Settings | EMS', <Settings />)}
             />
+           
 
             {/* User Management Routes */}
             <Route element={<RequireAuth allowedPermissions={['READ_USER']} />}>
@@ -253,18 +255,26 @@ function App() {
                 path="/paper/create"
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
+              <Route
+                path="/paper/create/structure/:paperId"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <CreatePaperStructure />,
+                )}
+              />
             </Route>
 
             <Route
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
               <Route
-                path="/paper/moderate"
+                path="/paper/moderate/:paperId/:moderatorId"
                 element={renderPage(
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
                 )}
               />
+
               <Route
                 path="/paper/feedback"
                 element={renderPage('Feedback | EMS', <Feedback />)}
@@ -277,6 +287,13 @@ function App() {
               <Route
                 path="/paper/transfer"
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
+              />
+              <Route
+                path="/paper/transfer/new"
+                element={renderPage(
+                  'Paper Transfer | EMS',
+                  <CreateTransaction />,
+                )}
               />
               <Route
                 path="/paper/transfer/history"

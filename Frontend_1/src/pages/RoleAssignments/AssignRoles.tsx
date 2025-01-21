@@ -58,7 +58,7 @@ const AssignRoles: React.FC = () => {
       .catch((error) => console.error('Error fetching academic years', error));
 
     axiosPrivate
-      .get('http://localhost:8080/degreePrograms')
+      .get('http://localhost:8080/api/v1/degreePrograms')
       .then((response) => setDegreePrograms(response.data))
       .catch((error) => console.error('Error fetching degree programs', error));
 

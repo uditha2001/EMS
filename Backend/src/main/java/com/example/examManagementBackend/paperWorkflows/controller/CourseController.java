@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.service.CourseService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -45,6 +46,11 @@ public class CourseController {
                 new StandardResponse(200, "Successfully retrieved course", course),
                 HttpStatus.OK
         );
+    }
+    //get course details using degree program id
+    @GetMapping("/byDegreeProgram")
+    public ResponseEntity<StandardResponse> getCourseByDegreeProgram(@RequestParam String degreeName) {
+        return  coursesService.getCourseByDegreeProgram(degreeName);
     }
 
     @PutMapping("/{id}")

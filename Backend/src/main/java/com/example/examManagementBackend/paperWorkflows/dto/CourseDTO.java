@@ -20,7 +20,10 @@ public class CourseDTO {
         private Integer level;
         private String semester;
         private Boolean isActive;
+        @NotEmpty(message = "Course type cannot be empty")
+        private String courseType; // Added courseType field as String for flexibility
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private Long degreeProgramId; // Reference to DegreeProgramsEntity
+
 }

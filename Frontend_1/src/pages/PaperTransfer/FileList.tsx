@@ -4,6 +4,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useApi from './api';
+import { Link } from 'react-router-dom'; // Import Link for routing
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -69,9 +70,17 @@ const FileList: React.FC = () => {
       />
 
       <div className="mb-4 flex justify-between">
-        <h2 className="text-lg font-semibold text-black dark:text-white">
-          {viewType === 'sender' ? 'Sent Files' : 'Received Files'}
-        </h2>
+        <div>
+          {/* <h2 className="text-lg font-semibold text-black dark:text-white">
+            {viewType === 'sender' ? 'Sent Files' : 'Received Files'}
+          </h2> */}
+          <Link
+            to="/paper/transfer/new"
+            className="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-opacity-80"
+          >
+            New Transaction
+          </Link>
+        </div>
         <div>
           <button
             className={`mr-2 px-4 py-2 ${
@@ -79,7 +88,7 @@ const FileList: React.FC = () => {
             } rounded`}
             onClick={() => setViewType('sender')}
           >
-            Sent 
+            Sent
           </button>
           <button
             className={`px-4 py-2 ${
@@ -87,26 +96,26 @@ const FileList: React.FC = () => {
             } rounded`}
             onClick={() => setViewType('receiver')}
           >
-            Received 
+            Received
           </button>
         </div>
       </div>
 
       {filteredFiles.length > 0 ? (
-        <div className="overflow-x-auto rounded border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          <table className="min-w-full table-auto text-left">
+        <div className="overflow-x-auto my-8">
+          <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
             <thead>
-              <tr>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+              <tr className="bg-gray-100 dark:bg-form-input">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   File Name
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   {viewType === 'sender' ? 'Receiver' : 'Sender'}
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Date Uploaded
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Actions
                 </th>
               </tr>
@@ -115,15 +124,17 @@ const FileList: React.FC = () => {
               {filteredFiles.map((file) => (
                 <tr
                   key={file.id}
-                  className="border-t border-stroke dark:border-strokedark"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="py-4 px-6">{file.fileName}</td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                    {file.fileName}
+                  </td>
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {viewType === 'sender'
                       ? file.moderator.firstName
                       : file.creator.firstName}
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {file.createdAt &&
                       new Date(file.createdAt).toLocaleDateString('en-US', {
                         weekday: 'short',
@@ -132,7 +143,7 @@ const FileList: React.FC = () => {
                         day: 'numeric',
                       })}
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     <button
                       type="button"
                       className="text-primary hover:text-opacity-80"
@@ -141,13 +152,29 @@ const FileList: React.FC = () => {
                       Download
                     </button>
                     {viewType === 'sender' && (
-                      <button
-                        type="button"
-                        className="ml-4 text-red-600 hover:text-opacity-80"
-                        onClick={() => handleDelete(file.id)}
+                      <>
+                        <button
+                          type="button"
+                          className="ml-4 text-red-600 hover:text-opacity-80"
+                          onClick={() => handleDelete(file.id)}
+                        >
+                          Delete
+                        </button>
+                        <Link
+                          to={`/paper/create/structure/${file.id}`}
+                          className="ml-4 text-green-600 hover:text-opacity-80"
+                        >
+                          Set Structure
+                        </Link>
+                      </>
+                    )}
+                    {viewType === 'receiver' && (
+                      <Link
+                        to={`/paper/moderate/${file.id}/${moderatorId}`}
+                        className="ml-4 text-green-600 hover:text-opacity-80"
                       >
-                        Delete
-                      </button>
+                        Modarate
+                      </Link>
                     )}
                   </td>
                 </tr>
