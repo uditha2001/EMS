@@ -15,7 +15,7 @@ export default function CreateTransaction() {
 
         <div className="p-6.5">
           {/* File Upload Section */}
-          <div className="mb-6">
+          <div>
             <FileUpload />
           </div>
         </div>

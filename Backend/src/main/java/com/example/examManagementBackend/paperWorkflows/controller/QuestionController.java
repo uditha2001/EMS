@@ -38,4 +38,47 @@ public class QuestionController {
         ));
     }
 
+    @PutMapping("/{paperId}")
+    public ResponseEntity<StandardResponse> updateQuestionStructure(
+            @PathVariable Long paperId,
+            @RequestBody List<QuestionStructureDTO> updatedQuestionStructures) {
+        questionService.updateQuestionStructure(paperId, updatedQuestionStructures);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Question structure updated successfully.",
+                null // No additional data to return
+        ));
+    }
+
+    @DeleteMapping("/{paperId}")
+    public ResponseEntity<StandardResponse> deleteQuestionStructure(@PathVariable Long paperId) {
+        questionService.deleteQuestionStructure(paperId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Question structure deleted successfully.",
+                null
+        ));
+    }
+
+    @DeleteMapping("/subQuestion/{subQuestionId}")
+    public ResponseEntity<StandardResponse> deleteSubQuestion(@PathVariable Long subQuestionId) {
+        questionService.deleteSubQuestion(subQuestionId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Sub-question deleted successfully.",
+                null
+        ));
+    }
+
+    @DeleteMapping("/subSubQuestion/{subSubQuestionId}")
+    public ResponseEntity<StandardResponse> deleteSubSubQuestion(@PathVariable Long subSubQuestionId) {
+        questionService.deleteSubSubQuestion(subSubQuestionId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Sub-sub-question deleted successfully.",
+                null
+        ));
+    }
+
+
 }
