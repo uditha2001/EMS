@@ -125,7 +125,8 @@ public class FileUploadController {
                                 paper.getCreator(),
                                 paper.getModerator(),
                                 paper.getAcademicYear(),
-                                courses // Include courses in the DTO
+                                courses, // Include courses in the DTO
+                                paper.getStatus()
                         );
                     })
                     .collect(Collectors.toList());
@@ -217,7 +218,8 @@ public class FileUploadController {
                     encryptedPaper.getCreator(),
                     encryptedPaper.getModerator(),
                     encryptedPaper.getAcademicYear(),
-                    courses // Pass the list of courses here
+                    courses,
+                    encryptedPaper.getStatus()// Pass the list of courses here
             );
 
             return ResponseEntity.ok()
@@ -230,6 +232,35 @@ public class FileUploadController {
                     .body(new StandardResponse(500, "Error retrieving paper: " + e.getMessage(), null));
         }
     }
+
+    @PutMapping("/status/{paperId}")
+    public ResponseEntity<StandardResponse> updatePaperStatus(
+            @PathVariable Long paperId,
+            @RequestParam("status") String status) {
+        try {
+            // Validate status
+            if (status == null || status.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Status is required.", null));
+            }
+
+            // Update the paper status using the service
+            fileService.updatePaperStatus(paperId, status);
+
+            return ResponseEntity.ok()
+                    .body(new StandardResponse(200, "Paper status updated successfully.", null));
+        } catch (IllegalArgumentException e) {
+            // Handle invalid input or paper not found
+            return ResponseEntity.badRequest()
+                    .body(new StandardResponse(400, e.getMessage(), null));
+        } catch (Exception e) {
+            // Log error for debugging
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error updating paper status: " + e.getMessage(), null));
+        }
+    }
+
 
 
 }
