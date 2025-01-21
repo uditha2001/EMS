@@ -47,7 +47,7 @@ public class PdfGenrationService {
             // Add title
             Paragraph title = new Paragraph("Evaluation Form for Moderation of Examination papers\n" +
                     "Department of Computer Science-University of Ruhuna")
-                    .setBold()
+
                     .setFontSize(18)
                     .setTextAlignment(com.itextpdf.layout.properties.TextAlignment.CENTER);
             document.add(title);
@@ -201,15 +201,9 @@ public class PdfGenrationService {
             endTable.addCell(CourseContent);
             document.add(endTable.setBorder(new SolidBorder(new DeviceRgb(0, 0, 0), 1)));
 
-
-
-
-
-
-
             document.close();
             return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"pdf creation sucess",document), HttpStatus.CREATED
+                    new StandardResponse(200,"pdf creation sucess",null), HttpStatus.CREATED
             );
         }
         return new ResponseEntity<StandardResponse>(
