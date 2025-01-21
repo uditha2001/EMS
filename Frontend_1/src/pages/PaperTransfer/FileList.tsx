@@ -4,7 +4,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useApi from './api';
-import { Link } from 'react-router-dom'; // Import Link for routing
+import { Link } from 'react-router-dom';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -12,9 +12,12 @@ const FileList: React.FC = () => {
   const [, setLoading] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [viewType, setViewType] = useState<'sender' | 'receiver'>('sender'); // Sender or Receiver view toggle
+  const [viewType, setViewType] = useState<'sender' | 'receiver'>('sender');
+  const [structureStatus, setStructureStatus] = useState<
+    Record<number, boolean>
+  >({});
   const moderatorId = Number(auth.id);
-  const { getAllFiles, downloadFile, deleteFile } = useApi();
+  const { getAllFiles, downloadFile, deleteFile, getStructureData } = useApi(); // Assuming getStructureData is part of your API hooks
 
   useEffect(() => {
     fetchFiles();
@@ -25,6 +28,19 @@ const FileList: React.FC = () => {
       setLoading(true);
       const response = await getAllFiles();
       setFiles(response);
+
+      // Fetch structure data for each file
+      const structurePromises = response.map(async (file: Paper) => {
+        const structure = await getStructureData(file.id);
+        return { fileId: file.id, hasStructure: structure.data.length > 0 };
+      });
+
+      const structureData = await Promise.all(structurePromises);
+      const structureMap = structureData.reduce(
+        (acc, { fileId, hasStructure }) => ({ ...acc, [fileId]: hasStructure }),
+        {},
+      );
+      setStructureStatus(structureMap);
     } catch (error: any) {
       setErrorMessage(
         'Error fetching files: ' + (error.message || 'Unknown error'),
@@ -71,9 +87,6 @@ const FileList: React.FC = () => {
 
       <div className="mb-4 flex justify-between">
         <div>
-          {/* <h2 className="text-lg font-semibold text-black dark:text-white">
-            {viewType === 'sender' ? 'Sent Files' : 'Received Files'}
-          </h2> */}
           <Link
             to="/paper/transfer/new"
             className="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-opacity-80"
@@ -161,17 +174,26 @@ const FileList: React.FC = () => {
                           Delete
                         </button>
                         <Link
-                          to={`/paper/create/structure/${file.id}`}
-                          className="ml-4 text-green-600 hover:text-opacity-80"
-                        >
-                          Set Structure
-                        </Link>
-                        <Link
                           to={`/paper/transfer/edit/${file.id}`}
                           className="ml-4 text-green-600 hover:text-opacity-80"
                         >
                           Modify
                         </Link>
+                        {structureStatus[file.id] ? (
+                          <Link
+                            to={`/paper/edit/structure/${file.id}`}
+                            className="ml-4 text-green-600 hover:text-opacity-80"
+                          >
+                            Modify Structure
+                          </Link>
+                        ) : (
+                          <Link
+                            to={`/paper/create/structure/${file.id}`}
+                            className="ml-4 text-green-600 hover:text-opacity-80"
+                          >
+                            Set Structure
+                          </Link>
+                        )}
                       </>
                     )}
                     {viewType === 'receiver' && (
