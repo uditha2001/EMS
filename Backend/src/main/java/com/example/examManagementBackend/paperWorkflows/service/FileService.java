@@ -3,6 +3,7 @@ package com.example.examManagementBackend.paperWorkflows.service;
 import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.AcademicYearsRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
@@ -169,5 +170,18 @@ public class FileService {
             throw new RuntimeException("Failed to read the file: " + e.getMessage());
         }
     }
+
+    public void updatePaperStatus(Long paperId, String status) {
+        // Retrieve the paper by ID
+        EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
+                .orElseThrow(() -> new IllegalArgumentException("Paper not found with ID: " + paperId));
+
+        // Update the status
+        paper.setStatus(ExamPaperStatus.valueOf(status));
+
+        // Save the updated paper
+        encryptedPaperRepository.save(paper);
+    }
+
 
 }
