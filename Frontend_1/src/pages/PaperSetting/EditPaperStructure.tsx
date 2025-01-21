@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
@@ -99,6 +99,7 @@ const EditPaperStructure: React.FC = () => {
         await axiosPrivate.delete(`/structure/${paperId}`);
         setQuestions([]);
         setSuccessMessage('All structures deleted successfully!');
+        setTimeout(() => navigate('/paper/transfer'), 500);
       } catch (error) {
         console.error('Delete Structure Error:', error);
         setErrorMessage('Failed to delete the structure.');
@@ -313,7 +314,7 @@ const EditPaperStructure: React.FC = () => {
         },
       });
       setSuccessMessage('Paper structure updated successfully!');
-      setTimeout(() => navigate('/papers'), 2000); // Redirect to papers page after success
+      setTimeout(() => navigate('/paper/transfer'), 500); // Redirect to papers page after success
     } catch (error) {
       setErrorMessage('An error occurred while updating the paper structure.');
       console.error(error);
@@ -593,24 +594,35 @@ const EditPaperStructure: React.FC = () => {
             )}
 
             <div className="mt-4 flex items-center space-x-4">
+              {/* Save Paper Structure Button */}
               <button
                 type="submit"
                 disabled={!isMarksBalanced}
-                className={`rounded-md py-3 px-5 text-white shadow-md focus:outline-none ${
+                className={`flex justify-center rounded py-2 px-6 font-medium text-white ${
                   isMarksBalanced
-                    ? 'bg-primary hover:bg-primary-dark'
+                    ? 'bg-primary hover:bg-opacity-90'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}
               >
                 Save Paper Structure
               </button>
+
+              {/* Delete All Structure Button */}
               <button
                 type="button"
                 onClick={deleteStructure}
-                className="rounded-md bg-red-600 py-3 px-5 text-white shadow-md hover:bg-red-700 focus:outline-none"
+                className="rounded bg-red-600 py-2 px-6 text-white shadow-md hover:bg-red-700 focus:outline-none"
               >
                 Delete All Structure
               </button>
+
+              {/* Back Link */}
+              <Link
+                to="/paper/transfer"
+                className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-lg dark:border-strokedark dark:text-white"
+              >
+                Back
+              </Link>
             </div>
           </div>
         </form>
