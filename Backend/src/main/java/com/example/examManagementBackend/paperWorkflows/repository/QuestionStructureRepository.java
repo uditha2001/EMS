@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface QuestionStructureRepository extends JpaRepository<QuestionStructureEntity, Long> {
     List<QuestionStructureEntity> findByEncryptedPaperId(Long paperId);
+
 }
 

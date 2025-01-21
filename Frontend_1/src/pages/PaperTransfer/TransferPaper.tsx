@@ -15,7 +15,7 @@ export default function TransferPaper() {
 
         <div className="p-6.5">
           {/* File List Section */}
-          <div className="mb-6">
+          <div>
             <FileList />
           </div>
         </div>
