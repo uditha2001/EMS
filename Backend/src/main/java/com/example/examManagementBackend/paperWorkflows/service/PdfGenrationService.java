@@ -19,6 +19,7 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.VerticalAlignment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -207,9 +208,13 @@ public class PdfGenrationService {
 
 
             document.close();
-            return null;
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"pdf creation sucess",document), HttpStatus.CREATED
+            );
         }
-        return null;
+        return new ResponseEntity<StandardResponse>(
+                new StandardResponse(500,"questions object is null",null), HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     private Cell createStyledCell(String text) throws IOException {
