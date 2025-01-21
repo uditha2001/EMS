@@ -5,6 +5,7 @@ import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from './api';
 import Checkbox from '../../components/Checkbox';
+import { Link } from 'react-router-dom';
 
 interface Moderator {
   id: number;
@@ -148,7 +149,10 @@ const FileUpload: React.FC = () => {
       .join('_'); // Concatenate selected course codes with underscores
 
     // Rename the file to include the academic year name and course codes
-    const renamedFileName = `${courseCodes}_${selectedAcademicYearName.replace('/', '_')}.pdf`;
+    const renamedFileName = `${courseCodes}_${selectedAcademicYearName.replace(
+      '/',
+      '_',
+    )}.pdf`;
 
     const renamedFile = new File([file], renamedFileName, { type: file.type });
 
@@ -197,7 +201,7 @@ const FileUpload: React.FC = () => {
   };
 
   return (
-    <div className="mb-6">
+    <div>
       <SuccessMessage
         message={successMessage}
         onClose={() => setSuccessMessage('')}
@@ -293,14 +297,23 @@ const FileUpload: React.FC = () => {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleUpload}
-        disabled={isUploading}
-        className="mt-4 rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 disabled:bg-opacity-50"
-      >
-        {isUploading ? 'Uploading...' : 'Upload File'}
-      </button>
+      <div className="flex justify-between mt-4">
+        <Link
+          to={'/paper/transfer'}
+          className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
+        >
+          Back
+        </Link>
+
+        <button
+          type="button"
+          onClick={handleUpload}
+          disabled={isUploading}
+          className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+        >
+          {isUploading ? 'Uploading...' : 'Upload File'}
+        </button>
+      </div>
     </div>
   );
 };
