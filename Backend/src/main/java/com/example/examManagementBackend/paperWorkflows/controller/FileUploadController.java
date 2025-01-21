@@ -177,17 +177,30 @@ public class FileUploadController {
     }
 
     @PutMapping("/{paperId}")
-    public ResponseEntity<String> updatePaper(@PathVariable Long paperId,
-                                              @RequestParam(required = false) String fileName,
-                                              @RequestParam(required = false) String remarks
-                                              ) {
+    public ResponseEntity<StandardResponse> updatePaper(@PathVariable Long paperId,
+                                                        @RequestParam(required = false) String fileName,
+                                                        @RequestParam(required = false) String remarks) {
         try {
-            fileService.updateEncryptedPaper(paperId, fileName ,remarks);
-            return ResponseEntity.ok("Paper updated successfully.");
+            fileService.updateEncryptedPaper(paperId, fileName, remarks);
+
+            // Constructing the success response
+            StandardResponse successResponse = new StandardResponse(
+                    HttpStatus.OK.value(),
+                    "Paper updated successfully.",
+                    null // You can set 'null' or any data object if needed
+            );
+            return ResponseEntity.ok(successResponse);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            // Constructing the error response
+            StandardResponse errorResponse = new StandardResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage(),
+                    null // You can set 'null' or any error data object if needed
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
 
 
     @GetMapping("/{fileId}")
@@ -230,37 +243,9 @@ public class FileUploadController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new StandardResponse(500, "Error retrieving paper: ", null));
-        
-    }
 
-    @PutMapping("/status/{paperId}")
-    public ResponseEntity<StandardResponse> updatePaperStatus(
-            @PathVariable Long paperId,
-            @RequestParam("status") String status) {
-        try {
-            // Validate status
-            if (status == null || status.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new StandardResponse(400, "Status is required.", null));
-            }
-
-            // Update the paper status using the service
-            fileService.updatePaperStatus(paperId, status);
-
-            return ResponseEntity.ok()
-                    .body(new StandardResponse(200, "Paper status updated successfully.", null));
-        } catch (IllegalArgumentException e) {
-            // Handle invalid input or paper not found
-            return ResponseEntity.badRequest()
-                    .body(new StandardResponse(400, e.getMessage(), null));
-        } catch (Exception e) {
-            // Log error for debugging
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error updating paper status: " + e.getMessage(), null));
         }
+
+
     }
-
-
-
 }
