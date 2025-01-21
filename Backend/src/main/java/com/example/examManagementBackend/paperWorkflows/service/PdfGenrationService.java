@@ -29,7 +29,6 @@ public class PdfGenrationService {
 
     public ResponseEntity<StandardResponse> genratePdf(FeedBackDTO feedBackDTO) throws IOException {
         questionData[] Question = feedBackDTO.getQuestion();
-        String checkMark = "✔"; // Direct Unicode check mark
         if(Question != null) {
             String fileName = "feedback.pdf";
             PdfWriter writer = new PdfWriter(fileName);
@@ -38,7 +37,7 @@ public class PdfGenrationService {
             float colSize1=190f;
             float colsize2=250f;
             float colsize3=100f;
-            float questionTableSize[]={50f,350f,20f,20f,100f};
+            float questionTableSize[]={50f,250f,40f,200f};
             float examineTable[]={270f,270f};
             float moderatorSign[]={colSize1,colsize2,colsize3};
             float actionSign[]={180f,180f,180f};
@@ -64,16 +63,14 @@ public class PdfGenrationService {
             // Set the table header
             table.addCell(createStyledCell("Row No."));
             table.addCell(createStyledCell("Question"));
-            table.addCell(createStyledCell("Yes"));
-            table.addCell(createStyledCell("No"));
+            table.addCell(createStyledCell("Answer"));
             table.addCell(createStyledCell("Specific Comment"));
 
             // Add rows
             for (int i = 0; i < 7; i++) {
                 table.addCell(createStyledCell(String.valueOf(i + 1)));
                 table.addCell(createStyledCell(Question[i].getQuestion()));
-                table.addCell(createStyledCell(Question[i].getAnswer().equals("yes") ? checkMark : ""));
-                table.addCell(createStyledCell(Question[i].getAnswer().equals("no") ? checkMark : ""));
+                table.addCell(createStyledCell(Question[i].getAnswer()));
                 table.addCell(createStyledCell(Question[i].getComment()));
             }
             Cell commentCell = new Cell(1, 5); // 1 row, 5 columns
@@ -88,8 +85,7 @@ public class PdfGenrationService {
             for(int i=7;i<9;i++){
                 table.addCell(createStyledCell(String.valueOf(i + 1)));
                 table.addCell(createStyledCell(Question[i].getQuestion()));
-                table.addCell(createStyledCell(Question[i].getAnswer().equals("yes") ? checkMark : ""));
-                table.addCell(createStyledCell(Question[i].getAnswer().equals("no") ? checkMark : ""));
+                table.addCell(createStyledCell(Question[i].getAnswer()));
                 table.addCell(createStyledCell(Question[i].getComment()));
             }
             Cell commentCell1 = new Cell(1, 5);
@@ -191,6 +187,7 @@ public class PdfGenrationService {
                    .setFontSize(14)
                    .setTextAlignment(TextAlignment.LEFT)
            );
+           learningOutcomeCell.setBorder(Border.NO_BORDER);
            endTable.addCell(learningOutcomeCell);
             Cell CourseContent = new Cell();
             CourseContent.add(new Paragraph( )
@@ -199,8 +196,9 @@ public class PdfGenrationService {
                     .setFontSize(14)
                     .setTextAlignment(TextAlignment.LEFT)
             );
+            CourseContent.setBorder(Border.NO_BORDER);
             endTable.addCell(CourseContent);
-            document.add(endTable);
+            document.add(endTable.setBorder(new SolidBorder(new DeviceRgb(0, 0, 0), 1)));
 
 
 

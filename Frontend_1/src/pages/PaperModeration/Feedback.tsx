@@ -10,7 +10,7 @@ type questionData = {
     Question:string;
    };
 type finalData = {
-    Question: questionData[];
+    question: questionData[];
     generalComment: string;
     learningOutcomes: string;
     courseContent: string;
@@ -157,7 +157,7 @@ const Feedback = () => {
         event.preventDefault();
         setFormData((prevData) => ({
             ...prevData,
-            Question: Object.values(QuestionData),
+            question: Object.values(QuestionData),
             generalComment: moderatorData.generalComment,
             learningOutcomes: moderatorData.learningOutcomes,
             courseContent: moderatorData.courseContent,
@@ -175,7 +175,7 @@ const Feedback = () => {
         const sendData = async () => {
             try {
                 const response = await Axios.post("/moderation/saveFeedBackData", {
-                  //  Question: formData.Question,
+                    question: formData.question,
                     generalComment: formData.generalComment,
                     learningOutcomes: formData.learningOutcomes,
                     courseContent: formData.courseContent,
