@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -65,5 +66,7 @@ public class EncryptedPaper {
     @ManyToOne
     @JoinColumn(name = "academic_year_id", nullable = false)
     private AcademicYearsEntity academicYear; // Reference to the academic year
+    @Column(nullable = false)
+    private ExamPaperStatus status=ExamPaperStatus.DRAFT;
 
 }
