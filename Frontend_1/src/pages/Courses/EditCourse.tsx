@@ -94,9 +94,9 @@ const EditCourse: React.FC = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
-  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!level || !semester || !degree || !courseCodeSuffix || !courseName || !courseType || !courseDescription) {
       setVerifyData(true);
       return;
@@ -292,29 +292,29 @@ const EditCourse: React.FC = () => {
 
       {/* Verification Modal */}
       {verifyData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-bold mb-4 text-yellow-600">Verify Data</h3>
-          <p className="mb-4">Some fields are unchanged or empty. Do you want to proceed?</p>
-          <div className="flex justify-end space-x-4">
-            <button
-              onClick={() => setVerifyData(false)}
-              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                setVerifyData(false); // Close the modal
-                handleSubmit(); // Trigger the save logic
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-            >
-              Proceed
-            </button>
-          </div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-xl font-bold mb-4 text-yellow-600">Verify Data</h3>
+        <p className="mb-4">Some fields are unchanged or empty. Do you want to proceed?</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={() => setVerifyData(false)}
+            className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              setVerifyData(false); // Close the modal
+              handleSubmit(); // Trigger the save logic
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+          >
+            Proceed
+          </button>
         </div>
       </div>
+    </div>
       )}
     </div>
   );
