@@ -41,6 +41,7 @@ import Feedback from './pages/PaperModeration/Feedback';
 import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
 import FileUpdate from './pages/PaperTransfer/FileUpdate';
 import EditPaperStructure from './pages/PaperSetting/EditPaperStructure';
+import ModerationDashboard from './pages/PaperModeration/ModerationDashboard';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -288,6 +289,14 @@ function App() {
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
+
+            <Route
+              path="/paper/moderate"
+              element={renderPage(
+                'Paper Moderation | EMS',
+                <ModerationDashboard />,
+              )}
+            />
 
             <Route
               element={<RequireAuth allowedPermissions={['TRANSFER_PAPER']} />}
