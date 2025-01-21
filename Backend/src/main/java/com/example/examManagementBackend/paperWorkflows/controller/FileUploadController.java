@@ -71,7 +71,7 @@ public class FileUploadController {
             // Log error for debugging purposes
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error uploading file: " + e.getMessage(), null));
+                    .body(new StandardResponse(500, "Error uploading file: ", null));
         }
     }
 
@@ -95,7 +95,7 @@ public class FileUploadController {
                     .body(decryptedData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error downloading file: " + e.getMessage(), null));
+                    .body(new StandardResponse(500, "Error downloading file: " , null));
         }
     }
 
@@ -135,7 +135,7 @@ public class FileUploadController {
 
         } catch (Exception e) {
             // Handle any errors and return a 500 response
-            return new ResponseEntity<>(new StandardResponse(500, "Error retrieving papers: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new StandardResponse(500, "Error retrieving papers: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -147,7 +147,7 @@ public class FileUploadController {
             fileService.deletePaperById(id);
             return new ResponseEntity<>(new StandardResponse(200, "Paper deleted successfully.", null), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " + e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " , null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -171,7 +171,7 @@ public class FileUploadController {
                     .body(decryptedData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error viewing file: " + e.getMessage(), null));
+                    .body(new StandardResponse(500, "Error viewing file: ", null));
         }
     }
 
@@ -227,8 +227,8 @@ public class FileUploadController {
             // Log error for debugging
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error retrieving paper: " + e.getMessage(), null));
-        }
+                    .body(new StandardResponse(500, "Error retrieving paper: ", null));
+        
     }
 
 
