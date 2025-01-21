@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.dto.FeedBackData;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,9 +9,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class questionData {
+    @JsonProperty("id")
     private int id;
+
+    @JsonProperty("answer")
     private String answer;
+
+    @JsonProperty("comment")
     private String comment;
-    private String[] questions;
+
+    @JsonProperty("Question")
+    private String Question;
 
 }
