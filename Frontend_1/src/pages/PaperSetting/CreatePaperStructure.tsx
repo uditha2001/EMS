@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 interface SubSubQuestion {
@@ -34,6 +34,7 @@ const CreatePaperStructure: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isMarksBalanced, setIsMarksBalanced] = useState(true);
   const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
 
   const initializeQuestions = () => {
     const initialQuestions = Array.from(
@@ -189,16 +190,13 @@ const CreatePaperStructure: React.FC = () => {
     }
 
     try {
-      await axiosPrivate.post(
-        `/structure/${paperId}`,
-        questions,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      await axiosPrivate.post(`/structure/${paperId}`, questions, {
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+      });
       setSuccessMessage('Paper structure created successfully!');
+      setTimeout(() => navigate('/paper/transfer'), 500);
     } catch (error) {
       setErrorMessage('An error occurred while creating the paper structure.');
       console.error(error);
