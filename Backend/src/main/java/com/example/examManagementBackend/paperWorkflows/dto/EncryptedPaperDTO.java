@@ -2,6 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.dto;
 
 import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import lombok.Data;
 
@@ -21,6 +22,7 @@ public class EncryptedPaperDTO {
     private UserDTO moderator;
     private Long academicYear;
     private List<CourseDTO> courses;
+    private ExamPaperStatus status;
 
     // Constructor for converting entity to DTO
     public EncryptedPaperDTO(
@@ -32,7 +34,9 @@ public class EncryptedPaperDTO {
             UserEntity creator,
             UserEntity moderator,
             AcademicYearsEntity academicYear,
-            List<CoursesEntity> courses
+            List<CoursesEntity> courses,
+            ExamPaperStatus status
+
     ) {
         this.id = id;
         this.fileName = fileName;
@@ -45,6 +49,7 @@ public class EncryptedPaperDTO {
         this.courses = courses.stream()
                 .map(course -> new CourseDTO(course.getId(), course.getName(),course.getCode()))
                 .toList();
+        this.status=status;
     }
 
     // Nested DTO for user details
