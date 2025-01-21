@@ -178,27 +178,42 @@ const EditPaperStructure: React.FC = () => {
     const updatedQuestions = [...questions];
 
     if (subSubQuestionIndex !== undefined && subQuestionIndex !== undefined) {
+      // Sub-Sub-Question update
       const subQuestion =
         updatedQuestions[questionIndex].subQuestions[subQuestionIndex];
       const subSubQuestion = subQuestion.subSubQuestions[subSubQuestionIndex];
 
       subQuestion.subSubQuestions[subSubQuestionIndex] = {
         ...subSubQuestion,
-        [name]: name === 'marks' ? parseInt(value, 10) || 0 : value,
+        [name]:
+          name === 'marks'
+            ? parseFloat(parseFloat(value).toFixed(1)) || 0
+            : value,
       };
 
+      // Recalculate sub-question marks
       subQuestion.marks = calculateSubQuestionMarks(subQuestion);
+
+      // Recalculate main question marks
+      const question = updatedQuestions[questionIndex];
+      question.totalMarks = calculateQuestionMarks(question);
     } else if (subQuestionIndex !== undefined) {
+      // Sub-Question update
       const question = updatedQuestions[questionIndex];
       const subQuestion = question.subQuestions[subQuestionIndex];
 
       question.subQuestions[subQuestionIndex] = {
         ...subQuestion,
-        [name]: name === 'marks' ? parseInt(value, 10) || 0 : value,
+        [name]:
+          name === 'marks'
+            ? parseFloat(parseFloat(value).toFixed(1)) || 0
+            : value,
       };
 
+      // Recalculate main question marks
       question.totalMarks = calculateQuestionMarks(question);
     } else {
+      // Question update
       const question = updatedQuestions[questionIndex];
       updatedQuestions[questionIndex] = {
         ...question,
@@ -208,11 +223,11 @@ const EditPaperStructure: React.FC = () => {
 
     setQuestions(updatedQuestions);
 
+    // Perform real-time mark balancing using updatedQuestions
     const allocatedMarks = updatedQuestions.reduce(
       (sum, question) => sum + question.totalMarks,
       0,
     );
-
     if (allocatedMarks !== totalMarks) {
       setErrorMessage(
         `Total marks allocated (${allocatedMarks}) do not match the paper total (${totalMarks}).`,
