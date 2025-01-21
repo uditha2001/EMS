@@ -29,7 +29,8 @@ public class AcademicYearsEntity {
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "academicYearId")
     private List<RoleAssignmentEntity> roleAssignments;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "academicYear")
+    private List<EncryptedPaper> encryptedPapers;
 }
