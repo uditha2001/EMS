@@ -269,7 +269,7 @@ const Feedback = () => {
                             id="examination"
                             name="examination"
                             type="text"
-                            className="w-full md:w-2/3 h-10 border-2 border-gray-300 p-2 rounded-md"
+                            className="w-full md:w-2/3 h-10 border-2 border-gray-300 p-2 rounded-md  dark:bg-gray-700 text-gray-900 dark:text-gray-300"
                             placeholder="Examination"
                             onChange={(event) => setExamination(event.target.value)}
                         />
@@ -309,7 +309,7 @@ const Feedback = () => {
                                     type="text"
                                     value={selectedCourseName ? selectedCourseName : ""}
                                     disabled
-                                    className="h-10 border-2 border-gray-300 p-2 rounded-md"
+                                    className="h-10 border-2 border-gray-300 p-2 rounded-md  dark:bg-gray-700 text-gray-900 dark:text-gray-300"
                                     placeholder={selectedCourseName}
                                 />
                             </div>
