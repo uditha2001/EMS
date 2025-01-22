@@ -1,10 +1,10 @@
 
-import { useState } from 'react';
 
 type questionData = {
   answer: string;
   comment: string;
   id: number;
+  questions?: string[];
 };
 
 type finalData = {
@@ -21,10 +21,9 @@ type finalData = {
 };
 
 const PdfViewOfFeedBack = (finalData: finalData) => {
- 
+
   return (
-    <div className="p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded shadow-md">
-     
+    <div className="p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 rounded shadow-md overflow-x-auto">
       <h1 className="text-center font-bold text-title-lg">
         Evaluation Form for Moderation of Examination papers
         <br /> Department of Computer Science-University of Ruhuna
@@ -48,7 +47,6 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
           </tr>
         </thead>
         <tbody>
-          {/* Hardcoded Questions */}
           <tr className="bg-white dark:bg-gray-800">
             <td className="border border-gray-300 px-4 py-2 text-center">1</td>
             <td className="border border-gray-300 px-4 py-2">Does the exam paper provide clear instructions to the candidates?</td>
@@ -152,9 +150,7 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
             <td className="border border-gray-300 px-4 py-2 text-center">
               {finalData.Question[7]?.answer === "no" ? "✔" : ""}
             </td>
-            <td className="border border-gray-300 px-4 py-2">
-              {finalData.Question[7]?.comment}
-            </td>
+            <td className="border border-gray-300 px-4 py-2">{finalData.Question[7]?.comment}</td>
           </tr>
 
           <tr key="9" className="bg-white dark:bg-gray-800">
@@ -168,10 +164,9 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
             <td className="border border-gray-300 px-4 py-2 text-center">
               {finalData.Question[8]?.answer === "no" ? "✔" : ""}
             </td>
-            <td className="border border-gray-300 px-4 py-2">
-              {finalData.Question[8]?.comment}
-            </td>
+            <td className="border border-gray-300 px-4 py-2">{finalData.Question[8]?.comment}</td>
           </tr>
+
           <tr>
             <td colSpan={5}>
               <div className="mb-4 w-full">
@@ -180,10 +175,9 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
                 </div>
                 <span className="ml-6 mr-6">* {finalData.generalComment}</span>
               </div>
-
-
             </td>
           </tr>
+
           <tr>
             <td className="h-full border pr-4 font-bold" colSpan={1}>
               <div className="items-end block  h-27">
@@ -221,20 +215,22 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
               </div>
             </td>
           </tr>
+
           <tr>
-            <td colSpan={2} className="border border-gray-300  py-2">
-              <div >
+            <td colSpan={2} className="border border-gray-300 py-2">
+              <div>
                 <p className="font-bold mr-5">(a) Agree and Addressed:</p>
                 <p className="ml-4">{finalData.agreeAndAddressed}</p>
               </div>
             </td>
-            <td colSpan={3} className="border border-gray-300  py-2">
+            <td colSpan={3} className="border border-gray-300 py-2">
               <div>
                 <p className="font-bold mr-5">(b) Not Agree and Reasons:</p>
                 <p className="ml-4">{finalData.notAgreeAndReasons}</p>
               </div>
             </td>
           </tr>
+
           <tr>
             <td colSpan={5}>
               <div className="flex justify-between">
@@ -305,7 +301,7 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
             >
               <div>
                 <label
-                  htmlFor="courseContent"
+                  htmlFor="learningOutcomes"
                   className="block font-bold text-gray-700 dark:text-gray-300 mb-2 text-lg"
                 >
                   Course Content:
@@ -314,10 +310,10 @@ const PdfViewOfFeedBack = (finalData: finalData) => {
               </div>
             </td>
           </tr>
-
         </tbody>
       </table>
     </div>
+
   );
 };
 

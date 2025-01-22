@@ -3,14 +3,14 @@ import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
 import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
 import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import PdfViewOfFeedBack from "./PdfViewOfFeedBack";
 type questionData = {
     answer: string;
     comment: string;
     id: number;
-};
+    Question:string;
+   };
 type finalData = {
-    Question: questionData[];
+    question: questionData[];
     generalComment: string;
     learningOutcomes: string;
     courseContent: string;
@@ -26,15 +26,15 @@ type finalData = {
 
 const Feedback = () => {
     const [QuestionData, setQuestionData] = useState<{ [key: string]: questionData }>({
-        item1: { answer: "", comment: "", id: 1 },
-        item2: { answer: "", comment: "", id: 2 },
-        item3: { answer: "", comment: "", id: 3 },
-        item4: { answer: "", comment: "", id: 4 },
-        item5: { answer: "", comment: "", id: 5 },
-        item6: { answer: "", comment: "", id: 6 },
-        item7: { answer: "", comment: "", id: 7 },
-        item8: { answer: "", comment: "", id: 8 },
-        item9: { answer: "", comment: "", id: 9 }
+        item1: { answer: "", comment: "", id: 1 ,Question:""},
+        item2: { answer: "", comment: "", id: 2,Question:"" },
+        item3: { answer: "", comment: "", id: 3 ,Question:""},
+        item4: { answer: "", comment: "", id: 4 ,Question:""},
+        item5: { answer: "", comment: "", id: 5 ,Question:""},
+        item6: { answer: "", comment: "", id: 6,Question:"" },
+        item7: { answer: "", comment: "", id: 7 ,Question:""},
+        item8: { answer: "", comment: "", id: 8 ,Question:""},
+        item9: { answer: "", comment: "", id: 9 ,Question:""}
     });
     const [degreeName, setDegreeName] = useState<any[]>([]);
     const [courseData, setCourseData] = useState<any[]>([]);
@@ -45,6 +45,15 @@ const Feedback = () => {
     const [selectedCourseName, setSelectedCourseName] = useState<string>("");
     const [examination, setExamination] = useState<string>("");
     const [pdfRequest, setPdfRequest] = useState<boolean>(false);
+    const questions=["Does the exam paper provide clear instructions to the candidates?",
+        "Do the Questions reflect the learning outcomes adequately?"
+        , "Are the questions clear and easily understandable?"
+        , "Is there any repetition of questions?"
+       ,"Are the marks allocated for questions and sections appropriate?",
+       "Is the time given to attend each question/section adequate?",
+   "Are the questions up to the standard and appropriate to the level being assessed?",
+   " Are the answers correct/justifiable?",
+   " Is the marking scheme clear and fair?"]
     useEffect(() => {
         const fetchCourses = async () => {
             try {
@@ -123,7 +132,7 @@ const Feedback = () => {
     }
 
 
-    const handleQuestionsData = (Data: { answer: string; comment: string; id: number }[]) => {
+    const handleQuestionsData = (Data: { answer: string; comment: string; id: number;Questions:String }[]) => {
         const updatedData = { ...QuestionData };
         Object.values(Data).forEach((item) => {
             const key = `item${item.id}`;
@@ -132,7 +141,9 @@ const Feedback = () => {
                     ...updatedData[key],
                     answer: item.answer,
                     comment: item.comment,
+                    Question: questions[parseInt(item.id.toString()) - 1]
                 };
+                
             }
         });
 
@@ -146,7 +157,7 @@ const Feedback = () => {
         event.preventDefault();
         setFormData((prevData) => ({
             ...prevData,
-            Question: Object.values(QuestionData),
+            question: Object.values(QuestionData),
             generalComment: moderatorData.generalComment,
             learningOutcomes: moderatorData.learningOutcomes,
             courseContent: moderatorData.courseContent,
@@ -161,7 +172,29 @@ const Feedback = () => {
 
     }
     if (pdfRequest && formData) {
-        return <PdfViewOfFeedBack {...formData} />
+        const sendData = async () => {
+            try {
+                const response = await Axios.post("/moderation/saveFeedBackData", {
+                    question: formData.question,
+                    generalComment: formData.generalComment,
+                    learningOutcomes: formData.learningOutcomes,
+                    courseContent: formData.courseContent,
+                    degreeProgram: formData.degreeProgram,
+                    courseCode: formData.courseCode,
+                    courseName: formData.courseName,
+                    examination: formData.examination,
+                    agreeAndAddressed: formData.agreeAndAddressed,
+                    notAgreeAndReasons: formData.notAgreeAndReasons
+                });
+                if (response.status === 200) {
+                    console.log("success");
+                }
+            } catch (error) {
+                console.log("failed to send data");
+            }
+        };
+        sendData();
+        console.log(formData);
     }
 
     return (
