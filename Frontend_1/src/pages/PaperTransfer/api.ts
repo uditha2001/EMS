@@ -51,39 +51,6 @@ const useApi = () => {
       throw new Error(error.message);
     }
   };
-  const updateFile = async (
-    fileId: number, // ID of the file being updated
-    file: File, // New file data
-    remarks: string, // Updated remarks
-  ): Promise<{ message: string }> => {
-    // Check if file is valid
-    if (!file) {
-      setError('File is required.');
-      return Promise.reject(new Error('File is required.'));
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('remarks', remarks);
-
-    try {
-      setLoading(true);
-      const res = await axiosPrivate.put(`/papers/${fileId}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setLoading(false);
-      return res.data.data; // Assuming res.data.data contains the message
-    } catch (error: any) {
-      setLoading(false);
-      // More robust error handling
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Failed to update the file';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    }
-  };
 
   const getAllFiles = async (): Promise<Paper[]> => {
     try {
@@ -171,6 +138,41 @@ const useApi = () => {
       throw new Error(
         error.response?.data?.message || 'Error fetching structure data.',
       );
+    }
+  };
+
+  const updateFile = async (
+    fileId: number,
+    file: File,
+    fileName: string,
+    remarks: string,
+  ): Promise<{ message: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileName', fileName);
+    formData.append('remarks', remarks);
+    try {
+      setLoading(true);
+      const res = await axiosPrivate.put(`/papers/update/${fileId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setLoading(false);
+      return res.data.data;
+    } catch (error: any) {
+      setLoading(false);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to update the file';
+      console.error(
+        'Update File Error:',
+        errorMessage,
+        error.response || error,
+      );
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
