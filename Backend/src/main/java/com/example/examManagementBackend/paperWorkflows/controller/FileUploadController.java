@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
@@ -176,30 +176,51 @@ public class FileUploadController {
         }
     }
 
-    @PutMapping("/{paperId}")
-    public ResponseEntity<StandardResponse> updatePaper(@PathVariable Long paperId,
-                                                        @RequestParam(required = false) String fileName,
-                                                        @RequestParam(required = false) String remarks) {
-        try {
-            fileService.updateEncryptedPaper(paperId, fileName, remarks);
+    @PutMapping("/update/{fileId}")
+    public ResponseEntity<StandardResponse> updatePaper(
+            @PathVariable Long fileId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("fileName") String fileName,
+            @RequestParam("remarks") String remarks) {
 
-            // Constructing the success response
-            StandardResponse successResponse = new StandardResponse(
-                    HttpStatus.OK.value(),
-                    "Paper updated successfully.",
-                    null // You can set 'null' or any data object if needed
-            );
-            return ResponseEntity.ok(successResponse);
-        } catch (RuntimeException e) {
-            // Constructing the error response
-            StandardResponse errorResponse = new StandardResponse(
-                    HttpStatus.BAD_REQUEST.value(),
-                    e.getMessage(),
-                    null // You can set 'null' or any error data object if needed
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        try {
+            // Validate file type
+            if (!"application/pdf".equals(file.getContentType())) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Invalid file type. Only PDF files are allowed.", null));
+            }
+
+            // Retrieve existing paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(fileId);
+            if (existingPaper == null) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Paper not found with the provided fileId.", null));
+            }
+
+            // Get creatorId and moderatorId from the existing paper
+            Long creatorId = existingPaper.getCreator().getUserId();
+            Long moderatorId = existingPaper.getModerator().getUserId();
+
+            // Encrypt the file before saving it
+            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
+
+            // Update the paper with the new file, file name, and remarks
+            fileService.updateEncryptedPaper(fileId, encryptedFile, fileName, remarks);
+
+            return ResponseEntity.ok()
+                    .body(new StandardResponse(200, "Paper updated successfully", null));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(new StandardResponse(400, e.getMessage(), null));
+        } catch (Exception e) {
+            // Log error for debugging purposes
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error updating file: ", null));
         }
     }
+
 
 
 
