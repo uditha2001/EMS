@@ -19,19 +19,25 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.VerticalAlignment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 @Service
 public class PdfGenrationService {
 
-    public ResponseEntity<StandardResponse> genratePdf(FeedBackDTO feedBackDTO) throws IOException {
+    public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO) throws IOException {
         questionData[] Question = feedBackDTO.getQuestion();
         if(Question != null) {
             String fileName = "feedback.pdf";
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
@@ -202,12 +208,20 @@ public class PdfGenrationService {
             document.add(endTable.setBorder(new SolidBorder(new DeviceRgb(0, 0, 0), 1)));
 
             document.close();
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"pdf creation sucess",null), HttpStatus.CREATED
-            );
+            File file = new File(fileName);
+            FileInputStream fis = new FileInputStream(file);
+            byte[] pdfBytes = StreamUtils.copyToByteArray(fis);
+            fis.close();
+
+            // Set headers for file download
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
+            return new ResponseEntity<byte[]>(pdfBytes,headers,HttpStatus.OK);
+
         }
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(500,"questions object is null",null), HttpStatus.INTERNAL_SERVER_ERROR
+        return new ResponseEntity<byte[]>(
+                null,null,HttpStatus.EXPECTATION_FAILED
         );
     }
 
@@ -231,4 +245,6 @@ public class PdfGenrationService {
         // Return the styled cell
         return cell;
     }
+
+
 }
