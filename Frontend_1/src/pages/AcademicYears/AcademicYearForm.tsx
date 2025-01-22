@@ -1,11 +1,18 @@
 import { ChangeEvent, FormEvent } from 'react';
 
 interface AcademicYearFormProps {
-  formData: { year: string };
-  setFormData: (data: { year: string }) => void;
+  formData: { year: string; level: string; semester: string };
+  setFormData: (data: {
+    year: string;
+    level: string;
+    semester: string;
+  }) => void;
   editId: number | null;
-  handleSave: (year: string) => void;
+  handleSave: () => void;
   cancelEdit: () => void;
+  degreePrograms: { id: string; name: string }[];
+  selectedDegreeProgram: string;
+  setSelectedDegreeProgram: (value: string) => void;
 }
 
 export default function AcademicYearForm({
@@ -14,14 +21,28 @@ export default function AcademicYearForm({
   editId,
   handleSave,
   cancelEdit,
+  degreePrograms,
+  selectedDegreeProgram,
+  setSelectedDegreeProgram,
 }: AcademicYearFormProps) {
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    if (name === 'degreeProgram') {
+      setSelectedDegreeProgram(value);
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleSave(formData.year);
+    if (!selectedDegreeProgram) {
+      alert('Please select a degree program.');
+      return;
+    }
+    handleSave();
   };
 
   return (
@@ -36,6 +57,32 @@ export default function AcademicYearForm({
 
         {/* Form Body */}
         <div className="p-6.5">
+          {/* Degree Program */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="degreeProgram"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Degree Program
+            </label>
+            <select
+              id="degreeProgram"
+              name="degreeProgram"
+              value={selectedDegreeProgram}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Degree Program</option>
+              {degreePrograms.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Academic Year */}
           <div className="mb-4.5">
             <label
               htmlFor="year"
@@ -53,35 +100,51 @@ export default function AcademicYearForm({
               required
               className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
             />
+          </div>
 
+          {/* Level */}
+          <div className="mb-4.5">
             <label
-              htmlFor="year"
+              htmlFor="level"
               className="mb-2.5 block text-black dark:text-white"
             >
               Level
             </label>
             <select
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none mb-4"
-                >
-                   <option value="" disabled selected>Select Level</option>
-                  <option value="1">Level 1</option>
-                  <option value="2">Level 2</option>
-                  <option value="3">Level 3</option>
+              id="level"
+              name="level"
+              value={formData.level}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Level</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
             </select>
+          </div>
 
+          {/* Semester */}
+          <div className="mb-4.5">
             <label
-              htmlFor="year"
+              htmlFor="semester"
               className="mb-2.5 block text-black dark:text-white"
             >
               Semester
             </label>
             <select
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none mb-4"
-                >
-                   <option value="" disabled selected>Select Level</option>
-                  <option value="1">Semester 1</option>
-                  <option value="2">Semester 2</option>
-                  <option value="3">Both</option>
+              id="semester"
+              name="semester"
+              value={formData.semester}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Semester</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="b">Both</option>
             </select>
           </div>
 
