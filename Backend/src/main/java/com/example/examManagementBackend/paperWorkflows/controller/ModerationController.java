@@ -35,13 +35,13 @@ public class ModerationController {
     }
     //generate the pdf and save data;
     @PostMapping("/saveFeedBackData")
-    public ResponseEntity<StandardResponse> saveFeedBackData(@RequestBody FeedBackDTO dto) {
+    public ResponseEntity<byte[]> saveFeedBackData(@RequestBody FeedBackDTO dto) {
        try{
           return pdfGenrationService.genratePdf(dto);
        }
        catch(Exception e){
-           return new ResponseEntity<StandardResponse> (
-                   new StandardResponse(500,"failed to create pdf",null), HttpStatus.INTERNAL_SERVER_ERROR
+           return new ResponseEntity<byte[]> (
+                   null,null,HttpStatus.INTERNAL_SERVER_ERROR
            );
        }
 
