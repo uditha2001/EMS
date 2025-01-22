@@ -88,26 +88,31 @@ public class FileService {
         }
     }
 
-    public void updateEncryptedPaper(Long paperId, String fileName, String remarks) {
-        // Fetch the existing EncryptedPaper by ID
-        EncryptedPaper encryptedPaper = encryptedPaperRepository.findById(paperId)
-                .orElseThrow(() -> new RuntimeException("Encrypted paper with ID " + paperId + " not found."));
+    public void updateEncryptedPaper(Long paperId, String encryptedFile, String fileName, String remarks) {
+        // Retrieve the existing paper
+        EncryptedPaper existingPaper = encryptedPaperRepository.findById(paperId)
+                .orElseThrow(() -> new RuntimeException("Paper not found with ID: " + paperId));
 
-        // Update the file name if provided
-        if (fileName != null && !fileName.isEmpty()) {
-            encryptedPaper.setFileName(fileName);
+        // If the file name is different, delete the old file from the system
+        if (!existingPaper.getFileName().equals(fileName)) {
+            try {
+                Files.deleteIfExists(Paths.get(existingPaper.getFilePath()));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to delete existing file: " + e.getMessage());
+            }
         }
 
-        // Update the remarks if provided
-        if (remarks != null) {
-            encryptedPaper.setRemarks(remarks);
-        }
+        // Save the new file to the storage and get the path
+        String filePath = saveFileToStorage(encryptedFile, fileName);
 
-        // Save the updated EncryptedPaper
-        encryptedPaperRepository.save(encryptedPaper);
+        // Update the paper fields
+        existingPaper.setFileName(fileName);
+        existingPaper.setFilePath(filePath);
+        existingPaper.setRemarks(remarks);
+
+        // Save the updated paper record
+        encryptedPaperRepository.save(existingPaper);
     }
-
-
 
 
     private String saveFileToStorage(String encryptedFile, String fileName) {
