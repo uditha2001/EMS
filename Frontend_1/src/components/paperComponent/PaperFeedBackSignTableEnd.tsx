@@ -40,7 +40,7 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
               />
             </td>
           </tr>
-          <tr className="flex flex-col sm:table-row">
+          {/* <tr className="flex flex-col sm:table-row">
             <td className="h-full border px-4 font-bold text-center" colSpan={2}>
               Name of the Moderator
             </td>
@@ -50,7 +50,7 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
             <td className="h-full border px-4 font-bold text-center" colSpan={1}>
               Date
             </td>
-          </tr>
+          </tr> */}
           <tr>
             <td colSpan={5} className="font-bold text-center text-lg sm:text-xl">
               Follow-up Action by Examiner/s
@@ -88,10 +88,9 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
               />
             </td>
           </tr>
-          <tr>
+          {/* <tr>
             <td colSpan={5}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Name Column */}
                 <div className="flex flex-col items-start">
                   <h2 className="font-bold ml-4">Name</h2>
                   <ul className="space-y-4">
@@ -105,7 +104,6 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
                     ))}
                   </ul>
                 </div>
-                {/* Sign Column */}
                 <div className="flex flex-col items-start">
                   <h2 className="font-bold ml-4">Sign</h2>
                   <ul className="space-y-4">
@@ -116,7 +114,6 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
                     ))}
                   </ul>
                 </div>
-                {/* Date Column */}
                 <div className="flex flex-col items-start">
                   <h2 className="font-bold ml-4">Date</h2>
                   <ul className="space-y-4">
@@ -129,7 +126,7 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
                 </div>
               </div>
             </td>
-          </tr>
+          </tr> */}
           <tr>
             <td colSpan={5} className="border border-gray-300 p-4 bg-gray-50 dark:bg-gray-800">
               <label htmlFor="learningOutcomes" className="block font-bold mb-2 text-lg">
