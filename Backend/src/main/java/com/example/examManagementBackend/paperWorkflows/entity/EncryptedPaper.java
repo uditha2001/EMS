@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,9 @@ import java.util.List;
 @Data
 @EntityListeners(AuditingEntityListener.class)
 @Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"academic_year_id", "fileName"})
+)
 public class EncryptedPaper {
 
     @Id
@@ -57,6 +61,12 @@ public class EncryptedPaper {
     private List<ModerationsEntity> moderations;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
     private List<PapersCoursesEntity> papersCourses;
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
+    private List<QuestionStructureEntity> questionStructures; // List of question structures
+    @ManyToOne
+    @JoinColumn(name = "academic_year_id", nullable = false)
+    private AcademicYearsEntity academicYear; // Reference to the academic year
+    @Column(nullable = false)
+    private ExamPaperStatus status=ExamPaperStatus.DRAFT;
 
 }

@@ -1,8 +1,11 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.repository.AcademicYearsRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.PapersCoursesRepository;
@@ -36,9 +39,22 @@ public class FileService {
     @Autowired
     PapersCoursesRepository papersCoursesRepository;
 
+    @Autowired
+    AcademicYearsRepository academicYearsRepository;
+
     private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long academicYearId) {
+        // Validate courseIds
+        if (courseIds == null || courseIds.isEmpty()) {
+            throw new IllegalArgumentException("Course IDs cannot be null or empty.");
+        }
+
+        // Validate academicYearId
+        AcademicYearsEntity academicYear = academicYearsRepository.findById(academicYearId)
+                .orElseThrow(() -> new RuntimeException("Academic year with ID " + academicYearId + " not found."));
+
+        // Create and populate the EncryptedPaper entity
         EncryptedPaper encryptedPaper = new EncryptedPaper();
         encryptedPaper.setFileName(fileName);
 
@@ -46,25 +62,24 @@ public class FileService {
         String filePath = saveFileToStorage(encryptedFile, fileName);
         encryptedPaper.setFilePath(filePath);
 
-        encryptedPaper.setCreator(userRepository.findById(creatorId).orElseThrow(() -> new RuntimeException("User not found")));
-        encryptedPaper.setModerator(userRepository.findById(moderatorId).orElseThrow(() -> new RuntimeException("Moderator not found")));
+        // Fetch and set creator
+        encryptedPaper.setCreator(userRepository.findById(creatorId)
+                .orElseThrow(() -> new RuntimeException("Creator not found.")));
+
+        // Fetch and set moderator
+        encryptedPaper.setModerator(userRepository.findById(moderatorId)
+                .orElseThrow(() -> new RuntimeException("Moderator not found.")));
+
         encryptedPaper.setRemarks(remarks);
+        encryptedPaper.setAcademicYear(academicYear);
 
-
-
+        // Save the EncryptedPaper entity
         encryptedPaperRepository.save(encryptedPaper);
 
-        // Now create associations with courses
-        if (courseIds == null || courseIds.isEmpty()) {
-            throw new RuntimeException("Course IDs cannot be null or empty");
-        }
-
+        // Associate the paper with the selected courses
         for (Long courseId : courseIds) {
-            // Log courseId to verify
-            System.out.println("Processing course ID: " + courseId);
-
             CoursesEntity course = coursesRepository.findById(courseId)
-                    .orElseThrow(() -> new RuntimeException("Course with ID " + courseId + " not found"));
+                    .orElseThrow(() -> new RuntimeException("Course with ID " + courseId + " not found."));
 
             PapersCoursesEntity papersCoursesEntity = new PapersCoursesEntity();
             papersCoursesEntity.setEncryptedPaper(encryptedPaper);
@@ -72,6 +87,33 @@ public class FileService {
             papersCoursesRepository.save(papersCoursesEntity);
         }
     }
+
+    public void updateEncryptedPaper(Long paperId, String encryptedFile, String fileName, String remarks) {
+        // Retrieve the existing paper
+        EncryptedPaper existingPaper = encryptedPaperRepository.findById(paperId)
+                .orElseThrow(() -> new RuntimeException("Paper not found with ID: " + paperId));
+
+        // If the file name is different, delete the old file from the system
+        if (!existingPaper.getFileName().equals(fileName)) {
+            try {
+                Files.deleteIfExists(Paths.get(existingPaper.getFilePath()));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to delete existing file: " + e.getMessage());
+            }
+        }
+
+        // Save the new file to the storage and get the path
+        String filePath = saveFileToStorage(encryptedFile, fileName);
+
+        // Update the paper fields
+        existingPaper.setFileName(fileName);
+        existingPaper.setFilePath(filePath);
+        existingPaper.setRemarks(remarks);
+
+        // Save the updated paper record
+        encryptedPaperRepository.save(existingPaper);
+    }
+
 
     private String saveFileToStorage(String encryptedFile, String fileName) {
         // Validate the file name to prevent path traversal
@@ -133,5 +175,18 @@ public class FileService {
             throw new RuntimeException("Failed to read the file: " + e.getMessage());
         }
     }
+
+    public void updatePaperStatus(Long paperId, String status) {
+        // Retrieve the paper by ID
+        EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
+                .orElseThrow(() -> new IllegalArgumentException("Paper not found with ID: " + paperId));
+
+        // Update the status
+        paper.setStatus(ExamPaperStatus.valueOf(status));
+
+        // Save the updated paper
+        encryptedPaperRepository.save(paper);
+    }
+
 
 }

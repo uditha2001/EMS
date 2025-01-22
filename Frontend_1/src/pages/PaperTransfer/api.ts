@@ -13,12 +13,14 @@ const useApi = () => {
     courseIds: number[],
     remarks: string,
     moderatorId: number,
+    academicYearId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
+    formData.append('academicYearId', academicYearId.toString());
 
     // Log courseIds to verify
     console.log('Selected Course IDs:', courseIds);
@@ -124,11 +126,63 @@ const useApi = () => {
     }
   };
 
+  const getStructureData = async (fileId: number) => {
+    try {
+      const response = await axiosPrivate.get(`/structure/${fileId}`);
+      if (response.status === 200) {
+        return response.data; // Contains the structure data in `data`
+      } else {
+        throw new Error('Failed to fetch structure data.');
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Error fetching structure data.',
+      );
+    }
+  };
+
+  const updateFile = async (
+    fileId: number,
+    file: File,
+    fileName: string,
+    remarks: string,
+  ): Promise<{ message: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('fileName', fileName);
+    formData.append('remarks', remarks);
+    try {
+      setLoading(true);
+      const res = await axiosPrivate.put(`/papers/update/${fileId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      setLoading(false);
+      return res.data.data;
+    } catch (error: any) {
+      setLoading(false);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to update the file';
+      console.error(
+        'Update File Error:',
+        errorMessage,
+        error.response || error,
+      );
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
     downloadFile,
     deleteFile,
+    updateFile,
+    getStructureData,
     loading,
     error,
   };

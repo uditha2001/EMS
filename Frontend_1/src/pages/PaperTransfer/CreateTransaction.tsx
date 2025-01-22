@@ -1,10 +1,10 @@
-import FileList from './FileList';
+import FileUpload from './FileUpload';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
-export default function TransferPaper() {
+export default function CreateTransaction() {
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Transfer Paper" />
+      <Breadcrumb pageName="New Transaction" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
@@ -14,9 +14,9 @@ export default function TransferPaper() {
         </div>
 
         <div className="p-6.5">
-          {/* File List Section */}
+          {/* File Upload Section */}
           <div>
-            <FileList />
+            <FileUpload />
           </div>
         </div>
       </div>

@@ -1,33 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 interface SubSubQuestion {
+  subSubQuestionId: number;
   subSubQuestionNumber: number;
   questionType: string;
   marks: number;
+  isNew?: boolean;
 }
 
 interface SubQuestion {
+  subQuestionId: number;
   subQuestionNumber: number;
   questionType: string;
   marks: number;
   subSubQuestions: SubSubQuestion[];
+  isNew?: boolean;
 }
 
 interface Question {
+  isNew: any;
+  questionId: number;
   questionNumber: number;
   questionType: string;
   totalMarks: number;
   subQuestions: SubQuestion[];
 }
 
-const CreatePaperStructure: React.FC = () => {
+const EditPaperStructure: React.FC = () => {
   const { paperId } = useParams<{ paperId: string }>();
-  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [, setTotalQuestions] = useState(0);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
@@ -35,18 +42,130 @@ const CreatePaperStructure: React.FC = () => {
   const [isMarksBalanced, setIsMarksBalanced] = useState(true);
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [deleteAction, setDeleteAction] = useState<() => void>(() => () => {});
 
-  const initializeQuestions = () => {
-    const initialQuestions = Array.from(
-      { length: totalQuestions },
-      (_, index) => ({
-        questionNumber: index + 1,
-        questionType: 'ESSAY',
-        totalMarks: 0,
-        subQuestions: [],
-      }),
-    );
-    setQuestions(initialQuestions);
+  useEffect(() => {
+    const fetchPaperStructure = async () => {
+      try {
+        const response = await axiosPrivate.get(`structure/${paperId}`);
+        const { data, code } = response.data; // Destructure the response
+
+        // Validate the response code
+        if (code !== 200) {
+          throw new Error(`Unexpected response code: ${code}`);
+        }
+
+        if (!Array.isArray(data)) {
+          throw new Error(
+            'Invalid response format: "data" should be an array.',
+          );
+        }
+
+        // Process the questions data
+        setQuestions(
+          data.map((question: any) => ({
+            ...question,
+            subQuestions: (question.subQuestions || []).map(
+              (subQuestion: any) => ({
+                ...subQuestion,
+                subSubQuestions: subQuestion.subSubQuestions || [],
+              }),
+            ),
+          })),
+        );
+
+        // Optional: Derive total marks and questions from the data if needed
+        const totalQuestions = data.length;
+        const totalMarks = data.reduce(
+          (sum: number, question: any) => sum + question.totalMarks,
+          0,
+        );
+
+        setTotalQuestions(totalQuestions);
+        setTotalMarks(totalMarks);
+      } catch (error) {
+        console.error('Fetch Paper Structure Error:', error);
+        setErrorMessage('Failed to fetch paper structure.');
+      }
+    };
+
+    fetchPaperStructure();
+  }, [paperId, axiosPrivate]);
+
+  const deleteStructure = async () => {
+    const action = async () => {
+      try {
+        await axiosPrivate.delete(`/structure/${paperId}`);
+        setQuestions([]);
+        setSuccessMessage('All structures deleted successfully!');
+        setTimeout(() => navigate('/paper/transfer'), 500);
+      } catch (error) {
+        console.error('Delete Structure Error:', error);
+        setErrorMessage('Failed to delete the structure.');
+      }
+    };
+    showConfirmationModal(action);
+  };
+
+  const deleteSubQuestion = async (
+    subQuestionId: number,
+    questionIndex: number,
+  ) => {
+    const action = async () => {
+      try {
+        // Make the delete request
+        const response = await axiosPrivate.delete(
+          `/structure/subQuestion/${subQuestionId}`,
+        );
+
+        // Log the response
+        console.log('Sub-question deleted successfully:', response.data);
+
+        // Update the local state to reflect the deletion
+        const updatedQuestions = [...questions];
+        updatedQuestions[questionIndex].subQuestions = updatedQuestions[
+          questionIndex
+        ].subQuestions.filter((sq) => sq.subQuestionId !== subQuestionId);
+
+        setQuestions(updatedQuestions); // Update the questions state
+        setSuccessMessage('Sub-question deleted successfully!');
+      } catch (error) {
+        console.error('Delete Sub-Question Error:', error);
+        setErrorMessage('Failed to delete the sub-question.');
+      }
+    };
+
+    // Show confirmation modal before executing the delete action
+    showConfirmationModal(action);
+  };
+
+  const deleteSubSubQuestion = async (
+    subSubQuestionId: number,
+    questionIndex: number,
+    subQuestionIndex: number,
+  ) => {
+    const action = async () => {
+      try {
+        await axiosPrivate.delete(
+          `/structure/subSubQuestion/${subSubQuestionId}`,
+        );
+        const updatedQuestions = [...questions];
+        updatedQuestions[questionIndex].subQuestions[
+          subQuestionIndex
+        ].subSubQuestions = updatedQuestions[questionIndex].subQuestions[
+          subQuestionIndex
+        ].subSubQuestions.filter(
+          (ssq) => ssq.subSubQuestionNumber !== subSubQuestionId,
+        );
+        setQuestions(updatedQuestions);
+        setSuccessMessage('Sub-sub-question deleted successfully!');
+      } catch (error) {
+        console.error('Delete Sub-Sub-Question Error:', error);
+        setErrorMessage('Failed to delete the sub-sub-question.');
+      }
+    };
+    showConfirmationModal(action);
   };
 
   const handleInputChange = (
@@ -123,11 +242,13 @@ const CreatePaperStructure: React.FC = () => {
   const addSubQuestion = (questionIndex: number) => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].subQuestions.push({
+      subQuestionId: Date.now(), // or any unique identifier
       subQuestionNumber:
         updatedQuestions[questionIndex].subQuestions.length + 1,
       questionType: 'ESSAY',
       marks: 0,
       subSubQuestions: [],
+      isNew: true,
     });
     setQuestions(updatedQuestions);
   };
@@ -140,11 +261,13 @@ const CreatePaperStructure: React.FC = () => {
     updatedQuestions[questionIndex].subQuestions[
       subQuestionIndex
     ].subSubQuestions.push({
+      subSubQuestionId: Date.now(), // or any unique identifier
       subSubQuestionNumber:
         updatedQuestions[questionIndex].subQuestions[subQuestionIndex]
           .subSubQuestions.length + 1,
       questionType: 'ESSAY',
       marks: 0,
+      isNew: true,
     });
     setQuestions(updatedQuestions);
   };
@@ -200,26 +323,40 @@ const CreatePaperStructure: React.FC = () => {
     }
 
     try {
-      await axiosPrivate.post(`/structure/${paperId}`, questions, {
+      await axiosPrivate.put(`/structure/${paperId}`, questions, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      setSuccessMessage('Paper structure created successfully!');
-      setTimeout(() => navigate('/paper/transfer'), 500);
+      setSuccessMessage('Paper structure updated successfully!');
+      setTimeout(() => navigate('/paper/transfer'), 500); // Redirect to papers page after success
     } catch (error) {
-      setErrorMessage('An error occurred while creating the paper structure.');
+      setErrorMessage('An error occurred while updating the paper structure.');
       console.error(error);
     }
   };
 
+  const showConfirmationModal = (action: () => void) => {
+    setDeleteAction(() => action);
+    setShowModal(true);
+  };
+
+  const handleModalConfirm = () => {
+    deleteAction();
+    setShowModal(false);
+  };
+
+  const handleModalCancel = () => {
+    setShowModal(false);
+  };
+
   return (
     <div className="mx-auto max-w-4xl p-4">
-      <Breadcrumb pageName="Create Paper Structure" />
+      <Breadcrumb pageName="Edit Paper Structure" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark text-sm">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            Create Paper Structure
+            Edit Paper Structure
           </h3>
         </div>
 
@@ -238,46 +375,7 @@ const CreatePaperStructure: React.FC = () => {
               />
             )}
 
-            {/* First Section: Total Questions and Marks */}
-            {questions.length === 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Total Questions
-                  </label>
-                  <input
-                    type="number"
-                    value={totalQuestions}
-                    onChange={(e) =>
-                      setTotalQuestions(parseInt(e.target.value, 10))
-                    }
-                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                  />
-                </div>
-                <div className="mb-4.5">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Total Marks
-                  </label>
-                  <input
-                    type="number"
-                    value={totalMarks}
-                    onChange={(e) =>
-                      setTotalMarks(parseInt(e.target.value, 10))
-                    }
-                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={initializeQuestions}
-                  className="w-full sm:w-auto mt-4 py-2 px-6 bg-primary text-white rounded-md hover:bg-opacity-90"
-                >
-                  Generate Form
-                </button>
-              </div>
-            )}
-
-            {/* Step 2: Display Questions in a Table */}
+            {/* Questions and Marks Section */}
             {questions.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-stroke text-sm">
@@ -325,7 +423,7 @@ const CreatePaperStructure: React.FC = () => {
                               onChange={(e) =>
                                 handleInputChange(e, questionIndex)
                               }
-                              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                             />
                           </td>
                           <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
@@ -377,22 +475,10 @@ const CreatePaperStructure: React.FC = () => {
                                         subQuestionIndex,
                                       )
                                     }
-                                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                                   />
                                 </td>
                                 <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      removeSubQuestion(
-                                        questionIndex,
-                                        subQuestionIndex,
-                                      )
-                                    }
-                                    className="text-red-600 hover:underline pr-4"
-                                  >
-                                    Remove
-                                  </button>
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -401,10 +487,37 @@ const CreatePaperStructure: React.FC = () => {
                                         subQuestionIndex,
                                       )
                                     }
-                                    className="text-green-600 hover:underline"
+                                    className="text-primary hover:underline mr-4"
                                   >
-                                    Add Sub-Sub Question
+                                    Add
                                   </button>
+                                  {subQuestion.isNew ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeSubQuestion(
+                                          questionIndex,
+                                          subQuestionIndex,
+                                        )
+                                      }
+                                      className="text-red-600 hover:underline"
+                                    >
+                                      Remove
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteSubQuestion(
+                                          subQuestion.subQuestionId,
+                                          questionIndex,
+                                        )
+                                      }
+                                      className="text-red-600 hover:underline"
+                                    >
+                                      Delete
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
 
@@ -448,23 +561,39 @@ const CreatePaperStructure: React.FC = () => {
                                             subSubQuestionIndex,
                                           )
                                         }
-                                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                                       />
                                     </td>
                                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          removeSubSubQuestion(
-                                            questionIndex,
-                                            subQuestionIndex,
-                                            subSubQuestionIndex,
-                                          )
-                                        }
-                                        className="text-red-600 hover:underline"
-                                      >
-                                        Remove
-                                      </button>
+                                      {subSubQuestion.isNew ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            removeSubSubQuestion(
+                                              questionIndex,
+                                              subQuestionIndex,
+                                              subSubQuestionIndex,
+                                            )
+                                          }
+                                          className="text-red-600 hover:underline"
+                                        >
+                                          Remove
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            deleteSubSubQuestion(
+                                              subSubQuestion.subSubQuestionId,
+                                              questionIndex,
+                                              subQuestionIndex,
+                                            )
+                                          }
+                                          className="text-red-600 hover:underline"
+                                        >
+                                          Delete
+                                        </button>
+                                      )}
                                     </td>
                                   </tr>
                                 ),
@@ -476,32 +605,52 @@ const CreatePaperStructure: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-
-                {/* Marks Check */}
-                <p
-                  className={`mt-4 ${
-                    isMarksBalanced ? 'text-green-500' : 'text-red-500'
-                  }`}
-                >
-                  {isMarksBalanced
-                    ? `Marks are balanced! Total allocated marks: ${totalMarks} / ${totalMarks}.`
-                    : `Marks do not match. Total allocated marks: ${calculateTotalMarks()} / ${totalMarks}.`}
-                </p>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 mt-4"
-                >
-                  Submit
-                </button>
               </div>
             )}
+
+            <div className="mt-4 flex items-center space-x-4">
+              {/* Save Paper Structure Button */}
+              <button
+                type="submit"
+                disabled={!isMarksBalanced}
+                className={`flex justify-center rounded py-2 px-6 font-medium text-white ${
+                  isMarksBalanced
+                    ? 'bg-primary hover:bg-opacity-90'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Save Paper Structure
+              </button>
+
+              {/* Delete All Structure Button */}
+              <button
+                type="button"
+                onClick={deleteStructure}
+                className="rounded bg-red-600 py-2 px-6 text-white shadow-md hover:bg-red-700 focus:outline-none"
+              >
+                Delete All Structure
+              </button>
+
+              {/* Back Link */}
+              <Link
+                to="/paper/transfer"
+                className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-lg dark:border-strokedark dark:text-white"
+              >
+                Back
+              </Link>
+            </div>
           </div>
         </form>
       </div>
+      {showModal && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this item?"
+          onConfirm={handleModalConfirm}
+          onCancel={handleModalCancel}
+        />
+      )}
     </div>
   );
 };
 
-export default CreatePaperStructure;
+export default EditPaperStructure;

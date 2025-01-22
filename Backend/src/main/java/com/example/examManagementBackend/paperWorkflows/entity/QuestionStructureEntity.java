@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionModerationStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +13,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Table(
+        name = "question_structure",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"encrypted_paper_id", "questionNumber"})
+)
 public class QuestionStructureEntity {
 
     @Id
@@ -39,4 +45,5 @@ public class QuestionStructureEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionStructure")
     private List<SubQuestionEntity> subQuestions;
+
 }
