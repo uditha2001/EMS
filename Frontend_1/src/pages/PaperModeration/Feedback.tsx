@@ -80,13 +80,6 @@ const Feedback = () => {
     }, [selectedCourseCode])
 
     useEffect(() => {
-        console.log("runing");
-        console.log(formData);
-
-    }
-        , [formData])
-
-    useEffect(() => {
         const fetchDegreePrograms = async () => {
             try {
                 const degreeData = await Axios.get("/degreePrograms");
@@ -172,6 +165,8 @@ const Feedback = () => {
 
     }
     if (pdfRequest && formData) {
+        console.log("genrating pdf")
+        setPdfRequest(false);
         const sendData = async () => {
             try {
                 const response = await Axios.post("/moderation/saveFeedBackData", {
@@ -185,17 +180,41 @@ const Feedback = () => {
                     examination: formData.examination,
                     agreeAndAddressed: formData.agreeAndAddressed,
                     notAgreeAndReasons: formData.notAgreeAndReasons
+                }, {
+                    responseType: 'arraybuffer' // Ensure response is treated as binary data
                 });
+    
                 if (response.status === 200) {
-                    console.log("success");
+                    // Create a Blob from the response's byte data
+                    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+                    
+                    // Create an object URL for the Blob
+                    const url = window.URL.createObjectURL(pdfBlob);
+                    
+                    // Create an anchor element for the download link
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.setAttribute('download', 'feedback.pdf');
+                    document.body.appendChild(a);
+                    
+                    // Trigger the download
+                    a.click();
+                    
+                    // Clean up the URL object
+                    window.URL.revokeObjectURL(url);
+    
+                    // Reset the pdfRequest state
+                } else if (response.status === 500) {
+                    console.log("Failed to send data");
+                    setPdfRequest(false);
                 }
             } catch (error) {
-                console.log("failed to send data");
+                console.log("Failed to send data");
             }
         };
         sendData();
-        console.log(formData);
     }
+    
 
     return (
         <div className="bg-white dark:bg-gray-900 w-full p-6 relative">
