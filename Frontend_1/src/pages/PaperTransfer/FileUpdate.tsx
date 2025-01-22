@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from './api';
 import { Link, useParams } from 'react-router-dom';
@@ -36,7 +35,7 @@ interface FileDetails {
 
 const FileUpdate: React.FC = () => {
   const { fileId } = useParams<{ fileId: string }>();
-  useAuth();
+  const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -53,8 +52,6 @@ const FileUpdate: React.FC = () => {
   >(null);
   const [existingFileDetails, setExistingFileDetails] =
     useState<FileDetails | null>(null);
-  const [file, setFile] = useState<File | null>(null);
-
   const axiosPrivate = useAxiosPrivate();
   const { updateFile } = useApi();
 
@@ -113,10 +110,23 @@ const FileUpdate: React.FC = () => {
     fetchModeratorsCoursesAndAcademicYears();
   }, [fileId]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const selectedFile = event.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type !== 'application/pdf') {
+        setErrorMessage('Invalid file type. Only PDF files are allowed.');
+        return;
+      }
+
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setErrorMessage(
+          'File size exceeds limit. Maximum allowed size is 10 MB.',
+        );
+        return;
+      }
+
       setFile(selectedFile);
+      setErrorMessage('');
     }
   };
 
@@ -164,20 +174,21 @@ const FileUpdate: React.FC = () => {
       '/',
       '_',
     )}.pdf`;
-    const renamedFile = file
-      ? new File([file], renamedFileName, { type: file.type })
-      : null;
 
+    if (!file) {
+      setErrorMessage('No file selected.');
+      return;
+    }
+    const renamedFile = new File([file], renamedFileName, { type: file.type });
+    console.log('Renamed File Name:', renamedFileName);
     setErrorMessage('');
     setIsUploading(true);
 
     try {
       const response = await updateFile(
         Number(fileId),
-        renamedFile ||
-          new File([], existingFileDetails?.name || 'default.pdf', {
-            type: 'application/pdf',
-          }),
+        renamedFile,
+        renamedFileName,
         remarks,
       );
 

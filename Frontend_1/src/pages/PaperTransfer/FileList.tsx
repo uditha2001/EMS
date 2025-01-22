@@ -5,6 +5,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useApi from './api';
 import { Link } from 'react-router-dom';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -17,7 +18,11 @@ const FileList: React.FC = () => {
     Record<number, boolean>
   >({});
   const moderatorId = Number(auth.id);
-  const { getAllFiles, downloadFile, deleteFile, getStructureData } = useApi(); // Assuming getStructureData is part of your API hooks
+  const { getAllFiles, downloadFile, deleteFile, getStructureData } = useApi();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchFiles();
@@ -59,13 +64,26 @@ const FileList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const openModal = (id: number) => {
+    setTransactionToDelete(id);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleDelete = async () => {
+    if (transactionToDelete === null) return; // If no transaction is selected, exit
     try {
-      const response = await deleteFile(id);
+      const response = await deleteFile(transactionToDelete);
       setSuccessMessage(response?.message || 'File deleted successfully.');
       fetchFiles();
     } catch (error: any) {
       setErrorMessage(error?.message || 'Error deleting file.');
+    } finally {
+      closeModal();
     }
   };
 
@@ -169,7 +187,7 @@ const FileList: React.FC = () => {
                         <button
                           type="button"
                           className="ml-4 text-red-600 hover:text-opacity-80"
-                          onClick={() => handleDelete(file.id)}
+                          onClick={() => openModal(file.id)}
                         >
                           Delete
                         </button>
@@ -214,6 +232,15 @@ const FileList: React.FC = () => {
         <div className="text-center text-gray-500 dark:text-gray-400">
           No files found for {viewType === 'sender' ? 'Sender' : 'Receiver'}.
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {isModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this transaction?"
+          onConfirm={handleDelete}
+          onCancel={closeModal}
+        />
       )}
     </div>
   );
