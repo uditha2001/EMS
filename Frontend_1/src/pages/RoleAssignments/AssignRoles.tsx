@@ -154,7 +154,7 @@ const AssignRoles: React.FC = () => {
       .flat();
 
     axiosPrivate
-      .post('http://localhost:8080/api/role-assignments/bulk', payload)
+      .post('/role-assignments/bulk', payload)
       .then((response) => {
         if (response.status === 201) {
           setSuccessMessage('Roles assigned successfully!');

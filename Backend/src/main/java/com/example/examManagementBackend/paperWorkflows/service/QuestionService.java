@@ -88,6 +88,7 @@ public class QuestionService {
             dto.setTotalMarks(entity.getTotalMarks());
             dto.setModeratorComment(entity.getModeratorComment());
             dto.setStatus(entity.getStatus());
+            dto.setPaperId(entity.getEncryptedPaper().getId());
 
             List<SubQuestionDTO> subQuestions = entity.getSubQuestions().stream().map(subEntity -> {
                 SubQuestionDTO subDto = new SubQuestionDTO();
@@ -95,8 +96,8 @@ public class QuestionService {
                 subDto.setSubQuestionNumber(subEntity.getSubQuestionNumber());
                 subDto.setQuestionType(subEntity.getQuestionType());
                 subDto.setMarks(subEntity.getMarks());
-                subDto.setModeratorComment(entity.getModeratorComment());
-                subDto.setStatus(entity.getStatus());
+                subDto.setModeratorComment(subEntity.getModeratorComment());
+                subDto.setStatus(subEntity.getStatus());
 
                 List<SubSubQuestionDTO> subSubQuestions = subEntity.getSubSubQuestions().stream().map(subSubEntity -> {
                     SubSubQuestionDTO subSubDto = new SubSubQuestionDTO();
@@ -104,8 +105,8 @@ public class QuestionService {
                     subSubDto.setSubSubQuestionNumber(subSubEntity.getSubSubQuestionNumber());
                     subSubDto.setQuestionType(subSubEntity.getQuestionType());
                     subSubDto.setMarks(subSubEntity.getMarks());
-                    subSubDto.setModeratorComment(entity.getModeratorComment());
-                    subSubDto.setStatus(entity.getStatus());
+                    subSubDto.setModeratorComment(subSubEntity.getModeratorComment());
+                    subSubDto.setStatus(subSubEntity.getStatus());
                     return subSubDto;
                 }).collect(Collectors.toList());
 
