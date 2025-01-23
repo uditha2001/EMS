@@ -210,7 +210,7 @@ const useApi = () => {
   };
 
   const deleteRole = async (roleId: number) => {
-    await axiosPrivate.delete(`/roles/deleteUser/${roleId}`);
+    await axiosPrivate.delete(`/roles/delete/${roleId}`);
   };
 
   const createRole = async (newRole: any) => {
@@ -242,7 +242,7 @@ const useApi = () => {
   const updateProfileImage = async (userId: number, imageFile: File) => {
     const formData = new FormData();
     formData.append('image', imageFile);
-  
+
     return axiosPrivate.put(`/user/updateProfileImage/${userId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
