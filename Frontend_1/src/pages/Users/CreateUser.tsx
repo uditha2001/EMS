@@ -4,13 +4,13 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Checkbox from '../../components/Checkbox';
 import { useNavigate } from 'react-router-dom';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import Loader from '../../common/Loader';
+import useApi from '../../api/api';
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
   const [, setRoleName] = useState('');
   const [email, setEmail] = useState('');
-  const [loadingStatus,setLoadingStatus]=useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
@@ -21,23 +21,22 @@ const CreateUser: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const axiosPrivate = useAxiosPrivate();
   const [emailVailidity, setEmailValidity] = useState(false);
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const [useEmailAsUsername, setUseEmailAsUsername] = useState(true);
   const [username, setUsername] = useState('');
+  const { fetchAllRoles,createUserWithRoles } = useApi();
 
   useEffect(() => {
-    setLoadingStatus(true)
-    axiosPrivate
-      .get('/roles/all')
+    setLoadingStatus(true);
+    fetchAllRoles()
       .then((response) => {
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         setAvailableRoles(response.data);
         setFilteredRoles(response.data);
       })
       .catch((error) => {
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         setErrorMessage('Failed to load roles.');
         console.error('Error fetching roles:', error);
       });
@@ -91,8 +90,8 @@ const CreateUser: React.FC = () => {
 
     try {
       setIsLoading(true);
-      setLoadingStatus(true)
-      await axiosPrivate.post('/user/addUserWithRoles', newUser);
+      setLoadingStatus(true);
+      await createUserWithRoles(newUser);
       setSuccessMessage('User created successfully!');
       setRoleName('');
       setEmail('');
@@ -104,10 +103,10 @@ const CreateUser: React.FC = () => {
       setErrorMessage('');
       setTimeout(() => navigate('/usermanagement/users'), 1000);
     } catch (error) {
-      setLoadingStatus(false)
+      setLoadingStatus(false);
       setErrorMessage('Failed to create user. Please try again.');
     } finally {
-      setLoadingStatus(false)
+      setLoadingStatus(false);
       setIsLoading(false);
     }
   };
@@ -117,7 +116,7 @@ const CreateUser: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      {loadingStatus ? <Loader/>:null}
+      {loadingStatus ? <Loader /> : null}
       <Breadcrumb pageName="Create User" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
