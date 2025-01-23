@@ -34,4 +34,10 @@ public class DegreeProgramsEntity {
     private LocalDateTime updatedAt;
     @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
     private List<CoursesEntity> coursesEntities;
+    @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
+    private List<AcademicYearsEntity> academicYearsEntities;
+
+    public DegreeProgramsEntity(Long id) {
+        this.id = id;
+    }
 }
