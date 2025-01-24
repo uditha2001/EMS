@@ -3,7 +3,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-import useApi from './api';
+import useApi from '../../api/api';
 import Checkbox from '../../components/Checkbox';
 import { Link } from 'react-router-dom';
 

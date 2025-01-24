@@ -4,7 +4,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Checkbox from '../../components/Checkbox';
 import { useNavigate, useParams } from 'react-router-dom';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useApi from '../../api/api';
 
 const EditUser: React.FC = () => {
   const navigate = useNavigate();
@@ -23,38 +23,33 @@ const EditUser: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const axiosPrivate = useAxiosPrivate();
+  const { updateUserWithRoles, fetchAllRoles, getUserById } = useApi();
 
   useEffect(() => {
-    // Fetch all roles
-    axiosPrivate
-      .get('/roles/all')
-      .then((response) => {
-        setAvailableRoles(response.data);
-        setFilteredRoles(response.data);
-      })
-      .catch((error) => {
-        setErrorMessage('Failed to load roles.');
-        console.error('Error fetching roles:', error);
-      });
+    const fetchData = async () => {
+      try {
+        // Fetch roles
+        const roleResponse = await fetchAllRoles();
+        setAvailableRoles(roleResponse.data);
+        setFilteredRoles(roleResponse.data);
 
-    // Fetch user details for editing
-    if (userId) {
-      axiosPrivate
-        .get(`/user/getUserById/${userId}`)
-        .then((response) => {
-          const user = response.data;
+        // Fetch user details if userId is provided
+        if (userId) {
+          const userResponse = await getUserById(Number(userId));
+          const user = userResponse.data;
           setEmail(user.email);
           setUsername(user.username);
           setFirstName(user.firstName);
           setLastName(user.lastName);
           setRoles(user.roles || []);
-        })
-        .catch((error) => {
-          setErrorMessage('Failed to load user details.');
-          console.error('Error fetching user:', error);
-        });
-    }
+        }
+      } catch (error) {
+        setErrorMessage('Failed to load data.');
+        console.error(error);
+      }
+    };
+
+    fetchData();
   }, [userId]);
 
   useEffect(() => {
@@ -92,10 +87,7 @@ const EditUser: React.FC = () => {
 
     try {
       setIsLoading(true);
-      await axiosPrivate.put(
-        `/user/updateUserWithRoles/${userId}`,
-        updatedUser,
-      );
+      await updateUserWithRoles(Number(userId), updatedUser);
       setSuccessMessage('User updated successfully!');
       setTimeout(() => navigate('/usermanagement/users'), 1000);
     } catch (error) {
