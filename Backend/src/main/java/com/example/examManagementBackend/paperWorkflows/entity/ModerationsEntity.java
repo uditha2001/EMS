@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ModerationsStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -40,10 +41,5 @@ public class ModerationsEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "userId",name="moderators")
     private UserEntity moderator;
-
-
-
-
-
 
 }

@@ -3,8 +3,9 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-import useApi from './api';
+import useApi from '../../api/api';
 import Checkbox from '../../components/Checkbox';
+import { Link } from 'react-router-dom';
 
 interface Moderator {
   id: number;
@@ -17,6 +18,11 @@ interface Course {
   id: number;
   code: string;
   name: string;
+}
+
+interface AcademicYear {
+  id: number;
+  year: string;
 }
 
 const FileUpload: React.FC = () => {
@@ -32,17 +38,25 @@ const FileUpload: React.FC = () => {
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]); // State for academic years
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState<
+    number | null
+  >(null); // State for selected academic year
   const userId = Number(auth.id); // Current user ID
   const axiosPrivate = useAxiosPrivate();
   const { uploadFile } = useApi();
 
   useEffect(() => {
-    const fetchModeratorsAndCourses = async () => {
+    const fetchModeratorsCoursesAndAcademicYears = async () => {
       try {
-        const [usersResponse, coursesResponse] = await Promise.all([
-          axiosPrivate.get('/user'),
-          axiosPrivate.get('/courses'),
-        ]);
+        const [usersResponse, coursesResponse, academicYearsResponse] =
+          await Promise.all([
+            axiosPrivate.get('/user'),
+            axiosPrivate.get('/courses'),
+            axiosPrivate.get('/academic-years'),
+          ]);
+
+        //console.log('Academic Years Response:', academicYearsResponse.data); // Log the response data
 
         const allUsers = usersResponse.data;
         const filteredModerators = allUsers.filter(
@@ -58,12 +72,18 @@ const FileUpload: React.FC = () => {
         }
 
         setCourses(coursesResponse.data.data);
+
+        if (Array.isArray(academicYearsResponse.data.data)) {
+          setAcademicYears(academicYearsResponse.data.data); // Set academic years if it's an array
+        } else {
+          setErrorMessage('Invalid data format for academic years.');
+        }
       } catch (error: any) {
         setErrorMessage('Failed to fetch data: ' + error.message);
       }
     };
 
-    fetchModeratorsAndCourses();
+    fetchModeratorsCoursesAndAcademicYears();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,13 +127,33 @@ const FileUpload: React.FC = () => {
       return;
     }
 
-    const currentYear = new Date().getFullYear(); // Get the current year
+    if (!selectedAcademicYear) {
+      setErrorMessage('Please select an academic year!');
+      return;
+    }
+
+    // Get the selected academic year's name
+    const selectedAcademicYearName = academicYears.find(
+      (year) => year.id === selectedAcademicYear,
+    )?.year;
+
+    if (!selectedAcademicYearName) {
+      setErrorMessage('Invalid academic year selected!');
+      return;
+    }
+
+    // Concatenate selected course codes and academic year name
     const courseCodes = courses
       .filter((course) => selectedCourses.includes(course.id))
       .map((course) => course.code)
-      .join('_'); // Concatenate selected course codes
+      .join('_'); // Concatenate selected course codes with underscores
 
-    const renamedFileName = `${courseCodes}_${currentYear}.pdf`; // Create the new file name
+    // Rename the file to include the academic year name and course codes
+    const renamedFileName = `${courseCodes}_${selectedAcademicYearName.replace(
+      '/',
+      '_',
+    )}.pdf`;
+
     const renamedFile = new File([file], renamedFileName, { type: file.type });
 
     console.log('Renamed File Name:', renamedFileName); // For debugging
@@ -128,6 +168,7 @@ const FileUpload: React.FC = () => {
         selectedCourses,
         remarks,
         selectedModerator,
+        selectedAcademicYear, // Include academic year in the request
       );
 
       if (response?.message) {
@@ -136,8 +177,8 @@ const FileUpload: React.FC = () => {
         setSuccessMessage('File uploaded successfully.');
         resetForm();
       }
-    } catch (error: any) {
-      setErrorMessage('Failed to upload the file: ' + error.message);
+    } catch (error) {
+      setErrorMessage('Failed to upload the file: ' + error);
     } finally {
       setIsUploading(false);
     }
@@ -148,6 +189,7 @@ const FileUpload: React.FC = () => {
     setSelectedCourses([]);
     setRemarks('');
     setSelectedModerator(null);
+    setSelectedAcademicYear(null); // Reset academic year
   };
 
   const toggleCourseSelection = (courseId: number) => {
@@ -159,7 +201,7 @@ const FileUpload: React.FC = () => {
   };
 
   return (
-    <div className="mb-6">
+    <div>
       <SuccessMessage
         message={successMessage}
         onClose={() => setSuccessMessage('')}
@@ -170,6 +212,42 @@ const FileUpload: React.FC = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Academic Year Selection */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Select Academic Year
+          </label>
+          <select
+            value={selectedAcademicYear || 0} // Default value is 0
+            onChange={(e) => setSelectedAcademicYear(Number(e.target.value))}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+          >
+            <option value={0}>Select Academic Year</option>
+            {academicYears.map((academicYear) => (
+              <option key={academicYear.id} value={academicYear.id}>
+                {academicYear.year}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* Moderator Selection */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Select Moderator
+          </label>
+          <select
+            value={selectedModerator || ''}
+            onChange={(e) => setSelectedModerator(Number(e.target.value))}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+          >
+            {moderators.map((moderator) => (
+              <option key={moderator.id} value={moderator.id}>
+                {moderator.firstName} {moderator.lastName} ({moderator.username}
+                )
+              </option>
+            ))}
+          </select>
+        </div>
         {/* File Upload */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
@@ -217,35 +295,25 @@ const FileUpload: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* Moderator Selection */}
-        <div>
-          <label className="mb-2.5 block text-black dark:text-white">
-            Select Moderator
-          </label>
-          <select
-            value={selectedModerator || ''}
-            onChange={(e) => setSelectedModerator(Number(e.target.value))}
-            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-          >
-            {moderators.map((moderator) => (
-              <option key={moderator.id} value={moderator.id}>
-                {moderator.firstName} {moderator.lastName} ({moderator.username}
-                )
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleUpload}
-        disabled={isUploading}
-        className="mt-4 rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90 disabled:bg-opacity-50"
-      >
-        {isUploading ? 'Uploading...' : 'Upload File'}
-      </button>
+      <div className="flex justify-between mt-4">
+        <Link
+          to={'/paper/transfer'}
+          className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
+        >
+          Back
+        </Link>
+
+        <button
+          type="button"
+          onClick={handleUpload}
+          disabled={isUploading}
+          className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+        >
+          {isUploading ? 'Uploading...' : 'Upload File'}
+        </button>
+      </div>
     </div>
   );
 };

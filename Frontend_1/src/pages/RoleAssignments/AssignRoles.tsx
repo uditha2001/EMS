@@ -53,17 +53,17 @@ const AssignRoles: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     axiosPrivate
-      .get('http://localhost:8080/api/v1/academic-years')
+      .get('/academic-years')
       .then((response) => setAcademicYears(response.data.data))
       .catch((error) => console.error('Error fetching academic years', error));
 
     axiosPrivate
-      .get('http://localhost:8080/degreePrograms')
+      .get('/degreePrograms')
       .then((response) => setDegreePrograms(response.data))
       .catch((error) => console.error('Error fetching degree programs', error));
 
     axiosPrivate
-      .get('http://localhost:8080/api/v1/user')
+      .get('/user')
       .then((response) => setUsers(response.data))
       .catch((error) => console.error('Error fetching users', error))
       .finally(() => setIsLoading(false));
@@ -74,7 +74,7 @@ const AssignRoles: React.FC = () => {
       setIsLoading(true);
       axiosPrivate
         .get(
-          `http://localhost:8080/api/v1/courses?degreeProgramId=${selectedDegreeProgram}`,
+          `/courses?degreeProgramId=${selectedDegreeProgram}`,
         )
         .then((response) => {
           setCourses(response.data.data);
@@ -154,7 +154,7 @@ const AssignRoles: React.FC = () => {
       .flat();
 
     axiosPrivate
-      .post('http://localhost:8080/api/role-assignments/bulk', payload)
+      .post('/role-assignments/bulk', payload)
       .then((response) => {
         if (response.status === 201) {
           setSuccessMessage('Roles assigned successfully!');

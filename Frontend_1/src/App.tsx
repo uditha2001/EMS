@@ -36,7 +36,12 @@ import TransferPaper from './pages/PaperTransfer/TransferPaper';
 import AssignRoles from './pages/RoleAssignments/AssignRoles';
 import AcademicYears from './pages/AcademicYears/AcademicYears';
 import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
+import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
 import Feedback from './pages/PaperModeration/Feedback';
+import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
+import FileUpdate from './pages/PaperTransfer/FileUpdate';
+import EditPaperStructure from './pages/PaperSetting/EditPaperStructure';
+import ModerationDashboard from './pages/PaperModeration/ModerationDashboard';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,7 +86,6 @@ function App() {
           path="/reset-password"
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
-
       </Route>
 
       {/* Authenticated Routes */}
@@ -253,18 +257,33 @@ function App() {
                 path="/paper/create"
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
+              <Route
+                path="/paper/create/structure/:paperId"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <CreatePaperStructure />,
+                )}
+              />
+              <Route
+                path="/paper/edit/structure/:paperId"
+                element={renderPage(
+                  'Paper Setting | EMS',
+                  <EditPaperStructure />,
+                )}
+              />
             </Route>
 
             <Route
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
               <Route
-                path="/paper/moderate"
+                path="/paper/moderate/:paperId/:moderatorId"
                 element={renderPage(
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
                 )}
               />
+
               <Route
                 path="/paper/feedback"
                 element={renderPage('Feedback | EMS', <Feedback />)}
@@ -272,11 +291,30 @@ function App() {
             </Route>
 
             <Route
+              path="/paper/moderate"
+              element={renderPage(
+                'Paper Moderation | EMS',
+                <ModerationDashboard />,
+              )}
+            />
+
+            <Route
               element={<RequireAuth allowedPermissions={['TRANSFER_PAPER']} />}
             >
               <Route
                 path="/paper/transfer"
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
+              />
+              <Route
+                path="/paper/transfer/new"
+                element={renderPage(
+                  'Paper Transfer | EMS',
+                  <CreateTransaction />,
+                )}
+              />
+              <Route
+                path="/paper/transfer/edit/:fileId"
+                element={renderPage('Paper Transfer | EMS', <FileUpdate />)}
               />
               <Route
                 path="/paper/transfer/history"

@@ -1,426 +1,326 @@
-import { FormEvent } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import Breadcrumb from "../../components/Breadcrumbs/Breadcrumb";
+import PaperFeedbackQuestionTable from "../../components/paperComponent/PaperFeedbackQuestionTable";
+import PaperFeedbackSignEndTable from "../../components/paperComponent/PaperFeedBackSignTableEnd";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+type questionData = {
+    answer: string;
+    comment: string;
+    id: number;
+    Question: string;
+};
+type finalData = {
+    question: questionData[];
+    generalComment: string;
+    learningOutcomes: string;
+    courseContent: string;
+    degreeProgram: string;
+    courseCode: string;
+    courseName: string;
+    examination: string;
+    agreeAndAddressed: string;
+    notAgreeAndReasons: string;
+
+
+}
 
 const Feedback = () => {
-    function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
-        event.preventDefault();
-        // Implement form submission logic here
-        console.log("Form submitted");
+    const [QuestionData, setQuestionData] = useState<{ [key: string]: questionData }>({
+        item1: { answer: "", comment: "", id: 1, Question: "" },
+        item2: { answer: "", comment: "", id: 2, Question: "" },
+        item3: { answer: "", comment: "", id: 3, Question: "" },
+        item4: { answer: "", comment: "", id: 4, Question: "" },
+        item5: { answer: "", comment: "", id: 5, Question: "" },
+        item6: { answer: "", comment: "", id: 6, Question: "" },
+        item7: { answer: "", comment: "", id: 7, Question: "" },
+        item8: { answer: "", comment: "", id: 8, Question: "" },
+        item9: { answer: "", comment: "", id: 9, Question: "" }
+    });
+    const [degreeName, setDegreeName] = useState<any[]>([]);
+    const [courseData, setCourseData] = useState<any[]>([]);
+    const Axios = useAxiosPrivate();
+    const [formData, setFormData] = useState<finalData | null>(null);
+    const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>("");
+    const [selectedCourseCode, setSelectedCourseCode] = useState<string>("");
+    const [selectedCourseName, setSelectedCourseName] = useState<string>("");
+    const [examination, setExamination] = useState<string>("");
+    const [pdfRequest, setPdfRequest] = useState<boolean>(false);
+    const questions = ["Does the exam paper provide clear instructions to the candidates?",
+        "Do the Questions reflect the learning outcomes adequately?"
+        , "Are the questions clear and easily understandable?"
+        , "Is there any repetition of questions?"
+        , "Are the marks allocated for questions and sections appropriate?",
+        "Is the time given to attend each question/section adequate?",
+        "Are the questions up to the standard and appropriate to the level being assessed?",
+        " Are the answers correct/justifiable?",
+        " Is the marking scheme clear and fair?"]
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const courses = await Axios.get(`/courses/byDegreeProgram?degreeName=${selectedDegreeProgram}`);
+                if (courses.status === 200) {
+                    const data = Array.isArray(courses.data.data) ? courses.data.data : [courses.data.data];
+                    setCourseData(data);
+                    handleCourseCode(null, data[0]?.code);
+                }
+                else if (courses.status === 500) {
+                    console.log("No courses found");
+                }
+            }
+            catch (error) {
+                console.log("failed to load courses");
+            }
+
+        }
+        fetchCourses();
+    }, [selectedDegreeProgram])
+
+    useEffect(() => {
+        handleCourseName();
+    }, [selectedCourseCode])
+
+    useEffect(() => {
+        const fetchDegreePrograms = async () => {
+            try {
+                const degreeData = await Axios.get("/degreePrograms");
+                if (degreeData.data) {
+                    const arrayData = Array.isArray(degreeData.data) ? degreeData.data : [degreeData.data];
+                    setDegreeName(arrayData);
+
+                }
+            } catch (error) {
+                console.log("failed to load degree programs");
+            }
+        };
+        fetchDegreePrograms();
+    }, [])
+    useEffect(() => {
+        if (pdfRequest && formData) {
+            console.log("genrating pdf")
+            setPdfRequest(false);
+            const sendData = async () => {
+                try {
+                    const response = await Axios.post("/moderation/saveFeedBackData", {
+                        question: formData.question,
+                        generalComment: formData.generalComment,
+                        learningOutcomes: formData.learningOutcomes,
+                        courseContent: formData.courseContent,
+                        degreeProgram: formData.degreeProgram,
+                        courseCode: formData.courseCode,
+                        courseName: formData.courseName,
+                        examination: formData.examination,
+                        agreeAndAddressed: formData.agreeAndAddressed,
+                        notAgreeAndReasons: formData.notAgreeAndReasons
+                    }, {
+                        responseType: 'arraybuffer' // Ensure response is treated as binary data
+                    });
+
+                    if (response.status === 200) {
+                        // Create a Blob from the response's byte data
+                        const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+
+                        // Create an object URL for the Blob
+                        const url = window.URL.createObjectURL(pdfBlob);
+
+                        // Create an anchor element for the download link
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.setAttribute('download', 'feedback.pdf');
+                        document.body.appendChild(a);
+
+                        // Trigger the download
+                        a.click();
+
+                        // Clean up the URL object
+                        window.URL.revokeObjectURL(url);
+
+                        // Reset the pdfRequest state
+                    } else if (response.status === 500) {
+                        console.log("Failed to send data");
+                        setPdfRequest(false);
+                    }
+                } catch (error) {
+                    console.log("Failed to send data");
+                }
+            };
+            sendData();
+        }
+    }
+        , [
+            pdfRequest
+        ]
+    )
+
+    const [moderatorData, setModeratorData] = useState({
+        generalComment: "",
+        names: ["", "", "", ""],
+        learningOutcomes: "",
+        courseContent: "",
+        agreeAndAddressed: "",
+        notAgreeAndReasons: ""
+    });
+    const handleDegreeName = (event: any) => {
+        setSelectedDegreeProgram(event.target.value);
+    }
+    const handleCourseCode = (event: any, code: string) => {
+        if (event !== null) {
+            setSelectedCourseCode(event.target.value);
+        }
+        else {
+            setSelectedCourseCode(code);
+        }
+    }
+    const handleCourseName = () => {
+        Object.values(courseData).forEach((course) => {
+            if (course.code === selectedCourseCode) {
+                setSelectedCourseName(course.name);
+                console.log(course.name);
+            }
+        }
+        )
     }
 
+
+    const handleQuestionsData = (Data: { answer: string; comment: string; id: number; Questions: String }[]) => {
+        const updatedData = { ...QuestionData };
+        Object.values(Data).forEach((item) => {
+            const key = `item${item.id}`;
+            if (updatedData[key]) {
+                updatedData[key] = {
+                    ...updatedData[key],
+                    answer: item.answer,
+                    comment: item.comment,
+                    Question: questions[parseInt(item.id.toString()) - 1]
+                };
+
+            }
+        });
+
+        setQuestionData(updatedData); // Update the state with the modified object
+    }
+    const handleModerateData = (Data: { generalComment: string; learningOutcomes: string; courseContent: string; agreeAndAddressed: string; notAgreeAndReasons: string }) => {
+        setModeratorData((prevData) => ({ ...prevData, generalComment: Data.generalComment, learningOutcomes: Data.learningOutcomes, courseContent: Data.courseContent, agreeAndAddressed: Data.agreeAndAddressed, notAgreeAndReasons: Data.notAgreeAndReasons }));
+    }
+
+    function hadleSubmit(event: FormEvent<HTMLFormElement>): void {
+        event.preventDefault();
+        setFormData((prevData) => ({
+            ...prevData,
+            question: Object.values(QuestionData),
+            generalComment: moderatorData.generalComment,
+            learningOutcomes: moderatorData.learningOutcomes,
+            courseContent: moderatorData.courseContent,
+            degreeProgram: selectedDegreeProgram,
+            courseCode: selectedCourseCode || "",
+            courseName: selectedCourseName || "",
+            examination: examination || "",
+            agreeAndAddressed: moderatorData.agreeAndAddressed || "",
+            notAgreeAndReasons: moderatorData.notAgreeAndReasons || ""
+        }))
+        setPdfRequest(true);
+
+    }
+
+
+
+
     return (
-        <div className="bg-white dark:bg-gray-900 w-full p-6 position-relative">
+        <div className="bg-white dark:bg-gray-900 w-full p-6 relative">
             <Breadcrumb pageName="Feedback" />
             <h1 className="text-center font-bold text-title-lg">
-                Evaluation Form for Moderation of Examination papers
-                <br /> Department of Computer Science-University of Ruhuna
+                Evaluation Form for Moderation of Examination Papers
+                <br /> Department of Computer Science - University of Ruhuna
             </h1>
             <form
-                className="bg-gray-100 dark:bg-gray-800 p-6 rounded shadow-md mx-[10px] mt-6"
+                className="bg-gray-100 dark:bg-gray-800 p-6 rounded shadow-md mx-4 md:mx-8 lg:mx-16 mt-6"
                 method="post"
                 onSubmit={hadleSubmit}
             >
                 <div className="space-y-6">
                     {/* Degree Program */}
-                    <div className="flex items-center">
-                        <label htmlFor="degreeProgram" className="font-bold w-1/3">
+                    <div className="flex flex-col md:flex-row items-center">
+                        <label htmlFor="degreeProgram" className="font-bold md:w-1/3 w-full mb-2 md:mb-0">
                             Degree Program
                         </label>
                         <select
                             id="degreeProgram"
-                            name="degreeProgram"
-                            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+                            name={selectedDegreeProgram}
+                            value={selectedDegreeProgram}
+                            className="w-full md:w-2/3 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                            onChange={handleDegreeName}
                         >
-                            <option>Computer Science</option>
+                            <option value="" disabled>
+                                -- Select a degree --
+                            </option>
+                            {degreeName.map((degree) => (
+                                <option key={degree.id} value={degree.name}>
+                                    {degree.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
                     {/* Examination */}
-                    <div className="flex items-center">
-                        <label htmlFor="examination" className="font-bold w-1/3">
-                            Enter Examination name
+                    <div className="flex flex-col md:flex-row items-center">
+                        <label htmlFor="examination" className="font-bold md:w-1/3 w-full mb-2 md:mb-0">
+                            Enter Examination Name
                         </label>
                         <input
                             id="examination"
                             name="examination"
                             type="text"
-                            className="w-2/3 h-8 border-2 border-gray-300 p-2 rounded-md"
+                            className="w-full md:w-2/3 h-10 border-2 border-gray-300 p-2 rounded-md"
                             placeholder="Examination"
+                            onChange={(event) => setExamination(event.target.value)}
                         />
                     </div>
-                    <div className="flex flex-col gap-4">
+
+                    {/* Course Information */}
+                    <div className="space-y-4">
                         <div className="font-bold">Course Information</div>
-                        <div className="flex gap-4 items-center">
+                        <div className="grid gap-4 md:grid-cols-2">
                             {/* Course Code */}
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="code" className="font-bold w-32">
+                            <div className="flex flex-col">
+                                <label htmlFor="code" className="font-bold mb-1">
                                     Course Code
                                 </label>
-                                <input
+                                <select
                                     id="code"
-                                    name="code"
-                                    type="text"
-                                    className="h-8 border-2 border-gray-300 p-2 rounded-md flex-grow"
-                                    placeholder="Course Code"
-                                />
+                                    name="courseCode"
+                                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                    onChange={(event) => handleCourseCode(event, "")}
+                                >
+                                    {courseData.map((course) => (
+                                        <option key={course.id} value={course.code}>
+                                            {course.code}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
+
                             {/* Course Title */}
-                            <div className="flex items-center gap-2">
-                                <label htmlFor="title" className="font-bold w-32">
+                            <div className="flex flex-col">
+                                <label htmlFor="title" className="font-bold mb-1">
                                     Course Title
                                 </label>
                                 <input
                                     id="title"
                                     name="title"
                                     type="text"
-                                    className="h-8 border-2 border-gray-300 p-2 rounded-md flex-grow"
-                                    placeholder="Course Title"
+                                    value={selectedCourseName ? selectedCourseName : ""}
+                                    disabled
+                                    className="h-10 border-2 border-gray-300 p-2 rounded-md"
+                                    placeholder={selectedCourseName}
                                 />
                             </div>
                         </div>
                     </div>
-                    <div className="overflow-x-auto bg-white dark:bg-gray-900 p-6 rounded shadow-md">
-                        <table className="table-auto w-full border-collapse border border-gray-300">
-                            <thead>
-                                <tr className="bg-gray-200 dark:bg-gray-800">
-                                    <th className="border border-gray-300 px-4 py-2 text-left text-gray-800 dark:text-gray-200">Row No.</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left text-gray-800 dark:text-gray-200">Item</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-gray-800 dark:text-gray-200">Yes</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-gray-800 dark:text-gray-200">No</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left text-gray-800 dark:text-gray-200">Specific Comment</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">1</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Does the exam paper provide clear instructions to<br />the candidates?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item1" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item1" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
 
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">2</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Do the Questions reflect the learning outcomes<br />adequately?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item2" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item2" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">3</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Are the questions clear and easily understandable?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item3" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item3" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">4</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Is there anyrepetition of questions?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item4" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item4" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">5</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Are the marks allocated for questions and sections<br />appropriate?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item5" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item5" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">6</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Is the time given to attend each questions/section<br />adequate?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item6" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item6" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">7</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Are the questions up to the standard and<br />appropriate to the level being assessed (SLQF 5/6)?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item7" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item7" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr><td colSpan={5} className="font-bold text-center text-title-lg">Comment on Marking Scheme</td></tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">8</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Are the answer correct/justifiable?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item8" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item8" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr className="bg-white dark:bg-gray-800">
-                                    <td className="border border-gray-300 px-4 py-2 text-center text-gray-900 dark:text-gray-300">9</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-gray-900 dark:text-gray-300">Are the main points of the answer highlighted?</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item9" value="yes" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center">
-                                        <input type="radio" name="item9" value="no" />
-                                    </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={5} className="font-bold text-center text-title-lg">
-                                        <div className="mb-4 flex gap-4 items-center justify-center">
-                                            Genaral Comment on Question Paper and marking scheme
-                                        </div>
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                        />
-                                    </td>
-                                </tr>
-                                <td className="h-full border  px-4 font-bold" colSpan={2}>
-                                    <div className="flex items-end justify-center h-27">
-                                        Name of the moderator
-                                    </div>
-                                </td>
-                                <td className="h-full border  px-4 font-bold" colSpan={2}>
-                                    <div className="flex items-end justify-center h-27">
-                                        Signature
-                                    </div>
-                                </td>
-                                <td className="h-full border px-4 font-bold" colSpan={1}>
-                                    <div className="flex items-end justify-center h-27">
-                                        Date
-                                    </div>
-                                </td>
-                                <tr>
-
-                                </tr>
-                                <tr>
-                                    <td colSpan={5} className="font-bold text-center text-title-lg">
-                                        <div className="mb-4 flex gap-4 items-center justify-center">
-                                            Follow up Action by Examiner/s
-                                        </div>
-
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={3} className="pr-4">
-                                        <label className="font-bold" htmlFor="agree-a">(a) Agree and addressed</label>
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                            id="agree-a"
-                                        />
-                                    </td>
-                                    <td colSpan={2} className="pl-4">
-                                        <label className="font-bold" htmlFor="agree-b">(b) Not agree and reasons</label>
-                                        <textarea
-                                            className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                            placeholder="Add comment"
-                                            rows={3}
-                                            id="agree-b"
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={2} className="align-top pr-4"> {/* Add padding to the right */}
-                                        <div>
-                                            <h2 className="font-bold ml-4">Name</h2>
-                                            <ul className="space-y-2">
-                                                <li className="flex items-center">
-                                                    <label className="font-bold mr-2" htmlFor="name1">(1)</label>
-                                                    <textarea
-                                                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                        placeholder="Add comment"
-                                                        rows={2}
-                                                        id="name1"
-                                                    />
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <label className="font-bold mr-2" htmlFor="name2">(2)</label>
-                                                    <textarea
-                                                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                        placeholder="Add comment"
-                                                        rows={2}
-                                                        id="name2"
-                                                    />
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <label className="font-bold mr-2" htmlFor="name3">(3)</label>
-                                                    <textarea
-                                                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                        placeholder="Add comment"
-                                                        rows={2}
-                                                        id="name3"
-                                                    />
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <label className="font-bold mr-2" htmlFor="name4">(4)</label>
-                                                    <textarea
-                                                        className="w-full border border-gray-300 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                        placeholder="Add comment"
-                                                        rows={2}
-                                                        id="name4"
-                                                    />
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                    <td colSpan={2} className="align-top pl-8"> {/* Add padding to the left */}
-                                        <div>
-                                            <h2 className="font-bold ml-4">Sign</h2>
-                                            <ul className="space-y-2">
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                    <td colSpan={2} className="align-top pl-8"> {/* Add padding to the left */}
-                                        <div>
-                                            <h2 className="font-bold ml-8">Date</h2>
-                                            <ul className="space-y-2">
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                                <li className="flex items-center h-20">-------------------</li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={5} className="border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-800">
-                                        <div>
-                                            <label
-                                                htmlFor="learningOutcomes"
-                                                className="block font-bold text-gray-700 dark:text-gray-300 mb-2 text-lg"
-                                            >
-                                                Learning Outcomes:
-                                            </label>
-                                            <textarea
-                                                id="learningOutcomes"
-                                                className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                placeholder="Enter your text here..."
-                                                rows={4}
-                                            ></textarea>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colSpan={5} className="border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-800">
-                                        <div>
-                                            <label
-                                                htmlFor="courseContent"
-                                                className="block font-bold text-gray-700 dark:text-gray-300 mb-2 text-lg"
-                                            >
-                                                Course Content:
-                                            </label>
-                                            <textarea
-                                                id="courseContent"
-                                                className="w-full border border-gray-300 dark:border-gray-600 p-2 rounded-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-y"
-                                                placeholder="Enter your text here..."
-                                                rows={4}
-                                            ></textarea>
-                                        </div>
-                                    </td>
-                                </tr>
-
-
-                            </tbody>
-                        </table>
-
-                    </div>
-
-
-
+                    {/* Child Components */}
+                    <PaperFeedbackQuestionTable getDataFromTable={handleQuestionsData} />
+                    <PaperFeedbackSignEndTable getModerateData={handleModerateData} />
                 </div>
+
                 <div className="flex justify-center mt-6">
                     <button
                         type="submit"
@@ -432,6 +332,7 @@ const Feedback = () => {
             </form>
         </div>
     );
+
 }
 
 export default Feedback

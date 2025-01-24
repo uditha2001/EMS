@@ -3,7 +3,9 @@ import { Paper } from '../../types/transferpaper';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
-import useApi from './api';
+import useApi from '../../api/api';
+import { Link } from 'react-router-dom';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -11,9 +13,16 @@ const FileList: React.FC = () => {
   const [, setLoading] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [viewType, setViewType] = useState<'sender' | 'receiver'>('sender'); // Sender or Receiver view toggle
+  const [viewType, setViewType] = useState<'sender' | 'receiver'>('sender');
+  const [structureStatus, setStructureStatus] = useState<
+    Record<number, boolean>
+  >({});
   const moderatorId = Number(auth.id);
-  const { getAllFiles, downloadFile, deleteFile } = useApi();
+  const { getAllFiles, downloadFile, deleteFile, getStructureData } = useApi();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchFiles();
@@ -24,6 +33,19 @@ const FileList: React.FC = () => {
       setLoading(true);
       const response = await getAllFiles();
       setFiles(response);
+
+      // Fetch structure data for each file
+      const structurePromises = response.map(async (file: Paper) => {
+        const structure = await getStructureData(file.id);
+        return { fileId: file.id, hasStructure: structure.data.length > 0 };
+      });
+
+      const structureData = await Promise.all(structurePromises);
+      const structureMap = structureData.reduce(
+        (acc, { fileId, hasStructure }) => ({ ...acc, [fileId]: hasStructure }),
+        {},
+      );
+      setStructureStatus(structureMap);
     } catch (error: any) {
       setErrorMessage(
         'Error fetching files: ' + (error.message || 'Unknown error'),
@@ -42,13 +64,26 @@ const FileList: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const openModal = (id: number) => {
+    setTransactionToDelete(id);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleDelete = async () => {
+    if (transactionToDelete === null) return; // If no transaction is selected, exit
     try {
-      const response = await deleteFile(id);
+      const response = await deleteFile(transactionToDelete);
       setSuccessMessage(response?.message || 'File deleted successfully.');
       fetchFiles();
     } catch (error: any) {
       setErrorMessage(error?.message || 'Error deleting file.');
+    } finally {
+      closeModal();
     }
   };
 
@@ -69,9 +104,14 @@ const FileList: React.FC = () => {
       />
 
       <div className="mb-4 flex justify-between">
-        <h2 className="text-lg font-semibold text-black dark:text-white">
-          {viewType === 'sender' ? 'Sent Files' : 'Received Files'}
-        </h2>
+        <div>
+          <Link
+            to="/paper/transfer/new"
+            className="inline-block bg-primary text-white px-4 py-2 rounded hover:bg-opacity-80"
+          >
+            New Transaction
+          </Link>
+        </div>
         <div>
           <button
             className={`mr-2 px-4 py-2 ${
@@ -79,7 +119,7 @@ const FileList: React.FC = () => {
             } rounded`}
             onClick={() => setViewType('sender')}
           >
-            Sent 
+            Sent
           </button>
           <button
             className={`px-4 py-2 ${
@@ -87,26 +127,26 @@ const FileList: React.FC = () => {
             } rounded`}
             onClick={() => setViewType('receiver')}
           >
-            Received 
+            Received
           </button>
         </div>
       </div>
 
       {filteredFiles.length > 0 ? (
-        <div className="overflow-x-auto rounded border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          <table className="min-w-full table-auto text-left">
+        <div className="overflow-x-auto my-8">
+          <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
             <thead>
-              <tr>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+              <tr className="bg-gray-100 dark:bg-form-input">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   File Name
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   {viewType === 'sender' ? 'Receiver' : 'Sender'}
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Date Uploaded
                 </th>
-                <th className="py-3 px-6 text-sm font-medium text-black dark:text-white">
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Actions
                 </th>
               </tr>
@@ -115,15 +155,17 @@ const FileList: React.FC = () => {
               {filteredFiles.map((file) => (
                 <tr
                   key={file.id}
-                  className="border-t border-stroke dark:border-strokedark"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <td className="py-4 px-6">{file.fileName}</td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                    {file.fileName}
+                  </td>
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {viewType === 'sender'
                       ? file.moderator.firstName
                       : file.creator.firstName}
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {file.createdAt &&
                       new Date(file.createdAt).toLocaleDateString('en-US', {
                         weekday: 'short',
@@ -132,7 +174,7 @@ const FileList: React.FC = () => {
                         day: 'numeric',
                       })}
                   </td>
-                  <td className="py-4 px-6">
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     <button
                       type="button"
                       className="text-primary hover:text-opacity-80"
@@ -141,13 +183,44 @@ const FileList: React.FC = () => {
                       Download
                     </button>
                     {viewType === 'sender' && (
-                      <button
-                        type="button"
-                        className="ml-4 text-red-600 hover:text-opacity-80"
-                        onClick={() => handleDelete(file.id)}
+                      <>
+                        <button
+                          type="button"
+                          className="ml-4 text-red-600 hover:text-opacity-80"
+                          onClick={() => openModal(file.id)}
+                        >
+                          Delete
+                        </button>
+                        <Link
+                          to={`/paper/transfer/edit/${file.id}`}
+                          className="ml-4 text-green-600 hover:text-opacity-80"
+                        >
+                          Modify
+                        </Link>
+                        {structureStatus[file.id] ? (
+                          <Link
+                            to={`/paper/edit/structure/${file.id}`}
+                            className="ml-4 text-green-600 hover:text-opacity-80"
+                          >
+                            Modify Structure
+                          </Link>
+                        ) : (
+                          <Link
+                            to={`/paper/create/structure/${file.id}`}
+                            className="ml-4 text-green-600 hover:text-opacity-80"
+                          >
+                            Set Structure
+                          </Link>
+                        )}
+                      </>
+                    )}
+                    {viewType === 'receiver' && (
+                      <Link
+                        to={`/paper/moderate/${file.id}/${moderatorId}`}
+                        className="ml-4 text-green-600 hover:text-opacity-80"
                       >
-                        Delete
-                      </button>
+                        Moderate
+                      </Link>
                     )}
                   </td>
                 </tr>
@@ -159,6 +232,15 @@ const FileList: React.FC = () => {
         <div className="text-center text-gray-500 dark:text-gray-400">
           No files found for {viewType === 'sender' ? 'Sender' : 'Receiver'}.
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {isModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this transaction?"
+          onConfirm={handleDelete}
+          onCancel={closeModal}
+        />
       )}
     </div>
   );

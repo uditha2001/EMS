@@ -5,8 +5,8 @@ import ErrorMessage from '../../components/ErrorMessage'; // Import ErrorMessage
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox'; // Import SelectBox component for filtering roles
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useHasPermission from '../../hooks/useHasPermission';
+import useApi from '../../api/api';
 
 type User = {
   id: number;
@@ -30,18 +30,18 @@ const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>(''); // Status filter state
-  const axiosPrivate = useAxiosPrivate();
   const hasDeletePermission = useHasPermission('DELETE_USER');
   const hasCreatePermission = useHasPermission('CREATE_USER');
   const hasEditPermission = useHasPermission('UPDATE_USER');
   const hasChangePermission = useHasPermission('CHANGE_USER_STATUS');
+  const { fetchUsers, deleteUser,updateUserStatus } = useApi();
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const loadUsers = async () => {
       try {
-        const response = await axiosPrivate.get('/user');
-        setUsers(response.data);
-        setFilteredUsers(response.data);
+        const data = await fetchUsers();
+        setUsers(data);
+        setFilteredUsers(data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch users');
       } finally {
@@ -49,13 +49,13 @@ const Users: React.FC = () => {
       }
     };
 
-    fetchUsers();
+    loadUsers();
   }, []);
 
   const handleDelete = async () => {
     if (selectedUserId !== null) {
       try {
-        await axiosPrivate.delete(`/user/deleteUser/${selectedUserId}`);
+        await deleteUser(selectedUserId);
         setUsers(users.filter((user) => user.id !== selectedUserId));
         setIsModalOpen(false);
         setSuccessMessage('User deleted successfully!');
@@ -109,9 +109,7 @@ const Users: React.FC = () => {
 
   const toggleUserStatus = async (userId: number, newStatus: boolean) => {
     try {
-      await axiosPrivate.put(
-        `/user/users/${userId}/status?isActive=${newStatus}`,
-      );
+      await updateUserStatus(userId, newStatus);
       setUsers(
         users.map((user) =>
           user.id === userId ? { ...user, active: newStatus } : user,
@@ -308,9 +306,7 @@ const Users: React.FC = () => {
       )}
 
       {/* test push */}
-
     </div>
-    
   );
 };
 
