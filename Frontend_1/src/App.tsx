@@ -1,47 +1,88 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
+// Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Calendar from './pages/Calendar';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import AdminDashboard from './pages/Dashboard/AdminDashboard';
-import Welcome from './pages/Welcome';
-import CreateUser from './pages/Users/CreateUser';
-import Users from './pages/Users/Users';
-import EditUser from './pages/Users/EditUser';
-import CreateRole from './pages/Roles/CreateRole';
-import Roles from './pages/Roles/Roles';
-import EditRole from './pages/Roles/EditRole';
-import PersistLogin from './components/PresistLogin';
-import GuestLayout from './layout/GestLayout';
-import Login from './pages/Authentication/Login';
-import RequireAuth from './components/RequireAuth';
-import AuthenticatedLayout from './layout/AuthenticatedLayout';
-import Unauthorized from './components/Unauthorized';
-import ForgotPassword from './pages/Authentication/ForgotPassword';
-import ResetPassword from './pages/Authentication/ResetPassword';
-import OTPVerification from './pages/Authentication/OTPVerification';
-import CreateBulkUsers from './pages/Users/CreateBulkUsers';
-import DegreePrograms from './pages/DegreePrograms/DegreePrograms';
-import CreateDegreeProgram from './pages/DegreePrograms/CreateDegreeProgram';
-import EditDegreeProgram from './pages/DegreePrograms/EditDegreeProgram';
-import Courses from './pages/Courses/Courses';
-import CreateCourse from './pages/Courses/CreateCourse';
-import EditCourse from './pages/Courses/EditCourse';
-import CreatePaper from './pages/PaperSetting/CreatePaper';
-import ModeratePaper from './pages/PaperModeration/ModeratePaper';
-import TransferPaper from './pages/PaperTransfer/TransferPaper';
-import AssignRoles from './pages/RoleAssignments/AssignRoles';
-import AcademicYears from './pages/AcademicYears/AcademicYears';
-import TransactionHistory from './pages/PaperTransfer/TransactionHistory';
-import CreatePaperStructure from './pages/PaperSetting/CreatePaperStructure';
-import Feedback from './pages/PaperModeration/Feedback';
-import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
-import FileUpdate from './pages/PaperTransfer/FileUpdate';
-import EditPaperStructure from './pages/PaperSetting/EditPaperStructure';
-import ModerationDashboard from './pages/PaperModeration/ModerationDashboard';
+
+// Lazy-loaded components
+const Calendar = React.lazy(() => import('./pages/Calendar'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const AdminDashboard = React.lazy(
+  () => import('./pages/Dashboard/AdminDashboard'),
+);
+const Welcome = React.lazy(() => import('./pages/Welcome'));
+const CreateUser = React.lazy(() => import('./pages/Users/CreateUser'));
+const Users = React.lazy(() => import('./pages/Users/Users'));
+const EditUser = React.lazy(() => import('./pages/Users/EditUser'));
+const CreateRole = React.lazy(() => import('./pages/Roles/CreateRole'));
+const Roles = React.lazy(() => import('./pages/Roles/Roles'));
+const EditRole = React.lazy(() => import('./pages/Roles/EditRole'));
+const PersistLogin = React.lazy(() => import('./components/PresistLogin'));
+const GuestLayout = React.lazy(() => import('./layout/GestLayout'));
+const Login = React.lazy(() => import('./pages/Authentication/Login'));
+const RequireAuth = React.lazy(() => import('./components/RequireAuth'));
+const AuthenticatedLayout = React.lazy(
+  () => import('./layout/AuthenticatedLayout'),
+);
+const Unauthorized = React.lazy(() => import('./components/Unauthorized'));
+const ForgotPassword = React.lazy(
+  () => import('./pages/Authentication/ForgotPassword'),
+);
+const ResetPassword = React.lazy(
+  () => import('./pages/Authentication/ResetPassword'),
+);
+const OTPVerification = React.lazy(
+  () => import('./pages/Authentication/OTPVerification'),
+);
+const CreateBulkUsers = React.lazy(
+  () => import('./pages/Users/CreateBulkUsers'),
+);
+const DegreePrograms = React.lazy(
+  () => import('./pages/DegreePrograms/DegreePrograms'),
+);
+const CreateDegreeProgram = React.lazy(
+  () => import('./pages/DegreePrograms/CreateDegreeProgram'),
+);
+const EditDegreeProgram = React.lazy(
+  () => import('./pages/DegreePrograms/EditDegreeProgram'),
+);
+const Courses = React.lazy(() => import('./pages/Courses/Courses'));
+const CreateCourse = React.lazy(() => import('./pages/Courses/CreateCourse'));
+const EditCourse = React.lazy(() => import('./pages/Courses/EditCourse'));
+const CreatePaper = React.lazy(
+  () => import('./pages/PaperSetting/CreatePaper'),
+);
+const ModeratePaper = React.lazy(
+  () => import('./pages/PaperModeration/ModeratePaper'),
+);
+const TransferPaper = React.lazy(
+  () => import('./pages/PaperTransfer/TransferPaper'),
+);
+const AssignRoles = React.lazy(
+  () => import('./pages/RoleAssignments/AssignRoles'),
+);
+const AcademicYears = React.lazy(
+  () => import('./pages/AcademicYears/AcademicYears'),
+);
+const TransactionHistory = React.lazy(
+  () => import('./pages/PaperTransfer/TransactionHistory'),
+);
+const CreatePaperStructure = React.lazy(
+  () => import('./pages/PaperSetting/CreatePaperStructure'),
+);
+const Feedback = React.lazy(() => import('./pages/PaperModeration/Feedback'));
+const CreateTransaction = React.lazy(
+  () => import('./pages/PaperTransfer/CreateTransaction'),
+);
+const FileUpdate = React.lazy(() => import('./pages/PaperTransfer/FileUpdate'));
+const EditPaperStructure = React.lazy(
+  () => import('./pages/PaperSetting/EditPaperStructure'),
+);
+const ModerationDashboard = React.lazy(
+  () => import('./pages/PaperModeration/ModerationDashboard'),
+);
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
