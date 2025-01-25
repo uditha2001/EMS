@@ -24,7 +24,7 @@ public class QuestionStructureEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "encrypted_paper_id", nullable = false)
+    @JoinColumn(name = "encrypted_paper_id", nullable = true)
     private EncryptedPaper encryptedPaper;
 
     @Column(nullable = false)
@@ -45,5 +45,9 @@ public class QuestionStructureEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "questionStructure")
     private List<SubQuestionEntity> subQuestions;
+
+    @ManyToOne
+    @JoinColumn(name = "template_id")
+    private QuestionTemplateEntity template;
 
 }
