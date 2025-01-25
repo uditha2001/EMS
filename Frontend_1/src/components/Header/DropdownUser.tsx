@@ -1,27 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../images/user/user-01.png';
 import AuthService from '../../services/Auth-Service';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useAuth from '../../hooks/useAuth';
-import Loader from '../../common/Loader';
-type statusObject = {
-  code: string;
-  message: string;
-  obj: string;
-};
+import useApi from '../../api/api';
 const DropdownUser = () => {
   const axiosPrivate = useAxiosPrivate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState(false);
+  const [, setLoadingStatus] = useState(false);
   const { auth, setAuth } = useAuth();
   const navigate = useNavigate();
+  const { getProfileImage } = useApi();
+  const [imagePreview, setImagePreview] = useState(UserOne);
+  const userId = auth?.id || '';
 
   const handleLogout = async () => {
     try {
       setLoadingStatus(true);
-      const response = await AuthService.logout(axiosPrivate)
+      const response = await AuthService.logout(axiosPrivate);
       if (response.data.code === 200) {
         setAuth((prev) => ({
           ...prev,
@@ -29,21 +27,41 @@ const DropdownUser = () => {
           roles: [],
         }));
         localStorage.removeItem('user');
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         navigate('/login');
-        console.log("logout sucess");
+        console.log('logout sucess');
+      } else {
+        console.log('failed to logout');
       }
-      else {
-        console.log("failed to logout");
-      }
+    } catch (error) {
+      console.log('failed to logout');
     }
-    catch (error) {
-      console.log("failed to logout");
-    };
   };
+
+  const fetchProfileImage = async () => {
+    try {
+      const response = await getProfileImage(Number(userId));
+      const base64Image = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          '',
+        ),
+      );
+      setImagePreview(
+        `data:${response.headers['content-type']};base64,${base64Image}`,
+      );
+    } catch (error) {
+      console.error('Error fetching profile image:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) fetchProfileImage();
+  }, [userId]);
+
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
-      {loadingStatus ?<Loader/>:null}
+      {/* {loadingStatus ? <Loader /> : null} */}
       <Link
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="flex items-center gap-4"
@@ -56,9 +74,11 @@ const DropdownUser = () => {
           <span className="block text-xs">{auth.username}</span>
         </span>
 
-        <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
-        </span>
+        <img
+          className="h-12 w-12 rounded-full"
+          src={imagePreview}
+          alt="User Avatar"
+        />
 
         <svg
           className="hidden fill-current sm:block"

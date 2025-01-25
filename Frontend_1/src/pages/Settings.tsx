@@ -7,6 +7,7 @@ import axios from 'axios';
 import ConfirmationModal from '../components/Modals/ConfirmationModal';
 import DOMPurify from 'dompurify';
 import useAuth from '../hooks/useAuth';
+import useApi from '../api/api';
 const Settings = () => {
   const { auth } = useAuth();
   const [formData, setFormData] = useState({
@@ -25,17 +26,19 @@ const Settings = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const userId = auth.id;
-
-  const getApiUrl = (endpoint: string): string =>
-    `http://localhost:8080/api/v1/user/${endpoint}`;
+  const {
+    getUserProfile,
+    getProfileImage,
+    updateUserProfile,
+    updateProfileImage,
+    deleteProfileImage,
+  } = useApi();
 
   const fetchUserData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(getApiUrl(`userProfile/${userId}`));
-      if (!response.ok) throw new Error('Failed to fetch user data');
-      const data = await response.json();
-      setFormData(data);
+      const response = await getUserProfile(Number(userId));
+      setFormData(response.data);
     } catch (error) {
       setErrorMessage('Failed to fetch user data');
     } finally {
@@ -45,9 +48,7 @@ const Settings = () => {
 
   const fetchProfileImage = async () => {
     try {
-      const response = await axios.get(getApiUrl(`getProfileImage/${userId}`), {
-        responseType: 'arraybuffer',
-      });
+      const response = await getProfileImage(Number(userId));
 
       const base64Image = btoa(
         new Uint8Array(response.data).reduce(
@@ -78,12 +79,8 @@ const Settings = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(getApiUrl(`updateUserProfile/${userId}`), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
+      const response = await updateUserProfile(Number(userId), formData);
+      if (response.status === 200) {
         setSuccessMessage('Profile updated successfully!');
       } else {
         setErrorMessage('Failed to update profile');
@@ -131,11 +128,8 @@ const Settings = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('image', selectedFile);
-
     try {
-      await axios.put(getApiUrl(`updateProfileImage/${userId}`), formData);
+      updateProfileImage(Number(userId), selectedFile);
       setSuccessMessage('Profile image updated successfully');
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -150,7 +144,7 @@ const Settings = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(getApiUrl(`deleteProfileImage/${userId}`));
+      deleteProfileImage(Number(userId));
       setImagePreview(userThree);
       setSuccessMessage('Profile image deleted successfully');
       setErrorMessage('');

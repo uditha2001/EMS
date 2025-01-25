@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Paper } from '../../types/transferpaper';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import { Paper } from '../types/transferpaper';
+import useAxiosPrivate from '../hooks/useAxiosPrivate';
 
 const useApi = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -176,6 +176,107 @@ const useApi = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    const response = await axiosPrivate.get('/user');
+    return response.data;
+  };
+
+  const deleteUser = async (userId: number) => {
+    await axiosPrivate.delete(`/user/deleteUser/${userId}`);
+  };
+
+  const updateUserStatus = async (userId: number, isActive: boolean) => {
+    await axiosPrivate.put(`/user/users/${userId}/status?isActive=${isActive}`);
+  };
+
+  const updateUserWithRoles = async (userId: number, updatedUser: any) => {
+    return axiosPrivate.put(`/user/updateUserWithRoles/${userId}`, updatedUser);
+  };
+
+  const fetchAllRoles = async () => {
+    return axiosPrivate.get('/roles/all');
+  };
+
+  const fetchAllPermissions = async () => {
+    return axiosPrivate.get('/permissions');
+  };
+
+  const getUserById = async (userId: number) => {
+    return axiosPrivate.get(`/user/getUserById/${userId}`);
+  };
+
+  const createUserWithRoles = async (newUser: any) => {
+    return axiosPrivate.post('/user/addUserWithRoles', newUser);
+  };
+
+  const deleteRole = async (roleId: number) => {
+    await axiosPrivate.delete(`/roles/delete/${roleId}`);
+  };
+
+  const createRole = async (newRole: any) => {
+    return axiosPrivate.post('/roles/create', newRole);
+  };
+
+  const updateRole = async (roleId: number, updatedRole: any) => {
+    return axiosPrivate.put(`/roles/update/${roleId}`, updatedRole);
+  };
+
+  const getRoleById = async (roleId: number) => {
+    return axiosPrivate.get(`/roles/view/${roleId}`);
+  };
+
+  const getUserProfile = async (userId: number) => {
+    return axiosPrivate.get(`/user/userProfile/${userId}`);
+  };
+
+  const getProfileImage = async (userId: number) => {
+    return axiosPrivate.get(`/user/getProfileImage/${userId}`, {
+      responseType: 'arraybuffer',
+    });
+  };
+
+  const updateUserProfile = async (userId: number, formData: any) => {
+    return axiosPrivate.put(`/user/updateUserProfile/${userId}`, formData);
+  };
+
+  const updateProfileImage = async (userId: number, imageFile: File) => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    return axiosPrivate.put(`/user/updateProfileImage/${userId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  };
+
+  const deleteProfileImage = async (userId: number) => {
+    return axiosPrivate.delete(`/user/deleteProfileImage/${userId}`);
+  };
+
+  const getDegreePrograms = async () => {
+    return axiosPrivate.get('/degreePrograms');
+  };
+
+  const getAcademicYears = async () => {
+    return axiosPrivate.get('/academic-years');
+  };
+
+  const deleteAcademicYear = async (id: number) => {
+    return axiosPrivate.delete(`/academic-years/${id}`);
+  };
+
+  const createAcademicYear = async (newAcademicYear: any) => {
+    return axiosPrivate.post('/academic-years', newAcademicYear);
+  };
+
+  const updateAcademicYear = async (
+    id: number,
+    updatedAcademicYear: any,
+  ) => {
+    return axiosPrivate.put(`/academic-years/${id}`, updatedAcademicYear);
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -183,6 +284,28 @@ const useApi = () => {
     deleteFile,
     updateFile,
     getStructureData,
+    fetchUsers,
+    deleteUser,
+    updateUserStatus,
+    updateUserWithRoles,
+    fetchAllRoles,
+    getUserById,
+    createUserWithRoles,
+    fetchAllPermissions,
+    deleteRole,
+    createRole,
+    updateRole,
+    getRoleById,
+    getUserProfile,
+    getProfileImage,
+    updateUserProfile,
+    updateProfileImage,
+    deleteProfileImage,
+    getDegreePrograms,
+    getAcademicYears,
+    deleteAcademicYear,
+    createAcademicYear,
+    updateAcademicYear,
     loading,
     error,
   };
