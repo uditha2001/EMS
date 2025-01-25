@@ -254,6 +254,29 @@ const useApi = () => {
     return axiosPrivate.delete(`/user/deleteProfileImage/${userId}`);
   };
 
+  const getDegreePrograms = async () => {
+    return axiosPrivate.get('/degreePrograms');
+  };
+
+  const getAcademicYears = async () => {
+    return axiosPrivate.get('/academic-years');
+  };
+
+  const deleteAcademicYear = async (id: number) => {
+    return axiosPrivate.delete(`/academic-years/${id}`);
+  };
+
+  const createAcademicYear = async (newAcademicYear: any) => {
+    return axiosPrivate.post('/academic-years', newAcademicYear);
+  };
+
+  const updateAcademicYear = async (
+    id: number,
+    updatedAcademicYear: any,
+  ) => {
+    return axiosPrivate.put(`/academic-years/${id}`, updatedAcademicYear);
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -278,6 +301,11 @@ const useApi = () => {
     updateUserProfile,
     updateProfileImage,
     deleteProfileImage,
+    getDegreePrograms,
+    getAcademicYears,
+    deleteAcademicYear,
+    createAcademicYear,
+    updateAcademicYear,
     loading,
     error,
   };

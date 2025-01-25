@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+
 interface AcademicYear {
   id: number;
   year: string;
@@ -16,7 +19,7 @@ interface AcademicYearListProps {
   degreePrograms: DegreeProgram[]; // Array of degree programs
   loading: boolean;
   handleEdit: (id: number) => void;
-  handleDelete: (id: number) => void;
+  handleDelete: (id: number) => void; // Actual delete handler
 }
 
 export default function AcademicYearList({
@@ -26,23 +29,32 @@ export default function AcademicYearList({
   handleEdit,
   handleDelete,
 }: AcademicYearListProps) {
-  // Ensure academicYears is always treated as an array
+  const [showModal, setShowModal] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const safeAcademicYears = Array.isArray(academicYears) ? academicYears : [];
+  const sortedAcademicYears = safeAcademicYears.slice().sort((a, b) => {
+    const yearA = a.year.split('/')[0];
+    const yearB = b.year.split('/')[0];
+    return parseInt(yearB) - parseInt(yearA);
+  });
 
-  // Sort the academic years in descending order by the year
-  const sortedAcademicYears = safeAcademicYears
-    .slice() // Create a copy to avoid mutating the original array
-    .sort((a, b) => {
-      const yearA = a.year.split('/')[0]; // Get the first part (e.g., "2023")
-      const yearB = b.year.split('/')[0]; // Get the first part (e.g., "2024")
-
-      return parseInt(yearB) - parseInt(yearA); // Compare in descending order
-    });
-
-  // Get the degree program name by ID
   const getDegreeProgramName = (id: string): string => {
     const program = degreePrograms.find((program) => program.id === id);
     return program ? program.name : 'Unknown Program';
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteId !== null) {
+      handleDelete(deleteId); // Call the provided delete handler
+      setDeleteId(null);
+    }
+    setShowModal(false); // Close the modal
+  };
+
+  const handleOpenModal = (id: number) => {
+    setDeleteId(id);
+    setShowModal(true); // Show the modal
   };
 
   return (
@@ -79,7 +91,7 @@ export default function AcademicYearList({
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(year.id)}
+                    onClick={() => handleOpenModal(year.id)}
                     className="text-red-500 hover:text-red-700"
                   >
                     Delete
@@ -90,6 +102,14 @@ export default function AcademicYearList({
           </ul>
         )}
       </div>
+
+      {showModal && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this academic year?"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }
