@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import Loader from '../../common/Loader';
 import { useParams } from 'react-router-dom';
 import QuestionStructure from './QuestionStructure';
+import useApi from '../../api/api';
 
 export default function ModeratePaper() {
   const { paperId, moderatorId } = useParams<{
@@ -14,14 +14,13 @@ export default function ModeratePaper() {
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [questionStructure, setQuestionStructure] = useState<any>(null);
-
-  const axiosPrivate = useAxiosPrivate();
+  const { fetchEncryptedPaper, getPaperStructure, createModeration } = useApi();
 
   const fetchPdf = async () => {
     try {
-      const response = await axiosPrivate.get(
-        `papers/view/${paperId}?moderatorId=${moderatorId}`,
-        { responseType: 'blob' },
+      const response = await fetchEncryptedPaper(
+        Number(paperId),
+        Number(moderatorId),
       );
       const url = URL.createObjectURL(response.data);
       setPdfUrl(url);
@@ -32,7 +31,7 @@ export default function ModeratePaper() {
 
   const fetchQuestionStructure = async () => {
     try {
-      const response = await axiosPrivate.get(`structure/${paperId}`);
+      const response = await getPaperStructure(Number(paperId));
       if (response.data && Object.keys(response.data).length > 0) {
         setQuestionStructure(response.data);
       } else {
@@ -51,26 +50,23 @@ export default function ModeratePaper() {
 
     if (question) {
       try {
-        const response = await axiosPrivate.post(
-          '/moderation/question-with-hierarchy',
-          {
-            questionId: question.questionId,
-            comment: question.comment || '',
-            status: question.status || 'PENDING',
-            subQuestions: question.subQuestions.map((subQuestion: any) => ({
-              subQuestionId: subQuestion.subQuestionId,
-              comment: subQuestion.comment || '',
-              status: subQuestion.status || 'PENDING',
-              subSubQuestions: subQuestion.subSubQuestions.map(
-                (subSubQuestion: any) => ({
-                  subSubQuestionId: subSubQuestion.subSubQuestionId,
-                  comment: subSubQuestion.comment || '',
-                  status: subSubQuestion.status || 'PENDING',
-                }),
-              ),
-            })),
-          },
-        );
+        const response = await createModeration({
+          questionId: question.questionId,
+          comment: question.comment || '',
+          status: question.status || 'PENDING',
+          subQuestions: question.subQuestions.map((subQuestion: any) => ({
+            subQuestionId: subQuestion.subQuestionId,
+            comment: subQuestion.comment || '',
+            status: subQuestion.status || 'PENDING',
+            subSubQuestions: subQuestion.subSubQuestions.map(
+              (subSubQuestion: any) => ({
+                subSubQuestionId: subSubQuestion.subSubQuestionId,
+                comment: subSubQuestion.comment || '',
+                status: subSubQuestion.status || 'PENDING',
+              }),
+            ),
+          })),
+        });
 
         if (response.data.code === 200) {
           console.log('Main question moderated successfully');
@@ -177,7 +173,7 @@ export default function ModeratePaper() {
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [axiosPrivate, paperId, moderatorId]);
+  }, [paperId, moderatorId]);
 
   return (
     <div className="flex h-screen p-6">
