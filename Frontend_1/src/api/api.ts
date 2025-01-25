@@ -270,11 +270,86 @@ const useApi = () => {
     return axiosPrivate.post('/academic-years', newAcademicYear);
   };
 
-  const updateAcademicYear = async (
-    id: number,
-    updatedAcademicYear: any,
-  ) => {
+  const updateAcademicYear = async (id: number, updatedAcademicYear: any) => {
     return axiosPrivate.put(`/academic-years/${id}`, updatedAcademicYear);
+  };
+
+  const createPaperStructure = async (paperId: any, questions: any) => {
+    return axiosPrivate.post(`/structure/${paperId}`, questions, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  const updatePaperStructure = async (paperId: any, questions: any) => {
+    return axiosPrivate.put(`/structure/${paperId}`, questions, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  const deletePaperStructure = async (paperId: number) => {
+    return axiosPrivate.delete(`/structure/${paperId}`);
+  };
+
+  const deleteSubQuestion = async (subQuestionId: number) => {
+    return axiosPrivate.delete(`/structure/subQuestion/${subQuestionId}`);
+  };
+
+  const deleteSubSubQuestion = async (subSubQuestionId: number) => {
+    return axiosPrivate.delete(`/structure/subSubQuestion/${subSubQuestionId}`);
+  };
+
+  const getPaperStructure = async (paperId: number) => {
+    return axiosPrivate.get(`structure/${paperId}`);
+  };
+
+  const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
+    return axiosPrivate.get(
+      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+      { responseType: 'blob' },
+    );
+  };
+
+  const createModeration = async (moderation: any) => {
+    return axiosPrivate.post('/moderation/question-with-hierarchy', moderation);
+  };
+
+  const getPapers = async () => {
+    return axiosPrivate.get('/papers');
+  };
+
+  const getCoursesByDegreeProgramId = async (selectedDegreeProgram: number) => {
+    return axiosPrivate.get(
+      `/courses?degreeProgramId=${selectedDegreeProgram}`,
+    );
+  };
+
+  const saveTemplate = async (templateData: any) => {
+    return axiosPrivate.post(
+      `/structure/save-template-and-structure`,
+      templateData,
+    );
+  };
+
+  const getAllTemplates = async () => {
+    return axiosPrivate.get('/structure/templates/with-questions');
+  };
+
+  const getTemplateById = async (templateId: number) => {
+    return axiosPrivate.get(
+      `/structure/templates/${templateId}/with-questions`,
+    );
+  };
+
+  const getTemplates = async () => {
+    return axiosPrivate.get('/structure/templates');
+  };
+
+  const deleteTemplate = async (templateId: number) => {
+    return axiosPrivate.delete(`/structure/delete-template/${templateId}`);
   };
 
   return {
@@ -306,6 +381,21 @@ const useApi = () => {
     deleteAcademicYear,
     createAcademicYear,
     updateAcademicYear,
+    createPaperStructure,
+    updatePaperStructure,
+    deletePaperStructure,
+    deleteSubQuestion,
+    deleteSubSubQuestion,
+    getPaperStructure,
+    fetchEncryptedPaper,
+    createModeration,
+    getPapers,
+    getCoursesByDegreeProgramId,
+    saveTemplate,
+    getAllTemplates,
+    getTemplateById,
+    getTemplates,
+    deleteTemplate,
     loading,
     error,
   };
