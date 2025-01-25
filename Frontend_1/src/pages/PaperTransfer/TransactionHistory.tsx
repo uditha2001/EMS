@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import useApi from './api';
+import useApi from '../../api/api';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 

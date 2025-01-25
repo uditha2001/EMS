@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-import useApi from './api';
+import useApi from '../../api/api';
 import { Link, useParams } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
