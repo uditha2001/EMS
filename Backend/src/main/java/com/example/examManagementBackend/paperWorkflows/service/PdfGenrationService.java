@@ -18,25 +18,28 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.VerticalAlignment;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
 @Service
 public class PdfGenrationService {
+    private final EncryptionService encryptionService;
 
-    public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO) throws IOException {
+    public PdfGenrationService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
+    }
+
+    public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO, HttpServletRequest request) throws IOException {
         questionData[] Question = feedBackDTO.getQuestion();
         if(Question != null) {
-            String fileName = "feedback.pdf";
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            String fileName = "src/main/resources/moderatorsFeedBacks/feedback.pdf";
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
@@ -211,6 +214,7 @@ public class PdfGenrationService {
             FileInputStream fis = new FileInputStream(file);
             byte[] pdfBytes = StreamUtils.copyToByteArray(fis);
             fis.close();
+
 
             // Set headers for file download
             HttpHeaders headers = new HttpHeaders();
