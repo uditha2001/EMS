@@ -2,7 +2,6 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.FeedBackDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.questionData;
-import com.example.examManagementBackend.utill.StandardResponse;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
@@ -44,11 +43,11 @@ public class PdfGenrationService {
             float colSize1=190f;
             float colsize2=250f;
             float colsize3=100f;
-            float questionTableSize[]={50f,250f,40f,200f};
-            float examineTable[]={270f,270f};
-            float moderatorSign[]={colSize1,colsize2,colsize3};
-            float actionSign[]={180f,180f,180f};
-            float fullColumn[]={540f};
+            float[] questionTableSize ={50f,250f,40f,200f};
+            float[] examineTable={270f,270f};
+            float[] moderatorSign={colSize1,colsize2,colsize3};
+            float[] actionSign={180f,180f,180f};
+            float[] fullColumn={540f};
 
             // Add title
             Paragraph title = new Paragraph("Evaluation Form for Moderation of Examination papers\n" +
@@ -217,11 +216,11 @@ public class PdfGenrationService {
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
             headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
-            return new ResponseEntity<byte[]>(pdfBytes,headers,HttpStatus.OK);
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 
         }
-        return new ResponseEntity<byte[]>(
-                null,null,HttpStatus.EXPECTATION_FAILED
+        return new ResponseEntity<>(
+                null, null, HttpStatus.EXPECTATION_FAILED
         );
     }
 
