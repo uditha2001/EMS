@@ -27,6 +27,8 @@ import org.springframework.util.StreamUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Service
 public class PdfGenrationService {
@@ -39,7 +41,21 @@ public class PdfGenrationService {
     public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO, HttpServletRequest request) throws IOException {
         questionData[] Question = feedBackDTO.getQuestion();
         if(Question != null) {
-            String fileName = "src/main/resources/moderatorsFeedBacks/feedback.pdf";
+            String timeStamp = new SimpleDateFormat("yyyy_MM").format(new Date());
+            String year=new SimpleDateFormat("yyyy").format(new Date());
+            String fileName = "src/main/resources/moderatorsFeedBacks/"+year+"/"
+                    + feedBackDTO.getCourseCode()
+                    + "_" + timeStamp
+                    + "_feedback.pdf";
+            File directory = new File("src/main/resources/moderatorsFeedBacks/" + year);
+            if (!directory.exists()) {
+                boolean created = directory.mkdirs();
+                if (created) {
+                    System.out.println("Directory created: " + directory.getPath());
+                } else {
+                    System.out.println("Failed to create directory.");
+                }
+            }
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
