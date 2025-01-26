@@ -1,7 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,7 +34,7 @@ public class DegreeProgramsEntity {
     @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
     private List<CoursesEntity> coursesEntities;
     @OneToMany(mappedBy = "degreeProgramsEntity",cascade = CascadeType.ALL)
-    private List<AcademicYearsEntity> academicYearsEntities;
+    private List<ExaminationEntity> academicYearsEntities;
 
     public DegreeProgramsEntity(Long id) {
         this.id = id;

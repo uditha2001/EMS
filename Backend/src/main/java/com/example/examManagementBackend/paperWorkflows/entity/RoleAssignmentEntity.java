@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @Table(
         name = "role_assignment",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"academic_year_id", "course_id", "role_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"examination_id", "course_id", "role_id"})
 )
 public class RoleAssignmentEntity {
     @Id
@@ -47,8 +47,8 @@ public class RoleAssignmentEntity {
     private UserEntity userId;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="acedemic_year_id",nullable = false)
-    private AcademicYearsEntity academicYearId;
+    @JoinColumn(name="examination_id",nullable = false)
+    private ExaminationEntity examinationId;
 
 
 }

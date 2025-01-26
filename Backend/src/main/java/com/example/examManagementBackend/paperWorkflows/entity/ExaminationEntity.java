@@ -14,7 +14,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(
-        name = "academic_years",
+        name = "examinations",
         uniqueConstraints = @UniqueConstraint(
                 columnNames = {"year", "level", "semester", "degree_program_id"}
         )
@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class AcademicYearsEntity {
+public class ExaminationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,10 +38,10 @@ public class AcademicYearsEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "academicYearId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "examinationId")
     private List<RoleAssignmentEntity> roleAssignments;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "academicYear")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "examination")
     private List<EncryptedPaper> encryptedPapers;
 
     @Column(nullable = false)

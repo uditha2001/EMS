@@ -13,14 +13,14 @@ const useApi = () => {
     courseIds: number[],
     remarks: string,
     moderatorId: number,
-    academicYearId: number,
+    examinationId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
-    formData.append('academicYearId', academicYearId.toString());
+    formData.append('examinationId', examinationId.toString());
 
     // Log courseIds to verify
     console.log('Selected Course IDs:', courseIds);
@@ -258,20 +258,20 @@ const useApi = () => {
     return axiosPrivate.get('/degreePrograms');
   };
 
-  const getAcademicYears = async () => {
+  const getExaminations = async () => {
     return axiosPrivate.get('/academic-years');
   };
 
-  const deleteAcademicYear = async (id: number) => {
+  const deleteExamination = async (id: number) => {
     return axiosPrivate.delete(`/academic-years/${id}`);
   };
 
-  const createAcademicYear = async (newAcademicYear: any) => {
-    return axiosPrivate.post('/academic-years', newAcademicYear);
+  const createExamination = async (newExamination: any) => {
+    return axiosPrivate.post('/academic-years', newExamination);
   };
 
-  const updateAcademicYear = async (id: number, updatedAcademicYear: any) => {
-    return axiosPrivate.put(`/academic-years/${id}`, updatedAcademicYear);
+  const updateExamination = async (id: number, updatedExamination: any) => {
+    return axiosPrivate.put(`/academic-years/${id}`, updatedExamination);
   };
 
   const createPaperStructure = async (paperId: any, questions: any) => {
@@ -377,10 +377,10 @@ const useApi = () => {
     updateProfileImage,
     deleteProfileImage,
     getDegreePrograms,
-    getAcademicYears,
-    deleteAcademicYear,
-    createAcademicYear,
-    updateAcademicYear,
+    getExaminations,
+    deleteExamination,
+    createExamination,
+    updateExamination,
     createPaperStructure,
     updatePaperStructure,
     deletePaperStructure,

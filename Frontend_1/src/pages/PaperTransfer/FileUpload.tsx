@@ -20,7 +20,7 @@ interface Course {
   name: string;
 }
 
-interface AcademicYear {
+interface Examination {
   id: number;
   year: string;
 }
@@ -38,25 +38,25 @@ const FileUpload: React.FC = () => {
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]); // State for academic years
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<
-    number | null
-  >(null); // State for selected academic year
+  const [examinations, setExaminations] = useState<Examination[]>([]); // State for academic years
+  const [selectedExamination, setSelectedExamination] = useState<number | null>(
+    null,
+  ); // State for selected academic year
   const userId = Number(auth.id); // Current user ID
   const axiosPrivate = useAxiosPrivate();
   const { uploadFile } = useApi();
 
   useEffect(() => {
-    const fetchModeratorsCoursesAndAcademicYears = async () => {
+    const fetchModeratorsCoursesAndExaminations = async () => {
       try {
-        const [usersResponse, coursesResponse, academicYearsResponse] =
+        const [usersResponse, coursesResponse, examinationsResponse] =
           await Promise.all([
             axiosPrivate.get('/user'),
             axiosPrivate.get('/courses'),
             axiosPrivate.get('/academic-years'),
           ]);
 
-        //console.log('Academic Years Response:', academicYearsResponse.data); // Log the response data
+        //console.log('Examinations Response:', examinationsResponse.data); // Log the response data
 
         const allUsers = usersResponse.data;
         const filteredModerators = allUsers.filter(
@@ -73,8 +73,8 @@ const FileUpload: React.FC = () => {
 
         setCourses(coursesResponse.data.data);
 
-        if (Array.isArray(academicYearsResponse.data.data)) {
-          setAcademicYears(academicYearsResponse.data.data); // Set academic years if it's an array
+        if (Array.isArray(examinationsResponse.data.data)) {
+          setExaminations(examinationsResponse.data.data); // Set academic years if it's an array
         } else {
           setErrorMessage('Invalid data format for academic years.');
         }
@@ -83,7 +83,7 @@ const FileUpload: React.FC = () => {
       }
     };
 
-    fetchModeratorsCoursesAndAcademicYears();
+    fetchModeratorsCoursesAndExaminations();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,17 +127,17 @@ const FileUpload: React.FC = () => {
       return;
     }
 
-    if (!selectedAcademicYear) {
+    if (!selectedExamination) {
       setErrorMessage('Please select an academic year!');
       return;
     }
 
     // Get the selected academic year's name
-    const selectedAcademicYearName = academicYears.find(
-      (year) => year.id === selectedAcademicYear,
+    const selectedExaminationName = examinations.find(
+      (year) => year.id === selectedExamination,
     )?.year;
 
-    if (!selectedAcademicYearName) {
+    if (!selectedExaminationName) {
       setErrorMessage('Invalid academic year selected!');
       return;
     }
@@ -149,7 +149,7 @@ const FileUpload: React.FC = () => {
       .join('_'); // Concatenate selected course codes with underscores
 
     // Rename the file to include the academic year name and course codes
-    const renamedFileName = `${courseCodes}_${selectedAcademicYearName.replace(
+    const renamedFileName = `${courseCodes}_${selectedExaminationName.replace(
       '/',
       '_',
     )}.pdf`;
@@ -168,7 +168,7 @@ const FileUpload: React.FC = () => {
         selectedCourses,
         remarks,
         selectedModerator,
-        selectedAcademicYear, // Include academic year in the request
+        selectedExamination, // Include academic year in the request
       );
 
       if (response?.message) {
@@ -189,7 +189,7 @@ const FileUpload: React.FC = () => {
     setSelectedCourses([]);
     setRemarks('');
     setSelectedModerator(null);
-    setSelectedAcademicYear(null); // Reset academic year
+    setSelectedExamination(null); // Reset academic year
   };
 
   const toggleCourseSelection = (courseId: number) => {
@@ -212,20 +212,20 @@ const FileUpload: React.FC = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Academic Year Selection */}
+        {/* Examination Selection */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
-            Select Academic Year
+            Select Examination
           </label>
           <select
-            value={selectedAcademicYear || 0} // Default value is 0
-            onChange={(e) => setSelectedAcademicYear(Number(e.target.value))}
+            value={selectedExamination || 0} // Default value is 0
+            onChange={(e) => setSelectedExamination(Number(e.target.value))}
             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
           >
-            <option value={0}>Select Academic Year</option>
-            {academicYears.map((academicYear) => (
-              <option key={academicYear.id} value={academicYear.id}>
-                {academicYear.year}
+            <option value={0}>Select Examination</option>
+            {examinations.map((examination) => (
+              <option key={examination.id} value={examination.id}>
+                {examination.year}
               </option>
             ))}
           </select>

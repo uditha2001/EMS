@@ -64,8 +64,8 @@ const TransferPaper = React.lazy(
 const AssignRoles = React.lazy(
   () => import('./pages/RoleAssignments/AssignRoles'),
 );
-const AcademicYears = React.lazy(
-  () => import('./pages/AcademicYears/AcademicYears'),
+const Examinations = React.lazy(
+  () => import('./pages/Examinations/Examinations'),
 );
 const TransactionHistory = React.lazy(
   () => import('./pages/PaperTransfer/TransactionHistory'),
@@ -287,7 +287,7 @@ function App() {
             >
               <Route
                 path="/academic/academicyears"
-                element={renderPage('Academic Years | EMS', <AcademicYears />)}
+                element={renderPage('Examinations | EMS', <Examinations />)}
               />
             </Route>
 

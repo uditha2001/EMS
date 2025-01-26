@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
-interface AcademicYear {
+interface Examination {
   id: number;
   year: string;
   degreeProgramId: string; // ID of the degree program
@@ -14,26 +14,26 @@ interface DegreeProgram {
   name: string; // Name of the degree program
 }
 
-interface AcademicYearListProps {
-  academicYears: AcademicYear[] | null | undefined; // Allow null or undefined
+interface ExaminationListProps {
+  examinations: Examination[] | null | undefined; // Allow null or undefined
   degreePrograms: DegreeProgram[]; // Array of degree programs
   loading: boolean;
   handleEdit: (id: number) => void;
   handleDelete: (id: number) => void; // Actual delete handler
 }
 
-export default function AcademicYearList({
-  academicYears,
+export default function ExaminationList({
+  examinations,
   degreePrograms,
   loading,
   handleEdit,
   handleDelete,
-}: AcademicYearListProps) {
+}: ExaminationListProps) {
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const safeAcademicYears = Array.isArray(academicYears) ? academicYears : [];
-  const sortedAcademicYears = safeAcademicYears.slice().sort((a, b) => {
+  const safeExaminations = Array.isArray(examinations) ? examinations : [];
+  const sortedExaminations = safeExaminations.slice().sort((a, b) => {
     const yearA = a.year.split('/')[0];
     const yearB = b.year.split('/')[0];
     return parseInt(yearB) - parseInt(yearA);
@@ -61,17 +61,17 @@ export default function AcademicYearList({
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
       <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
         <h3 className="font-medium text-black dark:text-white">
-          Academic Years List
+          Examinations List
         </h3>
       </div>
       <div className="p-6.5">
         {loading ? (
           <p>Loading...</p>
-        ) : sortedAcademicYears.length === 0 ? (
+        ) : sortedExaminations.length === 0 ? (
           <p>No academic years found.</p>
         ) : (
           <ul className="space-y-2">
-            {sortedAcademicYears.map((year) => (
+            {sortedExaminations.map((year) => (
               <li
                 key={year.id}
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center rounded bg-gray-100 p-4 dark:bg-gray-800"
