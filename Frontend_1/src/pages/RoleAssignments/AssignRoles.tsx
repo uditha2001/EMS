@@ -5,7 +5,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from '../../api/api';
 
-interface AcademicYear {
+interface Examination {
   id: string;
   year: string;
 }
@@ -38,11 +38,11 @@ interface RoleAssignments {
 }
 
 const AssignRoles: React.FC = () => {
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
   const [degreePrograms, setDegreePrograms] = useState<DegreeProgram[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('');
+  const [selectedExamination, setSelectedExamination] = useState<string>('');
   const [selectedDegreeProgram, setSelectedDegreeProgram] =
     useState<string>('');
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignments>({});
@@ -50,12 +50,12 @@ const AssignRoles: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const axiosPrivate = useAxiosPrivate();
-  const { getAcademicYears, getDegreePrograms, fetchUsers} = useApi();
+  const { getExaminations, getDegreePrograms, fetchUsers } = useApi();
 
   useEffect(() => {
     setIsLoading(true);
-    getAcademicYears()
-      .then((response) => setAcademicYears(response.data.data))
+    getExaminations()
+      .then((response) => setExaminations(response.data.data))
       .catch((error) => console.error('Error fetching academic years', error));
 
     getDegreePrograms()
@@ -111,7 +111,7 @@ const AssignRoles: React.FC = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!selectedAcademicYear || !selectedDegreeProgram) {
+    if (!selectedExamination || !selectedDegreeProgram) {
       setErrorMessage('Please select both academic year and degree program.');
       return;
     }
@@ -143,7 +143,7 @@ const AssignRoles: React.FC = () => {
           .filter((assignment) => assignment.userId) // Filter out empty userIds
           .map((assignment) => ({
             ...assignment,
-            academicYearId: selectedAcademicYear,
+            examinationId: selectedExamination,
             isAuthorized: true,
           }));
 
@@ -192,20 +192,20 @@ const AssignRoles: React.FC = () => {
               onClose={() => setErrorMessage('')}
             />
 
-            {/* Academic Year and Degree Program */}
+            {/* Examination and Degree Program */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
-                  Academic Year
+                  Examination
                 </label>
                 <select
-                  value={selectedAcademicYear}
-                  onChange={(e) => setSelectedAcademicYear(e.target.value)}
+                  value={selectedExamination}
+                  onChange={(e) => setSelectedExamination(e.target.value)}
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
                   required
                 >
-                  <option value="">Select Academic Year</option>
-                  {academicYears.map((year) => (
+                  <option value="">Select Examination</option>
+                  {examinations.map((year) => (
                     <option key={year.id} value={year.id}>
                       {year.year}
                     </option>

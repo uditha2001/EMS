@@ -2,10 +2,10 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
-import com.example.examManagementBackend.paperWorkflows.repository.AcademicYearsRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RoleAssignmentService {
@@ -37,7 +36,7 @@ public class RoleAssignmentService {
     private UserManagementRepo userRepository;
 
     @Autowired
-    private AcademicYearsRepository academicYearsRepository;
+    private ExaminationRepository examinationRepository;
 
     public RoleAssignmentDTO assignRole(CreateRoleAssignmentDTO createRoleAssignmentDTO) {
         // Fetch required entities from the database
@@ -50,20 +49,20 @@ public class RoleAssignmentService {
         UserEntity user = userRepository.findById(createRoleAssignmentDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + createRoleAssignmentDTO.getUserId()));
 
-        AcademicYearsEntity academicYear = academicYearsRepository.findById(createRoleAssignmentDTO.getAcademicYearId())
-                .orElseThrow(() -> new RuntimeException("Academic year not found with ID: " + createRoleAssignmentDTO.getAcademicYearId()));
+        ExaminationEntity examination = examinationRepository.findById(createRoleAssignmentDTO.getExaminationId())
+                .orElseThrow(() -> new RuntimeException("Examination not found with ID: " + createRoleAssignmentDTO.getExaminationId()));
 
         // Check for duplicates before inserting
-        boolean exists = roleAssignmentRepository.existsByCourseAndRoleAndAcademicYearId(course, role, academicYear);
+        boolean exists = roleAssignmentRepository.existsByCourseAndRoleAndExaminationId(course, role, examination);
         if (exists) {
-            throw new RuntimeException("Role assignment already exists for the specified course, role, and academic year.");
+            throw new RuntimeException("Role assignment already exists for the specified course, role, and Examination.");
         }
         // Create and save role assignment
         RoleAssignmentEntity roleAssignment = new RoleAssignmentEntity();
         roleAssignment.setCourse(course);
         roleAssignment.setRole(role);
         roleAssignment.setUserId(user);
-        roleAssignment.setAcademicYearId(academicYear);
+        roleAssignment.setExaminationId(examination);
         roleAssignment.setIsAuthorized(createRoleAssignmentDTO.getIsAuthorized());
         roleAssignment = roleAssignmentRepository.save(roleAssignment);
 
@@ -73,7 +72,7 @@ public class RoleAssignmentService {
                 roleAssignment.getCourse().getId(),
                 roleAssignment.getRole().getRoleId(),
                 roleAssignment.getUserId().getUserId(),
-                roleAssignment.getAcademicYearId().getId(),
+                roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized()
         );
     }
@@ -93,21 +92,21 @@ public class RoleAssignmentService {
             UserEntity user = userRepository.findById(createRoleAssignmentDTO.getUserId())
                     .orElseThrow(() -> new RuntimeException("User not found with ID: " + createRoleAssignmentDTO.getUserId()));
 
-            AcademicYearsEntity academicYear = academicYearsRepository.findById(createRoleAssignmentDTO.getAcademicYearId())
-                    .orElseThrow(() -> new RuntimeException("Academic year not found with ID: " + createRoleAssignmentDTO.getAcademicYearId()));
+            ExaminationEntity examination = examinationRepository.findById(createRoleAssignmentDTO.getExaminationId())
+                    .orElseThrow(() -> new RuntimeException("Examination not found with ID: " + createRoleAssignmentDTO.getExaminationId()));
 
 
             // Check for duplicates before inserting
-            boolean exists = roleAssignmentRepository.existsByCourseAndRoleAndAcademicYearId(course, role, academicYear);
+            boolean exists = roleAssignmentRepository.existsByCourseAndRoleAndExaminationId(course, role, examination);
             if (exists) {
-                throw new RuntimeException("Role assignment already exists for the specified course, role, and academic year.");
+                throw new RuntimeException("Role assignment already exists for the specified course, role, and Examination.");
             }
             // Create and save role assignment
             RoleAssignmentEntity roleAssignment = new RoleAssignmentEntity();
             roleAssignment.setCourse(course);
             roleAssignment.setRole(role);
             roleAssignment.setUserId(user);
-            roleAssignment.setAcademicYearId(academicYear);
+            roleAssignment.setExaminationId(examination);
             roleAssignment.setIsAuthorized(createRoleAssignmentDTO.getIsAuthorized());
             roleAssignment = roleAssignmentRepository.save(roleAssignment);
 
@@ -117,7 +116,7 @@ public class RoleAssignmentService {
                     roleAssignment.getCourse().getId(),
                     roleAssignment.getRole().getRoleId(),
                     roleAssignment.getUserId().getUserId(),
-                    roleAssignment.getAcademicYearId().getId(),
+                    roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized()
             );
 

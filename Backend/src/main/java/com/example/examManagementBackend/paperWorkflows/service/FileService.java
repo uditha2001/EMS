@@ -1,11 +1,11 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
-import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
-import com.example.examManagementBackend.paperWorkflows.repository.AcademicYearsRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.PapersCoursesRepository;
@@ -40,19 +40,19 @@ public class FileService {
     PapersCoursesRepository papersCoursesRepository;
 
     @Autowired
-    AcademicYearsRepository academicYearsRepository;
+    ExaminationRepository examinationRepository;
 
     private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long academicYearId) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long examinationId) {
         // Validate courseIds
         if (courseIds == null || courseIds.isEmpty()) {
             throw new IllegalArgumentException("Course IDs cannot be null or empty.");
         }
 
-        // Validate academicYearId
-        AcademicYearsEntity academicYear = academicYearsRepository.findById(academicYearId)
-                .orElseThrow(() -> new RuntimeException("Academic year with ID " + academicYearId + " not found."));
+        // Validate examinationId
+        ExaminationEntity examination = examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new RuntimeException("Academic year with ID " + examinationId + " not found."));
 
         // Create and populate the EncryptedPaper entity
         EncryptedPaper encryptedPaper = new EncryptedPaper();
@@ -71,7 +71,7 @@ public class FileService {
                 .orElseThrow(() -> new RuntimeException("Moderator not found.")));
 
         encryptedPaper.setRemarks(remarks);
-        encryptedPaper.setAcademicYear(academicYear);
+        encryptedPaper.setExamination(examination);
 
         // Save the EncryptedPaper entity
         encryptedPaperRepository.save(encryptedPaper);
