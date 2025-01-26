@@ -1,19 +1,13 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
-import com.example.examManagementBackend.paperWorkflows.dto.QuestionStructureDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.SubQuestionDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.SubSubQuestionDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
-import com.example.examManagementBackend.paperWorkflows.entity.QuestionStructureEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.SubQuestionEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.SubSubQuestionEntity;
-import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.QuestionStructureRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.SubQuestionRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.SubSubQuestionRepository;
+import com.example.examManagementBackend.paperWorkflows.dto.*;
+import com.example.examManagementBackend.paperWorkflows.entity.*;
+import com.example.examManagementBackend.paperWorkflows.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,6 +27,9 @@ public class QuestionService {
     @Autowired
     private SubSubQuestionRepository subSubQuestionRepository;
 
+    @Autowired
+    private QuestionTemplateRepository questionTemplateRepository;
+
     public void saveQuestionStructure(Long paperId, List<QuestionStructureDTO> questionStructureDTOs) {
         EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
                 .orElseThrow(() -> new RuntimeException("Paper not found"));
@@ -44,28 +41,7 @@ public class QuestionService {
             questionEntity.setQuestionType(dto.getQuestionType());
             questionEntity.setTotalMarks(dto.getTotalMarks());
 
-            List<SubQuestionEntity> subQuestions = dto.getSubQuestions().stream().map(subDto -> {
-                SubQuestionEntity subQuestion = new SubQuestionEntity();
-                subQuestion.setQuestionStructure(questionEntity);
-                subQuestion.setSubQuestionNumber(subDto.getSubQuestionNumber());
-                subQuestion.setQuestionType(subDto.getQuestionType());
-                subQuestion.setMarks(subDto.getMarks());
-
-                List<SubSubQuestionEntity> subSubQuestions = subDto.getSubSubQuestions().stream().map(subSubDto -> {
-                    SubSubQuestionEntity subSubQuestion = new SubSubQuestionEntity();
-                    subSubQuestion.setSubQuestion(subQuestion);
-                    subSubQuestion.setSubSubQuestionNumber(subSubDto.getSubSubQuestionNumber());
-                    subSubQuestion.setQuestionType(subSubDto.getQuestionType());
-                    subSubQuestion.setMarks(subSubDto.getMarks());
-                    return subSubQuestion;
-                }).collect(Collectors.toList());
-
-                subQuestion.setSubSubQuestions(subSubQuestions);
-                return subQuestion;
-            }).collect(Collectors.toList());
-
-            questionEntity.setSubQuestions(subQuestions);
-            return questionEntity;
+            return getQuestionStructureEntity(dto, questionEntity);
         }).collect(Collectors.toList());
 
         questionStructureRepository.saveAll(questionEntities);
@@ -77,7 +53,6 @@ public class QuestionService {
         if (questionEntities.isEmpty()) {
             // Log a warning and handle gracefully
             System.out.println("No question structure found for paper ID: " + paperId);
-
         }
 
         return questionEntities.stream().map(entity -> {
@@ -123,10 +98,8 @@ public class QuestionService {
         EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
                 .orElseThrow(() -> new RuntimeException("Paper not found"));
 
-        // Fetch existing question structures for the paper
         List<QuestionStructureEntity> existingQuestions = questionStructureRepository.findByEncryptedPaperId(paperId);
 
-        // Update existing question structures or add new ones
         for (QuestionStructureDTO dto : updatedQuestionStructures) {
             Optional<QuestionStructureEntity> existingQuestionOpt = existingQuestions.stream()
                     .filter(q -> q.getId().equals(dto.getQuestionId()))
@@ -141,20 +114,18 @@ public class QuestionService {
             questionEntity.setStatus(dto.getStatus());
 
             List<SubQuestionEntity> subQuestions = dto.getSubQuestions().stream().map(subDto -> {
-                SubQuestionEntity subQuestion = questionEntity.getSubQuestions().stream()
-                        .filter(sq -> sq.getId().equals(subDto.getSubQuestionId()))
-                        .findFirst()
-                        .orElse(new SubQuestionEntity());
+                SubQuestionEntity subQuestion = subDto.getSubQuestionId() != null ?
+                        subQuestionRepository.findById(subDto.getSubQuestionId()).orElse(new SubQuestionEntity()) :
+                        new SubQuestionEntity();
                 subQuestion.setQuestionStructure(questionEntity);
                 subQuestion.setSubQuestionNumber(subDto.getSubQuestionNumber());
                 subQuestion.setQuestionType(subDto.getQuestionType());
                 subQuestion.setMarks(subDto.getMarks());
 
                 List<SubSubQuestionEntity> subSubQuestions = subDto.getSubSubQuestions().stream().map(subSubDto -> {
-                    SubSubQuestionEntity subSubQuestion = subQuestion.getSubSubQuestions().stream()
-                            .filter(ssq -> ssq.getId().equals(subSubDto.getSubSubQuestionId()))
-                            .findFirst()
-                            .orElse(new SubSubQuestionEntity());
+                    SubSubQuestionEntity subSubQuestion = subSubDto.getSubSubQuestionId() != null ?
+                            subSubQuestionRepository.findById(subSubDto.getSubSubQuestionId()).orElse(new SubSubQuestionEntity()) :
+                            new SubSubQuestionEntity();
                     subSubQuestion.setSubQuestion(subQuestion);
                     subSubQuestion.setSubSubQuestionNumber(subSubDto.getSubSubQuestionNumber());
                     subSubQuestion.setQuestionType(subSubDto.getQuestionType());
@@ -168,7 +139,6 @@ public class QuestionService {
 
             questionEntity.setSubQuestions(subQuestions);
 
-            // Save or update the entity
             questionStructureRepository.save(questionEntity);
         }
     }
@@ -192,7 +162,174 @@ public class QuestionService {
                 .orElseThrow(() -> new RuntimeException("Sub-sub-question not found with ID: " + subSubQuestionId));
         subSubQuestionRepository.delete(subSubQuestion);
     }
-    
+
+    @Transactional
+    public void saveTemplateAndStructure(QuestionTemplateDTO templateDTO, List<QuestionStructureDTO> questionStructureDTOs) {
+        // Save Template
+        QuestionTemplateEntity template = new QuestionTemplateEntity();
+        template.setTemplateName(templateDTO.getTemplateName());
+        questionTemplateRepository.save(template);
+
+        List<QuestionStructureEntity> questionEntities = questionStructureDTOs.stream().map(dto -> {
+            QuestionStructureEntity questionEntity = new QuestionStructureEntity();
+            questionEntity.setQuestionNumber(dto.getQuestionNumber());
+            questionEntity.setQuestionType(dto.getQuestionType());
+            questionEntity.setTotalMarks(dto.getTotalMarks());
+            questionEntity.setTemplate(template); // Associate template with structure
+
+            return getQuestionStructureEntity(dto, questionEntity);
+        }).collect(Collectors.toList());
+
+        questionStructureRepository.saveAll(questionEntities);
+    }
+
+    public List<QuestionTemplateDTO> getAllTemplates() {
+        List<QuestionTemplateEntity> templates = questionTemplateRepository.findAll();
+        return templates.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Fetch a specific template by ID
+    public QuestionTemplateDTO getTemplateById(Long templateId) {
+        QuestionTemplateEntity template = questionTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Template not found with ID: " + templateId));
+        return convertToDTO(template);
+    }
+
+    private QuestionTemplateDTO convertToDTO(QuestionTemplateEntity entity) {
+        QuestionTemplateDTO dto = new QuestionTemplateDTO();
+        dto.setTemplateId(entity.getId());
+        dto.setTemplateName(entity.getTemplateName());
+        return dto;
+    }
+
+    private QuestionStructureEntity getQuestionStructureEntity(QuestionStructureDTO dto, QuestionStructureEntity questionEntity) {
+        List<SubQuestionEntity> subQuestions = dto.getSubQuestions().stream().map(subDto -> {
+            SubQuestionEntity subQuestion = new SubQuestionEntity();
+            subQuestion.setQuestionStructure(questionEntity);
+            subQuestion.setSubQuestionNumber(subDto.getSubQuestionNumber());
+            subQuestion.setQuestionType(subDto.getQuestionType());
+            subQuestion.setMarks(subDto.getMarks());
+
+            List<SubSubQuestionEntity> subSubQuestions = subDto.getSubSubQuestions().stream().map(subSubDto -> {
+                SubSubQuestionEntity subSubQuestion = new SubSubQuestionEntity();
+                subSubQuestion.setSubQuestion(subQuestion);
+                subSubQuestion.setSubSubQuestionNumber(subSubDto.getSubSubQuestionNumber());
+                subSubQuestion.setQuestionType(subSubDto.getQuestionType());
+                subSubQuestion.setMarks(subSubDto.getMarks());
+                return subSubQuestion;
+            }).collect(Collectors.toList());
+
+            subQuestion.setSubSubQuestions(subSubQuestions);
+            return subQuestion;
+        }).collect(Collectors.toList());
+
+        questionEntity.setSubQuestions(subQuestions);
+        return questionEntity;
+    }
+
+    public TemplateAndStructureDTO getTemplateWithQuestionStructure(Long templateId) {
+        // Fetch the template entity by ID
+        QuestionTemplateEntity template = questionTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Template not found with ID: " + templateId));
+
+        // Fetch the question structures associated with the template
+        List<QuestionStructureEntity> questionStructures = questionStructureRepository.findByTemplateId(templateId);
+
+        // Map the template entity and question structure entities to DTOs
+        TemplateAndStructureDTO templateAndStructureDTO = new TemplateAndStructureDTO();
+        templateAndStructureDTO.setTemplate(convertToTemplateDTO(template));
+        templateAndStructureDTO.setQuestionStructures(questionStructures.stream()
+                .map(this::convertToQuestionStructureDTO)
+                .collect(Collectors.toList()));
+
+        return templateAndStructureDTO;
+    }
+
+    public List<TemplateAndStructureDTO> getAllTemplatesWithQuestionStructure() {
+        // Fetch all templates
+        List<QuestionTemplateEntity> templates = questionTemplateRepository.findAll();
+
+        // For each template, fetch its associated question structures
+        List<TemplateAndStructureDTO> result = new ArrayList<>();
+
+        for (QuestionTemplateEntity template : templates) {
+            List<QuestionStructureEntity> questionStructures = questionStructureRepository.findByTemplateId(template.getId());
+            TemplateAndStructureDTO templateAndStructureDTO = new TemplateAndStructureDTO();
+            templateAndStructureDTO.setTemplate(convertToTemplateDTO(template));
+            templateAndStructureDTO.setQuestionStructures(questionStructures.stream()
+                    .map(this::convertToQuestionStructureDTO)
+                    .collect(Collectors.toList()));
+            result.add(templateAndStructureDTO);
+        }
+
+        return result;
+    }
+
+
+    // Helper method to map a template entity to a DTO
+    private QuestionTemplateDTO convertToTemplateDTO(QuestionTemplateEntity entity) {
+        QuestionTemplateDTO dto = new QuestionTemplateDTO();
+        dto.setTemplateId(entity.getId());
+        dto.setTemplateName(entity.getTemplateName());
+        return dto;
+    }
+
+    // Helper method to map a question structure entity to a DTO
+    private QuestionStructureDTO convertToQuestionStructureDTO(QuestionStructureEntity entity) {
+        QuestionStructureDTO dto = new QuestionStructureDTO();
+        dto.setQuestionId(entity.getId());
+        dto.setQuestionNumber(entity.getQuestionNumber());
+        dto.setQuestionType(entity.getQuestionType());
+        dto.setTotalMarks(entity.getTotalMarks());
+
+        // Map sub-questions
+        dto.setSubQuestions(entity.getSubQuestions().stream()
+                .map(this::convertToSubQuestionDTO)
+                .collect(Collectors.toList()));
+        return dto;
+    }
+
+    // Helper method to map sub-question entities to DTOs
+    private SubQuestionDTO convertToSubQuestionDTO(SubQuestionEntity entity) {
+        SubQuestionDTO dto = new SubQuestionDTO();
+        dto.setSubQuestionId(entity.getId());
+        dto.setSubQuestionNumber(entity.getSubQuestionNumber());
+        dto.setQuestionType(entity.getQuestionType());
+        dto.setMarks(entity.getMarks());
+
+        // Map sub-sub-questions
+        dto.setSubSubQuestions(entity.getSubSubQuestions().stream()
+                .map(this::convertToSubSubQuestionDTO)
+                .collect(Collectors.toList()));
+        return dto;
+    }
+
+    // Helper method to map sub-sub-question entities to DTOs
+    private SubSubQuestionDTO convertToSubSubQuestionDTO(SubSubQuestionEntity entity) {
+        SubSubQuestionDTO dto = new SubSubQuestionDTO();
+        dto.setSubSubQuestionId(entity.getId());
+        dto.setSubSubQuestionNumber(entity.getSubSubQuestionNumber());
+        dto.setQuestionType(entity.getQuestionType());
+        dto.setMarks(entity.getMarks());
+        return dto;
+    }
+
+    public void deleteTemplateAndStructure(Long templateId) {
+        // Fetch the template by ID
+        QuestionTemplateEntity template = questionTemplateRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Template not found with ID: " + templateId));
+
+        // Fetch the associated question structures for the template
+        List<QuestionStructureEntity> questionStructures = questionStructureRepository.findByTemplateId(templateId);
+        // Now delete all question structures for the template
+        questionStructureRepository.deleteAll(questionStructures);
+        // Finally, delete the template
+        questionTemplateRepository.delete(template);
+    }
+
 
 }
+
 

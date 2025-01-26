@@ -3,6 +3,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useApi from '../../api/api';
 
 interface AcademicYear {
   id: string;
@@ -49,21 +50,20 @@ const AssignRoles: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const axiosPrivate = useAxiosPrivate();
+  const { getAcademicYears, getDegreePrograms, fetchUsers} = useApi();
 
   useEffect(() => {
     setIsLoading(true);
-    axiosPrivate
-      .get('/academic-years')
+    getAcademicYears()
       .then((response) => setAcademicYears(response.data.data))
       .catch((error) => console.error('Error fetching academic years', error));
 
-    axiosPrivate
-      .get('/degreePrograms')
+    getDegreePrograms()
       .then((response) => setDegreePrograms(response.data))
       .catch((error) => console.error('Error fetching degree programs', error));
 
-    axiosPrivate
-      .get('/user')
+    axiosPrivate;
+    fetchUsers()
       .then((response) => setUsers(response.data))
       .catch((error) => console.error('Error fetching users', error))
       .finally(() => setIsLoading(false));
@@ -73,9 +73,7 @@ const AssignRoles: React.FC = () => {
     if (selectedDegreeProgram) {
       setIsLoading(true);
       axiosPrivate
-        .get(
-          `/courses?degreeProgramId=${selectedDegreeProgram}`,
-        )
+        .get(`/courses?degreeProgramId=${selectedDegreeProgram}`)
         .then((response) => {
           setCourses(response.data.data);
           const initialAssignments = response.data.data.reduce(
