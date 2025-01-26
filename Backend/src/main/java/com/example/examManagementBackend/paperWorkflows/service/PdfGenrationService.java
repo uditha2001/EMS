@@ -27,6 +27,8 @@ import org.springframework.util.StreamUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -42,20 +44,26 @@ public class PdfGenrationService {
         questionData[] Question = feedBackDTO.getQuestion();
         if(Question != null) {
             String timeStamp = new SimpleDateFormat("yyyy_MM").format(new Date());
-            String year=new SimpleDateFormat("yyyy").format(new Date());
-            String fileName = "src/main/resources/moderatorsFeedBacks/"+year+"/"
-                    + feedBackDTO.getCourseCode()
-                    + "_" + timeStamp
-                    + "_feedback.pdf";
-            File directory = new File("src/main/resources/moderatorsFeedBacks/" + year);
-            if (!directory.exists()) {
-                boolean created = directory.mkdirs();
-                if (created) {
-                    System.out.println("Directory created: " + directory.getPath());
-                } else {
-                    System.out.println("Failed to create directory.");
-                }
+            String year = new SimpleDateFormat("yyyy").format(new Date());
+            String sanitizedCourseCode = feedBackDTO.getCourseCode().replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            // Construct the file path securely
+            Path basePath = Paths.get("src/main/resources/moderatorsFeedBacks", year);
+            Path filePath = basePath.resolve(sanitizedCourseCode + "_" + timeStamp + "_feedback.pdf");
+
+            // Create the directory if it doesn't exist
+            File directory = basePath.toFile();
+            if (!directory.exists() && !directory.mkdirs()) {
+                throw new IllegalStateException("Failed to create directory: " + basePath);
             }
+
+            // Ensure the file path is within the expected directory
+            if (!filePath.toAbsolutePath().startsWith(basePath.toAbsolutePath())) {
+                throw new IllegalArgumentException("Invalid file path: " + filePath);
+            }
+
+            // Use the file path safely
+            String fileName = filePath.toString();
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
