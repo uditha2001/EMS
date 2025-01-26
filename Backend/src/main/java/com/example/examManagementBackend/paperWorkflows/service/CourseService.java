@@ -19,11 +19,15 @@ import java.util.stream.Collectors;
 @Service
 public class CourseService {
 
-    @Autowired
-    private CoursesRepository coursesRepository;
 
-    @Autowired
-    private DegreeProgramRepo degreeProgramRepo;
+    private final CoursesRepository coursesRepository;
+
+    private final DegreeProgramRepo degreeProgramRepo;
+
+    public CourseService(CoursesRepository coursesRepository, DegreeProgramRepo degreeProgramRepo) {
+        this.coursesRepository = coursesRepository;
+        this.degreeProgramRepo = degreeProgramRepo;
+    }
 
     /**
      * Get all courses.
