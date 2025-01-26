@@ -1,12 +1,16 @@
-package com.example.examManagementBackend.paperWorkflows.entity;
+package com.example.examManagementBackend.paperWorkflows.entity.moderatorFeedbacks;
 
+import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
+@Table(name = "feedBackData")
 @AllArgsConstructor
 @NoArgsConstructor
 public class FeedBackDataEntity {
@@ -20,12 +24,6 @@ public class FeedBackDataEntity {
     @Column(columnDefinition = "TEXT")
     private String courseContent;
     @Column(columnDefinition = "TEXT")
-    private String degreeProgram;
-    @Column(columnDefinition = "TEXT")
-    private String courseCode;
-    @Column(columnDefinition = "TEXT")
-    private String courseName;
-    @Column(columnDefinition = "TEXT")
     private String examination;
     @Column(columnDefinition = "TEXT")
     private String agreeAndAddressed;
@@ -34,5 +32,7 @@ public class FeedBackDataEntity {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name="exam_paper_id",referencedColumnName = "id")
     private ExamPaperEntity examPaperEntity;
+    @OneToMany(mappedBy = "feedBackData",cascade = CascadeType.ALL)
+    private List<QuestionFeedBackEntity> questionFeedBackEntityList;
 
 }
