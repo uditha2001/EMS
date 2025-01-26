@@ -11,6 +11,6 @@ public class CreateRoleAssignmentDTO {
     private Long courseId;
     private Long roleId;
     private Long userId;
-    private Long academicYearId;
+    private Long examinationId;
     private Boolean isAuthorized;
 }
