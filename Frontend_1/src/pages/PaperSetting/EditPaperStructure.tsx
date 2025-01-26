@@ -3,8 +3,8 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import useApi from '../../api/api';
 
 interface SubSubQuestion {
   subSubQuestionId: number;
@@ -40,63 +40,67 @@ const EditPaperStructure: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isMarksBalanced, setIsMarksBalanced] = useState(true);
-  const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [deleteAction, setDeleteAction] = useState<() => void>(() => () => {});
+  const {
+    updatePaperStructure,
+    deletePaperStructure,
+    deleteSubQuestion,
+    deleteSubSubQuestion,
+    getPaperStructure,
+  } = useApi();
 
   useEffect(() => {
-    const fetchPaperStructure = async () => {
-      try {
-        const response = await axiosPrivate.get(`structure/${paperId}`);
-        const { data, code } = response.data; // Destructure the response
-
-        // Validate the response code
-        if (code !== 200) {
-          throw new Error(`Unexpected response code: ${code}`);
-        }
-
-        if (!Array.isArray(data)) {
-          throw new Error(
-            'Invalid response format: "data" should be an array.',
-          );
-        }
-
-        // Process the questions data
-        setQuestions(
-          data.map((question: any) => ({
-            ...question,
-            subQuestions: (question.subQuestions || []).map(
-              (subQuestion: any) => ({
-                ...subQuestion,
-                subSubQuestions: subQuestion.subSubQuestions || [],
-              }),
-            ),
-          })),
-        );
-
-        // Optional: Derive total marks and questions from the data if needed
-        const totalQuestions = data.length;
-        const totalMarks = data.reduce(
-          (sum: number, question: any) => sum + question.totalMarks,
-          0,
-        );
-
-        setTotalQuestions(totalQuestions);
-        setTotalMarks(totalMarks);
-      } catch (error) {
-        console.error('Fetch Paper Structure Error:', error);
-        setErrorMessage('Failed to fetch paper structure.');
-      }
-    };
-
     fetchPaperStructure();
-  }, [paperId, axiosPrivate]);
+  }, [paperId]);
+
+  const fetchPaperStructure = async () => {
+    try {
+      const response = await getPaperStructure(Number(paperId));
+      const { data, code } = response.data; // Destructure the response
+
+      // Validate the response code
+      if (code !== 200) {
+        throw new Error(`Unexpected response code: ${code}`);
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response format: "data" should be an array.');
+      }
+
+      // Process the questions data
+      setQuestions(
+        data.map((question: any) => ({
+          ...question,
+          subQuestions: (question.subQuestions || []).map(
+            (subQuestion: any) => ({
+              ...subQuestion,
+              subSubQuestions: subQuestion.subSubQuestions || [],
+            }),
+          ),
+        })),
+      );
+
+      // Optional: Derive total marks and questions from the data if needed
+      const totalQuestions = data.length;
+      const totalMarks = data.reduce(
+        (sum: number, question: any) => sum + question.totalMarks,
+        0,
+      );
+
+      setTotalQuestions(totalQuestions);
+      setTotalMarks(totalMarks);
+    } catch (error) {
+      console.error('Fetch Paper Structure Error:', error);
+      setErrorMessage('Failed to fetch paper structure.');
+    }
+  };
 
   const deleteStructure = async () => {
     const action = async () => {
       try {
-        await axiosPrivate.delete(`/structure/${paperId}`);
+        await deletePaperStructure(Number(paperId));
         setQuestions([]);
         setSuccessMessage('All structures deleted successfully!');
         setTimeout(() => navigate('/paper/transfer'), 500);
@@ -108,16 +112,14 @@ const EditPaperStructure: React.FC = () => {
     showConfirmationModal(action);
   };
 
-  const deleteSubQuestion = async (
+  const deleteSubQuestions = async (
     subQuestionId: number,
     questionIndex: number,
   ) => {
     const action = async () => {
       try {
         // Make the delete request
-        const response = await axiosPrivate.delete(
-          `/structure/subQuestion/${subQuestionId}`,
-        );
+        const response = await deleteSubQuestion(subQuestionId);
 
         // Log the response
         console.log('Sub-question deleted successfully:', response.data);
@@ -128,7 +130,7 @@ const EditPaperStructure: React.FC = () => {
           questionIndex
         ].subQuestions.filter((sq) => sq.subQuestionId !== subQuestionId);
 
-        setQuestions(updatedQuestions); // Update the questions state
+        setQuestions(updatedQuestions);
         setSuccessMessage('Sub-question deleted successfully!');
       } catch (error) {
         console.error('Delete Sub-Question Error:', error);
@@ -140,16 +142,14 @@ const EditPaperStructure: React.FC = () => {
     showConfirmationModal(action);
   };
 
-  const deleteSubSubQuestion = async (
+  const deleteSubSubQuestions = async (
     subSubQuestionId: number,
     questionIndex: number,
     subQuestionIndex: number,
   ) => {
     const action = async () => {
       try {
-        await axiosPrivate.delete(
-          `/structure/subSubQuestion/${subSubQuestionId}`,
-        );
+        await deleteSubSubQuestion(subSubQuestionId);
         const updatedQuestions = [...questions];
         updatedQuestions[questionIndex].subQuestions[
           subQuestionIndex
@@ -160,6 +160,7 @@ const EditPaperStructure: React.FC = () => {
         );
         setQuestions(updatedQuestions);
         setSuccessMessage('Sub-sub-question deleted successfully!');
+        fetchPaperStructure();
       } catch (error) {
         console.error('Delete Sub-Sub-Question Error:', error);
         setErrorMessage('Failed to delete the sub-sub-question.');
@@ -323,13 +324,9 @@ const EditPaperStructure: React.FC = () => {
     }
 
     try {
-      await axiosPrivate.put(`/structure/${paperId}`, questions, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      await updatePaperStructure(paperId, questions);
       setSuccessMessage('Paper structure updated successfully!');
-      setTimeout(() => navigate('/paper/transfer'), 500); // Redirect to papers page after success
+      setTimeout(() => navigate('/paper/transfer'), 1000); // Redirect to papers page after success
     } catch (error) {
       setErrorMessage('An error occurred while updating the paper structure.');
       console.error(error);
@@ -508,7 +505,7 @@ const EditPaperStructure: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        deleteSubQuestion(
+                                        deleteSubQuestions(
                                           subQuestion.subQuestionId,
                                           questionIndex,
                                         )
@@ -583,7 +580,7 @@ const EditPaperStructure: React.FC = () => {
                                         <button
                                           type="button"
                                           onClick={() =>
-                                            deleteSubSubQuestion(
+                                            deleteSubSubQuestions(
                                               subSubQuestion.subSubQuestionId,
                                               questionIndex,
                                               subQuestionIndex,

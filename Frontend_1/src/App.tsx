@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
+import Templates from './pages/PaperSetting/Templates';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -311,6 +312,10 @@ function App() {
                   'Paper Setting | EMS',
                   <EditPaperStructure />,
                 )}
+              />
+              <Route
+                path="/paper/template"
+                element={renderPage('Paper Templates | EMS', <Templates />)}
               />
             </Route>
 
