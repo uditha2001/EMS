@@ -2,7 +2,6 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.FeedBackDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.questionData;
-import com.example.examManagementBackend.utill.StandardResponse;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
@@ -19,36 +18,63 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.VerticalAlignment;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Service
 public class PdfGenrationService {
+    private final EncryptionService encryptionService;
 
-    public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO) throws IOException {
+    public PdfGenrationService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
+    }
+
+    public ResponseEntity<byte[]> genratePdf(FeedBackDTO feedBackDTO, HttpServletRequest request) throws IOException {
         questionData[] Question = feedBackDTO.getQuestion();
         if(Question != null) {
-            String fileName = "feedback.pdf";
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            String timeStamp = new SimpleDateFormat("yyyy_MM").format(new Date());
+            String year = new SimpleDateFormat("yyyy").format(new Date());
+            String sanitizedCourseCode = feedBackDTO.getCourseCode().replaceAll("[^a-zA-Z0-9_-]", "_");
+
+            // Construct the file path securely
+            Path basePath = Paths.get("src/main/resources/moderatorsFeedBacks", year);
+            Path filePath = basePath.resolve(sanitizedCourseCode + "_" + timeStamp + "_feedback.pdf");
+
+            // Create the directory if it doesn't exist
+            File directory = basePath.toFile();
+            if (!directory.exists() && !directory.mkdirs()) {
+                throw new IllegalStateException("Failed to create directory: " + basePath);
+            }
+
+            // Ensure the file path is within the expected directory
+            if (!filePath.toAbsolutePath().startsWith(basePath.toAbsolutePath())) {
+                throw new IllegalArgumentException("Invalid file path: " + filePath);
+            }
+
+            // Use the file path safely
+            String fileName = filePath.toString();
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
             float colSize1=190f;
             float colsize2=250f;
             float colsize3=100f;
-            float questionTableSize[]={50f,250f,40f,200f};
-            float examineTable[]={270f,270f};
-            float moderatorSign[]={colSize1,colsize2,colsize3};
-            float actionSign[]={180f,180f,180f};
-            float fullColumn[]={540f};
+            float[] questionTableSize ={50f,250f,40f,200f};
+            float[] examineTable={270f,270f};
+            float[] moderatorSign={colSize1,colsize2,colsize3};
+            float[] actionSign={180f,180f,180f};
+            float[] fullColumn={540f};
 
             // Add title
             Paragraph title = new Paragraph("Evaluation Form for Moderation of Examination papers\n" +
@@ -213,15 +239,16 @@ public class PdfGenrationService {
             byte[] pdfBytes = StreamUtils.copyToByteArray(fis);
             fis.close();
 
+
             // Set headers for file download
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
             headers.add(HttpHeaders.CONTENT_TYPE, "application/pdf");
-            return new ResponseEntity<byte[]>(pdfBytes,headers,HttpStatus.OK);
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
 
         }
-        return new ResponseEntity<byte[]>(
-                null,null,HttpStatus.EXPECTATION_FAILED
+        return new ResponseEntity<>(
+                null, null, HttpStatus.EXPECTATION_FAILED
         );
     }
 
