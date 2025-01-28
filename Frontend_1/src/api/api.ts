@@ -365,7 +365,19 @@ const useApi = () => {
 
   }
 
-  
+  const getActiveUsersCount = async () => {
+    try{
+        const response=await axiosPrivate.get('/user/activeUser');
+        if(response.status===200){
+          return response.data.data;
+        }
+    }
+    catch(error:any){
+      throw new Error(error.response?.data?.message || 'Failed to fetch active users count');
+    }
+  }
+
+
 
 
 
@@ -414,6 +426,7 @@ const useApi = () => {
     getTemplates,
     deleteTemplate,
     getUsersCounts,
+    getActiveUsersCount,
     loading,
     error,
   };
