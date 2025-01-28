@@ -12,6 +12,7 @@ const useApi = () => {
     creatorId: number,
     courseIds: number[],
     remarks: string,
+    paperType: string,
     moderatorId: number,
     examinationId: number,
   ): Promise<{ message: string }> => {
@@ -20,6 +21,7 @@ const useApi = () => {
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
+    formData.append('paperType', paperType);
     formData.append('examinationId', examinationId.toString());
 
     // Log courseIds to verify
@@ -352,6 +354,30 @@ const useApi = () => {
     return axiosPrivate.delete(`/structure/delete-template/${templateId}`);
   };
 
+  const getExaminationsCourses = async (examinationId: number) => {
+    return axiosPrivate.get(
+      `academic-years/examinations/${examinationId}/courses`,
+    );
+  };
+
+  const createRoleAssignment = async (roleAssignment: any) => {
+    return axiosPrivate.post('/role-assignments/bulk', roleAssignment);
+  };
+
+  const fetchRoleAssignments = async (examinationId: number) => {
+    return axiosPrivate.get(`/role-assignments/examination/${examinationId}`);
+  };
+
+  const authorizeRoleAssignment = async (roleAssignmentId: number) => {
+    return axiosPrivate.patch(
+      `/role-assignments/${roleAssignmentId}/authorize`,
+    );
+  };
+
+  const unassignRoleAssignment = async (roleAssignmentId: number) => {
+    return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -396,6 +422,11 @@ const useApi = () => {
     getTemplateById,
     getTemplates,
     deleteTemplate,
+    getExaminationsCourses,
+    createRoleAssignment,
+    fetchRoleAssignments,
+    authorizeRoleAssignment,
+    unassignRoleAssignment,
     loading,
     error,
   };
