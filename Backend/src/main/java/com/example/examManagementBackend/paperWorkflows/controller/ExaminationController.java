@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
+import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.service.ExaminationService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -14,8 +15,11 @@ import java.util.List;
 @RequestMapping("/api/v1/academic-years")
 public class ExaminationController {
 
-    @Autowired
+
     private ExaminationService examinationService;
+    public ExaminationController(ExaminationService examinationService) {
+        this.examinationService = examinationService;
+    }
 
     @PostMapping
     public ResponseEntity<StandardResponse> createExamination(@RequestBody ExaminationDTO ExaminationsDTO) {
@@ -61,4 +65,11 @@ public class ExaminationController {
                 HttpStatus.NO_CONTENT
         );
     }
+
+    @GetMapping("/examinations/{examinationId}/courses")
+    public ResponseEntity<ExaminationCoursesDTO> getExaminationDataById(@PathVariable Long examinationId) {
+        ExaminationCoursesDTO response = examinationService.getExaminationWithCoursesById(examinationId);
+        return ResponseEntity.ok(response);
+    }
+
 }
