@@ -1,6 +1,8 @@
 import useAuth from '../../hooks/useAuth';
 import useApi from '../../api/api';
 import { useEffect, useState } from 'react';
+import UserRolesDistribution from '../../components/adminDashboardsComponents/UserRolesDistribution';
+
 
 const AdminDashboard = () => {
   const { auth } = useAuth();
@@ -15,6 +17,7 @@ const AdminDashboard = () => {
     });
 }, []);
   return (
+    <div>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {/* Welcome Message */}
       <div className="p-6 bg-white shadow-md rounded dark:bg-gray-800 col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1">
@@ -29,6 +32,7 @@ const AdminDashboard = () => {
             <strong>Roles:</strong>{' '}
             {roles?.length ? roles.join(', ') : 'No roles assigned'}
           </p>
+          
 
           {/* Access Token */}
           {accessToken && (
@@ -50,8 +54,15 @@ const AdminDashboard = () => {
               </span>
             </p>
           )}
+         
         </div>
       </div>
+    </div>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mt-4">
+      <div className='col-span-2 sm:col-span-2 md:col-span-3 xl:col-span-2' >
+      <UserRolesDistribution />
+      </div>
+    </div>
     </div>
   );
 };
