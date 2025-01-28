@@ -19,7 +19,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"academic_year_id", "fileName"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"examination_id", "fileName"})
 )
 public class EncryptedPaper {
 
@@ -64,8 +64,8 @@ public class EncryptedPaper {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
     private List<QuestionStructureEntity> questionStructures; // List of question structures
     @ManyToOne
-    @JoinColumn(name = "academic_year_id", nullable = false)
-    private AcademicYearsEntity academicYear; // Reference to the academic year
+    @JoinColumn(name = "examination_id", nullable = false)
+    private ExaminationEntity examination; // Reference to the academic year
     @Column(nullable = false)
     private ExamPaperStatus status=ExamPaperStatus.DRAFT;
 

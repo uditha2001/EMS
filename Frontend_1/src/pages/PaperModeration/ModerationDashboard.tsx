@@ -49,7 +49,7 @@ interface Paper {
   createdAt: string;
   creator: { id: number; firstName: string; lastName: string };
   moderator: { id: number; firstName: string; lastName: string };
-  academicYear: number;
+  examination: number;
   courses: { id: number; name: string; code: string }[];
   status: string;
   shared: boolean;

@@ -398,7 +398,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               Paper Evaluation
                             </NavLink>
                           </li>
-                        
                         </ul>
                       </div>
                       {/* <!-- Dropdown Menu End --> */}
@@ -490,7 +489,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 (isActive && '!text-white')
                               }
                             >
-                              Academic Years
+                              Examinations
                             </NavLink>
                           </li>
                           <li>
