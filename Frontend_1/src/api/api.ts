@@ -352,6 +352,20 @@ const useApi = () => {
     return axiosPrivate.delete(`/structure/delete-template/${templateId}`);
   };
 
+  const getUsersCounts = async () => {
+    try{
+      const response=await axiosPrivate.get('/user/count');
+      if(response.status===200){
+        return response.data.data;
+      }
+    }
+    catch(error:any){
+      throw new Error(error.response?.data?.message || 'Failed to fetch users count');
+    }
+
+  }
+
+
   return {
     uploadFile,
     getAllFiles,
@@ -396,6 +410,7 @@ const useApi = () => {
     getTemplateById,
     getTemplates,
     deleteTemplate,
+    getUsersCounts,
     loading,
     error,
   };

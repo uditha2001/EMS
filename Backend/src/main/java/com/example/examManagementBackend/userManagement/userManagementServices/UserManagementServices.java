@@ -8,13 +8,15 @@ import com.example.examManagementBackend.userManagement.userManagementEntity.Use
 import com.example.examManagementBackend.userManagement.userManagementRepo.RoleRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -281,7 +283,23 @@ public class UserManagementServices {
         }
     }
 
+//get all users count and each user count acording to their assign roles
+    public ResponseEntity<StandardResponse> getAllUserCountWithRoles() {
+        int totalUsersCount=0;
+        Map<String,Integer> users=new LinkedHashMap<>();
+        List<String> userRolesNames=roleRepository.getallRoles();
+        List<UserEntity> allUsers = userManagementRepo.findAll();
+        for(UserEntity user:allUsers){
+            totalUsersCount++;
+        }
+        users.put("Total",totalUsersCount);
+        for(int i =0;i<userRolesNames.size();i++){
+            int count=userRolesRepo.getNumberOfUsers(userRolesNames.get(i));
+            users.put(userRolesNames.get(i),count);
+        }
+        return new ResponseEntity<>(
+                new StandardResponse(200,"sucess",users), HttpStatus.OK
+        );
 
-
-
+    }
 }
