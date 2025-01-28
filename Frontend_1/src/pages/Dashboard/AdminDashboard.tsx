@@ -24,8 +24,10 @@ const AdminDashboard = () => {
 }, []);
   return (
     <div>
+    <h1 className="text-3xl font-semibold text-gray-800">Admin Dashboard</h1>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {/* Welcome Message */}
+    
       <div className='h-40 col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1'>
         <DataCard
           color="blue"
@@ -59,7 +61,7 @@ const AdminDashboard = () => {
         />
       </div>
     </div>
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mt-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mt-16">
       <div className='col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1' >
       <UserRolesDistribution />
       </div>
