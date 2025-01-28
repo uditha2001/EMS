@@ -1,9 +1,19 @@
 import useAuth from '../../hooks/useAuth';
+import useApi from '../../api/api';
+import { useEffect, useState } from 'react';
 
 const AdminDashboard = () => {
   const { auth } = useAuth();
   const { firstName, roles, accessToken } = auth;
-
+  const {getUsersCounts}=useApi();
+  const [userCount, setUserCount] = useState({});
+  useEffect(() => {
+    getUsersCounts().then(users => {
+      if(users){
+        setUserCount(users);
+      }
+    });
+}, []);
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {/* Welcome Message */}
@@ -23,9 +33,20 @@ const AdminDashboard = () => {
           {/* Access Token */}
           {accessToken && (
             <p className="mt-4 text-gray-800 dark:text-gray-200">
-              <strong>Access Token:</strong>{' '}
+              <strong>Users:</strong>{' '}
               <span className="break-words whitespace-pre-wrap text-sm bg-gray-100 dark:bg-gray-700 rounded p-2 block">
-                {accessToken}
+                {
+                  Object.entries(userCount).map(([key, value]) => {
+                    return (
+                      <span key={key}>
+                        {key}: {value as number}
+                        <br />
+                      </span>
+                    );
+                  }
+                  )
+
+                }
               </span>
             </p>
           )}

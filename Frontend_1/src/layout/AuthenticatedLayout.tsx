@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import Header from '../components/Header/index';
 import Sidebar from '../components/Sidebar/index';
+import Footer from '../components/footer/Footer';
 
 interface AuthenticatedLayoutProps {
   isAuthenticated: boolean;
