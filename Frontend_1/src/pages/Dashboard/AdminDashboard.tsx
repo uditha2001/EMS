@@ -60,7 +60,7 @@ const AdminDashboard = () => {
       </div>
     </div>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mt-4">
-      <div className='col-span-2 sm:col-span-2 md:col-span-3 xl:col-span-2' >
+      <div className='col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1' >
       <UserRolesDistribution />
       </div>
     </div>
