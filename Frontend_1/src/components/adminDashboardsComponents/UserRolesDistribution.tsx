@@ -60,7 +60,6 @@ const UserRolesDistribution = () => {
                         value,
                     }));
                 data.push({ name: 'REST', value: remaining });
-                console.log(remaining);
                 setPieData(data);
             }
 
@@ -73,7 +72,7 @@ const UserRolesDistribution = () => {
 
     return (
         <div className="w-full flex justify-center items-center flex-col  bg-white shadow-md rounded dark:bg-gray-800" >
-            <h1 className="text-center ">User Roles Distribution</h1>
+            <h1 className="text-center font-bold">User Roles Distribution</h1>
             <PieChart width={400} height={400} className="justify-center">
                 <Pie
                     data={pieData}
