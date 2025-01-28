@@ -377,6 +377,31 @@ const useApi = () => {
   const unassignRoleAssignment = async (roleAssignmentId: number) => {
     return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
   };
+  const getUsersCounts = async () => {
+    try{
+      const response=await axiosPrivate.get('/user/count');
+      if(response.status===200){
+        return response.data.data;
+      }
+    }
+    catch(error:any){
+      throw new Error(error.response?.data?.message || 'Failed to fetch users count');
+    }
+
+  }
+
+  const getActiveUsersCount = async () => {
+    try{
+        const response=await axiosPrivate.get('/user/activeUser');
+        if(response.status===200){
+          return response.data.data;
+        }
+    }
+    catch(error:any){
+      throw new Error(error.response?.data?.message || 'Failed to fetch active users count');
+    }
+  }
+
 
   return {
     uploadFile,
@@ -427,6 +452,8 @@ const useApi = () => {
     fetchRoleAssignments,
     authorizeRoleAssignment,
     unassignRoleAssignment,
+    getUsersCounts,
+    getActiveUsersCount,
     loading,
     error,
   };

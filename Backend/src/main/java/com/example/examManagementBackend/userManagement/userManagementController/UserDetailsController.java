@@ -4,6 +4,7 @@ import com.example.examManagementBackend.userManagement.userManagementDTO.UserDT
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserProfileDTO;
 import com.example.examManagementBackend.userManagement.userManagementServices.UserManagementServices;
 import com.example.examManagementBackend.userManagement.userManagementServices.UserProfileServices;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,11 @@ public class UserDetailsController {
         String message=userService.saveUser(userdto);
         System.out.println(message);
         return message;
+    }
+
+    @GetMapping("count")
+    public ResponseEntity<StandardResponse> getUserCount() {
+        return userService.getAllUserCountWithRoles();
     }
 
 
@@ -131,6 +137,11 @@ public class UserDetailsController {
     @GetMapping("/getUserById/{userId}")
     public UserDTO getUserById(@PathVariable Long userId) {
         return userService.getUserById(userId);
+    }
+
+    @GetMapping("/activeUser")
+    public ResponseEntity<StandardResponse> getActiveUser() {
+        return userService.getAllActiveUsers();
     }
 
     @PostMapping("/addBulkUsers")
