@@ -302,4 +302,11 @@ public class UserManagementServices {
         );
 
     }
+
+    public ResponseEntity<StandardResponse> getAllActiveUsers() {
+        int activeUsers=userManagementRepo.getAllActiveUsers();
+        return new ResponseEntity<>(
+                new StandardResponse(200,"sucess",activeUsers), HttpStatus.OK
+        );
+    }
 }
