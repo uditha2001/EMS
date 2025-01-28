@@ -139,6 +139,11 @@ public class UserDetailsController {
         return userService.getUserById(userId);
     }
 
+    @GetMapping("/activeUser")
+    public ResponseEntity<StandardResponse> getActiveUser() {
+        return userService.getAllActiveUsers();
+    }
+
     @PostMapping("/addBulkUsers")
     public ResponseEntity<?> addBulkUsers(@RequestBody List<UserDTO> users) {
         try {
