@@ -292,10 +292,10 @@ public class UserManagementServices {
         for(UserEntity user:allUsers){
             totalUsersCount++;
         }
-        users.put("Total",totalUsersCount);
+        users.put("TOTAL",totalUsersCount);
         for(int i =0;i<userRolesNames.size();i++){
             int count=userRolesRepo.getNumberOfUsers(userRolesNames.get(i));
-            users.put(userRolesNames.get(i),count);
+            users.put(userRolesNames.get(i)+"S",count);
         }
         return new ResponseEntity<>(
                 new StandardResponse(200,"sucess",users), HttpStatus.OK

@@ -2,6 +2,7 @@ import useAuth from '../../hooks/useAuth';
 import useApi from '../../api/api';
 import { useEffect, useState } from 'react';
 
+
 const AdminDashboard = () => {
   const { auth } = useAuth();
   const { firstName, roles, accessToken } = auth;
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
             <strong>Roles:</strong>{' '}
             {roles?.length ? roles.join(', ') : 'No roles assigned'}
           </p>
+          
 
           {/* Access Token */}
           {accessToken && (
@@ -50,6 +52,7 @@ const AdminDashboard = () => {
               </span>
             </p>
           )}
+         
         </div>
       </div>
     </div>
