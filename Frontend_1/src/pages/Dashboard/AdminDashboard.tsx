@@ -69,6 +69,9 @@ const AdminDashboard = () => {
       <div className='col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1' >
       <UserRolesDistribution />
       </div>
+      <div className='col-span-2 sm:col-span-2 md:col-span-3 xl:col-span-2 bg-white' >
+      <p>chart that shows timeline of examinations activities</p>
+      </div>
     </div>
     </div>
   );
