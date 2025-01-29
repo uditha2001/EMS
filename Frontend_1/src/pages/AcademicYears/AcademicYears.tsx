@@ -39,6 +39,7 @@ export default function AcademicYears() {
 
   // Fetch degree programs
   useEffect(() => {
+    
     const fetchDegreePrograms = async () => {
       try {
         const response = await axiosPrivate.get('/degreePrograms');
