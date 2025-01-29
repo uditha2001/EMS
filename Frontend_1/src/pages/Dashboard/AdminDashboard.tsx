@@ -50,7 +50,7 @@ const AdminDashboard = () => {
       </div>
       <div className='h-40 col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1'>
         <DataCard
-          color="purple"
+          color="yellow"
           count={0}
           title="On Going Examinations"
           icon={BookOpenIcon}
@@ -68,6 +68,9 @@ const AdminDashboard = () => {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mt-16">
       <div className='col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1' >
       <UserRolesDistribution />
+      </div>
+      <div className='col-span-2 sm:col-span-2 md:col-span-3 xl:col-span-2 bg-white' >
+      <p>chart that shows timeline of examinations activities</p>
       </div>
     </div>
     </div>
