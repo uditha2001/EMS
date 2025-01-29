@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
@@ -23,6 +25,7 @@ public class EncryptedPaperDTO {
     private Long examination;
     private List<CourseDTO> courses;
     private ExamPaperStatus status;
+    private PaperType paperType;
 
     // Constructor for converting entity to DTO
     public EncryptedPaperDTO(
@@ -35,7 +38,9 @@ public class EncryptedPaperDTO {
             UserEntity moderator,
             ExaminationEntity examination,
             List<CoursesEntity> courses,
-            ExamPaperStatus status
+            ExamPaperStatus status,
+            PaperType paperType
+
 
     ) {
         this.id = id;
@@ -50,6 +55,7 @@ public class EncryptedPaperDTO {
                 .map(course -> new CourseDTO(course.getId(), course.getName(),course.getCode()))
                 .toList();
         this.status=status;
+        this.paperType = paperType;
     }
 
     // Nested DTO for user details

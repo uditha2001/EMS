@@ -30,6 +30,7 @@ public class FileUploadController {
             @RequestParam("creatorId") Long creatorId,
             @RequestParam("courseIds") List<Long> courseIds,
             @RequestParam("remarks") String remarks,
+            @RequestParam("paperType") String paperType,
             @RequestParam("moderatorId") Long moderatorId,
             @RequestParam("examinationId") Long examinationId) {
         try {
@@ -59,7 +60,7 @@ public class FileUploadController {
 
             // Encrypt and save file
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, examinationId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, examinationId,paperType);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -125,7 +126,8 @@ public class FileUploadController {
                                 paper.getModerator(),
                                 paper.getExamination(),
                                 courses, // Include courses in the DTO
-                                paper.getStatus()
+                                paper.getStatus(),
+                                paper.getPaperType()
                         );
                     })
                     .collect(Collectors.toList());
@@ -252,7 +254,8 @@ public class FileUploadController {
                     encryptedPaper.getModerator(),
                     encryptedPaper.getExamination(),
                     courses,
-                    encryptedPaper.getStatus()// Pass the list of courses here
+                    encryptedPaper.getStatus(),
+                    encryptedPaper.getPaperType()// Pass the list of courses here
             );
 
             return ResponseEntity.ok()

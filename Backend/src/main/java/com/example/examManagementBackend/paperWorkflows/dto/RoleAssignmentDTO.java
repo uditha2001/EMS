@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,6 @@ public class RoleAssignmentDTO {
     private Long userId;
     private Long examinationId;
     private Boolean isAuthorized;
+    private PaperType paperType;
+
 }
