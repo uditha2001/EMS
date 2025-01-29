@@ -50,7 +50,7 @@ const AdminDashboard = () => {
       </div>
       <div className='h-40 col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-1'>
         <DataCard
-          color="purple"
+          color="yellow"
           count={0}
           title="On Going Examinations"
           icon={BookOpenIcon}
