@@ -29,6 +29,7 @@ const FileUpload: React.FC = () => {
   const { auth } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
+  const [paperType, setPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -127,6 +128,11 @@ const FileUpload: React.FC = () => {
       return;
     }
 
+    if (!paperType) {
+      setErrorMessage('Paper Type are required!');
+      return;
+    }
+
     if (!selectedExamination) {
       setErrorMessage('Please select an academic year!');
       return;
@@ -149,7 +155,7 @@ const FileUpload: React.FC = () => {
       .join('_'); // Concatenate selected course codes with underscores
 
     // Rename the file to include the academic year name and course codes
-    const renamedFileName = `${courseCodes}_${selectedExaminationName.replace(
+    const renamedFileName = `${courseCodes}_${paperType}_${selectedExaminationName.replace(
       '/',
       '_',
     )}.pdf`;
@@ -167,6 +173,7 @@ const FileUpload: React.FC = () => {
         userId,
         selectedCourses,
         remarks,
+        paperType,
         selectedModerator,
         selectedExamination, // Include academic year in the request
       );
@@ -190,6 +197,7 @@ const FileUpload: React.FC = () => {
     setRemarks('');
     setSelectedModerator(null);
     setSelectedExamination(null); // Reset academic year
+    setPaperType('');
   };
 
   const toggleCourseSelection = (courseId: number) => {
@@ -263,6 +271,24 @@ const FileUpload: React.FC = () => {
               <p>File Selected: {file.name}</p>
             </div>
           )}
+        </div>
+
+        {/* Paper Type */}
+
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Paper Type
+          </label>
+          <select
+            value={paperType}
+            onChange={(e) => setPaperType(e.target.value)}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+            required
+          >
+            <option value="">Select Paper Type</option>
+            <option value="THEORY">THEORY</option>
+            <option value="PRACTICAL">PRACTICAL</option>
+          </select>
         </div>
 
         {/* Remarks */}

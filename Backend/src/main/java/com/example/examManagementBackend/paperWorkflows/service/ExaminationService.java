@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
@@ -14,8 +15,11 @@ import java.util.stream.Collectors;
 @Service
 public class ExaminationService {
 
-    @Autowired
     private ExaminationRepository examinationRepository;
+
+    public ExaminationService(ExaminationRepository examinationRepository) {
+        this.examinationRepository = examinationRepository;
+    }
 
     @Autowired
     private DegreeProgramRepo degreeProgramsRepository;
@@ -85,4 +89,26 @@ public class ExaminationService {
         dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
         return dto;
     }
+
+    public ExaminationCoursesDTO getExaminationWithCoursesById(Long examinationId) {
+        ExaminationEntity examination = examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new RuntimeException("Examination not found with id: " + examinationId));
+
+        return ExaminationCoursesDTO.builder()
+                .id(examination.getId())
+                .degreeId(examination.getDegreeProgramsEntity().getId())
+                .degreeName(examination.getDegreeProgramsEntity().getDegreeName())
+                .activeCourses(
+                        examination.getDegreeProgramsEntity().getCoursesEntities().stream()
+                                .filter(course -> course.getLevel().equals(Integer.parseInt(examination.getLevel())) &&
+                                        course.getSemester().equals(examination.getSemester()) &&
+                                        course.getIsActive())
+                                .map(course -> new ExaminationCoursesDTO.ActiveCourseDTO(
+                                        course.getId(), course.getCode(), course.getName(), course.getCourseType()
+                                ))
+                                .collect(Collectors.toList())
+                )
+                .build();
+    }
+
 }

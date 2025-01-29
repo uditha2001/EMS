@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/role-assignments")
+@RequestMapping("/api/v1/role-assignments")
 public class RoleAssignmentController {
 
     @Autowired
@@ -49,4 +49,40 @@ public class RoleAssignmentController {
                     .body(new StandardResponse(500, "Error assigning roles", e.getMessage()));
         }
     }
+
+    // Authorize role
+    @PatchMapping("/{id}/authorize")
+    public ResponseEntity<StandardResponse> authorizeRole(@PathVariable Long id) {
+        RoleAssignmentDTO updatedRole = roleAssignmentService.authorizeRole(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Role authorized successfully", updatedRole));
+    }
+
+    // Unassign role
+    @DeleteMapping("/{id}")
+    public ResponseEntity<StandardResponse> unassignRole(@PathVariable Long id) {
+        roleAssignmentService.unassignRole(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Role unassigned successfully", null));
+    }
+
+    // Get all role assignments
+    @GetMapping
+    public ResponseEntity<StandardResponse> getAllRoleAssignments() {
+        List<RoleAssignmentDTO> roles = roleAssignmentService.getAllRoleAssignments();
+        return ResponseEntity.ok(new StandardResponse(200, "Fetched all role assignments", roles));
+    }
+
+    // Get role assignments by user
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<StandardResponse> getRoleAssignmentsByUser(@PathVariable Long userId) {
+        List<RoleAssignmentDTO> roles = roleAssignmentService.getRoleAssignmentsByUser(userId);
+        return ResponseEntity.ok(new StandardResponse(200, "Fetched role assignments for user", roles));
+    }
+
+    // Get role assignments by examination
+    @GetMapping("/examination/{examinationId}")
+    public ResponseEntity<StandardResponse> getRoleAssignmentsByExamination(@PathVariable Long examinationId) {
+        List<RoleAssignmentDTO> roles = roleAssignmentService.getRoleAssignmentsByExamination(examinationId);
+        return ResponseEntity.ok(new StandardResponse(200, "Fetched role assignments for the examination", roles));
+    }
+
 }
