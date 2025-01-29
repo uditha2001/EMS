@@ -42,6 +42,8 @@ import CreateTransaction from './pages/PaperTransfer/CreateTransaction';
 import FileUpdate from './pages/PaperTransfer/FileUpdate';
 import EditPaperStructure from './pages/PaperSetting/EditPaperStructure';
 import ModerationDashboard from './pages/PaperModeration/ModerationDashboard';
+import CreateTimetable from './pages/CreateTimetable/Timetable';
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -333,6 +335,18 @@ function App() {
               <Route
                 path="/paper/roles"
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
+              />
+            </Route>
+
+            {/*Create Timetable */}
+            <Route
+              element={
+                <RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />
+              }
+            >
+              <Route
+                path="/createtimetable"
+                element={renderPage('Create Timetable | EMS', <CreateTimetable/>)}
               />
             </Route>
           </Route>

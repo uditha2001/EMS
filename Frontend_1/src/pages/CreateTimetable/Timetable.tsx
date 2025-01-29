@@ -1,4 +1,4 @@
-export default function CreateDegreeProgram() {
+export default function CreateTimetable(){
     return (
       <div>
         
