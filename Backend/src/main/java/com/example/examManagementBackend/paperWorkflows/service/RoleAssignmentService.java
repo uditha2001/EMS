@@ -64,6 +64,7 @@ public class RoleAssignmentService {
         roleAssignment.setUserId(user);
         roleAssignment.setExaminationId(examination);
         roleAssignment.setIsAuthorized(createRoleAssignmentDTO.getIsAuthorized());
+        roleAssignment.setPaperType(createRoleAssignmentDTO.getPaperType());
         roleAssignment = roleAssignmentRepository.save(roleAssignment);
 
         // Convert to DTO for return
@@ -73,7 +74,8 @@ public class RoleAssignmentService {
                 roleAssignment.getRole().getRoleId(),
                 roleAssignment.getUserId().getUserId(),
                 roleAssignment.getExaminationId().getId(),
-                roleAssignment.getIsAuthorized()
+                roleAssignment.getIsAuthorized(),
+                roleAssignment.getPaperType()
         );
     }
 
@@ -95,7 +97,6 @@ public class RoleAssignmentService {
             ExaminationEntity examination = examinationRepository.findById(createRoleAssignmentDTO.getExaminationId())
                     .orElseThrow(() -> new RuntimeException("Examination not found with ID: " + createRoleAssignmentDTO.getExaminationId()));
 
-
             // Check for duplicates before inserting
             boolean exists = roleAssignmentRepository.existsByCourseAndRoleAndExaminationId(course, role, examination);
             if (exists) {
@@ -108,6 +109,7 @@ public class RoleAssignmentService {
             roleAssignment.setUserId(user);
             roleAssignment.setExaminationId(examination);
             roleAssignment.setIsAuthorized(createRoleAssignmentDTO.getIsAuthorized());
+            roleAssignment.setPaperType(createRoleAssignmentDTO.getPaperType());
             roleAssignment = roleAssignmentRepository.save(roleAssignment);
 
             // Convert to DTO for return
@@ -117,7 +119,8 @@ public class RoleAssignmentService {
                     roleAssignment.getRole().getRoleId(),
                     roleAssignment.getUserId().getUserId(),
                     roleAssignment.getExaminationId().getId(),
-                    roleAssignment.getIsAuthorized()
+                    roleAssignment.getIsAuthorized(),
+                    roleAssignment.getPaperType()
             );
 
             result.add(assignmentDTO);
@@ -125,4 +128,88 @@ public class RoleAssignmentService {
         return result;
     }
 
+    public RoleAssignmentDTO authorizeRole(Long id) {
+        RoleAssignmentEntity roleAssignment = roleAssignmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Role assignment not found with ID: " + id));
+
+        roleAssignment.setIsAuthorized(true);
+        RoleAssignmentEntity updatedRole = roleAssignmentRepository.save(roleAssignment);
+
+        return new RoleAssignmentDTO(
+                updatedRole.getId(),
+                updatedRole.getCourse().getId(),
+                updatedRole.getRole().getRoleId(),
+                updatedRole.getUserId().getUserId(),
+                updatedRole.getExaminationId().getId(),
+                updatedRole.getIsAuthorized(),
+                updatedRole.getPaperType()
+        );
+    }
+
+    public void unassignRole(Long id) {
+        RoleAssignmentEntity roleAssignment = roleAssignmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Role assignment not found with ID: " + id));
+
+        roleAssignmentRepository.delete(roleAssignment);
+    }
+
+    public List<RoleAssignmentDTO> getAllRoleAssignments() {
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findAll();
+        List<RoleAssignmentDTO> result = new ArrayList<>();
+
+        for (RoleAssignmentEntity roleAssignment : roleAssignments) {
+            result.add(new RoleAssignmentDTO(
+                    roleAssignment.getId(),
+                    roleAssignment.getCourse().getId(),
+                    roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getExaminationId().getId(),
+                    roleAssignment.getIsAuthorized(),
+                    roleAssignment.getPaperType()
+            ));
+        }
+
+        return result;
+    }
+
+    public List<RoleAssignmentDTO> getRoleAssignmentsByUser(Long userId) {
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserId(userId);
+        List<RoleAssignmentDTO> result = new ArrayList<>();
+
+        for (RoleAssignmentEntity roleAssignment : roleAssignments) {
+            result.add(new RoleAssignmentDTO(
+                    roleAssignment.getId(),
+                    roleAssignment.getCourse().getId(),
+                    roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getExaminationId().getId(),
+                    roleAssignment.getIsAuthorized(),
+                    roleAssignment.getPaperType()
+            ));
+        }
+
+        return result;
+    }
+
+    public List<RoleAssignmentDTO> getRoleAssignmentsByExamination(Long examinationId) {
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByExaminationId_Id(examinationId);
+        List<RoleAssignmentDTO> result = new ArrayList<>();
+
+        for (RoleAssignmentEntity roleAssignment : roleAssignments) {
+            result.add(new RoleAssignmentDTO(
+                    roleAssignment.getId(),
+                    roleAssignment.getCourse().getId(),
+                    roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getExaminationId().getId(),
+                    roleAssignment.getIsAuthorized(),
+                    roleAssignment.getPaperType()
+            ));
+        }
+
+        return result;
+    }
+
 }
+
+

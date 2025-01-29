@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,19 +14,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"examination_id", "fileName"})
+        }
+)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@Entity
-@Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"examination_id", "fileName"})
-)
 public class EncryptedPaper {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String fileName;
 
@@ -34,39 +38,49 @@ public class EncryptedPaper {
     @Column(nullable = false)
     private String filePath;
 
-//    @Lob
-//    private byte[] encryptedData; // Store encrypted PDF data as Base64 encoded string
-
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
-    private UserEntity creator; // Reference to the creator of the paper
+    private UserEntity creator;
 
     @ManyToOne
     @JoinColumn(name = "moderator_id", nullable = true)
-    private UserEntity moderator; // Reference to the moderator (optional initially)
+    private UserEntity moderator;
 
     @Column(nullable = false)
-    private boolean isShared = false; // Sharing status
+    private boolean isShared = false;
 
     @Column(columnDefinition = "DATETIME")
-    private LocalDateTime sharedAt; // Timestamp when the paper was shared
+    private LocalDateTime sharedAt;
 
     @CreatedDate
-    @Column(nullable = false,columnDefinition = "DATETIME")
+    @Column(nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
+
     @LastModifiedDate
-    @Column(nullable = false,columnDefinition = "DATETIME")
+    @Column(nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
-    private List<ModerationsEntity> moderations;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "encryptedPaper")
-    private List<PapersCoursesEntity> papersCourses;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
-    private List<QuestionStructureEntity> questionStructures; // List of question structures
+    private List<ModerationsEntity> moderations;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
+    private List<PapersCoursesEntity> papersCourses;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
+    private List<QuestionStructureEntity> questionStructures;
+
     @ManyToOne
     @JoinColumn(name = "examination_id", nullable = false)
-    private ExaminationEntity examination; // Reference to the academic year
+    private ExaminationEntity examination;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ExamPaperStatus status=ExamPaperStatus.DRAFT;
+    private ExamPaperStatus status = ExamPaperStatus.DRAFT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaperType paperType; // THEORY or PRACTICAL
 
 }
+
+

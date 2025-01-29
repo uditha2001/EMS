@@ -31,12 +31,15 @@ interface FileDetails {
   examination: number;
   remarks: string;
   moderator: number;
+  paperType: string;
 }
 
 const FileUpdate: React.FC = () => {
   const { fileId } = useParams<{ fileId: string }>();
   const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
+  const [paperType] = useState<string>('');
+  const [selectedPaperType, setSelectedPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -102,6 +105,7 @@ const FileUpdate: React.FC = () => {
         setSelectedCourses(
           fileDetails.courses.map((course: Course) => course.id),
         );
+        setSelectedPaperType(fileDetails.paperType);
       } catch (error: any) {
         setErrorMessage('Failed to fetch data: ' + error.message);
       }
@@ -141,6 +145,11 @@ const FileUpdate: React.FC = () => {
       return;
     }
 
+    if (!paperType) {
+      setErrorMessage('Paper Type are required!');
+      return;
+    }
+
     if (selectedCourses.length === 0) {
       setErrorMessage('Please select at least one course!');
       return;
@@ -170,7 +179,7 @@ const FileUpdate: React.FC = () => {
       .map((course) => course.code)
       .join('_');
 
-    const renamedFileName = `${courseCodes}_${selectedExaminationName.replace(
+    const renamedFileName = `${courseCodes}_${paperType}_${selectedExaminationName.replace(
       '/',
       '_',
     )}.pdf`;
@@ -213,6 +222,7 @@ const FileUpdate: React.FC = () => {
     setRemarks('');
     setSelectedModerator(null);
     setSelectedExamination(null);
+    setSelectedPaperType('');
   };
 
   return (
@@ -301,6 +311,24 @@ const FileUpdate: React.FC = () => {
                     <p>Current File: {existingFileDetails.name}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Paper Type */}
+
+              <div>
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Paper Type
+                </label>
+                <select
+                  value={selectedPaperType}
+                  onChange={(e) => setSelectedPaperType(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+                  required
+                >
+                  <option value="">Select Paper Type</option>
+                  <option value="THEORY">THEORY</option>
+                  <option value="PRACTICAL">PRACTICAL</option>
+                </select>
               </div>
 
               {/* Remarks */}

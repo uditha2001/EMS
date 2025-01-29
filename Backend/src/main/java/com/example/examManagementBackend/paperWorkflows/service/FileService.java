@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
@@ -44,7 +45,7 @@ public class FileService {
 
     private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long examinationId) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long examinationId,String paperType) {
         // Validate courseIds
         if (courseIds == null || courseIds.isEmpty()) {
             throw new IllegalArgumentException("Course IDs cannot be null or empty.");
@@ -72,6 +73,7 @@ public class FileService {
 
         encryptedPaper.setRemarks(remarks);
         encryptedPaper.setExamination(examination);
+        encryptedPaper.setPaperType(PaperType.valueOf(paperType));
 
         // Save the EncryptedPaper entity
         encryptedPaperRepository.save(encryptedPaper);
