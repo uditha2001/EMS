@@ -1,35 +1,29 @@
 import React from 'react';
 
 type DataCardProps = {
-  color: 'indigo' | 'green' | 'blue' | 'red' | 'purple' | 'pink' | 'yellow' | 'rose';
+  color: 'indigo' | 'green' | 'blue' | 'red' | 'purple' | 'pink' | 'yellow';
   count: string | number;
   title: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
-const DataCard: React.FC<DataCardProps> = ({ color, count, title, icon: Icon }) => {
-  const colorVariants = {
-    blue: "bg-blue-500 ",
-    red: "bg-red-500 ",
-    green: "bg-green-500 ",
-    indigo: "bg-indigo-500 ",
-    purple: "bg-purple-500 ",
-    pink: "bg-pink-500 ",
-    yellow: "bg-yellow-500 ",
-    rose: "bg-rose-500 ",
-
-  };
+const DataCard: React.FC<DataCardProps> = ({
+  color,
+  count,
+  title,
+  icon: Icon,
+}) => {
   return (
-    <div className={`${colorVariants[color]} p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 h-full w-full`} >
-      <div className="flex items-center justify-between h-full">
-        <div>
-          <span className={`text-2xl font-bold text-black`}>
+    <div className="border p-4 rounded-sm cursor-pointer border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark h-full">
+      <div className="flex items-center justify-between p-6 h-full">
+        <div className="flex flex-col justify-center">
+          <span className={`text-2xl font-bold text-${color}-600`}>
             {count}
           </span>
-          <h3 className="text-black text-sm mt-1">{title}</h3>
+          <h3 className={`text-${color}-600 text-sm mt-1`}>{title}</h3>
         </div>
-        <div className={`p-4 rounded-full bg-white`}>
-          <Icon className={`w-6 h-6 text-black`}/>
+        <div className={`p-4 rounded-full bg-${color}-100`}>
+          <Icon className={`w-6 h-6 text-${color}-600`} />
         </div>
       </div>
     </div>
