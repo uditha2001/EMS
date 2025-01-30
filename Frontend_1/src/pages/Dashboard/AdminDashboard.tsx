@@ -28,7 +28,7 @@ const AdminDashboard = () => {
 }, []);
   return (
     <div>
-    <h1 className="text-3xl font-semibold text-gray-800">Admin Dashboard</h1>
+    <h1 className="text-3xl font-semibold text-gray-800 dark:text-white">Admin Dashboard</h1>
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {/* Welcome Message */}
     
