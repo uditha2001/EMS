@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,4 +54,6 @@ public class ExaminationEntity {
     @ManyToOne
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
+    @OneToMany(mappedBy = "examination",cascade = CascadeType.ALL)
+    private List<ExamTimeTablesEntity> examTimeTables;
 }

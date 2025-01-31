@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name="exam_types")
 @AllArgsConstructor
@@ -17,5 +19,8 @@ public class ExamTypesEntity {
     private Long id;
     @Enumerated(EnumType.STRING)
     private ExamTypesName name;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
+    private List<ExamTimeTablesEntity> examTimeTables;
+
 
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -21,6 +22,8 @@ public class ExamCentersEntity {
     private String examCenterLocation;
     private Integer examCenterCapacity;
     private String contactPerson;
+    @ManyToMany(cascade=CascadeType.ALL,mappedBy = "centers")
+    private Set<ExamTimeTablesEntity> examTimeTables;
 
 
 }
