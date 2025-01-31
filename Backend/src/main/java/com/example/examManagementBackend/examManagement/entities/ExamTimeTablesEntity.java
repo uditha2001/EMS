@@ -7,12 +7,17 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Set;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name="exam_time_table")
 @AllArgsConstructor
@@ -49,5 +54,12 @@ public class ExamTimeTablesEntity {
     private LocalTime startTime;
     @Column(columnDefinition = "TIME")
     private LocalTime endTime;
+    @CreatedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime updatedAt;
+
 
 }
