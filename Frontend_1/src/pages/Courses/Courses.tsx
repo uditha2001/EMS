@@ -1,49 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import debounce from "lodash/debounce";
 
 const Courses: React.FC = () => {
-  const [level, setLevel] = useState<string>("");
-  const [semester, setSemester] = useState<string>("");
-  const [degree, setDegree] = useState<string>("");
-  const [active, setActive] = useState<string>("");
-  const [courseName, setCourseName] = useState<string>("");
-  const [courseCode, setCourseCode] = useState<string>("");
+  const [filters, setFilters] = useState({
+    level: "",
+    semester: "",
+    degree: "",
+    active: "",
+    courseName: "",
+    courseCode: "",
+  });
+
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const navigate = useNavigate();
 
-  // Fetch courses based on filters
-  const fetchCourses = async () => {
-    setLoading(true);
-    setErrorMessage("");
+  // Debounced function to fetch courses
+  const fetchCourses = useCallback(
+    debounce(async (updatedFilters) => {
+      setLoading(true);
+      setErrorMessage("");
 
-    try {
-      const response = await axios.get("http://localhost:8080/api/courses/filter", {
-        params: {
-          level: level || null,
-          semester: semester || null,
-          degree: degree || null,
-          active: active ? active === "true" : null,
-          courseName: courseName || null,
-          courseCode: courseCode || null,
-        },
-      });
+      try {
+        const response = await axios.get("http://localhost:8080/api/courses/filter", {
+          params: {
+            level: updatedFilters.level || null,
+            semester: updatedFilters.semester || null,
+            degree: updatedFilters.degree || null,
+            active: updatedFilters.active ? updatedFilters.active === "true" : null,
+            courseName: updatedFilters.courseName || null,
+            courseCode: updatedFilters.courseCode || null,
+          },
+        });
 
-      if (response.data.length === 0) {
-        setErrorMessage("No courses found with the selected filters.");
+        if (response.data.length === 0) {
+          setErrorMessage("No courses found with the selected filters.");
+        }
+
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        setErrorMessage("Failed to fetch courses. Please try again.");
       }
 
-      setCourses(response.data);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-      setErrorMessage("Failed to fetch courses. Please try again.");
-    }
+      setLoading(false);
+    }, 500), // Wait 500ms before making API calls
+    []
+  );
 
-    setLoading(false);
+  // Handle filter changes and trigger search
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    const updatedFilters = { ...filters, [name]: value };
+    setFilters(updatedFilters);
+    fetchCourses(updatedFilters); // Call API dynamically
   };
+
+  // Load initial data
+  useEffect(() => {
+    fetchCourses(filters);
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-50 border border-gray-200 rounded-lg shadow">
@@ -54,7 +74,7 @@ const Courses: React.FC = () => {
         {/* Level */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Level:</label>
-          <select value={level} onChange={(e) => setLevel(e.target.value)} className="w-full p-2 border rounded-md">
+          <select name="level" value={filters.level} onChange={handleFilterChange} className="w-full p-2 border rounded-md">
             <option value="">All</option>
             <option value="1">Level 1</option>
             <option value="2">Level 2</option>
@@ -66,7 +86,7 @@ const Courses: React.FC = () => {
         {/* Semester */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Semester:</label>
-          <select value={semester} onChange={(e) => setSemester(e.target.value)} className="w-full p-2 border rounded-md">
+          <select name="semester" value={filters.semester} onChange={handleFilterChange} className="w-full p-2 border rounded-md">
             <option value="">All</option>
             <option value="1">Semester 1</option>
             <option value="2">Semester 2</option>
@@ -76,7 +96,7 @@ const Courses: React.FC = () => {
         {/* Degree */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Degree:</label>
-          <select value={degree} onChange={(e) => setDegree(e.target.value)} className="w-full p-2 border rounded-md">
+          <select name="degree" value={filters.degree} onChange={handleFilterChange} className="w-full p-2 border rounded-md">
             <option value="">All</option>
             <option value="BCS">BCS</option>
             <option value="BSC">BSC</option>
@@ -88,7 +108,7 @@ const Courses: React.FC = () => {
         {/* Active Status */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Active:</label>
-          <select value={active} onChange={(e) => setActive(e.target.value)} className="w-full p-2 border rounded-md">
+          <select name="active" value={filters.active} onChange={handleFilterChange} className="w-full p-2 border rounded-md">
             <option value="">All</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
@@ -98,19 +118,18 @@ const Courses: React.FC = () => {
         {/* Course Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Course Name:</label>
-          <input type="text" value={courseName} onChange={(e) => setCourseName(e.target.value)} className="w-full p-2 border rounded-md" />
+          <input type="text" name="courseName" value={filters.courseName} onChange={handleFilterChange} className="w-full p-2 border rounded-md" placeholder="Type course name..." />
         </div>
 
         {/* Course Code */}
         <div>
           <label className="block text-sm font-medium text-gray-700">Course Code:</label>
-          <input type="text" value={courseCode} onChange={(e) => setCourseCode(e.target.value)} className="w-full p-2 border rounded-md" />
+          <input type="text" name="courseCode" value={filters.courseCode} onChange={handleFilterChange} className="w-full p-2 border rounded-md" placeholder="Type course code..." />
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex justify-between mb-4">
-        <button onClick={fetchCourses} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">Search</button>
+      {/* Create Course Button */}
+      <div className="flex justify-end mb-4">
         <button onClick={() => navigate("/create-course")} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Create Course</button>
       </div>
 
