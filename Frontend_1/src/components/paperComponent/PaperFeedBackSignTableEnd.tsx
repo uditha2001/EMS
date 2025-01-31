@@ -128,13 +128,13 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
             </td>
           </tr> */}
           <tr>
-            <td colSpan={5} className="border border-gray-300 p-4 bg-gray-50 dark:bg-gray-800">
+            <td colSpan={5} className="border border-gray-300 p-4 bg-gray-50 dark:bg-gray-800 ">
               <label htmlFor="learningOutcomes" className="block font-bold mb-2 text-lg">
                 Learning Outcomes:
               </label>
               <textarea
                 id="learningOutcomes"
-                className="w-full border border-gray-300 p-2 rounded-md resize-y"
+                className="w-full border border-gray-300 p-2 rounded-md resize-y  dark:bg-gray-700 text-gray-900 dark:text-gray-300"
                 placeholder="Enter your text here..."
                 rows={4}
                 value={formData.learningOutcomes}
@@ -151,7 +151,7 @@ const PaperFeedBackSignTableEnd = ({ getModerateData }: any) => {
               </label>
               <textarea
                 id="courseContent"
-                className="w-full border border-gray-300 p-2 rounded-md resize-y"
+                className="w-full border border-gray-300 p-2 rounded-md resize-y  dark:bg-gray-700 text-gray-900 dark:text-gray-300"
                 placeholder="Enter your text here..."
                 rows={4}
                 value={formData.courseContent}

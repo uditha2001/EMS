@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
-import com.example.examManagementBackend.paperWorkflows.entity.AcademicYearsEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
+import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -20,9 +22,10 @@ public class EncryptedPaperDTO {
     private String remarks;
     private UserDTO creator;
     private UserDTO moderator;
-    private Long academicYear;
+    private Long examination;
     private List<CourseDTO> courses;
     private ExamPaperStatus status;
+    private PaperType paperType;
 
     // Constructor for converting entity to DTO
     public EncryptedPaperDTO(
@@ -33,9 +36,11 @@ public class EncryptedPaperDTO {
             LocalDateTime createdAt,
             UserEntity creator,
             UserEntity moderator,
-            AcademicYearsEntity academicYear,
+            ExaminationEntity examination,
             List<CoursesEntity> courses,
-            ExamPaperStatus status
+            ExamPaperStatus status,
+            PaperType paperType
+
 
     ) {
         this.id = id;
@@ -45,11 +50,12 @@ public class EncryptedPaperDTO {
         this.createdAt = createdAt;
         this.creator = new UserDTO(creator.getUserId(), creator.getFirstName(), creator.getLastName());
         this.moderator = new UserDTO(moderator.getUserId(), moderator.getFirstName(), moderator.getLastName());
-        this.academicYear = (academicYear != null) ? academicYear.getId() : null;
+        this.examination = (examination != null) ? examination.getId() : null;
         this.courses = courses.stream()
                 .map(course -> new CourseDTO(course.getId(), course.getName(),course.getCode()))
                 .toList();
         this.status=status;
+        this.paperType = paperType;
     }
 
     // Nested DTO for user details

@@ -41,5 +41,4 @@ public class ModerationsEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(referencedColumnName = "userId",name="moderators")
     private UserEntity moderator;
-
 }

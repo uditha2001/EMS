@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent } from 'react';
 
-interface AcademicYearFormProps {
+interface ExaminationFormProps {
   formData: { year: string; level: string; semester: string };
   setFormData: (data: {
     year: string;
@@ -15,7 +15,7 @@ interface AcademicYearFormProps {
   setSelectedDegreeProgram: (value: string) => void;
 }
 
-export default function AcademicYearForm({
+export default function ExaminationForm({
   formData,
   setFormData,
   editId,
@@ -24,7 +24,7 @@ export default function AcademicYearForm({
   degreePrograms,
   selectedDegreeProgram,
   setSelectedDegreeProgram,
-}: AcademicYearFormProps) {
+}: ExaminationFormProps) {
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -51,7 +51,7 @@ export default function AcademicYearForm({
         {/* Form Header */}
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            {editId !== null ? 'Edit Academic Year' : 'Add Academic Year'}
+            {editId !== null ? 'Edit Examination' : 'Add Examination'}
           </h3>
         </div>
 
@@ -82,13 +82,13 @@ export default function AcademicYearForm({
             </select>
           </div>
 
-          {/* Academic Year */}
+          {/* Examination */}
           <div className="mb-4.5">
             <label
               htmlFor="year"
               className="mb-2.5 block text-black dark:text-white"
             >
-              Academic Year
+              Examination
             </label>
             <input
               type="text"

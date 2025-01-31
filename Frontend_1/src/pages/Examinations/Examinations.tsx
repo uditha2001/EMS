@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import AcademicYearForm from './AcademicYearForm';
-import AcademicYearList from './AcademicYearList';
 
-interface AcademicYear {
+import useApi from '../../api/api';
+import ExaminationList from './ExaminationList';
+import ExaminationForm from './ExaminationForm';
+
+interface Examination {
   id: number;
   year: string;
   degreeProgramId: string;
@@ -21,8 +22,8 @@ interface DegreeProgram {
   name: string;
 }
 
-export default function AcademicYears() {
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+export default function Examinations() {
+  const [examinations, setExaminations] = useState<Examination[]>([]);
   const [formData, setFormData] = useState({
     year: '',
     level: '',
@@ -35,43 +36,51 @@ export default function AcademicYears() {
   const [degreePrograms, setDegreePrograms] = useState<DegreeProgram[]>([]);
   const [selectedDegreeProgram, setSelectedDegreeProgram] =
     useState<string>('');
-  const axiosPrivate = useAxiosPrivate();
+  const {
+    getDegreePrograms,
+    getExaminations,
+    deleteExamination,
+    createExamination,
+    updateExamination,
+  } = useApi();
 
   // Fetch degree programs
   useEffect(() => {
     
     const fetchDegreePrograms = async () => {
       try {
-        const response = await axiosPrivate.get('/degreePrograms');
+        const response = await getDegreePrograms();
         setDegreePrograms(response.data);
       } catch (error) {
         console.error('Error fetching degree programs', error);
         setErrorMessage('Failed to load degree programs.');
       }
     };
+
     fetchDegreePrograms();
-  }, [axiosPrivate]);
+  }, []); // Removed axiosPrivate dependency
 
   // Fetch academic years
-  const fetchAcademicYears = useCallback(async () => {
+  const fetchExaminations = useCallback(async () => {
     try {
-      setLoading(true);
-      const response = await axiosPrivate.get('/academic-years');
+      setLoading(true); // Start loading indicator
+      const response = await getExaminations(); // Call the API function
       if (response.data.code === 200) {
-        setAcademicYears(response.data.data);
+        setExaminations(response.data.data); // Set the response data into state
       } else {
         setErrorMessage('Unexpected response from the server.');
       }
     } catch (error) {
+      console.error('Error fetching academic years', error);
       setErrorMessage('Error fetching academic years.');
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loading indicator
     }
-  }, [axiosPrivate]);
+  }, []);
 
   useEffect(() => {
-    fetchAcademicYears();
-  }, [fetchAcademicYears]);
+    fetchExaminations();
+  }, [fetchExaminations]); // Dependencies are optimized
 
   // Save or update an academic year
   const handleSave = async () => {
@@ -97,11 +106,11 @@ export default function AcademicYears() {
       console.log('payload', payload);
 
       if (editId !== null) {
-        await axiosPrivate.put(`/academic-years/${editId}`, payload);
+        await updateExamination(editId, payload);
         setSuccessMessage('Academic year updated successfully!');
         setEditId(null);
       } else {
-        await axiosPrivate.post('/academic-years', payload);
+        await createExamination(payload);
         setSuccessMessage('Academic year added successfully!');
         resetForm();
       }
@@ -109,7 +118,7 @@ export default function AcademicYears() {
       // Clear form and refresh data
       setFormData({ year: '', level: '', semester: '' });
       setSelectedDegreeProgram('');
-      fetchAcademicYears();
+      fetchExaminations();
     } catch (error) {
       setErrorMessage('Error saving academic year.');
     }
@@ -117,7 +126,7 @@ export default function AcademicYears() {
 
   // Edit an academic year
   const handleEdit = (id: number) => {
-    const yearToEdit = academicYears.find((year) => year.id === id);
+    const yearToEdit = examinations.find((year) => year.id === id);
     if (yearToEdit) {
       setFormData({
         year: yearToEdit.year,
@@ -132,9 +141,9 @@ export default function AcademicYears() {
   // Delete an academic year
   const handleDelete = async (id: number) => {
     try {
-      await axiosPrivate.delete(`/academic-years/${id}`);
-      fetchAcademicYears();
+      await deleteExamination(id);
       setSuccessMessage('Academic year deleted successfully!');
+      fetchExaminations();
     } catch (error) {
       setErrorMessage('Error deleting academic year.');
     }
@@ -148,7 +157,7 @@ export default function AcademicYears() {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Academic Years" />
+      <Breadcrumb pageName="Examinations" />
 
       <div className="grid grid-cols-5 gap-8">
         <div className="col-span-5 xl:col-span-3">
@@ -160,8 +169,8 @@ export default function AcademicYears() {
             message={errorMessage}
             onClose={() => setErrorMessage('')}
           />
-          <AcademicYearList
-            academicYears={academicYears}
+          <ExaminationList
+            examinations={examinations}
             degreePrograms={degreePrograms}
             loading={loading}
             handleEdit={handleEdit}
@@ -169,7 +178,7 @@ export default function AcademicYears() {
           />
         </div>
         <div className="col-span-5 xl:col-span-2">
-          <AcademicYearForm
+          <ExaminationForm
             formData={formData}
             setFormData={setFormData}
             editId={editId}
