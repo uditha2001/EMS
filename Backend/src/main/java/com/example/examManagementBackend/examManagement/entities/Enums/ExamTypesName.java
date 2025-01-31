@@ -9,5 +9,5 @@ public enum ExamTypesName {
     MIDEXAM,
     CA,
     PROJECT,
-    FINALEXAM
+    FINAL_EXAM
 }
