@@ -2,6 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.examManagement.entities.CourseEvaluationsEntity;
 import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.examManagement.entities.ResultEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -74,6 +75,9 @@ public class CoursesEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "courses")
     private Set<CourseEvaluationsEntity> courseEvaluationsEntitySet;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+    private Set<ResultEntity> resultEntitySet;
 
     // Enum for Course Type
     public enum CourseType {

@@ -25,5 +25,8 @@ public class ExamTypesEntity {
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examTypes")
     private Set<CourseEvaluationsEntity> courseEvaluations;
 
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
+    private Set<ResultEntity> results;
+
 
 }
