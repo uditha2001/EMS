@@ -1,6 +1,6 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.examManagement.entities.Enums.ExamTypesName;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

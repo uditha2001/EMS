@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,34 +9,26 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name="exam_centers")
+@Table(name="students_details")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ExamCentersEntity {
+public class StudentsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long studentId;
+    @Column(unique = true, nullable = false)
+    private String studentNumber;
     @Column(nullable = false)
-    private String examCenterName;
-    @Column(columnDefinition = "TEXT")
-    private String examCenterLocation;
-    @Column(nullable = false)
-    private Integer examCenterCapacity;
-    private String contactPerson;
-    @ManyToMany(cascade=CascadeType.ALL,mappedBy = "centers")
-    private Set<ExamTimeTablesEntity> examTimeTables;
+    private String studentName;
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
-
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-
 
 }

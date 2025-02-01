@@ -1,6 +1,6 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.examManagement.entities.Enums.ResultStatus;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
+import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.FIRST_MARKING_COMPLETE;
 
 @Entity
 @Table(name="result")
@@ -37,7 +39,7 @@ public class ResultEntity {
     private float finalMarks;
 
     @Enumerated(EnumType.STRING)
-    private ResultStatus status;
+    private ResultStatus status=FIRST_MARKING_COMPLETE;
 
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="approved_by",referencedColumnName = "userId")
