@@ -30,6 +30,9 @@ const ResultsUpload = () => {
             setCreatedExamNames(name);
 
         });
+
+        
+
     }, []);
 
 
