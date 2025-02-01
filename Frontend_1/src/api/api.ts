@@ -414,6 +414,17 @@ const useApi = () => {
     }
 
   }
+  const getAllExaminationDetailsWithDegreeName=async ()=>{
+    try{
+        const response=await axiosPrivate.get('academic-years/getExaminationWithDegreeName');
+        if(response.data.code===200){
+          console.log(response.data.data);
+        }
+    }
+    catch(error:any){
+        throw new Error("failed to fetch examinations name");
+    }
+  }
 
 
   return {
@@ -468,6 +479,7 @@ const useApi = () => {
     getUsersCounts,
     getActiveUsersCount,
     getDegreeProgramById,
+    getAllExaminationDetailsWithDegreeName,
     loading,
     error,
   };

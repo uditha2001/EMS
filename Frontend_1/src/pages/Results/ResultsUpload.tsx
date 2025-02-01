@@ -16,7 +16,7 @@ const ResultsUpload = () => {
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("");
-    const {getDegreeProgramById,getExaminations}=useApi();
+    const {getExaminations}=useApi();
     const [DegreeProgramId,setDegreeProgramId]=useState<number[]>([]);
     const [degreeName,setDegreeName]=useState<string[]>([]);
 
