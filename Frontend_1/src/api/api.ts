@@ -402,6 +402,19 @@ const useApi = () => {
     }
   }
 
+  const getDegreeProgramById=async (id:number)=>{
+    try{
+        const response =await axiosPrivate.get(`degreePrograms/${id}`);
+        if(response.status===200){
+          return response.data.data;
+        }
+    }
+    catch(error:any){
+      throw new Error("failed to get degree names");
+    }
+
+  }
+
 
   return {
     uploadFile,
@@ -454,6 +467,7 @@ const useApi = () => {
     unassignRoleAssignment,
     getUsersCounts,
     getActiveUsersCount,
+    getDegreeProgramById,
     loading,
     error,
   };
