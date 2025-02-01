@@ -406,7 +406,7 @@ const useApi = () => {
     try{
         const response =await axiosPrivate.get(`degreePrograms/${id}`);
         if(response.status===200){
-          return response.data.data;
+          return response.data;
         }
     }
     catch(error:any){

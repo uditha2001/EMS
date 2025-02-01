@@ -71,5 +71,9 @@ public class ExaminationController {
         ExaminationCoursesDTO response = examinationService.getExaminationWithCoursesById(examinationId);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/getExaminationWithDegreeName")
+    public ResponseEntity<StandardResponse> getExaminationWithDegreeName() {
+        return examinationService.getExaminationWithDegreeProgram();
+    }
 
 }

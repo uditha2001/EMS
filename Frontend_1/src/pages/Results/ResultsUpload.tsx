@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
+import useApi from "../../api/api";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error" | "extracting Data";
 type RowData = {
@@ -11,11 +12,33 @@ const ResultsUpload = () => {
     const [status, setStatus] = useState<UploadStatus>("idle");
     const [data, setData] = useState<RowData[]>([]);
     const [jsonInput, setJsonInput] = useState<string>("");
-
+    const [createdExamNames,setCreatedExamNames]=useState<string[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("");
+    const {getDegreeProgramById,getExaminations}=useApi();
+    const [DegreeProgramId,setDegreeProgramId]=useState<number[]>([]);
+    const [degreeName,setDegreeName]=useState<string[]>([]);
 
+    useEffect(() => {
+        getExaminations().then((response) => {
+            if (response.data.code === 200) {
+                let name=[];
+                let degreeIds=[];
+                let i=0;
+                for (const obj of response.data.data) {
+                    name[i]=obj["year"]+"-"+"Level "+obj['level']+"-Semester "+obj['semester'];
+                    degreeIds[i]=obj["degreeProgramId"];
+                    console.log(name);
+                    i++;
+                }
+                setCreatedExamNames(name);
+                setDegreeProgramId(degreeIds);
+            }
+        });
+    }, []);
+  
+  
     useEffect(() => {
         console.log(data);
     }, [data]);

@@ -6,9 +6,13 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,4 +115,23 @@ public class ExaminationService {
                 .build();
     }
 
+    public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
+        List<String> degreeNames=new ArrayList<>();
+        List<ExaminationDTO> examinationDTOS=new ArrayList<>();
+        List<ExaminationEntity> examinationEntities = examinationRepository.findAll();
+        for(ExaminationEntity examinationEntity : examinationEntities) {
+            ExaminationDTO examinationDTO=new ExaminationDTO();
+            examinationDTO.setId(examinationEntity.getId());
+            examinationDTO.setYear(examinationEntity.getYear());
+            examinationDTO.setLevel(examinationEntity.getLevel());
+            examinationDTO.setSemester(examinationEntity.getSemester());
+            examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
+            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTOS.add(examinationDTO);
+        }
+
+       return new ResponseEntity<>(
+               new StandardResponse(200,"sucess",examinationDTOS), HttpStatus.OK
+       );
+    }
 }
