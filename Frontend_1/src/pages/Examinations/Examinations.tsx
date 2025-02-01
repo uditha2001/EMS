@@ -46,6 +46,7 @@ export default function Examinations() {
 
   // Fetch degree programs
   useEffect(() => {
+    
     const fetchDegreePrograms = async () => {
       try {
         const response = await getDegreePrograms();

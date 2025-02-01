@@ -5,6 +5,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import Templates from './pages/PaperSetting/Templates';
+import CreateTimetable from './pages/CreateTimetable/Timetable';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -379,6 +380,18 @@ function App() {
               <Route
                 path="/paper/roles"
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
+              />
+            </Route>
+
+            {/*Create Timetable */}
+            <Route
+              element={
+                <RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />
+              }
+            >
+              <Route
+                path="/createtimetable"
+                element={renderPage('Create Timetable | EMS', <CreateTimetable/>)}
               />
             </Route>
           </Route>
