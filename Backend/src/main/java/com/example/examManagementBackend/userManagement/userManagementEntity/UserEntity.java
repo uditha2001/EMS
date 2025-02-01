@@ -97,7 +97,7 @@ public class UserEntity {
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
     private Set<ResultEntity> resultEntitySet;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "invigilator_id")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "invigilators")
     private Set<ExamInvigilatorsEntity> invigilators;
 
     public UserEntity() {

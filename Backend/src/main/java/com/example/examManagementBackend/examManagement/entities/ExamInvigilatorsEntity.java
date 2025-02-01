@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ExamInvigilatorsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long invigilatorId;
+    private Long id;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="time_table_id",referencedColumnName = "examTimeTableId")
@@ -22,5 +22,5 @@ public class ExamInvigilatorsEntity {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="invigilator_id",referencedColumnName = "userId")
-    private UserEntity invigilator_id;
+    private UserEntity invigilators;
 }
