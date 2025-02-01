@@ -240,7 +240,7 @@ const AssignRoles: React.FC = () => {
             <select
               value={selectedExamination}
               onChange={(e) => setSelectedExamination(e.target.value)}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+              className="w-1/3 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
               required
             >
               <option value="">Select Examination</option>
