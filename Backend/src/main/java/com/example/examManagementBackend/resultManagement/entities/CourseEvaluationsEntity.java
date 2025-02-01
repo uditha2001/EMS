@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import jakarta.persistence.*;
@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity

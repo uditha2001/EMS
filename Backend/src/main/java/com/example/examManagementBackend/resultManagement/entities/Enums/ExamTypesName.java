@@ -1,6 +1,4 @@
-package com.example.examManagementBackend.examManagement.entities.Enums;
-
-import lombok.Data;
+package com.example.examManagementBackend.resultManagement.entities.Enums;
 
 
 public enum ExamTypesName {

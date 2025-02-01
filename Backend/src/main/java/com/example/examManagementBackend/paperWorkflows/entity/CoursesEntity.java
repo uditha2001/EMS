@@ -1,8 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
-import com.example.examManagementBackend.examManagement.entities.CourseEvaluationsEntity;
-import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
-import com.example.examManagementBackend.examManagement.entities.ResultEntity;
+import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

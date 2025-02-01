@@ -1,22 +1,19 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
-import com.example.examManagementBackend.examManagement.entities.ExamInvigilatorsEntity;
-import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
-import com.example.examManagementBackend.examManagement.entities.ResultEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamInvigilatorsEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ModerationsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import jakarta.persistence.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
