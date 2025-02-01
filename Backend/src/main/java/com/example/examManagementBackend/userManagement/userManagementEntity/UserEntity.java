@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
+import com.example.examManagementBackend.examManagement.entities.ExamInvigilatorsEntity;
 import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.examManagement.entities.ResultEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
@@ -95,6 +96,9 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
     private Set<ResultEntity> resultEntitySet;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "invigilator_id")
+    private Set<ExamInvigilatorsEntity> invigilators;
 
     public UserEntity() {
 
