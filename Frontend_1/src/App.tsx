@@ -331,7 +331,7 @@ function App() {
               />
 
               <Route
-                path="/paper/feedback"
+                path="/paper/feedback/:paperId/:moderatorId"
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
