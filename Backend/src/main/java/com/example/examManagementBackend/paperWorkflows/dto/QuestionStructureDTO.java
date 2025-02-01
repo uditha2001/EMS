@@ -17,5 +17,7 @@ public class QuestionStructureDTO {
     private List<SubQuestionDTO> subQuestions;
     private String moderatorComment;
     private QuestionModerationStatus status = QuestionModerationStatus.PENDING;
+    private long paperId;
+    private long templateId;
 
 }

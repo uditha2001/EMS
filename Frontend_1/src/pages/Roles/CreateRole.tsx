@@ -4,9 +4,8 @@ import Checkbox from '../../components/Checkbox';
 import SelectBox from '../../components/SelectBox';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import { useNavigate } from 'react-router-dom';
-
+import useApi from '../../api/api';
 
 const CreateRole: React.FC = () => {
   const navigate = useNavigate();
@@ -19,11 +18,10 @@ const CreateRole: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const axiosPrivate = useAxiosPrivate();
+  const { fetchAllPermissions, createRole } = useApi();
 
   useEffect(() => {
-    axiosPrivate
-      .get('/permissions')
+    fetchAllPermissions()
       .then((response) => {
         setAvailablePermissions(response.data);
         setIsLoading(false);
@@ -76,9 +74,7 @@ const CreateRole: React.FC = () => {
       description,
       permissionIds: permissions,
     };
-
-    axiosPrivate
-      .post('/roles/create', newRole)
+    createRole(newRole)
       .then(() => {
         setRoleName('');
         setDescription('');

@@ -3,7 +3,7 @@ import { Paper } from '../../types/transferpaper';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
-import useApi from './api';
+import useApi from '../../api/api';
 import { Link } from 'react-router-dom';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 

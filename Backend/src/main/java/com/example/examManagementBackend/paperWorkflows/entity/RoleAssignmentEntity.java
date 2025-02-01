@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
@@ -19,7 +20,7 @@ import java.time.LocalDateTime;
 @Data
 @Table(
         name = "role_assignment",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"academic_year_id", "course_id", "role_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"examination_id", "course_id", "role_id","paperType"})
 )
 public class RoleAssignmentEntity {
     @Id
@@ -47,8 +48,12 @@ public class RoleAssignmentEntity {
     private UserEntity userId;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="acedemic_year_id",nullable = false)
-    private AcademicYearsEntity academicYearId;
+    @JoinColumn(name="examination_id",nullable = false)
+    private ExaminationEntity examinationId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaperType paperType; // THEORY or PRACTICAL
 
 
 }

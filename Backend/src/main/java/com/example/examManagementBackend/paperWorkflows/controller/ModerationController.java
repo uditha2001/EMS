@@ -5,7 +5,9 @@ import com.example.examManagementBackend.paperWorkflows.dto.QuestionModerationDT
 import com.example.examManagementBackend.paperWorkflows.service.ModerationService;
 import com.example.examManagementBackend.paperWorkflows.service.PdfGenrationService;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +37,9 @@ public class ModerationController {
     }
     //generate the pdf and save data;
     @PostMapping("/saveFeedBackData")
-    public ResponseEntity<byte[]> saveFeedBackData(@RequestBody FeedBackDTO dto) {
+    public ResponseEntity<byte[]> saveFeedBackData(@RequestBody FeedBackDTO dto, HttpServletRequest request) {
        try{
-          return pdfGenrationService.genratePdf(dto);
+          return pdfGenrationService.genratePdf(dto,request);
        }
        catch(Exception e){
            return new ResponseEntity<byte[]> (

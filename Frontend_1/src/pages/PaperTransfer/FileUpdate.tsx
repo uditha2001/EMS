@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-import useApi from './api';
+import useApi from '../../api/api';
 import { Link, useParams } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
@@ -19,7 +19,7 @@ interface Course {
   name: string;
 }
 
-interface AcademicYear {
+interface Examination {
   id: number;
   year: string;
 }
@@ -28,15 +28,18 @@ interface FileDetails {
   id: number;
   name: string;
   courses: number[];
-  academicYear: number;
+  examination: number;
   remarks: string;
   moderator: number;
+  paperType: string;
 }
 
 const FileUpdate: React.FC = () => {
   const { fileId } = useParams<{ fileId: string }>();
   const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
+  const [paperType] = useState<string>('');
+  const [selectedPaperType, setSelectedPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -46,22 +49,22 @@ const FileUpdate: React.FC = () => {
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<
-    number | null
-  >(null);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
+  const [selectedExamination, setSelectedExamination] = useState<number | null>(
+    null,
+  );
   const [existingFileDetails, setExistingFileDetails] =
     useState<FileDetails | null>(null);
   const axiosPrivate = useAxiosPrivate();
   const { updateFile } = useApi();
 
   useEffect(() => {
-    const fetchModeratorsCoursesAndAcademicYears = async () => {
+    const fetchModeratorsCoursesAndExaminations = async () => {
       try {
         const [
           usersResponse,
           coursesResponse,
-          academicYearsResponse,
+          examinationsResponse,
           fileDetailsResponse,
         ] = await Promise.all([
           axiosPrivate.get('/user'),
@@ -87,8 +90,8 @@ const FileUpdate: React.FC = () => {
         const coursesData = coursesResponse.data.data || [];
         setCourses(coursesData);
 
-        if (Array.isArray(academicYearsResponse.data.data)) {
-          setAcademicYears(academicYearsResponse.data.data);
+        if (Array.isArray(examinationsResponse.data.data)) {
+          setExaminations(examinationsResponse.data.data);
         } else {
           setErrorMessage('Invalid data format for academic years.');
         }
@@ -97,17 +100,18 @@ const FileUpdate: React.FC = () => {
         setExistingFileDetails(fileDetails);
         setRemarks(fileDetails.remarks);
         setSelectedCourses(fileDetails.courses);
-        setSelectedAcademicYear(fileDetails.academicYear);
+        setSelectedExamination(fileDetails.examination);
         setSelectedModerator(fileDetails.moderator);
         setSelectedCourses(
           fileDetails.courses.map((course: Course) => course.id),
         );
+        setSelectedPaperType(fileDetails.paperType);
       } catch (error: any) {
         setErrorMessage('Failed to fetch data: ' + error.message);
       }
     };
 
-    fetchModeratorsCoursesAndAcademicYears();
+    fetchModeratorsCoursesAndExaminations();
   }, [fileId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +145,11 @@ const FileUpdate: React.FC = () => {
       return;
     }
 
+    if (!paperType) {
+      setErrorMessage('Paper Type are required!');
+      return;
+    }
+
     if (selectedCourses.length === 0) {
       setErrorMessage('Please select at least one course!');
       return;
@@ -151,16 +160,16 @@ const FileUpdate: React.FC = () => {
       return;
     }
 
-    if (!selectedAcademicYear) {
+    if (!selectedExamination) {
       setErrorMessage('Please select an academic year!');
       return;
     }
 
-    const selectedAcademicYearName = academicYears.find(
-      (year) => year.id === selectedAcademicYear,
+    const selectedExaminationName = examinations.find(
+      (year) => year.id === selectedExamination,
     )?.year;
 
-    if (!selectedAcademicYearName) {
+    if (!selectedExaminationName) {
       setErrorMessage('Invalid academic year selected!');
       return;
     }
@@ -170,7 +179,7 @@ const FileUpdate: React.FC = () => {
       .map((course) => course.code)
       .join('_');
 
-    const renamedFileName = `${courseCodes}_${selectedAcademicYearName.replace(
+    const renamedFileName = `${courseCodes}_${paperType}_${selectedExaminationName.replace(
       '/',
       '_',
     )}.pdf`;
@@ -212,7 +221,8 @@ const FileUpdate: React.FC = () => {
     setSelectedCourses([]);
     setRemarks('');
     setSelectedModerator(null);
-    setSelectedAcademicYear(null);
+    setSelectedExamination(null);
+    setSelectedPaperType('');
   };
 
   return (
@@ -239,23 +249,23 @@ const FileUpdate: React.FC = () => {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Academic Year Selection */}
+              {/* Examination Selection */}
               <div>
                 <label className="mb-2.5 block text-black dark:text-white">
-                  Academic Year
+                  Examination
                 </label>
                 <select
-                  value={selectedAcademicYear ?? ''}
-                  disabled
+                  value={selectedExamination ?? ''}
+                  //disabled
                   onChange={(e) =>
-                    setSelectedAcademicYear(Number(e.target.value))
+                    setSelectedExamination(Number(e.target.value))
                   }
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
                 >
-                  <option value={0}>Select Academic Year</option>
-                  {academicYears.map((academicYear) => (
-                    <option key={academicYear.id} value={academicYear.id}>
-                      {academicYear.year}
+                  <option value={0}>Select Examination</option>
+                  {examinations.map((examination) => (
+                    <option key={examination.id} value={examination.id}>
+                      {examination.year}
                     </option>
                   ))}
                 </select>
@@ -301,6 +311,24 @@ const FileUpdate: React.FC = () => {
                     <p>Current File: {existingFileDetails.name}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Paper Type */}
+
+              <div>
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Paper Type
+                </label>
+                <select
+                  value={selectedPaperType}
+                  onChange={(e) => setSelectedPaperType(e.target.value)}
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+                  required
+                >
+                  <option value="">Select Paper Type</option>
+                  <option value="THEORY">THEORY</option>
+                  <option value="PRACTICAL">PRACTICAL</option>
+                </select>
               </div>
 
               {/* Remarks */}

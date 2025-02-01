@@ -1,0 +1,173 @@
+import { ChangeEvent, FormEvent } from 'react';
+
+interface ExaminationFormProps {
+  formData: { year: string; level: string; semester: string };
+  setFormData: (data: {
+    year: string;
+    level: string;
+    semester: string;
+  }) => void;
+  editId: number | null;
+  handleSave: () => void;
+  cancelEdit: () => void;
+  degreePrograms: { id: string; name: string }[];
+  selectedDegreeProgram: string;
+  setSelectedDegreeProgram: (value: string) => void;
+}
+
+export default function ExaminationForm({
+  formData,
+  setFormData,
+  editId,
+  handleSave,
+  cancelEdit,
+  degreePrograms,
+  selectedDegreeProgram,
+  setSelectedDegreeProgram,
+}: ExaminationFormProps) {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    if (name === 'degreeProgram') {
+      setSelectedDegreeProgram(value);
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedDegreeProgram) {
+      alert('Please select a degree program.');
+      return;
+    }
+    handleSave();
+  };
+
+  return (
+    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <form onSubmit={handleSubmit}>
+        {/* Form Header */}
+        <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <h3 className="font-medium text-black dark:text-white">
+            {editId !== null ? 'Edit Examination' : 'Add Examination'}
+          </h3>
+        </div>
+
+        {/* Form Body */}
+        <div className="p-6.5">
+          {/* Degree Program */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="degreeProgram"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Degree Program
+            </label>
+            <select
+              id="degreeProgram"
+              name="degreeProgram"
+              value={selectedDegreeProgram}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Degree Program</option>
+              {degreePrograms.map((program) => (
+                <option key={program.id} value={program.id}>
+                  {program.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Examination */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="year"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Examination
+            </label>
+            <input
+              type="text"
+              id="year"
+              name="year"
+              value={formData.year}
+              onChange={handleInputChange}
+              placeholder="e.g., 2023/2024"
+              required
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
+            />
+          </div>
+
+          {/* Level */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="level"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Level
+            </label>
+            <select
+              id="level"
+              name="level"
+              value={formData.level}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Level</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
+            </select>
+          </div>
+
+          {/* Semester */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="semester"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Semester
+            </label>
+            <select
+              id="semester"
+              name="semester"
+              value={formData.semester}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              required
+            >
+              <option value="">Select Semester</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="b">Both</option>
+            </select>
+          </div>
+
+          {/* Form Buttons */}
+          <div className="flex justify-between">
+            {editId !== null && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="rounded bg-gray-500 py-2 px-6 text-white hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            )}
+            <button
+              type="submit"
+              className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90"
+            >
+              {editId !== null ? 'Update Data' : 'Add Data'}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}

@@ -5,8 +5,8 @@ import ErrorMessage from '../../components/ErrorMessage';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useHasPermission from '../../hooks/useHasPermission';
+import useApi from '../../api/api';
 
 type Permission = {
   permissionId: number;
@@ -34,7 +34,7 @@ const Roles: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const axiosPrivate = useAxiosPrivate();
+  const { fetchAllRoles, fetchAllPermissions, deleteRole } = useApi();
   const hasDeletePermission = useHasPermission('DELETE_ROLE');
   const hasCreatePermission = useHasPermission('CREATE_ROLE');
   const hasEditPermission = useHasPermission('UPDATE_ROLE');
@@ -43,8 +43,8 @@ const Roles: React.FC = () => {
     const fetchRolesAndPermissions = async () => {
       try {
         const [rolesResponse, permissionsResponse] = await Promise.all([
-          axiosPrivate.get('/roles/all'),
-          axiosPrivate.get('/permissions'),
+          fetchAllRoles(),
+          fetchAllPermissions(),
         ]);
         setRoles(rolesResponse.data);
         setPermissions(permissionsResponse.data);
@@ -83,7 +83,7 @@ const Roles: React.FC = () => {
   const handleDelete = async () => {
     if (selectedRoleId !== null) {
       try {
-        await axiosPrivate.delete(`/roles/delete/${selectedRoleId}`);
+        deleteRole(selectedRoleId);
         setRoles(roles.filter((role) => role.roleId !== selectedRoleId));
         setIsModalOpen(false);
         setSuccessMessage('Role deleted successfully!');

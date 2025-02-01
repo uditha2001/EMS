@@ -21,5 +21,8 @@ public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
 
     // Delete all roles associated with a specific user
     void deleteByUser(UserEntity user);
+
+    @Query("SELECT count(ur) FROM UserRoles ur where ur.role.roleName= :roleName")
+    int getNumberOfUsers(@Param("roleName") String roleName);
 }
 
