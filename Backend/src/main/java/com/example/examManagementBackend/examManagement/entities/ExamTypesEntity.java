@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="exam_types")
@@ -21,6 +22,8 @@ public class ExamTypesEntity {
     private ExamTypesName name;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private List<ExamTimeTablesEntity> examTimeTables;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examTypes")
+    private Set<CourseEvaluationsEntity> courseEvaluations;
 
 
 }

@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.examManagement.entities.CourseEvaluationsEntity;
 import com.example.examManagementBackend.examManagement.entities.ExamTimeTablesEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "courses")
@@ -69,6 +71,9 @@ public class CoursesEntity {
     private List<RoleAssignmentEntity> roleAssignmentList;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "")
     private List<ExamTimeTablesEntity> examTimeTablesEntityList;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "courses")
+    private Set<CourseEvaluationsEntity> courseEvaluationsEntitySet;
 
     // Enum for Course Type
     public enum CourseType {
