@@ -12,33 +12,27 @@ const ResultsUpload = () => {
     const [status, setStatus] = useState<UploadStatus>("idle");
     const [data, setData] = useState<RowData[]>([]);
     const [jsonInput, setJsonInput] = useState<string>("");
-    const [createdExamNames,setCreatedExamNames]=useState<string[]>([]);
+    const [createdExamNames, setCreatedExamNames] = useState<string[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("");
-    const {getExaminations}=useApi();
-    const [DegreeProgramId,setDegreeProgramId]=useState<number[]>([]);
-    const [degreeName,setDegreeName]=useState<string[]>([]);
+    const { getAllExaminationDetailsWithDegreeName } = useApi();
+
 
     useEffect(() => {
-        getExaminations().then((response) => {
-            if (response.data.code === 200) {
-                let name=[];
-                let degreeIds=[];
-                let i=0;
-                for (const obj of response.data.data) {
-                    name[i]=obj["year"]+"-"+"Level "+obj['level']+"-Semester "+obj['semester'];
-                    degreeIds[i]=obj["degreeProgramId"];
-                    console.log(name);
-                    i++;
-                }
-                setCreatedExamNames(name);
-                setDegreeProgramId(degreeIds);
+        getAllExaminationDetailsWithDegreeName().then((response) => {
+            let name = [];
+            let i = 0;
+            for (const obj of response) {
+                name[i] = obj["year"] + "-" + obj["degreeProgramName"] + "-" + "Level " + obj['level'] + "-Semester " + obj['semester'];
+                i++;
             }
+            setCreatedExamNames(name);
+
         });
     }, []);
-  
-  
+
+
     useEffect(() => {
         console.log(data);
     }, [data]);
@@ -114,6 +108,16 @@ const ResultsUpload = () => {
                             value={examName}
                             onChange={(e) => setExamName(e.target.value)}
                         >
+                            {
+                                createdExamNames &&
+                                createdExamNames.map((exam, index) => (
+                                    <option key={index} value={exam}>
+                                        {exam}
+                                    </option>
+                                )
+
+                                )
+                            }
                         </select>
                     </div>
 
@@ -124,7 +128,7 @@ const ResultsUpload = () => {
                             value={courseCode}
                             onChange={(e) => setCourseCode(e.target.value)}
                         >
-                        
+
                         </select>
                     </div>
 
@@ -171,13 +175,13 @@ const ResultsUpload = () => {
                     </div>
 
                     <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300"></div>
-                            </div>
-                            <div className="relative flex justify-center">
-                                <span className="px-2 bg-white text-sm text-gray-500">OR</span>
-                            </div>
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300"></div>
                         </div>
+                        <div className="relative flex justify-center">
+                            <span className="px-2 bg-white text-sm text-gray-500">OR</span>
+                        </div>
+                    </div>
 
                     <textarea
                         placeholder="📋 Paste JSON data here..."
@@ -186,56 +190,56 @@ const ResultsUpload = () => {
                         className="w-full p-4 border border-gray-300 rounded-xl text-sm text-gray-700 resize-none h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     />
 
-                <button
-                    onClick={handleFileUpload}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
-                >
-                    Upload Results
-                </button>
-            </div>
-        </div>
-
-            {/* Data Preview Section */ }
-    {
-        data.length > 0 && (
-            <div className="mt-8 w-full max-w-4xl bg-white p-6 shadow-xl rounded-2xl">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <span className="bg-green-100 p-2 rounded-lg mr-2">🔍</span>
-                    Data Preview
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50">
-                                {Object.keys(data[0]).map((key) => (
-                                    <th
-                                        key={key}
-                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200"
-                                    >
-                                        {key}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {data.map((row: any, rowIndex: any) => (
-                                <tr key={rowIndex} className="hover:bg-gray-50">
-                                    {Object.values(row).map((value, colIndex) => (
-                                        <td
-                                            key={colIndex}
-                                            className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200"
-                                        >
-                                            {value as string}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <button
+                        onClick={handleFileUpload}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                    >
+                        Upload Results
+                    </button>
                 </div>
             </div>
-        )
-    }
+
+            {/* Data Preview Section */}
+            {
+                data.length > 0 && (
+                    <div className="mt-8 w-full max-w-4xl bg-white p-6 shadow-xl rounded-2xl">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span className="bg-green-100 p-2 rounded-lg mr-2">🔍</span>
+                            Data Preview
+                        </h3>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50">
+                                        {Object.keys(data[0]).map((key) => (
+                                            <th
+                                                key={key}
+                                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200"
+                                            >
+                                                {key}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {data.map((row: any, rowIndex: any) => (
+                                        <tr key={rowIndex} className="hover:bg-gray-50">
+                                            {Object.values(row).map((value, colIndex) => (
+                                                <td
+                                                    key={colIndex}
+                                                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200"
+                                                >
+                                                    {value as string}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )
+            }
         </div >
     );
 };
