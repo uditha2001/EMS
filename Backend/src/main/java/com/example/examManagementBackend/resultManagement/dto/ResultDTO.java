@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ResultDTO {
- private int id;
+   String studentNumber;
+   String studentName;
+   String examName;
+   String courseCode;
+   String examType;
+   Integer firstMarking;
 
 }
