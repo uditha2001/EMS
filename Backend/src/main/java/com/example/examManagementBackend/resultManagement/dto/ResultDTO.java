@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class ResultDTO {
-   String studentNumber;
-   String studentName;
-   String examName;
-   String courseCode;
-   String examType;
-   Integer firstMarking;
+   private String examName;
+   private String courseCode;
+   private String examType;
+   private List<StudentDTO> studentsData;
 
 }
