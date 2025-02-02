@@ -128,15 +128,30 @@ public class ExaminationService {
     }
 
     private List<ExaminationCoursesDTO.ActiveCourseDTO> mapCourseToActiveCourseDTOs(CoursesEntity course, ExaminationEntity examination) {
+        boolean isTheoryAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
+                course.getId(), examination, PaperType.THEORY
+        );
+        boolean isPracticalAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
+                course.getId(), examination, PaperType.PRACTICAL
+        );
+
+        // If the course type is BOTH, handle separately
         if ("BOTH".equalsIgnoreCase(course.getCourseType().toString())) {
             return handleBothCourseType(course, examination);
+        } else if (course.getCourseType() == CoursesEntity.CourseType.THEORY && isTheoryAssigned) {
+            // If it's a THEORY course and already assigned, don't display it
+            return Collections.emptyList();
+        } else if (course.getCourseType() == CoursesEntity.CourseType.PRACTICAL && isPracticalAssigned) {
+            // If it's a PRACTICAL course and already assigned, don't display it
+            return Collections.emptyList();
         } else {
-            // For non-BOTH course types, include the course as is
+            // Otherwise, include the course
             return Collections.singletonList(new ExaminationCoursesDTO.ActiveCourseDTO(
                     course.getId(), course.getCode(), course.getName(), course.getCourseType()
             ));
         }
     }
+
 
     private List<ExaminationCoursesDTO.ActiveCourseDTO> handleBothCourseType(CoursesEntity course, ExaminationEntity examination) {
         boolean hasTheoryAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
