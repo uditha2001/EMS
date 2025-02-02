@@ -76,4 +76,9 @@ public class ExaminationController {
         return examinationService.getExaminationWithDegreeProgram();
     }
 
+    @GetMapping("/getCoursesUsingExaminationId")
+    public ResponseEntity<StandardResponse> getCoursesUsingExaminationId(@RequestParam Long examinationId) {
+        return examinationService.getCoursesByExaminationId(examinationId);
+    }
+
 }
