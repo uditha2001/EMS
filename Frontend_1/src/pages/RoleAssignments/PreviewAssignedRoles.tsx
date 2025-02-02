@@ -6,6 +6,8 @@ import Loader from '../../common/Loader';
 import EditRoleModal from '../../components/Modals/EditRoleModal';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import { faCheckCircle, faClock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface AssignedRole {
   id: number;
@@ -26,7 +28,7 @@ const PreviewAssignedRoles: React.FC = () => {
   const [assignedRoles, setAssignedRoles] = useState<AssignedRole[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<AssignedRole | null>(null);
   const [users, setUsers] = useState<
@@ -81,23 +83,29 @@ const PreviewAssignedRoles: React.FC = () => {
             if (response?.data.data && Array.isArray(response.data.data)) {
               setAssignedRoles(response.data.data); // Update the table with the new data
             } else {
-              setErrorMessage('The response data is not in the expected format.');
+              setErrorMessage(
+                'The response data is not in the expected format.',
+              );
             }
           })
           .catch((error) => {
             console.error('Error fetching updated assigned roles:', error);
-            setErrorMessage('Failed to fetch assigned roles. Please try again.');
+            setErrorMessage(
+              'Failed to fetch assigned roles. Please try again.',
+            );
           });
-  
+
         setIsModalOpen(false); // Close the modal after saving
-        setSuccessMessage("Roles successfully assigne");
+        setSuccessMessage('Roles successfully assigne');
       })
       .catch((error) => {
         console.error('Error saving role assignment:', error);
-        setErrorMessage('Failed to update the role assignment. Please try again.');
+        setErrorMessage(
+          'Failed to update the role assignment. Please try again.',
+        );
       });
   };
-  
+
   // Group roles by courseId and paperType
   const groupedRoles = assignedRoles.reduce(
     (acc, role) => {
@@ -136,7 +144,7 @@ const PreviewAssignedRoles: React.FC = () => {
         </div>
 
         <div className="p-6.5">
-        <SuccessMessage
+          <SuccessMessage
             message={successMessage}
             onClose={() => setSuccessMessage('')}
           />
@@ -164,16 +172,16 @@ const PreviewAssignedRoles: React.FC = () => {
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-form-input">
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Role
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Assigned User
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Status
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Action
                             </th>
                           </tr>
@@ -184,14 +192,28 @@ const PreviewAssignedRoles: React.FC = () => {
                               key={role.id}
                               className="hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
-                              <td className="border px-4 py-2">
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                                 {role.roleName}
                               </td>
-                              <td className="border px-4 py-2">{role.user}</td>
-                              <td className="border px-4 py-2">
-                                {role.isAuthorized ? 'Authorized' : 'Pending'}
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                {role.user}
                               </td>
-                              <td className="border px-4 py-2">
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                <FontAwesomeIcon
+                                  icon={
+                                    role.isAuthorized ? faCheckCircle : faClock
+                                  }
+                                  className={`text-${
+                                    role.isAuthorized ? 'green' : 'yellow'
+                                  }-500`}
+                                />
+                                <span className="ml-2">
+                                  {role.isAuthorized
+                                    ? 'Authorized'
+                                    : 'Pending'}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                                 {!role.isAuthorized && (
                                   <a
                                     href="#"
@@ -201,13 +223,12 @@ const PreviewAssignedRoles: React.FC = () => {
                                     Edit
                                   </a>
                                 )}
-                                </td>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    
                   )}
 
                   {/* Render PRACTICAL roles */}
@@ -219,16 +240,16 @@ const PreviewAssignedRoles: React.FC = () => {
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-form-input">
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Role
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Assigned User
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Status
                             </th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">
+                            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                               Action
                             </th>
                           </tr>
@@ -239,14 +260,28 @@ const PreviewAssignedRoles: React.FC = () => {
                               key={role.id}
                               className="hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
-                              <td className="border px-4 py-2">
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                                 {role.roleName}
                               </td>
-                              <td className="border px-4 py-2">{role.user}</td>
-                              <td className="border px-4 py-2">
-                                {role.isAuthorized ? 'Authorized' : 'Pending'}
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                {role.user}
                               </td>
-                              <td className="border px-4 py-2">
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                <FontAwesomeIcon
+                                  icon={
+                                    role.isAuthorized ? faCheckCircle : faClock
+                                  }
+                                  className={`text-${
+                                    role.isAuthorized ? 'green' : 'yellow'
+                                  }-500`}
+                                />
+                                <span className="ml-2">
+                                  {role.isAuthorized
+                                    ? 'Authorized'
+                                    : 'Pending'}
+                                </span>
+                              </td>
+                              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                                 {!role.isAuthorized && (
                                   <a
                                     href="#"
