@@ -426,6 +426,20 @@ const useApi = () => {
     }
   }
 
+  const getCoursesUsingExaminationId=async (examinationId:number)=>{
+    try{
+      const response=await axiosPrivate.get('academic-years/getCoursesByExaminationId',{
+        params: { examinationId: examinationId }   
+           });
+      if(response.data.code===200){
+        return response.data.data;
+      }
+  }
+  catch(error:any){
+      throw new Error("failed to fetch examinations name");
+  }
+  }
+
 
   return {
     uploadFile,
@@ -480,6 +494,7 @@ const useApi = () => {
     getActiveUsersCount,
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
+    getCoursesUsingExaminationId,
     loading,
     error,
   };
