@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -88,11 +89,17 @@ public class RoleAssignmentController {
 
     // Edit role assignment by ID
     @PutMapping("/{id}")
-    public ResponseEntity<StandardResponse> editRoleAssignment(@PathVariable Long id,
-                                                               @RequestBody CreateRoleAssignmentDTO createRoleAssignmentDTO) {
-        String message = roleAssignmentService.editRoleAssignment(id, createRoleAssignmentDTO);
+    public ResponseEntity<StandardResponse> editRoleAssignmentUser(@PathVariable Long id,
+                                                                   @RequestParam("userId") Long userId) {
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(new StandardResponse(400, "User ID is required", null));
+        }
+
+        String message = roleAssignmentService.editRoleAssignment(id, userId);
         return ResponseEntity.ok(new StandardResponse(200, message, null));
     }
+
+
 
     // Authorize roles for a given examination
     @PatchMapping("/examination/{examinationId}/authorize")
