@@ -377,81 +377,83 @@ const useApi = () => {
   const authorizeRoleByExamination = async (examinationId: number) => {
     try {
       const response = await axiosPrivate.patch(
-        `/role-assignments/examination/${examinationId}/authorize`
+        `/role-assignments/examination/${examinationId}/authorize`,
       );
       return response.data; // Assuming the response data includes the status and message
     } catch (error) {
-      console.error("Error authorizing role by examination", error);
+      console.error('Error authorizing role by examination', error);
       throw error;
     }
   };
 
-  const authorizeRoleByCourseAndPaperType = async (courseId: number, paperType: string) => {
+  const authorizeRoleByCourseAndPaperType = async (
+    courseId: number,
+    paperType: string,
+  ) => {
     try {
       const response = await axiosPrivate.patch(
-        `/role-assignments/course/${courseId}/paperType/${paperType}/authorize`
+        `/role-assignments/course/${courseId}/paperType/${paperType}/authorize`,
       );
       return response.data; // Assuming the response data includes the status and message
     } catch (error) {
-      console.error("Error authorizing role by course and paper type", error);
+      console.error('Error authorizing role by course and paper type', error);
       throw error;
     }
   };
-  
-  const editRoleAssignment = async (roleAssignmentId: number, createRoleAssignmentDTO: object) => {
+
+  const editRoleAssignment = async (roleAssignmentId: number, userId: number) => {
     try {
       const response = await axiosPrivate.put(
-        `/role-assignments/${roleAssignmentId}`,
-        createRoleAssignmentDTO
+        `/role-assignments/${roleAssignmentId}?userId=${userId}`, // Pass userId as query param
       );
-      return response.data; // Assuming the response data includes the status and message
+      return response.data;
     } catch (error) {
-      console.error("Error editing role assignment", error);
+      console.error('Error editing role assignment', error);
       throw error;
     }
   };
   
-  const getRoleAssignmentById = async (roleAssignmentId:number) => {
+
+  const getRoleAssignmentById = async (roleAssignmentId: number) => {
     try {
       const response = await axiosPrivate.get(
-        `/role-assignments/${roleAssignmentId}`
+        `/role-assignments/${roleAssignmentId}`,
       );
       return response.data; // Assuming the response contains the role assignment data
     } catch (error) {
-      console.error("Error fetching role assignment", error);
+      console.error('Error fetching role assignment', error);
       throw error;
     }
   };
-  
 
   const unassignRoleAssignment = async (roleAssignmentId: number) => {
     return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
   };
   const getUsersCounts = async () => {
-    try{
-      const response=await axiosPrivate.get('/user/count');
-      if(response.status===200){
+    try {
+      const response = await axiosPrivate.get('/user/count');
+      if (response.status === 200) {
         return response.data.data;
       }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch users count',
+      );
     }
-    catch(error:any){
-      throw new Error(error.response?.data?.message || 'Failed to fetch users count');
-    }
-
-  }
+  };
 
   const getActiveUsersCount = async () => {
-    try{
-        const response=await axiosPrivate.get('/user/activeUser');
-        if(response.status===200){
-          return response.data.data;
-        }
+    try {
+      const response = await axiosPrivate.get('/user/activeUser');
+      if (response.status === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch active users count',
+      );
     }
-    catch(error:any){
-      throw new Error(error.response?.data?.message || 'Failed to fetch active users count');
-    }
-  }
-
+  };
 
   return {
     uploadFile,
