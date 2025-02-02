@@ -374,6 +374,56 @@ const useApi = () => {
     );
   };
 
+  const authorizeRoleByExamination = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/examination/${examinationId}/authorize`
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error("Error authorizing role by examination", error);
+      throw error;
+    }
+  };
+
+  const authorizeRoleByCourseAndPaperType = async (courseId: number, paperType: string) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/course/${courseId}/paperType/${paperType}/authorize`
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error("Error authorizing role by course and paper type", error);
+      throw error;
+    }
+  };
+  
+  const editRoleAssignment = async (roleAssignmentId: number, createRoleAssignmentDTO: object) => {
+    try {
+      const response = await axiosPrivate.put(
+        `/role-assignments/${roleAssignmentId}`,
+        createRoleAssignmentDTO
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error("Error editing role assignment", error);
+      throw error;
+    }
+  };
+  
+  const getRoleAssignmentById = async (roleAssignmentId:number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/${roleAssignmentId}`
+      );
+      return response.data; // Assuming the response contains the role assignment data
+    } catch (error) {
+      console.error("Error fetching role assignment", error);
+      throw error;
+    }
+  };
+  
+
   const unassignRoleAssignment = async (roleAssignmentId: number) => {
     return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
   };
@@ -454,6 +504,10 @@ const useApi = () => {
     unassignRoleAssignment,
     getUsersCounts,
     getActiveUsersCount,
+    authorizeRoleByExamination,
+    authorizeRoleByCourseAndPaperType,
+    editRoleAssignment,
+    getRoleAssignmentById,
     loading,
     error,
   };
