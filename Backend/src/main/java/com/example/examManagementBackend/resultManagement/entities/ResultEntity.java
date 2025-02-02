@@ -34,6 +34,11 @@ public class ResultEntity {
     @JoinColumn(name="exam_type",referencedColumnName = "id")
     private ExamTypesEntity examType;
 
+    @ManyToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="student_id",referencedColumnName = "studentId")
+    private StudentsEntity student;
+
+    @Column(nullable = false)
     private float firstMarking;
     private float secondMarking;
     private float finalMarks;
