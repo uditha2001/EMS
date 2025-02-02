@@ -11,8 +11,12 @@ import lombok.NoArgsConstructor;
 public class RoleAssignmentDTO {
     private Long id;
     private Long courseId;
+    private String courseCode;
+    private String courseName;
     private Long roleId;
+    private String roleName;
     private Long userId;
+    private String user;
     private Long examinationId;
     private Boolean isAuthorized;
     private PaperType paperType;
