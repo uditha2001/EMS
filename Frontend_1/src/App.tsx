@@ -7,6 +7,7 @@ import PageTitle from './components/PageTitle';
 import Templates from './pages/PaperSetting/Templates';
 import CreateTimetable from './pages/CreateTimetable/Timetable';
 import ResultsUpload from './pages/Results/ResultsUpload';
+import PreviewAssignedRoles from './pages/RoleAssignments/PreviewAssignedRoles';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -132,8 +133,8 @@ function App() {
         />
       </Route>
       <Route
-      path="/result-Upload"
-      element={renderPage('upload result|EMS',<ResultsUpload/>)}
+        path="/result-Upload"
+        element={renderPage('upload result|EMS', <ResultsUpload />)}
       />
 
       {/* Authenticated Routes */}
@@ -386,6 +387,13 @@ function App() {
                 path="/paper/roles"
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
+              <Route
+                path="/paper/preview-assigned-roles/:examinationId"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <PreviewAssignedRoles />,
+                )}
+              />
             </Route>
 
             {/*Create Timetable */}
@@ -396,7 +404,10 @@ function App() {
             >
               <Route
                 path="/createtimetable"
-                element={renderPage('Create Timetable | EMS', <CreateTimetable/>)}
+                element={renderPage(
+                  'Create Timetable | EMS',
+                  <CreateTimetable />,
+                )}
               />
             </Route>
           </Route>
