@@ -25,20 +25,21 @@ type courseData = {
 const ResultsUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [status, setStatus] = useState<UploadStatus>("idle");
-    const [csvData, setCsvData] = useState<RowData[]>([]);
+    const [studentsData, setstudentsData] = useState<RowData[]>([]);
     const [totalData, setTotalData] = useState({});
     const [jsonInput, setJsonInput] = useState<string>("");
     const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("");
-    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
     const [showTable, setShowTable] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false); // State for custom confirmation modal
-
+    const [allowToSend, setAllowToSend] = useState(false);
+    const examTypes = ['THEORY', 'PRACTICAL', 'CA', 'PROJECT'];
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
             let examData: examinationName[] = [];
@@ -48,7 +49,7 @@ const ResultsUpload = () => {
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
-            console.log(csvData);
+            console.log(studentsData);
             setCreatedExamNames(examData);
 
         });
@@ -73,8 +74,19 @@ const ResultsUpload = () => {
 
     }, [examinationCourseCode])
 
+
     useEffect(() => {
         console.log(totalData);
+        if (allowToSend) {
+            saveFirstMarkingResults(totalData).then((data) => {
+                if (data.code) {
+                    setAllowToSend(false);
+                    setShowTable(true)
+                }
+
+            })
+        }
+
     }, [totalData])
 
     const handleFileChanges = (e: ChangeEvent<HTMLInputElement>) => {
@@ -101,7 +113,7 @@ const ResultsUpload = () => {
 
                 // Convert to JSON
                 const jsonData = XLSX.utils.sheet_to_json(sheet);
-                setCsvData(jsonData);
+                setstudentsData(jsonData);
                 setShowTable(true);
             };
 
@@ -125,14 +137,17 @@ const ResultsUpload = () => {
     };
 
 
+
     const sendDataToTheServer = () => {
         setTotalData(
             {
-                csvData,
+                studentsData,
                 courseCode,
                 examName,
+                examType
             }
         )
+        setAllowToSend(true);
     }
 
     return (
@@ -205,7 +220,16 @@ const ResultsUpload = () => {
                                         onChange={(e) => setExamType(e.target.value)}
                                     >
 
-
+                                        <option disabled value="">
+                                            select exam type
+                                        </option>
+                                        {
+                                            examTypes.map((type, index) => (
+                                                <option key={index} value={type}>
+                                                    {type}
+                                                </option>
+                                            ))
+                                        }
                                     </select>
                                 </div>
                             </div>
@@ -267,7 +291,7 @@ const ResultsUpload = () => {
                     </div>
                     ) : (
 
-                        csvData.length > 0 && examName && courseCode && (
+                        studentsData.length > 0 && examName && courseCode && (
                             <div className="mt-8 w-full max-w-6xl bg-white p-6 shadow-xl rounded-2xl">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                                     <span className="bg-green-100 p-2 rounded-lg mr-2">🔍</span>
@@ -295,7 +319,7 @@ const ResultsUpload = () => {
                                         <table className="min-w-full border-collapse">
                                             <thead>
                                                 <tr className="bg-gray-50">
-                                                    {Object.keys(csvData[0]).map((key) => (
+                                                    {Object.keys(studentsData[0]).map((key) => (
                                                         <th
                                                             key={key}
                                                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200"
@@ -306,7 +330,7 @@ const ResultsUpload = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {csvData.map((row: any, rowIndex: any) => (
+                                                {studentsData.map((row: any, rowIndex: any) => (
                                                     <tr key={rowIndex} className="hover:bg-gray-50">
                                                         {Object.values(row).map((value, colIndex) => (
                                                             <td
@@ -350,8 +374,8 @@ const ResultsUpload = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
                         <h2 className="text-lg font-bold text-black dark:text-white mb-4">
-                            Cancel Result Upload                   
-                             </h2>
+                            Cancel Result Upload
+                        </h2>
                         <p className="text-sm text-gray-700 dark:text-gray-300 mb-6">
                             Are you sure you want to cancel?
                         </p>
