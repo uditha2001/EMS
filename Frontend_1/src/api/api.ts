@@ -426,9 +426,9 @@ const useApi = () => {
     }
   }
 
-  const getCoursesUsingExaminationId=async (examinationId:number)=>{
+  const getCoursesUsingExaminationId=async (examinationId:number|undefined)=>{
     try{
-      const response=await axiosPrivate.get('academic-years/getCoursesByExaminationId',{
+      const response=await axiosPrivate.get('academic-years/getCoursesUsingExaminationId',{
         params: { examinationId: examinationId }   
            });
       if(response.data.code===200){
