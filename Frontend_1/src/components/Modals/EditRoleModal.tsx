@@ -35,8 +35,8 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-lg font-semibold mb-4">Edit Assigned User</h2>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+        <h2 className="text-lg font-semibold mb-4 text-black dark:text-white">Edit Assigned User</h2>
 
         <SearchableSelectBox
           options={userOptions}
@@ -48,13 +48,13 @@ const EditRoleModal: React.FC<EditRoleModalProps> = ({
 
         <div className="flex justify-end mt-4">
           <button
-            className="bg-gray-400 text-white px-4 py-2 rounded mr-2"
+            className="rounded border border-stroke py-2 px-6 font-medium text-black dark:text-white dark:border-strokedark hover:shadow-1 dark:hover:shadow-2 mr-2"
             onClick={onClose}
           >
             Cancel
           </button>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark dark:bg-primary-dark dark:hover:bg-primary-light"
             onClick={() => onSave(roleAssignmentId, selectedUserId)}
           >
             Save
