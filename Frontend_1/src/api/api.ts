@@ -440,7 +440,16 @@ const useApi = () => {
   }
   }
 
-
+  const saveFirstMarkingResults=async (result:any)=>{
+    try {
+      const response = await axiosPrivate.post('result/firstMarking', result); 
+        console.log(response.data);
+        return response.data;
+  } catch (error: any) {
+      throw new Error("Failed to fetch examination names");
+  }
+}
+  
   return {
     uploadFile,
     getAllFiles,
@@ -495,6 +504,7 @@ const useApi = () => {
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
+    saveFirstMarkingResults,
     loading,
     error,
   };
