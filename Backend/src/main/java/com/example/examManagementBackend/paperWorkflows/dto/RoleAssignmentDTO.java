@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
+import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
