@@ -2,10 +2,13 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,16 +16,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ExaminationService {
 
-    private ExaminationRepository examinationRepository;
+    private final ExaminationRepository examinationRepository;
+    private final ExaminationTimeTableRepository examinationTimeTableRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository) {
         this.examinationRepository = examinationRepository;
+        this.examinationTimeTableRepository = examinationTimeTableRepository;
     }
 
     @Autowired
@@ -133,5 +140,25 @@ public class ExaminationService {
        return new ResponseEntity<>(
                new StandardResponse(200,"sucess",examinationDTOS), HttpStatus.OK
        );
+    }
+
+    //create a methode to get coursedata which ara belongs to particular exam
+    public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
+        try{
+            Set<CoursesEntity> coursesEntities=new HashSet<>();
+            List<ExamTimeTablesEntity> examTimeTablesEntities=examinationRepository.getCoursesUsingExaminationId(examinationId);
+            for(ExamTimeTablesEntity examinationEntity:examTimeTablesEntities){
+                CoursesEntity coursesEntity=examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
+                coursesEntities.add(coursesEntity);
+            }
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"sucess",coursesEntities), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                   new StandardResponse(500,"erroe",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
