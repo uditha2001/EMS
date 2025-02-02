@@ -1,10 +1,11 @@
 package com.example.examManagementBackend.configurations;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ModelMapper {
+public class ModelMapperConfig {
 
     @Bean
     public ModelMapper modelMapper() {

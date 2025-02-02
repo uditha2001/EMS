@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
@@ -10,6 +11,7 @@ import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgram
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +28,11 @@ public class ExaminationService {
 
     private final ExaminationRepository examinationRepository;
     private final ExaminationTimeTableRepository examinationTimeTableRepository;
-
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository) {
+    private final ModelMapper modelMapper;
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, ModelMapper modelMapper) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Autowired
@@ -145,14 +148,16 @@ public class ExaminationService {
     //create a methode to get coursedata which ara belongs to particular exam
     public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
         try{
-            Set<CoursesEntity> coursesEntities=new HashSet<>();
+            Set<CourseDTO> courseDTOS=new HashSet<>();
             List<ExamTimeTablesEntity> examTimeTablesEntities=examinationRepository.getCoursesUsingExaminationId(examinationId);
             for(ExamTimeTablesEntity examinationEntity:examTimeTablesEntities){
+                CourseDTO courseDTO=new CourseDTO();
                 CoursesEntity coursesEntity=examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
-                coursesEntities.add(coursesEntity);
+                modelMapper.map(coursesEntity,courseDTO);
+                courseDTOS.add(courseDTO);
             }
             return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"sucess",coursesEntities), HttpStatus.OK
+                    new StandardResponse(200,"sucess",courseDTOS), HttpStatus.OK
             );
         }
         catch(Exception e){
