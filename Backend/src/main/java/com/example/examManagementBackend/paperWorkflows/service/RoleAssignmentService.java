@@ -71,8 +71,12 @@ public class RoleAssignmentService {
         return new RoleAssignmentDTO(
                 roleAssignment.getId(),
                 roleAssignment.getCourse().getId(),
+                roleAssignment.getCourse().getCode(),
+                roleAssignment.getCourse().getName(),
                 roleAssignment.getRole().getRoleId(),
+                roleAssignment.getRole().getRoleName(),
                 roleAssignment.getUserId().getUserId(),
+                roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
                 roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized(),
                 roleAssignment.getPaperType()
@@ -116,8 +120,12 @@ public class RoleAssignmentService {
             RoleAssignmentDTO assignmentDTO = new RoleAssignmentDTO(
                     roleAssignment.getId(),
                     roleAssignment.getCourse().getId(),
+                    roleAssignment.getCourse().getCode(),
+                    roleAssignment.getCourse().getName(),
                     roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getRole().getRoleName(),
                     roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
                     roleAssignment.getPaperType()
@@ -136,13 +144,17 @@ public class RoleAssignmentService {
         RoleAssignmentEntity updatedRole = roleAssignmentRepository.save(roleAssignment);
 
         return new RoleAssignmentDTO(
-                updatedRole.getId(),
-                updatedRole.getCourse().getId(),
-                updatedRole.getRole().getRoleId(),
-                updatedRole.getUserId().getUserId(),
-                updatedRole.getExaminationId().getId(),
-                updatedRole.getIsAuthorized(),
-                updatedRole.getPaperType()
+                roleAssignment.getId(),
+                roleAssignment.getCourse().getId(),
+                roleAssignment.getCourse().getCode(),
+                roleAssignment.getCourse().getName(),
+                roleAssignment.getRole().getRoleId(),
+                roleAssignment.getRole().getRoleName(),
+                roleAssignment.getUserId().getUserId(),
+                roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
+                roleAssignment.getExaminationId().getId(),
+                roleAssignment.getIsAuthorized(),
+                roleAssignment.getPaperType()
         );
     }
 
@@ -161,8 +173,12 @@ public class RoleAssignmentService {
             result.add(new RoleAssignmentDTO(
                     roleAssignment.getId(),
                     roleAssignment.getCourse().getId(),
+                    roleAssignment.getCourse().getCode(),
+                    roleAssignment.getCourse().getName(),
                     roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getRole().getRoleName(),
                     roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
                     roleAssignment.getPaperType()
@@ -180,8 +196,12 @@ public class RoleAssignmentService {
             result.add(new RoleAssignmentDTO(
                     roleAssignment.getId(),
                     roleAssignment.getCourse().getId(),
+                    roleAssignment.getCourse().getCode(),
+                    roleAssignment.getCourse().getName(),
                     roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getRole().getRoleName(),
                     roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
                     roleAssignment.getPaperType()
@@ -199,8 +219,12 @@ public class RoleAssignmentService {
             result.add(new RoleAssignmentDTO(
                     roleAssignment.getId(),
                     roleAssignment.getCourse().getId(),
+                    roleAssignment.getCourse().getCode(),
+                    roleAssignment.getCourse().getName(),
                     roleAssignment.getRole().getRoleId(),
+                    roleAssignment.getRole().getRoleName(),
                     roleAssignment.getUserId().getUserId(),
+                    roleAssignment.getUserId().getFirstName()+" "+roleAssignment.getUserId().getLastName(),
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
                     roleAssignment.getPaperType()
