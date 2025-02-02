@@ -4,6 +4,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useApi from '../../api/api';
 import RoleAssignmentTable from './RoleAssignmentTable';
+import { Link } from 'react-router-dom';
 
 interface Examination {
   id: string;
@@ -250,6 +251,13 @@ const AssignRoles: React.FC = () => {
                 </option>
               ))}
             </select>
+
+            <Link
+              to={`/paper/preview-assigned-roles/${selectedExamination}`}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Preview Assigned Roles
+            </Link>
           </div>
 
           {selectedExamination && (
