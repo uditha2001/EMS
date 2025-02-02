@@ -6,40 +6,74 @@ type UploadStatus = "idle" | "uploading" | "success" | "error" | "extracting Dat
 type RowData = {
     [key: string]: any;
 };
+type examinationName = {
+    key: number;
+    name: string;
+}
+type courseData = {
+    id: number,  
+    code: string,
+    name:string,
+    description:string,
+    level:string, 
+    semester:string, 
+    isActive:boolean,  
+    courseType:string,  
+    degreeProgramId:string,
+  };
+  
 
 const ResultsUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [status, setStatus] = useState<UploadStatus>("idle");
     const [data, setData] = useState<RowData[]>([]);
     const [jsonInput, setJsonInput] = useState<string>("");
-    const [createdExamNames, setCreatedExamNames] = useState<string[]>([]);
+    const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("");
-    const { getAllExaminationDetailsWithDegreeName } = useApi();
-
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
+    const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
+    const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
+    const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
 
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
-            let name = [];
+            let examData: examinationName[] = [];
             let i = 0;
             for (const obj of response) {
-                name[i] = obj["year"] + "-" + obj["degreeProgramName"] + "-" + "Level " + obj['level'] + "-Semester " + obj['semester'];
+                let examName = `${obj["year"]}-${obj["degreeProgramName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
+                examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
-            setCreatedExamNames(name);
+            console.log(data);
+            setCreatedExamNames(examData);
 
         });
 
-        
+
 
     }, []);
 
+    useEffect(() => {
+        if (examName != "" && examName != null) {
+            getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
+                setExaminationCourseCode(data);
+            })
+        }
+
+    }, [examName])
 
     useEffect(() => {
-        console.log(data);
-    }, [data]);
+        if (examinationCourseCode!= null && examOptionIdentifier!="" && examinationCourseCode[0]!=undefined) {
+            setCourseCode(examinationCourseCode[0].code);     
+        }
 
+    }, [examinationCourseCode])
+    
+    useEffect(()=>{
+      console.log(courseCode);
+    },[courseCode])
     const handleFileChanges = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
@@ -97,7 +131,7 @@ const ResultsUpload = () => {
             </div>
 
             {/* Configuration Card */}
-            <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-2xl">
+            <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-6xl">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <span className="bg-blue-100 p-2 rounded-lg mr-2">⚙️</span>
                     Exam Configuration
@@ -107,21 +141,27 @@ const ResultsUpload = () => {
                     <div className="space-y-1">
                         <label className="text-sm font-medium text-gray-700">Exam Name</label>
                         <select
+                            value={examOptionIdentifier}
                             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            value={examName}
-                            onChange={(e) => setExamName(e.target.value)}
+                            onChange={(e) => {
+                                setExamOptionIdentifier(e.target.value);
+                                const selectedIndex = parseInt(e.target.value, 10); // Convert string to number
+                                setExamName(createdExamNames[selectedIndex].name); // Set exam name
+                                setSelectedExaminationKey(createdExamNames[selectedIndex].key); // Store the index
+                            }}
                         >
-                            {
-                                createdExamNames &&
-                                createdExamNames.map((exam, index) => (
-                                    <option key={index} value={exam}>
-                                        {exam}
+                            <option value="" disabled>
+                                -- Select the exam Name --
+                            </option>
+                            {createdExamNames &&
+                                createdExamNames.map((examName, index) => (
+                                    <option key={index} value={index}>
+                                        {examName.name}
                                     </option>
-                                )
-
-                                )
-                            }
+                                ))}
                         </select>
+
+
                     </div>
 
                     <div className="space-y-1">
@@ -131,6 +171,12 @@ const ResultsUpload = () => {
                             value={courseCode}
                             onChange={(e) => setCourseCode(e.target.value)}
                         >
+                            {examinationCourseCode &&
+                                examinationCourseCode.map((course, index) => (
+                                    <option key={index} value={course.code}>
+                                        {course.code}
+                                    </option>
+                                ))}
 
                         </select>
                     </div>
@@ -143,13 +189,14 @@ const ResultsUpload = () => {
                             onChange={(e) => setExamType(e.target.value)}
                         >
 
+
                         </select>
                     </div>
                 </div>
             </div>
 
             {/* Upload Card */}
-            <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-2xl">
+            <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-6xl">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <span className="bg-purple-100 p-2 rounded-lg mr-2">📁</span>
                     Upload Results
