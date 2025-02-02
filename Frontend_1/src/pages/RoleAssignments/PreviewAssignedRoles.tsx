@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import useApi from '../../api/api';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
+import EditRoleModal from '../../components/Modals/EditRoleModal';
+import SuccessMessage from '../../components/SuccessMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 
 interface AssignedRole {
   id: number;
@@ -22,14 +25,15 @@ const PreviewAssignedRoles: React.FC = () => {
   const { examinationId } = useParams<{ examinationId: string }>();
   const [assignedRoles, setAssignedRoles] = useState<AssignedRole[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<AssignedRole | null>(null);
+  const [users, setUsers] = useState<
+    { id: number; firstName: string; lastName: string }[]
+  >([]);
 
-  const {
-    fetchRoleAssignments,
-    authorizeRoleAssignment,
-    getRoleAssignmentById,
-    editRoleAssignment,
-  } = useApi();
+  const { fetchRoleAssignments, editRoleAssignment, fetchUsers } = useApi();
 
   useEffect(() => {
     if (examinationId) {
@@ -50,6 +54,50 @@ const PreviewAssignedRoles: React.FC = () => {
     }
   }, [examinationId]);
 
+  const handleOpenModal = (role: AssignedRole) => {
+    setSelectedRole(role);
+    // Fetch users when the modal is opened
+    fetchUsers()
+      .then((response) => {
+        if (response && Array.isArray(response)) {
+          setUsers(response);
+        } else {
+          setErrorMessage('Failed to fetch users. Please try again.');
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching users:', error);
+        setErrorMessage('Failed to fetch users. Please try again.');
+      });
+    setIsModalOpen(true);
+  };
+
+  const onSave = (roleAssignmentId: number, userId: number) => {
+    editRoleAssignment(roleAssignmentId, userId)
+      .then(() => {
+        // Re-fetch assigned roles to reflect the updated data
+        fetchRoleAssignments(Number(examinationId))
+          .then((response) => {
+            if (response?.data.data && Array.isArray(response.data.data)) {
+              setAssignedRoles(response.data.data); // Update the table with the new data
+            } else {
+              setErrorMessage('The response data is not in the expected format.');
+            }
+          })
+          .catch((error) => {
+            console.error('Error fetching updated assigned roles:', error);
+            setErrorMessage('Failed to fetch assigned roles. Please try again.');
+          });
+  
+        setIsModalOpen(false); // Close the modal after saving
+        setSuccessMessage("Roles successfully assigne");
+      })
+      .catch((error) => {
+        console.error('Error saving role assignment:', error);
+        setErrorMessage('Failed to update the role assignment. Please try again.');
+      });
+  };
+  
   // Group roles by courseId and paperType
   const groupedRoles = assignedRoles.reduce(
     (acc, role) => {
@@ -88,10 +136,16 @@ const PreviewAssignedRoles: React.FC = () => {
         </div>
 
         <div className="p-6.5">
+        <SuccessMessage
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+          <ErrorMessage
+            message={errorMessage}
+            onClose={() => setErrorMessage('')}
+          />
           {isLoading ? (
             <Loader />
-          ) : errorMessage ? (
-            <p className="text-red-500">{errorMessage}</p>
           ) : (
             Object.keys(groupedRoles).map((courseId) => {
               const course = groupedRoles[Number(courseId)];
@@ -103,8 +157,8 @@ const PreviewAssignedRoles: React.FC = () => {
 
                   {/* Render THEORY roles */}
                   {course.roles.THEORY.length > 0 && (
-                    <div className="overflow-x-auto my-8">
-                      <h5 className="font-medium text-black dark:text-white">
+                    <div className="overflow-x-auto my-4">
+                      <h5 className="font-medium text-black dark:text-white mb-4">
                         Theory
                       </h5>
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
@@ -138,32 +192,28 @@ const PreviewAssignedRoles: React.FC = () => {
                                 {role.isAuthorized ? 'Authorized' : 'Pending'}
                               </td>
                               <td className="border px-4 py-2">
-                                {/* Approve and Edit links */}
                                 {!role.isAuthorized && (
-                                  <a href="#" className="text-green-500">
-                                    Approve
-                                  </a>
-                                )}
-                                {!role.isAuthorized && ' | '}
-                                {!role.isAuthorized ? (
-                                  <a href="#" className="text-blue-500">
+                                  <a
+                                    href="#"
+                                    className="text-blue-500"
+                                    onClick={() => handleOpenModal(role)}
+                                  >
                                     Edit
                                   </a>
-                                ) : (
-                                  <span className="text-gray-500">Edit</span> // Disabled when approved
                                 )}
-                              </td>
+                                </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
+                    
                   )}
 
                   {/* Render PRACTICAL roles */}
                   {course.roles.PRACTICAL.length > 0 && (
                     <div className="overflow-x-auto my-8">
-                      <h5 className="font-medium text-black dark:text-white">
+                      <h5 className="font-medium text-black dark:text-white mb-4">
                         Practical
                       </h5>
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
@@ -197,19 +247,14 @@ const PreviewAssignedRoles: React.FC = () => {
                                 {role.isAuthorized ? 'Authorized' : 'Pending'}
                               </td>
                               <td className="border px-4 py-2">
-                                {/* Approve and Edit links */}
                                 {!role.isAuthorized && (
-                                  <a href="#" className="text-green-500">
-                                    Approve
-                                  </a>
-                                )}
-                                {!role.isAuthorized && ' | '}
-                                {!role.isAuthorized ? (
-                                  <a href="#" className="text-blue-500">
+                                  <a
+                                    href="#"
+                                    className="text-blue-500"
+                                    onClick={() => handleOpenModal(role)}
+                                  >
                                     Edit
                                   </a>
-                                ) : (
-                                  <span className="text-gray-500">Edit</span> // Disabled when approved
                                 )}
                               </td>
                             </tr>
@@ -224,6 +269,18 @@ const PreviewAssignedRoles: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Render the EditRoleModal */}
+      {isModalOpen && selectedRole && (
+        <EditRoleModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={onSave}
+          roleAssignmentId={selectedRole.id}
+          currentUserId={selectedRole.userId}
+          users={users} // Pass the list of users here
+        />
+      )}
     </div>
   );
 };
