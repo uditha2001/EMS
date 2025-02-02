@@ -190,25 +190,18 @@ public class RoleAssignmentService {
     }
 
     // Edit a role assignment
-    public String editRoleAssignment(Long id, CreateRoleAssignmentDTO createRoleAssignmentDTO) {
+    public String editRoleAssignment(Long id, Long userId) {
         RoleAssignmentEntity roleAssignment = roleAssignmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role assignment not found with ID: " + id));
 
-        // Update the role assignment with the new details
-        roleAssignment.setCourse(coursesRepository.findById(createRoleAssignmentDTO.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + createRoleAssignmentDTO.getCourseId())));
-        roleAssignment.setRole(rolesRepository.findById(createRoleAssignmentDTO.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found with ID: " + createRoleAssignmentDTO.getRoleId())));
-        roleAssignment.setUserId(userRepository.findById(createRoleAssignmentDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + createRoleAssignmentDTO.getUserId())));
-        roleAssignment.setExaminationId(examinationRepository.findById(createRoleAssignmentDTO.getExaminationId())
-                .orElseThrow(() -> new RuntimeException("Examination not found with ID: " + createRoleAssignmentDTO.getExaminationId())));
-        roleAssignment.setPaperType(createRoleAssignmentDTO.getPaperType());  // Make sure to set paperType as enum
+        roleAssignment.setUserId(userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId)));
 
         roleAssignmentRepository.save(roleAssignment);
 
-        return "Role assignment updated successfully";
+        return "User updated successfully in role assignment";
     }
+
 
     // Authorize roles for a given examination
     public String authorizeRolesByExamination(Long examinationId) {
