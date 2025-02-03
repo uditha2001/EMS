@@ -79,9 +79,14 @@ const ResultsUpload = () => {
         console.log(totalData);
         if (allowToSend) {
             saveFirstMarkingResults(totalData).then((data) => {
-                if (data.code) {
+                console.log(data);
+                if (data.code==201) {
                     setAllowToSend(false);
-                    setShowTable(true)
+                    setShowTable(false)
+                }
+                else if(data.code==500){
+                    setAllowToSend(false);
+                    setShowTable(false) 
                 }
 
             })

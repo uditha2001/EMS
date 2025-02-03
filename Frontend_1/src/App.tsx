@@ -6,7 +6,6 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import Templates from './pages/PaperSetting/Templates';
 import CreateTimetable from './pages/CreateTimetable/Timetable';
-import ResultsUpload from './pages/Results/ResultsUpload';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -131,10 +130,7 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-      <Route
-      path="/result-Upload"
-      element={renderPage('upload result|EMS',<ResultsUpload/>)}
-      />
+      
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
