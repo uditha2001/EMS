@@ -96,6 +96,7 @@ public class ExaminationService {
         dto.setLevel(entity.getLevel());
         dto.setSemester(entity.getSemester());
         dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
+        dto.setDegreeName(entity.getDegreeProgramsEntity().getDegreeName());
         return dto;
     }
 
