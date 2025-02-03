@@ -10,7 +10,6 @@ import { faCheckCircle, faClock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
-
 interface AssignedRole {
   id: number;
   courseId: number;
@@ -485,7 +484,7 @@ const PreviewAssignedRoles: React.FC = () => {
       {/* Render the ConfirmationModal */}
       {isConfirmationModalOpen && (
         <ConfirmationModal
-          message="Are you sure you want to authorize these roles?"
+          message="Are you sure you want to authorize these roles? Once authorized, you won't be able to edit them, and assigned users will inherit their permissions."
           onConfirm={() => {
             actionToConfirm();
             setIsConfirmationModalOpen(false);
