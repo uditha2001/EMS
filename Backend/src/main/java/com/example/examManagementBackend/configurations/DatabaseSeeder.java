@@ -64,10 +64,8 @@ public class DatabaseSeeder {
             PermissionEntity p19 = createPermission("MODERATE_PAPER", "Allows moderating exam papers", "Paper Workflow");
             PermissionEntity p20 = createPermission("ASSIGN_EXAM_ROLE", "Allows assigning exam roles to users", "Paper Workflow");
             PermissionEntity p21 = createPermission("TRANSFER_PAPER", "Allows transferring exam papers between departments", "Paper Workflow");
-
             PermissionEntity p22 = createPermission("ACADEMIC_YEAR", "Allows Managing Academic Years", "Paper Workflow");
-
-
+            PermissionEntity p23 = createPermission("APPROVE_EXAM_ROLE", "Allows approving exam roles to users", "Paper Workflow");
 
 
             // Seed roles
@@ -89,6 +87,7 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p20);
             assignPermissionToRole(adminRole, p21);
             assignPermissionToRole(adminRole, p22);
+            assignPermissionToRole(adminRole, p23);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(paperCreatorRole,p21);
