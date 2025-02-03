@@ -401,7 +401,10 @@ const useApi = () => {
     }
   };
 
-  const editRoleAssignment = async (roleAssignmentId: number, userId: number) => {
+  const editRoleAssignment = async (
+    roleAssignmentId: number,
+    userId: number,
+  ) => {
     try {
       const response = await axiosPrivate.put(
         `/role-assignments/${roleAssignmentId}?userId=${userId}`, // Pass userId as query param
@@ -412,7 +415,6 @@ const useApi = () => {
       throw error;
     }
   };
-  
 
   const getRoleAssignmentById = async (roleAssignmentId: number) => {
     try {
@@ -451,6 +453,19 @@ const useApi = () => {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || 'Failed to fetch active users count',
+      );
+    }
+  };
+
+  const getExaminationById = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/academic-years/${examinationId}`,
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch examination',
       );
     }
   };
@@ -510,6 +525,7 @@ const useApi = () => {
     authorizeRoleByCourseAndPaperType,
     editRoleAssignment,
     getRoleAssignmentById,
+    getExaminationById,
     loading,
     error,
   };
