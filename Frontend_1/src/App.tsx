@@ -4,10 +4,6 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Templates from './pages/PaperSetting/Templates';
-import CreateTimetable from './pages/CreateTimetable/Timetable';
-import ResultsUpload from './pages/Results/ResultsUpload';
-import PreviewAssignedRoles from './pages/RoleAssignments/PreviewAssignedRoles';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -86,6 +82,14 @@ const EditPaperStructure = React.lazy(
 );
 const ModerationDashboard = React.lazy(
   () => import('./pages/PaperModeration/ModerationDashboard'),
+);
+const Templates = React.lazy(() => import('./pages/PaperSetting/Templates'));
+const CreateTimetable = React.lazy(
+  () => import('./pages/CreateTimetable/Timetable'),
+);
+const ResultsUpload = React.lazy(() => import('./pages/Results/ResultsUpload'));
+const PreviewAssignedRoles = React.lazy(
+  () => import('./pages/RoleAssignments/PreviewAssignedRoles'),
 );
 
 function App() {
