@@ -13,4 +13,13 @@ public class ExaminationDTO {
     private String level;
     private String semester;
     private Long degreeProgramId;
+    private String degreeProgramName;
+
+    public ExaminationDTO(Long id, String year, String level, String semester, Long degreeProgramId) {
+        this.id = id;
+        this.year = year;
+        this.level = level;
+        this.semester = semester;
+        this.degreeProgramId = degreeProgramId;
+    }
 }
