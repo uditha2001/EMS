@@ -145,7 +145,7 @@ public class ExaminationService {
             examinationDTO.setLevel(examinationEntity.getLevel());
             examinationDTO.setSemester(examinationEntity.getSemester());
             examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTO.setDegreeName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
             examinationDTOS.add(examinationDTO);
         }
 
