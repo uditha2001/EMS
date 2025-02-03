@@ -469,7 +469,54 @@ const useApi = () => {
       );
     }
   };
+  const getDegreeProgramById=async (id:number)=>{
+    try{
+        const response =await axiosPrivate.get(`degreePrograms/${id}`);
+        if(response.status===200){
+          return response.data;
+        }
+    }
+    catch(error:any){
+      throw new Error("failed to get degree names");
+    }
 
+  }
+  const getAllExaminationDetailsWithDegreeName=async ()=>{
+    try{
+        const response=await axiosPrivate.get('academic-years/getExaminationWithDegreeName');
+        if(response.data.code===200){
+          return response.data.data;
+        }
+    }
+    catch(error:any){
+        throw new Error("failed to fetch examinations name");
+    }
+  }
+
+  const getCoursesUsingExaminationId=async (examinationId:number|undefined)=>{
+    try{
+      const response=await axiosPrivate.get('academic-years/getCoursesUsingExaminationId',{
+        params: { examinationId: examinationId }   
+           });
+      if(response.data.code===200){
+        return response.data.data;
+      }
+  }
+  catch(error:any){
+      throw new Error("failed to fetch examinations name");
+  }
+  }
+
+  const saveFirstMarkingResults=async (result:any)=>{
+    try {
+      const response = await axiosPrivate.post('result/firstMarking', result); 
+        console.log(response.data);
+        return response.data;
+  } catch (error: any) {
+      throw new Error("Failed to fetch examination names");
+  }
+}
+  
   return {
     uploadFile,
     getAllFiles,
@@ -526,6 +573,10 @@ const useApi = () => {
     editRoleAssignment,
     getRoleAssignmentById,
     getExaminationById,
+    getDegreeProgramById,
+    getAllExaminationDetailsWithDegreeName,
+    getCoursesUsingExaminationId,
+    saveFirstMarkingResults,
     loading,
     error,
   };

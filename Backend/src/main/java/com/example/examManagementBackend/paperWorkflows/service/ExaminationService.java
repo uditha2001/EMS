@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
+import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
@@ -9,22 +10,33 @@ import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEnt
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
+import com.example.examManagementBackend.utill.StandardResponse;
+import org.modelmapper.ModelMapper;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ExaminationService {
 
-    private ExaminationRepository examinationRepository;
-
-    public ExaminationService(ExaminationRepository examinationRepository) {
+    private final ExaminationRepository examinationRepository;
+    private final ExaminationTimeTableRepository examinationTimeTableRepository;
+    private final ModelMapper modelMapper;
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, ModelMapper modelMapper) {
         this.examinationRepository = examinationRepository;
+        this.examinationTimeTableRepository = examinationTimeTableRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Autowired
@@ -122,6 +134,47 @@ public class ExaminationService {
                 .build();
     }
 
+    public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
+        List<String> degreeNames=new ArrayList<>();
+        List<ExaminationDTO> examinationDTOS=new ArrayList<>();
+        List<ExaminationEntity> examinationEntities = examinationRepository.findAll();
+        for(ExaminationEntity examinationEntity : examinationEntities) {
+            ExaminationDTO examinationDTO=new ExaminationDTO();
+            examinationDTO.setId(examinationEntity.getId());
+            examinationDTO.setYear(examinationEntity.getYear());
+            examinationDTO.setLevel(examinationEntity.getLevel());
+            examinationDTO.setSemester(examinationEntity.getSemester());
+            examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
+            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTOS.add(examinationDTO);
+        }
+
+       return new ResponseEntity<>(
+               new StandardResponse(200,"sucess",examinationDTOS), HttpStatus.OK
+       );
+    }
+
+    //create a methode to get coursedata which ara belongs to particular exam
+    public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
+        try{
+            Set<CourseDTO> courseDTOS=new HashSet<>();
+            List<ExamTimeTablesEntity> examTimeTablesEntities=examinationRepository.getCoursesUsingExaminationId(examinationId);
+            for(ExamTimeTablesEntity examinationEntity:examTimeTablesEntities){
+                CourseDTO courseDTO=new CourseDTO();
+                CoursesEntity coursesEntity=examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
+                modelMapper.map(coursesEntity,courseDTO);
+                courseDTOS.add(courseDTO);
+            }
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"sucess",courseDTOS), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                   new StandardResponse(500,"erroe",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
     private boolean isCourseActiveAndMatchesExamination(CoursesEntity course, ExaminationEntity examination) {
         return course.getLevel().equals(Integer.parseInt(examination.getLevel())) &&
                 course.getSemester().equals(examination.getSemester()) &&
