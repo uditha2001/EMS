@@ -9,6 +9,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import { faCheckCircle, faClock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import { jsPDF } from 'jspdf';
 
 interface AssignedRole {
   id: number;
@@ -213,6 +214,125 @@ const PreviewAssignedRoles: React.FC = () => {
     setIsConfirmationModalOpen(true);
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+
+    // Set margins for the document
+    const margin = 15;
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    // Check if all roles are authorized
+    const allRolesAuthorized = Object.values(groupedRoles).every((course) =>
+      (['THEORY', 'PRACTICAL'] as ('THEORY' | 'PRACTICAL')[]).every(
+        (paperType) =>
+          course.roles[paperType].every((role) => role.isAuthorized),
+      ),
+    );
+
+    // Header Section (Centered)
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    const headerText = 'University of Ruhuna\nDepartment of Computer Science';
+    const headerWidth =
+      (doc.getStringUnitWidth(headerText) * doc.getFontSize()) /
+      doc.internal.scaleFactor;
+    const headerX = (pageWidth - headerWidth) / 2;
+    doc.text(headerText, headerX, 20);
+
+    // Exam details
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'normal');
+    const examDetails = `Examination: ${examination?.degreeName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
+    doc.text(examDetails, margin, 40);
+
+    doc.line(margin, 45, pageWidth - margin, 45); // Horizontal line separator
+
+    // Assigned Roles Overview Title
+    doc.setFontSize(14);
+    const titleText = allRolesAuthorized
+      ? 'Exam Role Assignment Sheet (Authorized)'
+      : 'Exam Role Assignment Sheet (Unauthorized)';
+    doc.text(titleText, margin, 55);
+
+    // Table for Courses and Paper Types
+    let y = 70; // Starting Y position for the table
+
+    // Loop through groupedRoles to generate the table
+    Object.keys(groupedRoles).forEach((courseId) => {
+      const course = groupedRoles[Number(courseId)];
+
+      // Course Name as header
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${course.courseCode} - ${course.courseName}`, margin, y);
+      y += 7;
+
+      // Table Header
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Paper Type', margin + 5, y);
+      doc.text('Role', margin + 60, y);
+      doc.text('Assigned User', margin + 120, y);
+
+      doc.line(margin, y + 2, pageWidth - margin, y + 2); // Horizontal line after the header
+      y += 8;
+
+      // Table Rows for each Paper Type
+      (['THEORY', 'PRACTICAL'] as ('THEORY' | 'PRACTICAL')[]).forEach(
+        (paperType) => {
+          if (course.roles[paperType].length > 0) {
+            doc.text(paperType, margin + 5, y); // Paper Type label
+            y += 8;
+
+            course.roles[paperType].forEach((role) => {
+              doc.text(role.roleName, margin + 60, y);
+              doc.text(role.user, margin + 120, y);
+              y += 8;
+            });
+
+            y += 10; // Add space between paper types
+          }
+        },
+      );
+
+      y += 15; // Add space between courses
+    });
+
+    // Check if content exceeds the page height, and add a page break if needed
+    if (y > pageHeight - 40) {
+      // If content goes beyond the page height, add a page break
+      doc.addPage();
+      y = 20; // Reset Y position after page break
+    }
+
+    // Footer Section with time
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'italic');
+    const generatedOnTime = new Date().toLocaleString();
+    doc.text(`Generated on: ${generatedOnTime}`, margin, y + 10);
+
+    y += 20; // Add space before the signature lines
+
+    // Signature Section with two columns
+    const colWidth = (pageWidth - 3 * margin) / 2; // Divide space into two columns
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+
+    // Created by (left column)
+    doc.text('Created by:', margin, y);
+    doc.line(margin + 30, y + 2, margin + colWidth - 20, y + 2); // Signature line in the left column
+
+    // Authorized by (right column)
+    doc.text('Authorized by:', margin + colWidth, y); // Position in the second column
+    doc.line(margin + colWidth + 30, y + 2, margin + 2 * colWidth - 20, y + 2); // Signature line in the right column
+
+    // File Name: Save the PDF with examination details
+    const fileName = `assigned-roles-overview-${examination?.degreeName}-${examination?.year}.pdf`;
+    doc.save(fileName);
+  };
+
   return (
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Preview Assigned Roles" />
@@ -248,6 +368,12 @@ const PreviewAssignedRoles: React.FC = () => {
                 Authorize All Roles for This Examination
               </button>
             )}
+            <button
+              className="bg-primary text-white font-medium px-5 py-2 rounded"
+              onClick={generatePDF}
+            >
+              Download PDF
+            </button>
           </div>
         </div>
 
