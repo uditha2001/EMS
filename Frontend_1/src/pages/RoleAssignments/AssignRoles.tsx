@@ -11,6 +11,7 @@ interface Examination {
   year: string;
   level: string;
   semester: string;
+  degreeName: string;
 }
 
 interface Course {
@@ -247,19 +248,20 @@ const AssignRoles: React.FC = () => {
               <option value="">Select Examination</option>
               {examinations?.map((exam) => (
                 <option key={exam.id} value={exam.id}>
-                  {exam.year} - Level {exam.level} - Semester {exam.semester}
+                  {exam.year} - Level {exam.level} - Semester {exam.semester} -{' '}
+                  {exam.degreeName}
                 </option>
               ))}
             </select>
             {selectedExamination && (
-            <>
-            <Link
-              to={`/paper/preview-assigned-roles/${selectedExamination}`}
-              className="bg-primary text-white px-4 py-2 rounded mt-3 inline-block mx-4"
-            >
-              Preview Assigned Roles
-            </Link>
-            </>
+              <>
+                <Link
+                  to={`/paper/preview-assigned-roles/${selectedExamination}`}
+                  className="bg-primary text-white px-4 py-2 rounded mt-3 inline-block mx-4"
+                >
+                  Preview Assigned Roles
+                </Link>
+              </>
             )}
           </div>
 
