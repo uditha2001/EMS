@@ -8,6 +8,8 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import { faCheckCircle, faClock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+
 
 interface AssignedRole {
   id: number;
@@ -23,6 +25,14 @@ interface AssignedRole {
   paperType: 'THEORY' | 'PRACTICAL';
 }
 
+interface Examination {
+  id: string;
+  year: string;
+  level: string;
+  semester: string;
+  degreeName: string;
+}
+
 const PreviewAssignedRoles: React.FC = () => {
   const { examinationId } = useParams<{ examinationId: string }>();
   const [assignedRoles, setAssignedRoles] = useState<AssignedRole[]>([]);
@@ -34,12 +44,27 @@ const PreviewAssignedRoles: React.FC = () => {
   const [users, setUsers] = useState<
     { id: number; firstName: string; lastName: string }[]
   >([]);
+  const [examination, setExamination] = useState<Examination | null>(null);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
 
-  const { fetchRoleAssignments, editRoleAssignment, fetchUsers } = useApi();
+  const {
+    fetchRoleAssignments,
+    editRoleAssignment,
+    fetchUsers,
+    getExaminationById,
+    authorizeRoleAssignment,
+    authorizeRoleByExamination,
+    authorizeRoleByCourseAndPaperType,
+  } = useApi();
 
   useEffect(() => {
     if (examinationId) {
       setIsLoading(true);
+      // Fetch examination details
+      getExaminationById(Number(examinationId))
+        .then((exam) => setExamination(exam))
+        .catch(() => setErrorMessage('Failed to fetch examination details.'));
       fetchRoleAssignments(Number(examinationId))
         .then((response) => {
           if (response?.data.data && Array.isArray(response.data.data)) {
@@ -74,6 +99,42 @@ const PreviewAssignedRoles: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleAuthorizeRole = (roleAssignmentId: number) => {
+    authorizeRoleAssignment(roleAssignmentId)
+      .then(() => {
+        setSuccessMessage('Role authorized successfully.');
+        refreshRoleAssignments();
+      })
+      .catch(() => setErrorMessage('Failed to authorize role.'));
+  };
+
+  const handleAuthorizeByExamination = () => {
+    authorizeRoleByExamination(Number(examinationId))
+      .then(() => {
+        setSuccessMessage('All roles authorized for this examination.');
+        refreshRoleAssignments();
+      })
+      .catch(() =>
+        setErrorMessage('Failed to authorize roles for examination.'),
+      );
+  };
+
+  const handleAuthorizeByCourseAndPaperType = (
+    courseId: number,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ) => {
+    authorizeRoleByCourseAndPaperType(courseId, paperType)
+      .then(() => {
+        setSuccessMessage(
+          `Roles authorized for ${paperType} in Course ID ${courseId}.`,
+        );
+        refreshRoleAssignments();
+      })
+      .catch(() =>
+        setErrorMessage('Failed to authorize roles by course and paper type.'),
+      );
+  };
+
   const onSave = (roleAssignmentId: number, userId: number) => {
     editRoleAssignment(roleAssignmentId, userId)
       .then(() => {
@@ -96,7 +157,7 @@ const PreviewAssignedRoles: React.FC = () => {
           });
 
         setIsModalOpen(false); // Close the modal after saving
-        setSuccessMessage('Roles successfully assigne');
+        setSuccessMessage('Roles successfully assigned');
       })
       .catch((error) => {
         console.error('Error saving role assignment:', error);
@@ -105,6 +166,21 @@ const PreviewAssignedRoles: React.FC = () => {
         );
       });
   };
+
+  const refreshRoleAssignments = () => {
+    fetchRoleAssignments(Number(examinationId))
+      .then((response) => {
+        if (response?.data.data && Array.isArray(response.data.data)) {
+          setAssignedRoles(response.data.data);
+        } else {
+          setErrorMessage('Failed to refresh role assignments.');
+        }
+      })
+      .catch(() => setErrorMessage('Failed to refresh role assignments.'));
+  };
+
+  // Check if all roles are authorized
+  const allRolesAuthorized = assignedRoles.every((role) => role.isAuthorized);
 
   // Group roles by courseId and paperType
   const groupedRoles = assignedRoles.reduce(
@@ -132,15 +208,48 @@ const PreviewAssignedRoles: React.FC = () => {
     >,
   );
 
+  // Handle confirmation for authorization actions
+  const confirmAction = (action: () => void) => {
+    setActionToConfirm(() => action);
+    setIsConfirmationModalOpen(true);
+  };
+
   return (
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Preview Assigned Roles" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
-        <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-          <h3 className="font-medium text-black dark:text-white">
-            Assigned Exam Roles
-          </h3>
+        <div className="border-b border-stroke dark:border-strokedark py-6 px-8">
+          <header className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-black dark:text-white">
+              University of Ruhuna
+            </h2>
+            <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
+              Department of Computer Science
+            </h3>
+            <h4 className="text-md font-medium text-gray-600 dark:text-gray-400">
+              Exam Role Assignment Sheet (
+              {allRolesAuthorized ? 'Authorized' : 'Unauthorized'})
+            </h4>
+          </header>
+
+          {/* Responsive row for exam details and button */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <h3 className="font-semibold text-lg text-black dark:text-white">
+              Examination: {examination?.degreeName} - Level{' '}
+              {examination?.level} - Semester {examination?.semester} -{' '}
+              {examination?.year}
+            </h3>
+
+            {!allRolesAuthorized && (
+              <button
+                className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition duration-200 whitespace-nowrap"
+                onClick={() => confirmAction(handleAuthorizeByExamination)}
+              >
+                Authorize All Roles for This Examination
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="p-6.5">
@@ -169,6 +278,21 @@ const PreviewAssignedRoles: React.FC = () => {
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Theory
                       </h5>
+                      {!allRolesAuthorized && (
+                        <button
+                          className="bg-primary text-white px-4 py-2 rounded mb-4 inline-block"
+                          onClick={() =>
+                            confirmAction(() =>
+                              handleAuthorizeByCourseAndPaperType(
+                                Number(courseId),
+                                'THEORY',
+                              ),
+                            )
+                          }
+                        >
+                          Authorize Theory Roles
+                        </button>
+                      )}
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-form-input">
@@ -208,20 +332,33 @@ const PreviewAssignedRoles: React.FC = () => {
                                   }-500`}
                                 />
                                 <span className="ml-2">
-                                  {role.isAuthorized
-                                    ? 'Authorized'
-                                    : 'Pending'}
+                                  {role.isAuthorized ? 'Authorized' : 'Pending'}
                                 </span>
                               </td>
                               <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                {!role.isAuthorized && (
-                                  <a
-                                    href="#"
-                                    className="text-blue-500"
-                                    onClick={() => handleOpenModal(role)}
-                                  >
-                                    Edit
-                                  </a>
+                                {!role.isAuthorized ? (
+                                  <>
+                                    <button
+                                      className="text-blue-500 mr-4"
+                                      onClick={() => handleOpenModal(role)}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      className="text-green-500"
+                                      onClick={() =>
+                                        confirmAction(() =>
+                                          handleAuthorizeRole(role.id),
+                                        )
+                                      }
+                                    >
+                                      Authorize
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-green-600">
+                                    Role Authorized
+                                  </span>
                                 )}
                               </td>
                             </tr>
@@ -237,6 +374,21 @@ const PreviewAssignedRoles: React.FC = () => {
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Practical
                       </h5>
+                      {!allRolesAuthorized && (
+                        <button
+                          className="bg-primary text-white px-4 py-2 rounded mb-4 inline-block"
+                          onClick={() =>
+                            confirmAction(() =>
+                              handleAuthorizeByCourseAndPaperType(
+                                Number(courseId),
+                                'PRACTICAL',
+                              ),
+                            )
+                          }
+                        >
+                          Authorize Practical Roles
+                        </button>
+                      )}
                       <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                         <thead>
                           <tr className="bg-gray-100 dark:bg-form-input">
@@ -276,20 +428,33 @@ const PreviewAssignedRoles: React.FC = () => {
                                   }-500`}
                                 />
                                 <span className="ml-2">
-                                  {role.isAuthorized
-                                    ? 'Authorized'
-                                    : 'Pending'}
+                                  {role.isAuthorized ? 'Authorized' : 'Pending'}
                                 </span>
                               </td>
                               <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                {!role.isAuthorized && (
-                                  <a
-                                    href="#"
-                                    className="text-blue-500"
-                                    onClick={() => handleOpenModal(role)}
-                                  >
-                                    Edit
-                                  </a>
+                                {!role.isAuthorized ? (
+                                  <>
+                                    <button
+                                      className="text-blue-500 mr-4"
+                                      onClick={() => handleOpenModal(role)}
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      className="text-green-500"
+                                      onClick={() =>
+                                        confirmAction(() =>
+                                          handleAuthorizeRole(role.id),
+                                        )
+                                      }
+                                    >
+                                      Authorize
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-green-600">
+                                    Role Authorized
+                                  </span>
                                 )}
                               </td>
                             </tr>
@@ -314,6 +479,18 @@ const PreviewAssignedRoles: React.FC = () => {
           roleAssignmentId={selectedRole.id}
           currentUserId={selectedRole.userId}
           users={users} // Pass the list of users here
+        />
+      )}
+
+      {/* Render the ConfirmationModal */}
+      {isConfirmationModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to authorize these roles?"
+          onConfirm={() => {
+            actionToConfirm();
+            setIsConfirmationModalOpen(false);
+          }}
+          onCancel={() => setIsConfirmationModalOpen(false)}
         />
       )}
     </div>
