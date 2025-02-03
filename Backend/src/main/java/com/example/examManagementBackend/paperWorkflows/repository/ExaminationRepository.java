@@ -26,4 +26,5 @@ public interface ExaminationRepository extends JpaRepository<ExaminationEntity, 
                                                    @Param("level") String level,
                                                    @Param("semester") String semester);
 
+
 }

@@ -1,13 +1,25 @@
 package com.example.examManagementBackend.resultManagement.services;
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
+import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
+import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.resultManagement.repo.StudentRepo;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
+import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -17,36 +29,94 @@ public class ResultService {
     private final ResultRepo resultRepo;
     private final ExaminationRepository examinationRepo;
     private final CoursesRepository coursesRepo;
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo,ExaminationRepository examinationRepo,CoursesRepository coursesRepo) {
+    private final ExamTypeRepo examTypeRepo;
+    private final ModelMapper modelMapper;
+    private final JwtService jwtService;
+    private final UserManagementRepo userManagementRepo;
+
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, ModelMapper modelMapper, JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
         this.coursesRepo=coursesRepo;
+        this.examTypeRepo=examTypeRepo;
+        this.modelMapper=modelMapper;
+        this.jwtService=jwtService;
+        this.userManagementRepo = userManagementRepo;
     }
-    public ResponseEntity<StandardResponse> saveFirstMarkingResults(ResultDTO results) {
-        if(results.getExamName()!=null && results.getCourseCode()!=null && results.getStudentsData()!=null && !results.getStudentsData().isEmpty()) {
-            String[] examDetails=results.getExamName().split("-");
-            String[] level=examDetails[2].split(" ");
-            String[] semester=examDetails[3].split(" ");
-            Long courseId=getCourseCodeId(results.getCourseCode());
-            Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
-            for(StudentDTO student: results.getStudentsData()){
-                Long studentId=getStudentsTableId(student.getStudentNumber());
-                ResultEntity resultEntity = new ResultEntity();
+    public ResponseEntity<StandardResponse> saveFirstMarkingResults(ResultDTO results, HttpServletRequest request){
+        try{
+            if(results.getExamName()!=null && results.getCourseCode()!=null && results.getStudentsData()!=null && !results.getStudentsData().isEmpty()) {
+                Object[] data=jwtService.getUserNameAndToken(request);
+                String username = data[0].toString();
+                UserEntity approvedBy=userManagementRepo.findByUsername(username);
+                String[] examDetails=results.getExamName().split("-");
+                String[] level=examDetails[2].split(" ");
+                String[] semester=examDetails[3].split(" ");
+                Long courseId=getCourseCodeId(results.getCourseCode());
+                Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+                Long examinationTypeId=getExaminationTypeId(results.getExamType());
+                for(StudentDTO student: results.getStudentsData()){
+                    Long studentId=getStudentsTableId(student.getStudentNumber());
+                    saveStudentsDetails(student);
+                    ResultEntity resultEntity = new ResultEntity();
+                    if(resultRepo.isEmpty(examinationId,studentId,examinationTypeId,courseId)==0){
+                        StudentsEntity studentsEntity=studentRepo.findByStudentNumber(student.getStudentNumber());
+                        CoursesEntity  coursesEntity=coursesRepo.findByCourseId(courseId);
+                        ExamTypesEntity examTypes=examTypeRepo.getUsingId(examinationTypeId);
+                        ExaminationEntity examinationEntity=examinationRepo.findById(examinationId).orElse(null);
+                        resultEntity.setStudent(studentsEntity);
+                        resultEntity.setCourse(coursesEntity);
+                        resultEntity.setExamType(examTypes);
+                        resultEntity.setExamination(examinationEntity);
+                        resultEntity.setFirstMarking(student.getFirstMarking());
+                        resultEntity.setApprovedBy(approvedBy);
+                        resultRepo.save(resultEntity);
+                        return new ResponseEntity<StandardResponse>(
+                                new StandardResponse(201,"sucess",null), HttpStatus.CREATED
+                        );
+                    }
+                    else if(resultRepo.isEmpty(examinationId,studentId,examinationTypeId,courseId)>0){
+                        Long resultId= resultRepo.getResultIdIfExists(examinationId,studentId,examinationTypeId,courseId);
+                        resultRepo.updateResults(student.getFirstMarking(),approvedBy,resultId);
+                        return new ResponseEntity<StandardResponse>(
+                                new StandardResponse(201,"sucess",null), HttpStatus.CREATED
+                        );
+                    }
 
+                }
             }
-        }
 
-            return null;
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );        }
     }
 
-    public Long getCourseCodeId(String code){
+    private Long getCourseCodeId(String code){
         return coursesRepo.getCourseIdByCode(code);
     }
-    public Long getExaminationNameId(String year,String level,String semester){
+    private Long getExaminationNameId(String year,String level,String semester){
         return examinationRepo.getExaminationIdByYearAndSemesterAndLevel(year,level,semester);
     }
-    public Long getStudentsTableId(String studentNumber ){
+    private Long getStudentsTableId(String studentNumber ){
         return studentRepo.getIdBystudentNumber(studentNumber);
     }
+
+    private Long getExaminationTypeId(ExamTypesName examinationType){
+            return examTypeRepo.getExamTypeIdByExamTypeName(examinationType);
+    }
+
+    public void saveStudentsDetails(StudentDTO student){
+        if(studentRepo.IsEmpty(student.getStudentNumber())==0){
+            StudentsEntity studentsEntity=new StudentsEntity();
+            modelMapper.map(student, studentsEntity);
+            studentRepo.save(studentsEntity);
+        }
+    }
+
 }

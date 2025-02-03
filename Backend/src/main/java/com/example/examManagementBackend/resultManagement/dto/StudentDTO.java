@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class StudentDTO {
     private String studentNumber;
     private String studentName;
-    private Integer firstMarking;
+    private Float firstMarking;
 }
