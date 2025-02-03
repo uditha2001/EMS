@@ -67,6 +67,14 @@ public class DatabaseSeeder {
             PermissionEntity p22 = createPermission("ACADEMIC_YEAR", "Allows Managing Academic Years", "Paper Workflow");
             PermissionEntity p23 = createPermission("APPROVE_EXAM_ROLE", "Allows approving exam roles to users", "Paper Workflow");
 
+            // Result Management Permissions
+            PermissionEntity p24 = createPermission("ENTER_RESULTS", "Allows entering student exam results", "Result Management");
+            PermissionEntity p25 = createPermission("MODERATE_RESULTS", "Allows moderating and verifying student results", "Result Management");
+            PermissionEntity p26 = createPermission("APPROVE_RESULTS", "Allows approving final exam results", "Result Management");
+            PermissionEntity p27 = createPermission("PUBLISH_RESULTS", "Allows publishing exam results", "Result Management");
+            PermissionEntity p28 = createPermission("GENERATE_TRANSCRIPTS", "Allows generating student transcripts and result reports", "Result Management");
+            PermissionEntity p29 = createPermission("MANAGE_REGRADES", "Allows handling regrading and appeal requests", "Result Management");
+
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -81,13 +89,12 @@ public class DatabaseSeeder {
             // Assign permissions to roles
             assignPermissionToRole(p1, p2, p3, p4, p5, p6, p7, p8, adminRole);
             assignPermissionToRole(p9, p10, p11, p12, p13, p14, p15, p16, adminRole);
-            assignPermissionToRole(adminRole, p17);
-            assignPermissionToRole(adminRole, p18);
-            assignPermissionToRole(adminRole, p19);
-            assignPermissionToRole(adminRole, p20);
-            assignPermissionToRole(adminRole, p21);
-            assignPermissionToRole(adminRole, p22);
-            assignPermissionToRole(adminRole, p23);
+            assignPermissionToRole(p17, p18, p19, p20, p21, p22, p23, p24, adminRole);
+            assignPermissionToRole(adminRole, p25);
+            assignPermissionToRole(adminRole, p26);
+            assignPermissionToRole(adminRole, p27);
+            assignPermissionToRole(adminRole, p28);
+            assignPermissionToRole(adminRole, p29);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(paperCreatorRole,p21);

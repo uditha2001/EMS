@@ -140,7 +140,6 @@ function App() {
         path="/result-Upload"
         element={renderPage('upload result|EMS', <ResultsUpload />)}
       />
-      
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -413,6 +412,36 @@ function App() {
                   'Create Timetable | EMS',
                   <CreateTimetable />,
                 )}
+              />
+            </Route>
+
+            {/* Result Workflow Routes */}
+            <Route
+              element={<RequireAuth allowedPermissions={['ENTER_RESULTS']} />}
+            >
+              <Route
+                path="/result/firstmarking"
+                element={renderPage('First Marking | EMS', <ResultsUpload />)}
+              />
+            </Route>
+            <Route
+              element={
+                <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
+              }
+            >
+              <Route
+                path="/result/secondmarking"
+                //element={renderPage('Second Marking | EMS', )}
+              />
+
+              <Route
+                path="/result/grading"
+                //element={renderPage('Results Grading | EMS', )}
+              />
+
+              <Route
+                path="/result/dashboard"
+                //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
