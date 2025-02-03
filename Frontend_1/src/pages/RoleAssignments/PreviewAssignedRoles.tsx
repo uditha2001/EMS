@@ -10,6 +10,7 @@ import { faCheckCircle, faClock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { jsPDF } from 'jspdf';
+import useHasPermission from '../../hooks/useHasPermission';
 
 interface AssignedRole {
   id: number;
@@ -57,6 +58,7 @@ const PreviewAssignedRoles: React.FC = () => {
   const [filterByAuthorization, setFilterByAuthorization] = useState<
     'ALL' | 'AUTHORIZED' | 'UNAUTHORIZED'
   >('ALL');
+  const hasApprovePermission = useHasPermission('APPROVE_EXAM_ROLE');
 
   const {
     fetchRoleAssignments,
@@ -405,7 +407,7 @@ const PreviewAssignedRoles: React.FC = () => {
               {examination?.year}
             </h3>
 
-            {!allRolesAuthorized && (
+            {!allRolesAuthorized && hasApprovePermission && (
               <button
                 className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition duration-200 whitespace-nowrap"
                 onClick={() => confirmAction(handleAuthorizeByExamination)}
@@ -493,7 +495,7 @@ const PreviewAssignedRoles: React.FC = () => {
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Theory
                       </h5>
-                      {!allRolesAuthorized && (
+                      {!allRolesAuthorized && hasApprovePermission && (
                         <button
                           className="bg-primary text-white px-4 py-2 rounded mb-4 inline-block"
                           onClick={() =>
@@ -559,16 +561,18 @@ const PreviewAssignedRoles: React.FC = () => {
                                     >
                                       Edit
                                     </button>
-                                    <button
-                                      className="text-green-500"
-                                      onClick={() =>
-                                        confirmAction(() =>
-                                          handleAuthorizeRole(role.id),
-                                        )
-                                      }
-                                    >
-                                      Authorize
-                                    </button>
+                                    {hasApprovePermission && (
+                                      <button
+                                        className="text-green-500"
+                                        onClick={() =>
+                                          confirmAction(() =>
+                                            handleAuthorizeRole(role.id),
+                                          )
+                                        }
+                                      >
+                                        Authorize
+                                      </button>
+                                    )}
                                   </>
                                 ) : (
                                   <span className="text-green-600">
@@ -589,7 +593,7 @@ const PreviewAssignedRoles: React.FC = () => {
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Practical
                       </h5>
-                      {!allRolesAuthorized && (
+                      {!allRolesAuthorized && hasApprovePermission && (
                         <button
                           className="bg-primary text-white px-4 py-2 rounded mb-4 inline-block"
                           onClick={() =>
@@ -655,16 +659,18 @@ const PreviewAssignedRoles: React.FC = () => {
                                     >
                                       Edit
                                     </button>
-                                    <button
-                                      className="text-green-500"
-                                      onClick={() =>
-                                        confirmAction(() =>
-                                          handleAuthorizeRole(role.id),
-                                        )
-                                      }
-                                    >
-                                      Authorize
-                                    </button>
+                                    {hasApprovePermission && (
+                                      <button
+                                        className="text-green-500"
+                                        onClick={() =>
+                                          confirmAction(() =>
+                                            handleAuthorizeRole(role.id),
+                                          )
+                                        }
+                                      >
+                                        Authorize
+                                      </button>
+                                    )}
                                   </>
                                 ) : (
                                   <span className="text-green-600">
