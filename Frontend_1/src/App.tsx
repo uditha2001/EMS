@@ -4,8 +4,6 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Templates from './pages/PaperSetting/Templates';
-import CreateTimetable from './pages/CreateTimetable/Timetable';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -85,6 +83,14 @@ const EditPaperStructure = React.lazy(
 const ModerationDashboard = React.lazy(
   () => import('./pages/PaperModeration/ModerationDashboard'),
 );
+const Templates = React.lazy(() => import('./pages/PaperSetting/Templates'));
+const CreateTimetable = React.lazy(
+  () => import('./pages/CreateTimetable/Timetable'),
+);
+const ResultsUpload = React.lazy(() => import('./pages/Results/ResultsUpload'));
+const PreviewAssignedRoles = React.lazy(
+  () => import('./pages/RoleAssignments/PreviewAssignedRoles'),
+);
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -130,6 +136,10 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
+      <Route
+        path="/result-Upload"
+        element={renderPage('upload result|EMS', <ResultsUpload />)}
+      />
       
 
       {/* Authenticated Routes */}
@@ -382,6 +392,13 @@ function App() {
                 path="/paper/roles"
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
+              <Route
+                path="/paper/preview-assigned-roles/:examinationId"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <PreviewAssignedRoles />,
+                )}
+              />
             </Route>
 
             {/*Create Timetable */}
@@ -392,7 +409,10 @@ function App() {
             >
               <Route
                 path="/createtimetable"
-                element={renderPage('Create Timetable | EMS', <CreateTimetable/>)}
+                element={renderPage(
+                  'Create Timetable | EMS',
+                  <CreateTimetable />,
+                )}
               />
             </Route>
           </Route>

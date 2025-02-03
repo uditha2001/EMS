@@ -6,11 +6,13 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@EnableJpaRepositories
 public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEntity, Long> {
 
     // Check if a role assignment already exists for a given combination of course, role, and academic year
@@ -19,6 +21,12 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
     List<RoleAssignmentEntity> findByExaminationId_Id(Long examinationId);
     // Check if a specific paper type (THEORY/PRACTICAL) is assigned to a course in an examination
     boolean existsByCourseIdAndExaminationIdAndPaperType(Long course_id, ExaminationEntity examinationId, PaperType paperType);
+    List<RoleAssignmentEntity> findByCourseIdAndPaperType(Long courseId, PaperType paperType);
+
+    public boolean existsByUserId_UserIdAndRole_RoleIdAndIsAuthorizedTrue(Long userId, Long roleId);
+
+
+
 
 }
 

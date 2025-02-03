@@ -24,5 +24,8 @@ public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
 
     @Query("SELECT count(ur) FROM UserRoles ur where ur.role.roleName= :roleName")
     int getNumberOfUsers(@Param("roleName") String roleName);
+
+    public boolean existsByUser_UserIdAndRole_RoleId(Long userId, Long roleId);
+
 }
 

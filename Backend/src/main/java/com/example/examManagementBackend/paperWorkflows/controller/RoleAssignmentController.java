@@ -2,6 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -53,8 +55,8 @@ public class RoleAssignmentController {
     // Authorize role
     @PatchMapping("/{id}/authorize")
     public ResponseEntity<StandardResponse> authorizeRole(@PathVariable Long id) {
-        RoleAssignmentDTO updatedRole = roleAssignmentService.authorizeRole(id);
-        return ResponseEntity.ok(new StandardResponse(200, "Role authorized successfully", updatedRole));
+        String message = roleAssignmentService.authorizeRole(id);
+        return ResponseEntity.ok(new StandardResponse(200, message, null));
     }
 
     // Unassign role
@@ -84,5 +86,42 @@ public class RoleAssignmentController {
         List<RoleAssignmentDTO> roles = roleAssignmentService.getRoleAssignmentsByExamination(examinationId);
         return ResponseEntity.ok(new StandardResponse(200, "Fetched role assignments for the examination", roles));
     }
+
+    // Edit role assignment by ID
+    @PutMapping("/{id}")
+    public ResponseEntity<StandardResponse> editRoleAssignmentUser(@PathVariable Long id,
+                                                                   @RequestParam("userId") Long userId) {
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(new StandardResponse(400, "User ID is required", null));
+        }
+
+        String message = roleAssignmentService.editRoleAssignment(id, userId);
+        return ResponseEntity.ok(new StandardResponse(200, message, null));
+    }
+
+
+
+    // Authorize roles for a given examination
+    @PatchMapping("/examination/{examinationId}/authorize")
+    public ResponseEntity<StandardResponse> authorizeRolesByExamination(@PathVariable Long examinationId) {
+        String message = roleAssignmentService.authorizeRolesByExamination(examinationId);
+        return ResponseEntity.ok(new StandardResponse(200, message, null));
+    }
+
+    // Authorize roles for a given course and paper type
+    @PatchMapping("/course/{courseId}/paperType/{paperType}/authorize")
+    public ResponseEntity<StandardResponse> authorizeRolesByCourseAndPaperType(@PathVariable Long courseId,
+                                                                               @PathVariable PaperType paperType) {
+        String message = roleAssignmentService.authorizeRolesByCourseAndPaperType(courseId, paperType);
+        return ResponseEntity.ok(new StandardResponse(200, message, null));
+    }
+
+    // Get role assignment by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<StandardResponse> getRoleAssignmentById(@PathVariable Long id) {
+        RoleAssignmentDTO roleAssignment = roleAssignmentService.getRoleAssignmentById(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Role assignment fetched successfully", roleAssignment));
+    }
+
 
 }
