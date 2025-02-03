@@ -36,6 +36,7 @@ interface Examination {
 const PreviewAssignedRoles: React.FC = () => {
   const { examinationId } = useParams<{ examinationId: string }>();
   const [assignedRoles, setAssignedRoles] = useState<AssignedRole[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<AssignedRole[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -47,6 +48,15 @@ const PreviewAssignedRoles: React.FC = () => {
   const [examination, setExamination] = useState<Examination | null>(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
+
+  // Search and Filter States
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filterByPaperType, setFilterByPaperType] = useState<
+    'ALL' | 'THEORY' | 'PRACTICAL'
+  >('ALL');
+  const [filterByAuthorization, setFilterByAuthorization] = useState<
+    'ALL' | 'AUTHORIZED' | 'UNAUTHORIZED'
+  >('ALL');
 
   const {
     fetchRoleAssignments,
@@ -69,6 +79,7 @@ const PreviewAssignedRoles: React.FC = () => {
         .then((response) => {
           if (response?.data.data && Array.isArray(response.data.data)) {
             setAssignedRoles(response.data.data);
+            setFilteredRoles(response.data.data); // Initialize filtered roles
           } else {
             setErrorMessage('The response data is not in the expected format.');
           }
@@ -80,6 +91,40 @@ const PreviewAssignedRoles: React.FC = () => {
         .finally(() => setIsLoading(false));
     }
   }, [examinationId]);
+
+  // Apply search and filters whenever searchQuery, filterByPaperType, or filterByAuthorization changes
+  useEffect(() => {
+    let filtered = assignedRoles;
+
+    // Filter by search query (course code, course name, role name, or user name)
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (role) =>
+          role.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.roleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          role.user.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    // Filter by paper type
+    if (filterByPaperType !== 'ALL') {
+      filtered = filtered.filter(
+        (role) => role.paperType === filterByPaperType,
+      );
+    }
+
+    // Filter by authorization status
+    if (filterByAuthorization !== 'ALL') {
+      filtered = filtered.filter(
+        (role) =>
+          (filterByAuthorization === 'AUTHORIZED' && role.isAuthorized) ||
+          (filterByAuthorization === 'UNAUTHORIZED' && !role.isAuthorized),
+      );
+    }
+
+    setFilteredRoles(filtered);
+  }, [searchQuery, filterByPaperType, filterByAuthorization, assignedRoles]);
 
   const handleOpenModal = (role: AssignedRole) => {
     setSelectedRole(role);
@@ -183,7 +228,7 @@ const PreviewAssignedRoles: React.FC = () => {
   const allRolesAuthorized = assignedRoles.every((role) => role.isAuthorized);
 
   // Group roles by courseId and paperType
-  const groupedRoles = assignedRoles.reduce(
+  const groupedRoles = filteredRoles.reduce(
     (acc, role) => {
       if (!acc[role.courseId]) {
         acc[role.courseId] = {
@@ -377,7 +422,49 @@ const PreviewAssignedRoles: React.FC = () => {
           </div>
         </div>
 
+        {/* Search and Filters Section */}
         <div className="p-6.5">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="Search by course code, course name, role, or user"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full md:w-1/2 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
+            />
+
+            {/* Filter by Paper Type */}
+            <select
+              value={filterByPaperType}
+              onChange={(e) =>
+                setFilterByPaperType(
+                  e.target.value as 'ALL' | 'THEORY' | 'PRACTICAL',
+                )
+              }
+              className="w-full md:w-1/4 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
+            >
+              <option value="ALL">All Paper Types</option>
+              <option value="THEORY">Theory</option>
+              <option value="PRACTICAL">Practical</option>
+            </select>
+
+            {/* Filter by Authorization Status */}
+            <select
+              value={filterByAuthorization}
+              onChange={(e) =>
+                setFilterByAuthorization(
+                  e.target.value as 'ALL' | 'AUTHORIZED' | 'UNAUTHORIZED',
+                )
+              }
+              className="w-full md:w-1/4 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="AUTHORIZED">Authorized</option>
+              <option value="UNAUTHORIZED">Unauthorized</option>
+            </select>
+          </div>
+
           <SuccessMessage
             message={successMessage}
             onClose={() => setSuccessMessage('')}
@@ -392,14 +479,17 @@ const PreviewAssignedRoles: React.FC = () => {
             Object.keys(groupedRoles).map((courseId) => {
               const course = groupedRoles[Number(courseId)];
               return (
-                <div key={courseId} className="mb-6">
-                  <h4 className="font-medium text-black dark:text-white">
+                <div
+                  key={courseId}
+                  className="mb-6 border-b border-stroke dark:border-strokedark"
+                >
+                  <h4 className="font-semibold  text-black dark:text-white">
                     {course.courseCode} - {course.courseName}
                   </h4>
 
                   {/* Render THEORY roles */}
                   {course.roles.THEORY.length > 0 && (
-                    <div className="overflow-x-auto my-4">
+                    <div className="overflow-x-auto my-4 ">
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Theory
                       </h5>
