@@ -13,4 +13,5 @@ public class ExaminationDTO {
     private String level;
     private String semester;
     private Long degreeProgramId;
+    private String degreeName;
 }
