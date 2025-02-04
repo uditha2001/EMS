@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-
 import useApi from '../../api/api';
 import ExaminationList from './ExaminationList';
 import ExaminationForm from './ExaminationForm';
@@ -13,8 +12,10 @@ interface Examination {
   degreeProgramId: string;
   level: string;
   semester: string;
-  createdAt?: string | null;
-  updatedAt?: string | null;
+  examProcessStartDate: string | null;
+  paperSettingCompleteDate: string | null;
+  markingCompleteDate: string | null;
+  status: string;
 }
 
 interface DegreeProgram {
@@ -24,18 +25,21 @@ interface DegreeProgram {
 
 export default function Examinations() {
   const [examinations, setExaminations] = useState<Examination[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Omit<Examination, 'id' | 'degreeProgramId'|'status'>>({
     year: '',
     level: '',
     semester: '',
+    examProcessStartDate: null,
+    paperSettingCompleteDate: null,
+    markingCompleteDate: null,
   });
   const [editId, setEditId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [degreePrograms, setDegreePrograms] = useState<DegreeProgram[]>([]);
-  const [selectedDegreeProgram, setSelectedDegreeProgram] =
-    useState<string>('');
+  const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>('');
+
   const {
     getDegreePrograms,
     getExaminations,
@@ -46,7 +50,6 @@ export default function Examinations() {
 
   // Fetch degree programs
   useEffect(() => {
-    
     const fetchDegreePrograms = async () => {
       try {
         const response = await getDegreePrograms();
@@ -56,37 +59,34 @@ export default function Examinations() {
         setErrorMessage('Failed to load degree programs.');
       }
     };
-
     fetchDegreePrograms();
-  }, []); // Removed axiosPrivate dependency
+  }, []);
 
-  // Fetch academic years
+  // Fetch examinations
   const fetchExaminations = useCallback(async () => {
     try {
-      setLoading(true); // Start loading indicator
-      const response = await getExaminations(); // Call the API function
+      setLoading(true);
+      const response = await getExaminations();
       if (response.data.code === 200) {
-        setExaminations(response.data.data); // Set the response data into state
+        setExaminations(response.data.data);
       } else {
         setErrorMessage('Unexpected response from the server.');
       }
     } catch (error) {
-      console.error('Error fetching academic years', error);
-      setErrorMessage('Error fetching academic years.');
+      console.error('Error fetching examinations', error);
+      setErrorMessage('Error fetching examinations.');
     } finally {
-      setLoading(false); // Stop loading indicator
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchExaminations();
-  }, [fetchExaminations]); // Dependencies are optimized
+  }, [fetchExaminations]);
 
-  // Save or update an academic year
+  // Save or update examination
   const handleSave = async () => {
-    const { year, level, semester } = formData;
-
-    if (!year.trim()) {
+    if (!formData.year.trim()) {
       setErrorMessage('Year cannot be empty.');
       return;
     }
@@ -96,61 +96,62 @@ export default function Examinations() {
     }
 
     try {
-      const payload = {
-        year,
-        degreeProgramId: selectedDegreeProgram,
-        level,
-        semester,
-      };
-
-      console.log('payload', payload);
+      const payload = { ...formData, degreeProgramId: selectedDegreeProgram };
 
       if (editId !== null) {
         await updateExamination(editId, payload);
-        setSuccessMessage('Academic year updated successfully!');
+        setSuccessMessage('Examination updated successfully!');
         setEditId(null);
       } else {
         await createExamination(payload);
-        setSuccessMessage('Academic year added successfully!');
-        resetForm();
+        setSuccessMessage('Examination added successfully!');
       }
 
-      // Clear form and refresh data
-      setFormData({ year: '', level: '', semester: '' });
-      setSelectedDegreeProgram('');
+      resetForm();
       fetchExaminations();
     } catch (error) {
-      setErrorMessage('Error saving academic year.');
+      console.error('Error saving examination', error);
+      setErrorMessage('Error saving examination.');
     }
   };
 
-  // Edit an academic year
+  // Edit an examination
   const handleEdit = (id: number) => {
-    const yearToEdit = examinations.find((year) => year.id === id);
-    if (yearToEdit) {
+    const examToEdit = examinations.find((exam) => exam.id === id);
+    if (examToEdit) {
       setFormData({
-        year: yearToEdit.year,
-        level: yearToEdit.level,
-        semester: yearToEdit.semester,
+        year: examToEdit.year,
+        level: examToEdit.level,
+        semester: examToEdit.semester,
+        examProcessStartDate: examToEdit.examProcessStartDate,
+        paperSettingCompleteDate: examToEdit.paperSettingCompleteDate,
+        markingCompleteDate: examToEdit.markingCompleteDate,
       });
-      setSelectedDegreeProgram(yearToEdit.degreeProgramId);
+      setSelectedDegreeProgram(examToEdit.degreeProgramId);
       setEditId(id);
     }
   };
 
-  // Delete an academic year
+  // Delete an examination
   const handleDelete = async (id: number) => {
     try {
       await deleteExamination(id);
-      setSuccessMessage('Academic year deleted successfully!');
+      setSuccessMessage('Examination deleted successfully!');
       fetchExaminations();
     } catch (error) {
-      setErrorMessage('Error deleting academic year.');
+      setErrorMessage('Error deleting examination.');
     }
   };
 
   const resetForm = () => {
-    setFormData({ year: '', level: '', semester: '' });
+    setFormData({
+      year: '',
+      level: '',
+      semester: '',
+      examProcessStartDate: null,
+      paperSettingCompleteDate: null,
+      markingCompleteDate: null,
+    });
     setSelectedDegreeProgram('');
     setEditId(null);
   };
@@ -158,24 +159,11 @@ export default function Examinations() {
   return (
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Examinations" />
-
       <div className="grid grid-cols-5 gap-8">
         <div className="col-span-5 xl:col-span-3">
-          <SuccessMessage
-            message={successMessage}
-            onClose={() => setSuccessMessage('')}
-          />
-          <ErrorMessage
-            message={errorMessage}
-            onClose={() => setErrorMessage('')}
-          />
-          <ExaminationList
-            examinations={examinations}
-            degreePrograms={degreePrograms}
-            loading={loading}
-            handleEdit={handleEdit}
-            handleDelete={handleDelete}
-          />
+          <SuccessMessage message={successMessage} onClose={() => setSuccessMessage('')} />
+          <ErrorMessage message={errorMessage} onClose={() => setErrorMessage('')} />
+          <ExaminationList examinations={examinations} degreePrograms={degreePrograms} loading={loading} handleEdit={handleEdit} handleDelete={handleDelete} />
         </div>
         <div className="col-span-5 xl:col-span-2">
           <ExaminationForm
@@ -183,7 +171,7 @@ export default function Examinations() {
             setFormData={setFormData}
             editId={editId}
             handleSave={handleSave}
-            cancelEdit={() => resetForm()}
+            cancelEdit={resetForm}
             degreePrograms={degreePrograms}
             selectedDegreeProgram={selectedDegreeProgram}
             setSelectedDegreeProgram={setSelectedDegreeProgram}
