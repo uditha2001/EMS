@@ -1,5 +1,6 @@
-import DegreeProgramCard from "../../components/Cards/DegreeProgramCard"
-import DegreeProgramAddCard from "../../components/Cards/DegreeProgramAddCard"
+import DegreeProgramAddCard from "../../components/Cards/DegreeProgramAddCard";
+import DegreeProgramCard from "../../components/Cards/DegreeProgramCard";
+
 
 export default function DegreePrograms() {
   return (
