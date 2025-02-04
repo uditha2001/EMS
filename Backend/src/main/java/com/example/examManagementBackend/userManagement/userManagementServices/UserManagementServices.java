@@ -309,4 +309,14 @@ public class UserManagementServices {
                 new StandardResponse(200,"sucess",activeUsers), HttpStatus.OK
         );
     }
+
+    public void removeExpiredRoles() {
+        List<UserRoles> allRoles = userRolesRepo.findAll();
+
+        for (UserRoles userRole : allRoles) {
+            if (userRole.isRoleExpired()) {
+                userRolesRepo.delete(userRole); // Remove the expired role
+            }
+        }
+    }
 }
