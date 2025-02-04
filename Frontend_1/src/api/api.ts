@@ -511,14 +511,21 @@ const useApi = () => {
   }
   }
 
-  const saveFirstMarkingResults=async (result:any)=>{
+  const saveFirstMarkingResults=async (result:any,config={})=>{
     try {
-      const response = await axiosPrivate.post('result/firstMarking', result); 
+      const response = await axiosPrivate.post('result/firstMarking', result,{
+        ...config
+      }); 
         console.log(response.data);
         return response.data;
   } catch (error: any) {
-      throw new Error("Failed to fetch examination names");
-  }
+    if (error.response) {
+      return { error: true, status:500, message: error.response.data };
+  } else if (error.request) {
+      return { error: true, status: 500, message: "No response received from the server" };
+  } else {
+      return { error: true, status: 500, message: error.message };
+  }  }
 }
   
   return {
