@@ -80,5 +80,10 @@ public class ExaminationController {
     public ResponseEntity<StandardResponse> getCoursesUsingExaminationId(@RequestParam Long examinationId) {
         return examinationService.getCoursesByExaminationId(examinationId);
     }
+    @PutMapping("/{examId}/update-status")
+    public ResponseEntity<String> updateExamStatus(@PathVariable Long examId) {
+        examinationService.updateExamStatus(examId);
+        return ResponseEntity.ok("Exam status updated successfully!");
+    }
 
 }
