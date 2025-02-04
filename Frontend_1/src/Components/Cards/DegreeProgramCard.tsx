@@ -10,5 +10,5 @@ const DegreeProgramCard = ({name, description}: {name: string, description: stri
     </div>
   )
 }
-
+//test
 export default DegreeProgramCard
