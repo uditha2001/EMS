@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
@@ -60,4 +61,34 @@ public class ExaminationEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examination")
     private List<ResultEntity> results;
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime examProcessStartDate;
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime paperSettingCompleteDate;
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime markingCompleteDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ExamStatus status = ExamStatus.SCHEDULED;
+
+    @PrePersist
+    @PreUpdate
+    private void updateStatus() {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (markingCompleteDate != null && now.isAfter(markingCompleteDate)) {
+            status = ExamStatus.COMPLETED;
+        } else if (paperSettingCompleteDate != null && now.isAfter(paperSettingCompleteDate)) {
+            status = ExamStatus.ONGOING;
+        } else if (examProcessStartDate != null && now.isAfter(examProcessStartDate)) {
+            status = ExamStatus.ONGOING;
+        } else {
+            status = ExamStatus.SCHEDULED;
+        }
+    }
+
 }
