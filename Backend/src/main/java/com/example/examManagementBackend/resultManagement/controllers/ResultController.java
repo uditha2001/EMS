@@ -5,12 +5,7 @@ import com.example.examManagementBackend.resultManagement.services.ResultService
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/result")
@@ -25,4 +20,10 @@ public class ResultController {
     {
         return  resultService.saveFirstMarkingResults(results,request);
     }
+
+    @GetMapping("/getFirstMarking")
+    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestBody  ResultDTO results){
+        return resultService.getFirstMarking(results);
+    }
+
 }
