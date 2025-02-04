@@ -55,7 +55,6 @@ const ResultsUpload = () => {
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
-            console.log(studentsData);
             setCreatedExamNames(examData);
 
         });
@@ -150,8 +149,7 @@ const ResultsUpload = () => {
             if (jsonInput !== "") {
                 try {
                     const parsedData = JSON.parse(jsonInput);
-                    const jsonData2: RowData[] = Array.isArray(parsedData) ? parsedData : [parsedData]; 
-                    console.log(jsonData2);
+                    const jsonData2: RowData[] = Array.isArray(parsedData) ? parsedData : [parsedData];
                     setStudentsData(jsonData2);
                     setSuccessMessage("");
                     setErrorMessage("");
@@ -200,24 +198,26 @@ const ResultsUpload = () => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-2 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-2 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
             <div>
-                <div className="text-center mb-8 dark:bg-black">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2 dark:text-gray-200">
-                        Result Upload
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400">Upload and manage examination results</p>
-                </div>
-                <SuccessMessage
-                    message={successMessage}
-                    onClose={() => setSuccessMessage('')}
-                />
-                <ErrorMessage
-                    message={errorMessage}
-                    onClose={() => setErrorMessage('')}
-                />
+            <div className="self-start text-center mb-4 dark:bg-black">
+                <h1 className="text-4xl font-bold text-gray-800 mb-1 dark:text-gray-200">
+                    Result Upload
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">Upload and manage examination results</p>
+            </div>
 
-                {!showTable ?
+            <SuccessMessage
+                message={successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <ErrorMessage
+                message={errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
+
+            {
+                !showTable ?
                     (<div>
                         <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-6xl dark:bg-gray-800 dark:shadow-gray-700/20">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-gray-300">
@@ -230,7 +230,7 @@ const ResultsUpload = () => {
                                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Name</label>
                                     <select
                                         value={examOptionIdentifier}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500/50"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         onChange={(e) => {
                                             setExamOptionIdentifier(e.target.value);
                                             const selectedIndex = parseInt(e.target.value, 10);
@@ -253,7 +253,7 @@ const ResultsUpload = () => {
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Course Code</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500/50"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         value={courseCode}
                                         onChange={(e) => setCourseCode(e.target.value)}
                                     >
@@ -268,7 +268,7 @@ const ResultsUpload = () => {
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Type</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500/50"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         value={examType}
                                         onChange={(e) => setExamType(e.target.value)}
                                     >
@@ -428,41 +428,43 @@ const ResultsUpload = () => {
                             </div>
                         )
                     )
-                }
-            </div>
-            {showConfirmation && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black/70">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
-                        <h2 className="text-lg font-bold text-black mb-4 dark:text-gray-200">
-                            Cancel Result Upload
-                        </h2>
-                        <p className="text-sm text-gray-700 mb-6 dark:text-gray-400">
-                            Are you sure you want to cancel?
-                        </p>
-                        <div className="flex justify-between">
-                            <button
-                                onClick={() => {
-                                    setShowTable(false);
-                                    setShowConfirmation(false);
-                                }}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                            >
-                                Yes
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowConfirmation(false);
-                                    setstudentsData([]);
-                                }}
-                                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
-                            >
-                                Cancel
-                            </button>
-                        </div>
+            }
+        </div >
+    {
+        showConfirmation && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black/70">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
+                    <h2 className="text-lg font-bold text-black mb-4 dark:text-gray-200">
+                        Cancel Result Upload
+                    </h2>
+                    <p className="text-sm text-gray-700 mb-6 dark:text-gray-400">
+                        Are you sure you want to cancel?
+                    </p>
+                    <div className="flex justify-between">
+                        <button
+                            onClick={() => {
+                                setShowTable(false);
+                                setShowConfirmation(false);
+                            }}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        >
+                            Yes
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowConfirmation(false);
+                                setStudentsData([]);
+                            }}
+                            className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
-            )}
-        </div>
+            </div>
+        )
+    }
+        </div >
     );
 };
 
