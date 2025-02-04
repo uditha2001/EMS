@@ -1,6 +1,8 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import useApi from "../../api/api";
+import SuccessMessage from "../../components/SuccessMessage";
+import ErrorMessage from "../../components/ErrorMessage";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error" | "extracting Data";
 type RowData = {
@@ -25,13 +27,13 @@ type courseData = {
 const ResultsUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [status, setStatus] = useState<UploadStatus>("idle");
-    const [studentsData, setstudentsData] = useState<RowData[]>([]);
+    const [studentsData, setStudentsData] = useState<RowData[]>([]);
     const [totalData, setTotalData] = useState({});
     const [jsonInput, setJsonInput] = useState<string>("");
     const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
-    const [examType, setExamType] = useState<string>("");
+    const [examType, setExamType] = useState<string>("THEORY");
     const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
@@ -39,6 +41,10 @@ const ResultsUpload = () => {
     const [showTable, setShowTable] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false); // State for custom confirmation modal
     const [allowToSend, setAllowToSend] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [showProgressBar, setShowProgressBar] = useState(false);
     const examTypes = ['THEORY', 'PRACTICAL', 'CA', 'PROJECT'];
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
@@ -78,21 +84,36 @@ const ResultsUpload = () => {
     useEffect(() => {
         console.log(totalData);
         if (allowToSend) {
-            saveFirstMarkingResults(totalData).then((data) => {
-                console.log(data);
-                if (data.code == 201) {
-                    setAllowToSend(false);
-                    setShowTable(false)
+            saveFirstMarkingResults(totalData, {
+                onUploadProgress: (progressEvent: any) => {
+                    if (progressEvent.total != undefined) {
+                        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setProgress(percent);
+                    }
                 }
-                else if (data.code == 500) {
+            }).then((data) => {
+
+                console.log(data.code);
+
+                if (data.code === 201) {
                     setAllowToSend(false);
                     setShowTable(false)
+                    setSuccessMessage("result upload successfull")
+
+                }
+                else if (data.status === 500) {
+                    setAllowToSend(false);
+                    setShowTable(false)
+                    setErrorMessage("result upload failed!")
                 }
 
             })
         }
 
     }, [totalData])
+
+    useEffect(() => {
+    }, [studentsData])
 
     const handleFileChanges = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -116,13 +137,26 @@ const ResultsUpload = () => {
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
 
-                // Convert to JSON
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                setstudentsData(jsonData);
+                const jsonData: RowData[] = XLSX.utils.sheet_to_json(sheet);
+                setStudentsData(jsonData);
                 setShowTable(true);
+                setSuccessMessage("");
+                setErrorMessage("");
+                setShowProgressBar(false);
             };
 
             reader.readAsArrayBuffer(file);
+        }
+        else{
+            if (jsonInput !== "") {
+                try {
+                    const jsonData2: RowData[] = JSON.parse(jsonInput);
+                    setStudentsData(jsonData2);
+                    setShowTable(true);
+                } catch (error) {
+                    setErrorMessage("invailid Jason Format");
+                }
+            }
         }
     };
 
@@ -152,6 +186,7 @@ const ResultsUpload = () => {
                 examType
             }
         )
+        setShowProgressBar(true);
         setAllowToSend(true);
     }
 
@@ -164,6 +199,14 @@ const ResultsUpload = () => {
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">Upload and manage examination results</p>
                 </div>
+                <SuccessMessage
+                    message={successMessage}
+                    onClose={() => setSuccessMessage('')}
+                />
+                <ErrorMessage
+                    message={errorMessage}
+                    onClose={() => setErrorMessage('')}
+                />
 
                 {!showTable ?
                     (<div>
@@ -220,9 +263,6 @@ const ResultsUpload = () => {
                                         value={examType}
                                         onChange={(e) => setExamType(e.target.value)}
                                     >
-                                        <option disabled value="">
-                                            select exam type
-                                        </option>
                                         {
                                             examTypes.map((type, index) => (
                                                 <option key={index} value={type}>
@@ -342,6 +382,23 @@ const ResultsUpload = () => {
                                         </table>
                                     </div>
                                 </div>
+                                {showProgressBar &&
+                                    <div>
+                                        <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '5px' }}>
+                                            <div
+                                                style={{
+                                                    width: `${progress}%`,
+                                                    backgroundColor: '#76c7c0',
+                                                    height: '10px',
+                                                    borderRadius: '5px',
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <div>Upload Progress: {progress}%</div>
+                                    </div>
+
+                                }
+
                                 <div className="flex flex-col md:flex-row gap-4 w-full mt-4">
                                     <button
                                         onClick={sendDataToTheServer}
@@ -386,6 +443,7 @@ const ResultsUpload = () => {
                             <button
                                 onClick={() => {
                                     setShowConfirmation(false);
+                                    setstudentsData([]);
                                 }}
                                 className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
                             >
