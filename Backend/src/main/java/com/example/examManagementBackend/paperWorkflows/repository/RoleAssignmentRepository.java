@@ -6,10 +6,13 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @EnableJpaRepositories
@@ -23,9 +26,9 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
     boolean existsByCourseIdAndExaminationIdAndPaperType(Long course_id, ExaminationEntity examinationId, PaperType paperType);
     List<RoleAssignmentEntity> findByCourseIdAndPaperType(Long courseId, PaperType paperType);
 
-    public boolean existsByUserId_UserIdAndRole_RoleIdAndIsAuthorizedTrue(Long userId, Long roleId);
+    boolean existsByUserId_UserIdAndRole_RoleIdAndIsAuthorizedTrue(Long userId, Long roleId);
 
-
+    List<RoleAssignmentEntity> findByUserId_UserIdAndRole_RoleId(Long userId, Long roleId);
 
 
 }

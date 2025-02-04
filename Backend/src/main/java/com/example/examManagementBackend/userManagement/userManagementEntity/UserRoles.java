@@ -27,6 +27,9 @@ public class UserRoles {
     @Column(nullable = false)
     private LocalDateTime assignedAt;
 
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime grantAt;  // New field to store the grant date
+
     public UserEntity getUser() {
         return user;
     }
@@ -43,6 +46,10 @@ public class UserRoles {
         return assignedAt;
     }
 
+    public LocalDateTime getGrantAt() {
+        return grantAt;
+    }
+
     public void setRole(RolesEntity role) {
         this.role = role;
     }
@@ -51,6 +58,14 @@ public class UserRoles {
         this.user = user;
     }
 
+    public void setGrantAt(LocalDateTime grantAt) {
+        this.grantAt = grantAt;
+    }
+
+    // Method to check if role should be unassigned based on the grant date
+    public boolean isRoleExpired() {
+        return grantAt != null && grantAt.isBefore(LocalDateTime.now());
+    }
 
 
 }

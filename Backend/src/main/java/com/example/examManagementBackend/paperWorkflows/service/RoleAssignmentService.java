@@ -21,8 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -271,14 +273,45 @@ public class RoleAssignmentService {
             throw new RuntimeException("Role is not authorized for this user.");
         }
 
-        // If the user already has this role, avoid assigning again
-        if (!userRolesRepo.existsByUser_UserIdAndRole_RoleId(userId, roleId)) {
+        // Fetch all role assignments
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserIdAndRole_RoleId(userId, roleId);
+
+        if (roleAssignments.isEmpty()) {
+            throw new RuntimeException("Role assignment not found for the user and role.");
+        }
+
+        // Assume we pick the first assignment if there are multiple
+        RoleAssignmentEntity roleAssignment = roleAssignments.get(0);
+        ExaminationEntity examination = roleAssignment.getExaminationId();
+
+        // Determine the grantAt date based on the role
+        LocalDateTime grantAtDate = null;
+        if (roleId == 2 || roleId == 3) { // Paper creator/modifier roles
+            grantAtDate = examination.getPaperSettingCompleteDate();
+        } else if (roleId == 4 || roleId == 5) { // First and second marker roles
+            grantAtDate = examination.getMarkingCompleteDate();
+        }
+
+        // Check if the user already has this role
+        Optional<UserRoles> existingUserRoleOpt = userRolesRepo.findByUser_UserIdAndRole_RoleId(userId, roleId);
+
+        if (existingUserRoleOpt.isPresent()) {
+            // Update the grantAt date if the new date is more recent
+            UserRoles existingUserRole = existingUserRoleOpt.get();
+            if (grantAtDate != null && (existingUserRole.getGrantAt() == null || grantAtDate.isAfter(existingUserRole.getGrantAt()))) {
+                existingUserRole.setGrantAt(grantAtDate);
+                userRolesRepo.save(existingUserRole);
+            }
+        } else {
+            // Assign the role to the user with the grantAt date
             UserRoles userRole = new UserRoles();
             userRole.setUser(user);
             userRole.setRole(role);
+            userRole.setGrantAt(grantAtDate);
             userRolesRepo.save(userRole);
         }
     }
+
 
 
 }

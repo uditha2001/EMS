@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @EnableJpaRepositories
@@ -25,7 +26,10 @@ public interface UserRolesRepository extends JpaRepository<UserRoles, Long> {
     @Query("SELECT count(ur) FROM UserRoles ur where ur.role.roleName= :roleName")
     int getNumberOfUsers(@Param("roleName") String roleName);
 
-    public boolean existsByUser_UserIdAndRole_RoleId(Long userId, Long roleId);
+    // Change from findByUser_UserIdAndRole_RoleId to return a List of results
+    Optional<UserRoles> findByUser_UserIdAndRole_RoleId(Long userId, Long roleId);
+
+
 
 }
 
