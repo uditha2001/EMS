@@ -112,9 +112,6 @@ const ResultsUpload = () => {
 
     }, [totalData])
 
-    useEffect(() => {
-    }, [studentsData])
-
     const handleFileChanges = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
@@ -139,22 +136,34 @@ const ResultsUpload = () => {
 
                 const jsonData: RowData[] = XLSX.utils.sheet_to_json(sheet);
                 setStudentsData(jsonData);
-                setShowTable(true);
                 setSuccessMessage("");
                 setErrorMessage("");
                 setShowProgressBar(false);
+                if (studentsData.length > 0 && courseCode && examName) {
+                    setShowTable(true);
+                }
             };
 
             reader.readAsArrayBuffer(file);
         }
-        else{
+        else {
             if (jsonInput !== "") {
                 try {
-                    const jsonData2: RowData[] = JSON.parse(jsonInput);
+                    const parsedData = JSON.parse(jsonInput);
+                    const jsonData2: RowData[] = Array.isArray(parsedData) ? parsedData : [parsedData]; 
+                    console.log(jsonData2);
                     setStudentsData(jsonData2);
-                    setShowTable(true);
+                    setSuccessMessage("");
+                    setErrorMessage("");
+                    setShowProgressBar(false);
+
+                    if (jsonData2.length > 0 && courseCode && examName) {
+                        setShowTable(true);
+                    }
+
                 } catch (error) {
                     setErrorMessage("invailid Jason Format");
+                    setShowProgressBar(false);
                 }
             }
         }
