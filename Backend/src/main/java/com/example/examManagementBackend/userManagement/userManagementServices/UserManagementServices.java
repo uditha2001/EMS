@@ -12,6 +12,7 @@ import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -310,6 +311,7 @@ public class UserManagementServices {
         );
     }
 
+    @Scheduled(fixedRate = 86400000) // Runs once every 24 hours
     public void removeExpiredRoles() {
         List<UserRoles> allRoles = userRolesRepo.findAll();
 
