@@ -4,12 +4,14 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useApi from '../../api/api';
 import RoleAssignmentTable from './RoleAssignmentTable';
+import { Link } from 'react-router-dom';
 
 interface Examination {
   id: string;
   year: string;
   level: string;
   semester: string;
+  degreeName: string;
 }
 
 interface Course {
@@ -240,16 +242,27 @@ const AssignRoles: React.FC = () => {
             <select
               value={selectedExamination}
               onChange={(e) => setSelectedExamination(e.target.value)}
-              className="w-1/3 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+              className="w-full sm:w-1/3 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
               required
             >
               <option value="">Select Examination</option>
               {examinations?.map((exam) => (
                 <option key={exam.id} value={exam.id}>
-                  {exam.year} - Level {exam.level} - Semester {exam.semester}
+                  {exam.year} - Level {exam.level} - Semester {exam.semester} -{' '}
+                  {exam.degreeName}
                 </option>
               ))}
             </select>
+            {selectedExamination && (
+              <>
+                <Link
+                  to={`/paper/preview-assigned-roles/${selectedExamination}`}
+                  className="bg-primary text-white px-4 py-2 rounded mt-3 inline-block mx-4"
+                >
+                  Preview Assigned Roles
+                </Link>
+              </>
+            )}
           </div>
 
           {selectedExamination && (

@@ -378,34 +378,101 @@ const useApi = () => {
     );
   };
 
+  const authorizeRoleByExamination = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/examination/${examinationId}/authorize`,
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error('Error authorizing role by examination', error);
+      throw error;
+    }
+  };
+
+  const authorizeRoleByCourseAndPaperType = async (
+    courseId: number,
+    paperType: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/course/${courseId}/paperType/${paperType}/authorize`,
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error('Error authorizing role by course and paper type', error);
+      throw error;
+    }
+  };
+
+  const editRoleAssignment = async (
+    roleAssignmentId: number,
+    userId: number,
+  ) => {
+    try {
+      const response = await axiosPrivate.put(
+        `/role-assignments/${roleAssignmentId}?userId=${userId}`, // Pass userId as query param
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error editing role assignment', error);
+      throw error;
+    }
+  };
+
+  const getRoleAssignmentById = async (roleAssignmentId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/${roleAssignmentId}`,
+      );
+      return response.data; // Assuming the response contains the role assignment data
+    } catch (error) {
+      console.error('Error fetching role assignment', error);
+      throw error;
+    }
+  };
+
   const unassignRoleAssignment = async (roleAssignmentId: number) => {
     return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
   };
   const getUsersCounts = async () => {
-    try{
-      const response=await axiosPrivate.get('/user/count');
-      if(response.status===200){
+    try {
+      const response = await axiosPrivate.get('/user/count');
+      if (response.status === 200) {
         return response.data.data;
       }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch users count',
+      );
     }
-    catch(error:any){
-      throw new Error(error.response?.data?.message || 'Failed to fetch users count');
-    }
-
-  }
+  };
 
   const getActiveUsersCount = async () => {
-    try{
-        const response=await axiosPrivate.get('/user/activeUser');
-        if(response.status===200){
-          return response.data.data;
-        }
+    try {
+      const response = await axiosPrivate.get('/user/activeUser');
+      if (response.status === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch active users count',
+      );
     }
-    catch(error:any){
-      throw new Error(error.response?.data?.message || 'Failed to fetch active users count');
-    }
-  }
+  };
 
+  const getExaminationById = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/academic-years/${examinationId}`,
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch examination',
+      );
+    }
+  };
   const getDegreeProgramById=async (id:number)=>{
     try{
         const response =await axiosPrivate.get(`degreePrograms/${id}`);
@@ -444,14 +511,21 @@ const useApi = () => {
   }
   }
 
-  const saveFirstMarkingResults=async (result:any)=>{
+  const saveFirstMarkingResults=async (result:any,config={})=>{
     try {
-      const response = await axiosPrivate.post('result/firstMarking', result); 
+      const response = await axiosPrivate.post('result/firstMarking', result,{
+        ...config
+      }); 
         console.log(response.data);
         return response.data;
   } catch (error: any) {
-      throw new Error("Failed to fetch examination names");
-  }
+    if (error.response) {
+      return { error: true, status:500, message: error.response.data };
+  } else if (error.request) {
+      return { error: true, status: 500, message: "No response received from the server" };
+  } else {
+      return { error: true, status: 500, message: error.message };
+  }  }
 }
   
   return {
@@ -505,6 +579,11 @@ const useApi = () => {
     unassignRoleAssignment,
     getUsersCounts,
     getActiveUsersCount,
+    authorizeRoleByExamination,
+    authorizeRoleByCourseAndPaperType,
+    editRoleAssignment,
+    getRoleAssignmentById,
+    getExaminationById,
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,

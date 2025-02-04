@@ -1,6 +1,8 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import useApi from "../../api/api";
+import SuccessMessage from "../../components/SuccessMessage";
+import ErrorMessage from "../../components/ErrorMessage";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error" | "extracting Data";
 type RowData = {
@@ -25,13 +27,13 @@ type courseData = {
 const ResultsUpload = () => {
     const [file, setFile] = useState<File | null>(null);
     const [status, setStatus] = useState<UploadStatus>("idle");
-    const [studentsData, setstudentsData] = useState<RowData[]>([]);
+    const [studentsData, setStudentsData] = useState<RowData[]>([]);
     const [totalData, setTotalData] = useState({});
     const [jsonInput, setJsonInput] = useState<string>("");
     const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>([]);
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
-    const [examType, setExamType] = useState<string>("");
+    const [examType, setExamType] = useState<string>("THEORY");
     const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
@@ -39,6 +41,10 @@ const ResultsUpload = () => {
     const [showTable, setShowTable] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false); // State for custom confirmation modal
     const [allowToSend, setAllowToSend] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [showProgressBar, setShowProgressBar] = useState(false);
     const examTypes = ['THEORY', 'PRACTICAL', 'CA', 'PROJECT'];
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
@@ -49,7 +55,6 @@ const ResultsUpload = () => {
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
-            console.log(studentsData);
             setCreatedExamNames(examData);
 
         });
@@ -78,10 +83,27 @@ const ResultsUpload = () => {
     useEffect(() => {
         console.log(totalData);
         if (allowToSend) {
-            saveFirstMarkingResults(totalData).then((data) => {
-                if (data.code) {
+            saveFirstMarkingResults(totalData, {
+                onUploadProgress: (progressEvent: any) => {
+                    if (progressEvent.total != undefined) {
+                        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setProgress(percent);
+                    }
+                }
+            }).then((data) => {
+
+                console.log(data.code);
+
+                if (data.code === 201) {
                     setAllowToSend(false);
-                    setShowTable(true)
+                    setShowTable(false)
+                    setSuccessMessage("result upload successfull")
+
+                }
+                else if (data.status === 500) {
+                    setAllowToSend(false);
+                    setShowTable(false)
+                    setErrorMessage("result upload failed!")
                 }
 
             })
@@ -111,13 +133,37 @@ const ResultsUpload = () => {
                 const sheetName = workbook.SheetNames[0];
                 const sheet = workbook.Sheets[sheetName];
 
-                // Convert to JSON
-                const jsonData = XLSX.utils.sheet_to_json(sheet);
-                setstudentsData(jsonData);
-                setShowTable(true);
+                const jsonData: RowData[] = XLSX.utils.sheet_to_json(sheet);
+                setStudentsData(jsonData);
+                setSuccessMessage("");
+                setErrorMessage("");
+                setShowProgressBar(false);
+                if (studentsData.length > 0 && courseCode && examName) {
+                    setShowTable(true);
+                }
             };
 
             reader.readAsArrayBuffer(file);
+        }
+        else {
+            if (jsonInput !== "") {
+                try {
+                    const parsedData = JSON.parse(jsonInput);
+                    const jsonData2: RowData[] = Array.isArray(parsedData) ? parsedData : [parsedData];
+                    setStudentsData(jsonData2);
+                    setSuccessMessage("");
+                    setErrorMessage("");
+                    setShowProgressBar(false);
+
+                    if (jsonData2.length > 0 && courseCode && examName) {
+                        setShowTable(true);
+                    }
+
+                } catch (error) {
+                    setErrorMessage("invailid Jason Format");
+                    setShowProgressBar(false);
+                }
+            }
         }
     };
 
@@ -147,38 +193,49 @@ const ResultsUpload = () => {
                 examType
             }
         )
+        setShowProgressBar(true);
         setAllowToSend(true);
     }
 
     return (
-        <div className="flex flex-col items-center justify-center w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+        <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-2 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
             <div>
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                        Result Upload
-                    </h1>
-                    <p className="text-gray-600">Upload and manage examination results</p>
-                </div>
+            <div className="self-start text-center mb-4 dark:bg-black">
+                <h1 className="text-4xl font-bold text-gray-800 mb-1 dark:text-gray-200">
+                    Result Upload
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">Upload and manage examination results</p>
+            </div>
 
-                {!showTable ?
+            <SuccessMessage
+                message={successMessage}
+                onClose={() => setSuccessMessage('')}
+            />
+            <ErrorMessage
+                message={errorMessage}
+                onClose={() => setErrorMessage('')}
+            />
+
+            {
+                !showTable ?
                     (<div>
-                        <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-6xl">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                <span className="bg-blue-100 p-2 rounded-lg mr-2">⚙️</span>
+                        <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-6xl dark:bg-gray-800 dark:shadow-gray-700/20">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-gray-300">
+                                <span className="bg-blue-100 p-2 rounded-lg mr-2 dark:bg-blue-900/30">⚙️</span>
                                 Exam Configuration
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-sm font-medium text-gray-700">Exam Name</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Name</label>
                                     <select
                                         value={examOptionIdentifier}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         onChange={(e) => {
                                             setExamOptionIdentifier(e.target.value);
-                                            const selectedIndex = parseInt(e.target.value, 10); // Convert string to number
-                                            setExamName(createdExamNames[selectedIndex].name); // Set exam name
-                                            setSelectedExaminationKey(createdExamNames[selectedIndex].key); // Store the index
+                                            const selectedIndex = parseInt(e.target.value, 10);
+                                            setExamName(createdExamNames[selectedIndex].name);
+                                            setSelectedExaminationKey(createdExamNames[selectedIndex].key);
                                         }}
                                     >
                                         <option value="" disabled>
@@ -191,14 +248,12 @@ const ResultsUpload = () => {
                                                 </option>
                                             ))}
                                     </select>
-
-
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-sm font-medium text-gray-700">Course Code</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Course Code</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         value={courseCode}
                                         onChange={(e) => setCourseCode(e.target.value)}
                                     >
@@ -207,48 +262,40 @@ const ResultsUpload = () => {
                                                 <option key={index} value={course.code}>
                                                     {course.code}
                                                 </option>
-                                            ))}
-
-                                    </select>
+                                            ))}                                    </select>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-sm font-medium text-gray-700">Exam Type</label>
+                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Type</label>
                                     <select
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                         value={examType}
                                         onChange={(e) => setExamType(e.target.value)}
                                     >
-
-                                        <option disabled value="">
-                                            select exam type
-                                        </option>
                                         {
                                             examTypes.map((type, index) => (
                                                 <option key={index} value={type}>
                                                     {type}
                                                 </option>
                                             ))
-                                        }
-                                    </select>
+                                        }                                    </select>
                                 </div>
                             </div>
                         </div>
 
-
-                        <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-6xl">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                <span className="bg-purple-100 p-2 rounded-lg mr-2">📁</span>
+                        <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-6xl dark:bg-gray-800 dark:shadow-gray-700/20">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-gray-300">
+                                <span className="bg-purple-100 p-2 rounded-lg mr-2 dark:bg-purple-900/30">📁</span>
                                 Upload Results
                             </h3>
 
                             <div className="space-y-4">
-                                <div className="bg-blue-50 p-4 rounded-xl mb-4">
-                                    <p className="text-sm text-gray-600">
+                                <div className="bg-blue-50 p-4 rounded-xl mb-4 dark:bg-blue-900/20">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
                                         Download the template file:
                                         <button
                                             onClick={handleDownloadExcel}
-                                            className="ml-2 px-3 py-1 bg-white border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                                            className="ml-2 px-3 py-1 bg-white border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:text-blue-400 dark:hover:bg-gray-600"
                                         >
                                             📥 Download Template
                                         </button>
@@ -260,16 +307,16 @@ const ResultsUpload = () => {
                                         type="file"
                                         accept=".csv, .xls, .xlsx"
                                         onChange={handleFileChanges}
-                                        className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer focus:outline-none p-2"
+                                        className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer focus:outline-none p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:file:bg-gray-600 dark:file:text-gray-200"
                                     />
                                 </div>
 
                                 <div className="relative">
                                     <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-gray-300"></div>
+                                        <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                                     </div>
                                     <div className="relative flex justify-center">
-                                        <span className="px-2 bg-white text-sm text-gray-500">OR</span>
+                                        <span className="px-2 bg-white text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">OR</span>
                                     </div>
                                 </div>
 
@@ -277,12 +324,12 @@ const ResultsUpload = () => {
                                     placeholder="📋 Paste JSON data here..."
                                     value={jsonInput}
                                     onChange={(e) => setJsonInput(e.target.value)}
-                                    className="w-full p-4 border border-gray-300 rounded-xl text-sm text-gray-700 resize-none h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                    className="w-full p-4 border border-gray-300 rounded-xl text-sm text-gray-700 resize-none h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400 dark:focus:ring-blue-500/50"
                                 />
 
                                 <button
                                     onClick={handleFileUpload}
-                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity dark:from-blue-600 dark:to-purple-700"
                                 >
                                     submit
                                 </button>
@@ -292,50 +339,48 @@ const ResultsUpload = () => {
                     ) : (
 
                         studentsData.length > 0 && examName && courseCode && (
-                            <div className="mt-8 w-full max-w-6xl bg-white p-6 shadow-xl rounded-2xl">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                    <span className="bg-green-100 p-2 rounded-lg mr-2">🔍</span>
+                            <div className="mt-8 w-full max-w-6xl bg-white p-6 shadow-xl rounded-2xl dark:bg-gray-800 dark:shadow-gray-700/20">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-gray-300">
+                                    <span className="bg-green-100 p-2 rounded-lg mr-2 dark:bg-green-900/30">🔍</span>
                                     Data Preview
                                 </h3>
                                 <div className="overflow-x-auto">
                                     <div className="mb-6">
-                                        {/* Information Header */}
                                         <div className="flex flex-wrap gap-4 mb-4">
-                                            <div className="bg-blue-50 px-4 py-2 rounded-lg">
-                                                <span className="text-xs font-medium text-blue-600">Examination:</span>
-                                                <span className="ml-2 text-sm text-gray-700">{examName || "N/A"}</span>
+                                            <div className="bg-blue-50 px-4 py-2 rounded-lg dark:bg-blue-900/20">
+                                                <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Examination:</span>
+                                                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{examName || "N/A"}</span>
                                             </div>
-                                            <div className="bg-purple-50 px-4 py-2 rounded-lg">
-                                                <span className="text-xs font-medium text-purple-600">Course Code:</span>
-                                                <span className="ml-2 text-sm text-gray-700">{courseCode || "N/A"}</span>
+                                            <div className="bg-purple-50 px-4 py-2 rounded-lg dark:bg-purple-900/20">
+                                                <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Course Code:</span>
+                                                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{courseCode || "N/A"}</span>
                                             </div>
-                                            <div className="bg-green-50 px-4 py-2 rounded-lg">
-                                                <span className="text-xs font-medium text-green-600">Exam Type:</span>
-                                                <span className="ml-2 text-sm text-gray-700">THEORY</span>
+                                            <div className="bg-green-50 px-4 py-2 rounded-lg dark:bg-green-900/20">
+                                                <span className="text-xs font-medium text-green-600 dark:text-green-400">Exam Type:</span>
+                                                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">THEORY</span>
                                             </div>
                                         </div>
 
-                                        {/* Table */}
                                         <table className="min-w-full border-collapse">
                                             <thead>
-                                                <tr className="bg-gray-50">
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
                                                     {Object.keys(studentsData[0]).map((key) => (
                                                         <th
                                                             key={key}
-                                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200"
+                                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400"
                                                         >
                                                             {key}
                                                         </th>
                                                     ))}
                                                 </tr>
                                             </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
+                                            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                                 {studentsData.map((row: any, rowIndex: any) => (
-                                                    <tr key={rowIndex} className="hover:bg-gray-50">
+                                                    <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                                         {Object.values(row).map((value, colIndex) => (
                                                             <td
                                                                 key={colIndex}
-                                                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200"
+                                                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300"
                                                             >
                                                                 {value as string}
                                                             </td>
@@ -346,10 +391,27 @@ const ResultsUpload = () => {
                                         </table>
                                     </div>
                                 </div>
+                                {showProgressBar &&
+                                    <div>
+                                        <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '5px' }}>
+                                            <div
+                                                style={{
+                                                    width: `${progress}%`,
+                                                    backgroundColor: '#76c7c0',
+                                                    height: '10px',
+                                                    borderRadius: '5px',
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <div>Upload Progress: {progress}%</div>
+                                    </div>
+
+                                }
+
                                 <div className="flex flex-col md:flex-row gap-4 w-full mt-4">
                                     <button
                                         onClick={sendDataToTheServer}
-                                        className="w-4/5 md:w-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                                        className="w-4/5 md:w-1/2 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity dark:from-blue-600 dark:to-purple-700"
                                     >
                                         Confirm And Upload
                                     </button>
@@ -358,52 +420,50 @@ const ResultsUpload = () => {
                                         onClick={() => {
                                             setShowConfirmation(true);
                                         }}
-                                        className="w-4/5 md:w-1/2 bg-gradient-to-r from-rose-500 to-orange-400 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity border border-transparent hover:border-white"
+                                        className="w-4/5 md:w-1/2 bg-gradient-to-r from-rose-500 to-orange-400 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity border border-transparent hover:border-white dark:from-rose-600 dark:to-orange-500"
                                     >
                                         Resubmit
                                     </button>
                                 </div>
-
                             </div>
                         )
-
                     )
-                }
-            </div>
-            {showConfirmation && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
-                        <h2 className="text-lg font-bold text-black dark:text-white mb-4">
-                            Cancel Result Upload
-                        </h2>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-6">
-                            Are you sure you want to cancel?
-                        </p>
-                        <div className="flex justify-between">
-                            <button
-                                onClick={() => {
-                                    setShowTable(false);
-                                    setShowConfirmation(false);
-                                }
-                                }
-                                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                            >
-                                Yes
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowConfirmation(false);
-                                }}
-                                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
-                            >
-                                Cancel
-                            </button>
-                        </div>
+            }
+        </div >
+    {
+        showConfirmation && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 dark:bg-black/70">
+                <div className="bg-white rounded-lg shadow-lg p-6 w-80 dark:bg-gray-800">
+                    <h2 className="text-lg font-bold text-black mb-4 dark:text-gray-200">
+                        Cancel Result Upload
+                    </h2>
+                    <p className="text-sm text-gray-700 mb-6 dark:text-gray-400">
+                        Are you sure you want to cancel?
+                    </p>
+                    <div className="flex justify-between">
+                        <button
+                            onClick={() => {
+                                setShowTable(false);
+                                setShowConfirmation(false);
+                            }}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        >
+                            Yes
+                        </button>
+                        <button
+                            onClick={() => {
+                                setShowConfirmation(false);
+                                setStudentsData([]);
+                            }}
+                            className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
                     </div>
                 </div>
-            )}
-
-
+            </div>
+        )
+    }
         </div >
     );
 };

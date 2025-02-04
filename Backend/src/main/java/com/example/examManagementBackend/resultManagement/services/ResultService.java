@@ -72,24 +72,24 @@ public class ResultService {
                         resultEntity.setFirstMarking(student.getFirstMarking());
                         resultEntity.setApprovedBy(approvedBy);
                         resultRepo.save(resultEntity);
-                        return new ResponseEntity<StandardResponse>(
-                                new StandardResponse(201,"sucess",null), HttpStatus.CREATED
-                        );
+
                     }
                     else if(resultRepo.isEmpty(examinationId,studentId,examinationTypeId,courseId)>0){
                         Long resultId= resultRepo.getResultIdIfExists(examinationId,studentId,examinationTypeId,courseId);
                         resultRepo.updateResults(student.getFirstMarking(),approvedBy,resultId);
-                        return new ResponseEntity<StandardResponse>(
-                                new StandardResponse(201,"sucess",null), HttpStatus.CREATED
-                        );
                     }
 
                 }
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(201,"sucess",null), HttpStatus.CREATED
+                );
+            }
+            else{
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+                );
             }
 
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
-            );
         }
         catch(Exception e){
             return new ResponseEntity<StandardResponse>(

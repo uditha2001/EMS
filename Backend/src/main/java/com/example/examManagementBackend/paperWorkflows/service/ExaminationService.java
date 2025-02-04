@@ -4,6 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
@@ -12,7 +13,11 @@ import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRe
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
+import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +38,13 @@ public class ExaminationService {
     private final ExaminationRepository examinationRepository;
     private final ExaminationTimeTableRepository examinationTimeTableRepository;
     private final ModelMapper modelMapper;
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, ModelMapper modelMapper) {
+    private final UserRolesRepository userRolesRepository;
+
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, ModelMapper modelMapper,UserRolesRepository userRolesRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.modelMapper = modelMapper;
+        this.userRolesRepository = userRolesRepository;
     }
 
     @Autowired
@@ -44,6 +52,9 @@ public class ExaminationService {
 
     @Autowired
     private RoleAssignmentRepository roleAssignmentRepository;
+
+
+
 
 
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
@@ -55,6 +66,9 @@ public class ExaminationService {
         entity.setLevel(examinationDTO.getLevel());
         entity.setSemester(examinationDTO.getSemester());
         entity.setDegreeProgramsEntity(degreeProgram);
+        entity.setExamProcessStartDate(examinationDTO.getExamProcessStartDate());
+        entity.setPaperSettingCompleteDate(examinationDTO.getPaperSettingCompleteDate());
+        entity.setMarkingCompleteDate(examinationDTO.getMarkingCompleteDate());
 
         ExaminationEntity savedEntity = examinationRepository.save(entity);
 
@@ -87,8 +101,12 @@ public class ExaminationService {
         entity.setLevel(examinationDTO.getLevel());
         entity.setSemester(examinationDTO.getSemester());
         entity.setDegreeProgramsEntity(degreeProgram);
+        entity.setExamProcessStartDate(examinationDTO.getExamProcessStartDate());
+        entity.setPaperSettingCompleteDate(examinationDTO.getPaperSettingCompleteDate());
+        entity.setMarkingCompleteDate(examinationDTO.getMarkingCompleteDate());
 
         ExaminationEntity updatedEntity = examinationRepository.save(entity);
+        updateGrantAtDates(updatedEntity);
 
         return mapToDTO(updatedEntity);
     }
@@ -108,6 +126,11 @@ public class ExaminationService {
         dto.setLevel(entity.getLevel());
         dto.setSemester(entity.getSemester());
         dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
+        dto.setDegreeName(entity.getDegreeProgramsEntity().getDegreeName());
+        dto.setExamProcessStartDate(entity.getExamProcessStartDate());
+        dto.setPaperSettingCompleteDate(entity.getPaperSettingCompleteDate());
+        dto.setMarkingCompleteDate(entity.getMarkingCompleteDate());
+        dto.setStatus(entity.getStatus());
         return dto;
     }
 
@@ -144,7 +167,7 @@ public class ExaminationService {
             examinationDTO.setLevel(examinationEntity.getLevel());
             examinationDTO.setSemester(examinationEntity.getSemester());
             examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTO.setDegreeName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
             examinationDTOS.add(examinationDTO);
         }
 
@@ -181,15 +204,30 @@ public class ExaminationService {
     }
 
     private List<ExaminationCoursesDTO.ActiveCourseDTO> mapCourseToActiveCourseDTOs(CoursesEntity course, ExaminationEntity examination) {
+        boolean isTheoryAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
+                course.getId(), examination, PaperType.THEORY
+        );
+        boolean isPracticalAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
+                course.getId(), examination, PaperType.PRACTICAL
+        );
+
+        // If the course type is BOTH, handle separately
         if ("BOTH".equalsIgnoreCase(course.getCourseType().toString())) {
             return handleBothCourseType(course, examination);
+        } else if (course.getCourseType() == CoursesEntity.CourseType.THEORY && isTheoryAssigned) {
+            // If it's a THEORY course and already assigned, don't display it
+            return Collections.emptyList();
+        } else if (course.getCourseType() == CoursesEntity.CourseType.PRACTICAL && isPracticalAssigned) {
+            // If it's a PRACTICAL course and already assigned, don't display it
+            return Collections.emptyList();
         } else {
-            // For non-BOTH course types, include the course as is
+            // Otherwise, include the course
             return Collections.singletonList(new ExaminationCoursesDTO.ActiveCourseDTO(
                     course.getId(), course.getCode(), course.getName(), course.getCourseType()
             ));
         }
     }
+
 
     private List<ExaminationCoursesDTO.ActiveCourseDTO> handleBothCourseType(CoursesEntity course, ExaminationEntity examination) {
         boolean hasTheoryAssigned = roleAssignmentRepository.existsByCourseIdAndExaminationIdAndPaperType(
@@ -225,5 +263,46 @@ public class ExaminationService {
         }
     }
 
+
+    @Transactional
+    public void updateExamStatus(Long examId) {
+        ExaminationEntity exam = examinationRepository.findById(examId)
+                .orElseThrow(() -> new EntityNotFoundException("Exam not found"));
+
+        if (exam.getMarkingCompleteDate() != null) {
+            exam.setStatus(ExamStatus.COMPLETED);
+        } else if (exam.getPaperSettingCompleteDate() != null) {
+            exam.setStatus(ExamStatus.ONGOING);
+        } else if (exam.getExamProcessStartDate() != null) {
+            exam.setStatus(ExamStatus.SCHEDULED);
+        }
+
+        examinationRepository.save(exam);
+    }
+
+    public void updateGrantAtDates(ExaminationEntity examination) {
+        for (RoleAssignmentEntity roleAssignment : examination.getRoleAssignments()) {
+            UserRoles userRole = roleAssignment.getUserId().getUserRoles().stream()
+                    .filter(role -> role.getRole().equals(roleAssignment.getRole()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (userRole != null) {
+                // Set the grantAt date based on the role type
+                if (roleAssignment.getRole().getRoleId() == 2 || roleAssignment.getRole().getRoleId() == 3) { // Paper Creator or Paper Moderator
+                    if (examination.getPaperSettingCompleteDate() != null) {
+                        userRole.setGrantAt(examination.getPaperSettingCompleteDate());
+                    }
+                } else if (roleAssignment.getRole().getRoleId() == 4 || roleAssignment.getRole().getRoleId() == 5) { // First Marker or Second Marker
+                    if (examination.getMarkingCompleteDate() != null) {
+                        userRole.setGrantAt(examination.getMarkingCompleteDate());
+                    }
+                }
+
+                // Save the updated user role with the new grantAt date
+                userRolesRepository.save(userRole);
+            }
+        }
+    }
 
 }
