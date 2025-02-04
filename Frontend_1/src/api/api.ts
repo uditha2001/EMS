@@ -219,6 +219,10 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
+  const createDegreeProgram = async (degreeProgram: any) => {
+    return axiosPrivate.post('/degreePrograms', degreeProgram);
+  };
+
   const updateRole = async (roleId: number, updatedRole: any) => {
     return axiosPrivate.put(`/roles/update/${roleId}`, updatedRole);
   };
@@ -579,6 +583,7 @@ const useApi = () => {
     saveFirstMarkingResults,
     loading,
     error,
+    createDegreeProgram
   };
 };
 
