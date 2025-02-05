@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,8 +23,8 @@ public class ResultController {
     }
 
     @GetMapping("/getFirstMarking")
-    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestBody  ResultDTO results){
-        return resultService.getFirstMarking(results);
+    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  String examName,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
+        return resultService.getFirstMarking(courseCode,examName,examType);
     }
 
 }

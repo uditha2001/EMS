@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import useApi from "../../api/api";
 
 type examinationName = {
@@ -16,7 +16,14 @@ type courseData = {
     courseType: string,
     degreeProgramId: string,
 };
-const SelectExaminationComponent = () => {
+
+type requiredData = {
+    courseCode: string;
+    examName: string;
+    examType: string
+    
+}
+const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispatch<React.SetStateAction<requiredData>> }) => {
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
     const [examName, setExamName] = useState<string>("");
     const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>([]);
@@ -25,7 +32,17 @@ const SelectExaminationComponent = () => {
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examType, setExamType] = useState<string>("THEORY");
     const examTypes = ['THEORY', 'PRACTICAL', 'CA', 'PROJECT'];
-    const { getAllExaminationDetailsWithDegreeName,getCoursesUsingExaminationId} = useApi();
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
+
+    useEffect(() => {
+        getExamData(
+            {
+                courseCode:courseCode,
+                examName:examName,
+                examType:examType
+            }
+        )
+    },[courseCode,examType])
 
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
@@ -43,6 +60,13 @@ const SelectExaminationComponent = () => {
 
 
     }, []);
+
+    useEffect(() => {
+        if (examinationCourseCode != null && examOptionIdentifier != "" && examinationCourseCode[0] != undefined) {
+            setCourseCode(examinationCourseCode[0].code);
+        }
+
+    }, [examinationCourseCode])
 
     useEffect(() => {
         if (examName != "" && examName != null) {

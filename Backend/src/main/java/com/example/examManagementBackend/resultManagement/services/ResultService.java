@@ -23,6 +23,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashSet;
 import java.util.List;
@@ -124,14 +125,14 @@ public class ResultService {
         }
     }
 
-    public ResponseEntity<StandardResponse> getFirstMarking(ResultDTO results) {
+    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,String examName,ExamTypesName examType) {
         try{
-            String[] examDetails=results.getExamName().split("-");
+            String[] examDetails=examName.split("-");
             String[] level=examDetails[2].split(" ");
             String[] semester=examDetails[3].split(" ");
-            Long courseId=getCourseCodeId(results.getCourseCode());
+            Long courseId=getCourseCodeId(courseCode);
             Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
-            Long examinationTypeId=getExaminationTypeId(results.getExamType());
+            Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
             List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId, ResultStatus.FIRST_MARKING_COMPLETE);
             if(resultEntities!=null){
