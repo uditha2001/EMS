@@ -516,7 +516,6 @@ const useApi = () => {
       const response = await axiosPrivate.post('result/firstMarking', result,{
         ...config
       }); 
-        console.log(response.data);
         return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -527,6 +526,22 @@ const useApi = () => {
       return { error: true, status: 500, message: error.message };
   }  }
 }
+const getFirstMarkingResults= async (examName:string,courseCode:string,examType:string)=>{
+      try{
+        const response=await axiosPrivate.get('result/getFirstMarking', { params: { examName, courseCode, examType } } );
+        return response.data;
+
+      }
+      catch(error:any){
+        if (error.response) {
+          return { error: true, status:500, message: error.response.data };
+      } else if (error.request) {
+          return { error: true, status: 500, message: "No response received from the server" };
+      } else {
+          return { error: true, status: 500, message: error.message };
+      } 
+      }
+  }
   
   return {
     uploadFile,
@@ -588,6 +603,7 @@ const useApi = () => {
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     saveFirstMarkingResults,
+    getFirstMarkingResults,
     loading,
     error,
     createDegreeProgram

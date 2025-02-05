@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
+import SecondMarking from './pages/Results/SecondMarking';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -422,6 +423,14 @@ function App() {
               <Route
                 path="/result/firstmarking"
                 element={renderPage('First Marking | EMS', <ResultsUpload />)}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['ENTER_RESULTS']} />}
+            >
+              <Route
+                path="/result/secondmarking"
+                element={renderPage('Second Marking | EMS', <SecondMarking />)}
               />
             </Route>
             <Route
