@@ -42,7 +42,7 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
                 examType:examType
             }
         )
-    },[courseCode,examType])
+    },[courseCode,examType,examName])
 
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
