@@ -55,6 +55,8 @@ public class ExaminationService {
     }
 
 
+
+
     public ExaminationDTO updateExamination(Long id, ExaminationDTO examinationDTO) {
         ExaminationEntity entity = examinationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Examination not found"));
@@ -87,6 +89,7 @@ public class ExaminationService {
         dto.setLevel(entity.getLevel());
         dto.setSemester(entity.getSemester());
         dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
+        dto.setDegreeProgramName(entity.getDegreeProgramsEntity().getDegreeName());
         return dto;
     }
 
@@ -110,5 +113,6 @@ public class ExaminationService {
                 )
                 .build();
     }
+
 
 }
