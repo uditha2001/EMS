@@ -23,36 +23,43 @@ const SecondMarking = () => {
     const [editable, setEditable] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterData, setFilterData] = useState<RowData[]>([]);
-    const [editedMarks, setEditedMarks] = useState<{ [key: number]: string }[]>([]);
+    const [editedMarks, setEditedMarks] = useState<{ key: number; value: string }[]>([]);
     const [showSaveButton, setShowSaveButton] = useState(false);
     const [highlightChanges, setHighlightChanges] = useState(false);
     const [secondMarking, setSecondMarking] = useState<RowData[]>([]);
 
     useEffect(() => {
-        setFilterData(studentsData);
+        const updatedMarking = studentsData.map((data) => ({
+            ...data,
+            secondMarking: data.firstMarking
+
+        }));
+        setSecondMarking(updatedMarking);
+
+
     }, [studentsData]);
 
 
-    // useEffect(() => {
-        
-    //     studentsData.map((key,index)=> {
-    //             console.log(editedMarks[index].key)
-    //          if (editedMarks.some(mark => mark[index])) {
-    //             setSecondMarking(
-    //                 studentsData[index].firstMarking
-    //             )
-    //         }
-    //         else {
-    //             setSecondMarking(
-    //                 studentsData[index].firstMarking
-    //             )
-    //         }
-    //     });
-    // }, [editedMarks])
+    useEffect(() => {
+        const updatedMarking = secondMarking.map((data, index) => {
+            const checkedIndex = editedMarks.findIndex(mark => mark?.key === index);
+            if (checkedIndex !== -1) {
+                console.log(editedMarks)
+                return { ...data, secondMarking: editedMarks[checkedIndex].value }
+            } else {
+                return { ...data };
+            }
+        });
+        setSecondMarking(updatedMarking);
+    }, [editedMarks]);
+
 
     useEffect(() => {
 
-    }, [secondMarking, highlightChanges])
+        setFilterData(
+            secondMarking
+        );
+    }, [secondMarking])
 
     useEffect(() => {
         const filteredData = studentsData.filter(row =>
@@ -64,13 +71,25 @@ const SecondMarking = () => {
         setFilterData(filteredData);
     }, [searchTerm])
 
+
     const handleEdit = () => {
         setShowSaveButton(true);
         setEditable(true);
     }
 
     const handleEditMarks = (studentId: number, value: string) => {
-        setEditedMarks([...editedMarks, { [studentId]: value }]);
+        setEditedMarks(prev => {
+            const existingIndex = prev.findIndex(mark => mark.key === studentId);
+
+            if (existingIndex !== -1) {
+                return prev.map((mark, index) =>
+                    index === existingIndex ? { ...mark, value } : mark
+                );
+            } else {
+                return [...prev, { key: studentId, value }];
+            }
+        });
+
 
     };
 
@@ -255,15 +274,13 @@ const SecondMarking = () => {
                                                             {key}
                                                         </th>
                                                     ))}
-                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap">
-                                                        Second Marking
-                                                    </th>
+
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                                 {filterData.map((row: any, rowIndex: any) => (
                                                     <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                        {Object.values(row).map((value, colIndex) => (
+                                                        {Object.values(row).slice(0, -1).map((value, colIndex) => (
                                                             <td
                                                                 key={colIndex}
                                                                 className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 whitespace-nowrap text-center"
@@ -271,13 +288,13 @@ const SecondMarking = () => {
                                                                 {value as string}
                                                             </td>
                                                         ))}
-                                                        <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark[rowIndex]) ? 'bg-green-500' : ''}`}>
+                                                        <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === rowIndex) ? 'bg-green-500' : ''}`}>
                                                             {editable ? (
                                                                 <input
                                                                     type="text"
 
                                                                     className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
-                                                                    defaultValue={Object.values(row)[Object.values(row).length - 1] as string}
+                                                                    defaultValue={Object.values(row).at(-1) as string}
                                                                     onChange={(e) => {
 
                                                                         handleEditMarks(rowIndex, e.target.value)
@@ -285,9 +302,9 @@ const SecondMarking = () => {
                                                                 />
                                                             ) : (
                                                                 <div className="relative">
-                                                                    {Object.values(row)[Object.values(row).length - 1] as string}
+                                                                    {Object.values(row).at(-1) as string}
 
-                                                                    {highlightChanges && editedMarks.some(mark => mark[rowIndex]) && (
+                                                                    {highlightChanges && editedMarks.some(mark => mark.key === rowIndex) && (
                                                                         <span className="absolute text-sm text-white bg-green-600 rounded-full px-2 py-1 top-0 right-0">
                                                                             Edited
                                                                         </span>
