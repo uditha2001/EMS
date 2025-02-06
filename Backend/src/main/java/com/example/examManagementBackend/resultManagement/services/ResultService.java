@@ -7,6 +7,7 @@ import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRe
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
@@ -22,6 +23,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class ResultService {
@@ -116,6 +122,42 @@ public class ResultService {
             StudentsEntity studentsEntity=new StudentsEntity();
             modelMapper.map(student, studentsEntity);
             studentRepo.save(studentsEntity);
+        }
+    }
+
+    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,String examName,ExamTypesName examType) {
+        try{
+            String[] examDetails=examName.split("-");
+            String[] level=examDetails[2].split(" ");
+            String[] semester=examDetails[3].split(" ");
+            Long courseId=getCourseCodeId(courseCode);
+            Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+            Long examinationTypeId=getExaminationTypeId(examType);
+            Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
+            List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId, ResultStatus.FIRST_MARKING_COMPLETE);
+            if(resultEntities!=null){
+                for(ResultEntity resultEntity:resultEntities){
+                    StudentDTO studentDTO=new StudentDTO();
+                    studentDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
+                    studentDTO.setFirstMarking(resultEntity.getFirstMarking());
+                    studentDTO.setStudentName(resultEntity.getStudent().getStudentName());
+                    studentDTOS.add(studentDTO);
+                }
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(200,"success",studentDTOS), HttpStatus.OK
+                );
+            }
+            else{
+                return new ResponseEntity<StandardResponse>(
+                        new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+                );
+            }
+
+        }
+        catch(Exception e){
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 

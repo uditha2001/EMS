@@ -4,7 +4,6 @@ import useApi from "../../api/api";
 import SuccessMessage from "../../components/SuccessMessage";
 import ErrorMessage from "../../components/ErrorMessage";
 
-type UploadStatus = "idle" | "uploading" | "success" | "error" | "extracting Data";
 type RowData = {
     [key: string]: any;
 };
@@ -26,7 +25,6 @@ type courseData = {
 
 const ResultsUpload = () => {
     const [file, setFile] = useState<File | null>(null);
-    const [status, setStatus] = useState<UploadStatus>("idle");
     const [studentsData, setStudentsData] = useState<RowData[]>([]);
     const [totalData, setTotalData] = useState({});
     const [jsonInput, setJsonInput] = useState<string>("");
@@ -51,7 +49,7 @@ const ResultsUpload = () => {
             let examData: examinationName[] = [];
             let i = 0;
             for (const obj of response) {
-                let examName = `${obj["year"]}-${obj["degreeProgramName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
+                let examName = `${obj["year"]}-${obj["degreeName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
@@ -202,7 +200,7 @@ const ResultsUpload = () => {
             <div>
             <div className="self-start text-center mb-4 dark:bg-black">
                 <h1 className="text-4xl font-bold text-gray-800 mb-1 dark:text-gray-200">
-                    Result Upload
+                    First Marking Results Upload
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">Upload and manage examination results</p>
             </div>
@@ -242,9 +240,9 @@ const ResultsUpload = () => {
                                             -- Select the exam Name --
                                         </option>
                                         {createdExamNames &&
-                                            createdExamNames.map((examName, index) => (
+                                            createdExamNames.map((examName1, index) => (
                                                 <option key={index} value={index}>
-                                                    {examName.name}
+                                                    {examName1.name}
                                                 </option>
                                             ))}
                                     </select>
