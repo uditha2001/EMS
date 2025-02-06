@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Key, useEffect, useState } from 'react'
 import SelectExaminationComponent from '../../components/resultComponent/SelectExaminationComponent'
 import useApi from '../../api/api'
 type requiredData = {
@@ -22,13 +22,48 @@ const SecondMarking = () => {
     const [studentsData, setStudentsData] = useState<RowData[]>([]);
     const [editable, setEditable] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filterData, setFilterData] = useState<RowData[]>([]);
+    const [editedMarks, setEditedMarks] = useState<{ [key: number]: string }[]>([]);
+    const [showSaveButton, setShowSaveButton] = useState(false);
+    const [highlightChanges, setHighlightChanges] = useState(false);
 
     useEffect(() => {
-    }, [studentsData])
+        setFilterData(studentsData);
+    }, [studentsData]);
+
+    useEffect(() => {
+        console.log(editedMarks)
+    }, [editedMarks])
+
+    useEffect(() => {
+        const filteredData = studentsData.filter(row =>
+            Object.values(row).some(value =>
+                value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        );
+
+        setFilterData(filteredData);
+    }, [searchTerm])
 
     const handleEdit = () => {
+        setShowSaveButton(true);
         setEditable(true);
     }
+
+    const handleEditMarks = (studentId: number, value: string) => {
+        setEditedMarks([...editedMarks, { [studentId]: value }]);
+
+    };
+
+    const handleSave = () => {
+        setEditable(false);
+        setHighlightChanges(true);
+
+
+    }
+
+
+
 
     const handleSubmit = () => {
         if (examsData.courseCode != "" && examsData.examName != "" && examsData.examType != "") {
@@ -38,6 +73,9 @@ const SecondMarking = () => {
                 }
             })
         }
+    }
+    const handleUpload = () => {
+
     }
 
     return (
@@ -101,75 +139,150 @@ const SecondMarking = () => {
                                         type="text"
                                         placeholder="Enter student sc number ex:SC/XXXX/XXXX"
                                         className="w-full pl-10 p-1.5 border rounded-md focus:ring focus:ring-blue-300 text-sm"
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value)
+                                        }}
                                     />
                                 </div>
-                                <button
-                                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl shadow-md transition-all duration-300 hover:shadow-lg dark:bg-green-600 dark:hover:bg-green-700 dark:shadow-gray-700/30 flex items-center justify-center space-x-1.5"
-                                    onClick={handleEdit}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-4 w-4"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M17.293 4.707a1 1 0 00-1.414 0l-9 9a1 1 0 00-.293.707v2.828a1 1 0 001 1h2.828a1 1 0 001-1v-2.828a1 1 0 00-.293-.707l-9-9a1 1 0 10-1.414 1.414l8 8V16h2v-2.586l4.707 4.707a1 1 0 001.414-1.414l-6-6z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                    <span>Edit Marks</span>
-                                </button>
+
                             </div>
 
-                            {/* Scrollable table container */}
-                            <div className="w-full overflow-x-auto rounded-lg shadow-sm flex justify-center ">
-                                <table className="min-w-full md:min-w-[800px] border-collapse max-w-6xl">
-                                    <thead>
-                                        <tr className="bg-gray-50 dark:bg-gray-700">
-                                            {Object.keys(studentsData[0]).map((key) => (
-                                                <th
-                                                    key={key}
-                                                    className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap"
+                            <div className="w-full flex flex-col">
+                                <div className="flex justify-end space-x-4 mb-4">
+                                    {/* Edit Marks Button */}
+                                    <div className="flex space-x-2">
+                                        {showSaveButton ? (
+                                            // Save Button
+                                            <button
+                                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl shadow-md transition-all duration-300 hover:shadow-lg dark:bg-blue-600 dark:hover:bg-blue-700 dark:shadow-gray-700/30 flex items-center justify-center space-x-1.5"
+                                                onClick={handleSave}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                    aria-hidden="true"
                                                 >
-                                                    {key}
-                                                </th>
-                                            ))}
-                                            <th className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap">
-                                                Second Marking
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                        {studentsData.map((row: any, rowIndex: any) => (
-                                            <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                {Object.values(row).map((value, colIndex) => (
-                                                    <td
-                                                        key={colIndex}
-                                                        className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 whitespace-nowrap"
-                                                    >
-                                                        {value as string}
-                                                    </td>
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M3 10a1 1 0 011-1h3V7a1 1 0 112 0v2h3a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm5 0V7h4v3h3l-5 5-5-5h3z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span>Save Marks</span>
+                                            </button>
+                                        ) : (
+                                            // Edit Button
+                                            <button
+                                                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-xl shadow-md transition-all duration-300 hover:shadow-lg dark:bg-green-600 dark:hover:bg-green-700 dark:shadow-gray-700/30 flex items-center justify-center space-x-1.5"
+                                                onClick={handleEdit}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M17.293 4.707a1 1 0 00-1.414 0l-9 9a1 1 0 00-.293.707v2.828a1 1 0 001 1h2.828a1 1 0 001-1v-2.828a1 1 0 00-.293-.707l-9-9a1 1 0 10-1.414 1.414l8 8V16h2v-2.586l4.707 4.707a1 1 0 001.414-1.414l-6-6z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                <span>Edit Marks</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+
+                                    {/* Upload Results Button */}
+                                    <button
+                                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl shadow-md transition-all duration-300 hover:shadow-lg dark:bg-blue-600 dark:hover:bg-blue-700 dark:shadow-gray-700/30 flex items-center justify-center space-x-1.5"
+                                        onClick={handleUpload}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M3 10a1 1 0 011-1h3V7a1 1 0 112 0v2h3a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm5 0V7h4v3h3l-5 5-5-5h3z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        <span>Upload Results</span>
+                                    </button>
+                                </div>
+
+                                {/* Scrollable Table Container */}
+                                <div className="w-full overflow-x-auto rounded-lg shadow-sm flex justify-center">
+                                    {filterData.length > 0 && (
+                                        <table className="min-w-full md:min-w-[800px] border-collapse max-w-6xl">
+                                            <thead>
+                                                <tr className="bg-gray-50 dark:bg-gray-700">
+                                                    {Object.keys(filterData[0]).map((key) => (
+                                                        <th
+                                                            key={key}
+                                                            className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap"
+                                                        >
+                                                            {key}
+                                                        </th>
+                                                    ))}
+                                                    <th className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                                        Second Marking
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                                                {filterData.map((row: any, rowIndex: any) => (
+                                                    <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                        {Object.values(row).map((value, colIndex) => (
+                                                            <td
+                                                                key={colIndex}
+                                                                className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 whitespace-nowrap text-center"
+                                                            >
+                                                                {value as string}
+                                                            </td>
+                                                        ))}
+                                                        <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark[rowIndex]) ? 'bg-red-500' : ''}`}>
+                                                            {editable ? (
+                                                                <input
+                                                                    type="text"
+
+                                                                    className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
+                                                                    defaultValue={Object.values(row)[Object.values(row).length - 1] as string}
+                                                                    onChange={(e) => {
+
+                                                                        handleEditMarks(rowIndex, e.target.value)
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="relative">
+                                                                    {Object.values(row)[Object.values(row).length - 1] as string}
+
+                                                                    {highlightChanges && editedMarks.some(mark => mark[rowIndex]) && (
+                                                                        <span className="absolute text-sm text-white bg-red-600 rounded-full px-2 py-1 top-0 right-0">
+                                                                            Edited
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+
+                                                            )}
+                                                        </td>
+                                                    </tr>
                                                 ))}
-                                                <td className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300">
-                                                    {editable ? (
-                                                        <input
-                                                            type="text"
-                                                            className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
-                                                            defaultValue={Object.values(row)[Object.values(row).length - 1] as string}
-                                                            onChange={(e) => console.log(`Row ${rowIndex} updated:`, e.target.value)}
-                                                        />
-                                                    ) : (
-                                                        Object.values(row)[Object.values(row).length - 1] as string
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
                             </div>
+
                         </div>
                     )}
                 </div>
