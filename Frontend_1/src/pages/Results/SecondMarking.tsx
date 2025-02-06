@@ -26,14 +26,33 @@ const SecondMarking = () => {
     const [editedMarks, setEditedMarks] = useState<{ [key: number]: string }[]>([]);
     const [showSaveButton, setShowSaveButton] = useState(false);
     const [highlightChanges, setHighlightChanges] = useState(false);
+    const [secondMarking, setSecondMarking] = useState<RowData[]>([]);
 
     useEffect(() => {
         setFilterData(studentsData);
     }, [studentsData]);
 
+
+    // useEffect(() => {
+        
+    //     studentsData.map((key,index)=> {
+    //             console.log(editedMarks[index].key)
+    //          if (editedMarks.some(mark => mark[index])) {
+    //             setSecondMarking(
+    //                 studentsData[index].firstMarking
+    //             )
+    //         }
+    //         else {
+    //             setSecondMarking(
+    //                 studentsData[index].firstMarking
+    //             )
+    //         }
+    //     });
+    // }, [editedMarks])
+
     useEffect(() => {
-        console.log(editedMarks)
-    }, [editedMarks])
+
+    }, [secondMarking, highlightChanges])
 
     useEffect(() => {
         const filteredData = studentsData.filter(row =>
@@ -55,8 +74,10 @@ const SecondMarking = () => {
 
     };
 
+
     const handleSave = () => {
         setEditable(false);
+        setShowSaveButton(false);
         setHighlightChanges(true);
 
 
@@ -250,7 +271,7 @@ const SecondMarking = () => {
                                                                 {value as string}
                                                             </td>
                                                         ))}
-                                                        <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark[rowIndex]) ? 'bg-red-500' : ''}`}>
+                                                        <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark[rowIndex]) ? 'bg-green-500' : ''}`}>
                                                             {editable ? (
                                                                 <input
                                                                     type="text"
@@ -267,7 +288,7 @@ const SecondMarking = () => {
                                                                     {Object.values(row)[Object.values(row).length - 1] as string}
 
                                                                     {highlightChanges && editedMarks.some(mark => mark[rowIndex]) && (
-                                                                        <span className="absolute text-sm text-white bg-red-600 rounded-full px-2 py-1 top-0 right-0">
+                                                                        <span className="absolute text-sm text-white bg-green-600 rounded-full px-2 py-1 top-0 right-0">
                                                                             Edited
                                                                         </span>
                                                                     )}
