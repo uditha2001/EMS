@@ -1,8 +1,11 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -14,4 +17,9 @@ public class ExaminationDTO {
     private String semester;
     private Long degreeProgramId;
     private String degreeProgramName;
+    private String degreeName;
+    private LocalDateTime examProcessStartDate;
+    private LocalDateTime paperSettingCompleteDate;
+    private LocalDateTime markingCompleteDate;
+    private ExamStatus status;
 }

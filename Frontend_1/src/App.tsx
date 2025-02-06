@@ -4,8 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
-import Templates from './pages/PaperSetting/Templates';
-import CreateTimetable from './pages/CreateTimetable/Timetable';
+import SecondMarking from './pages/Results/SecondMarking';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -85,6 +84,14 @@ const EditPaperStructure = React.lazy(
 const ModerationDashboard = React.lazy(
   () => import('./pages/PaperModeration/ModerationDashboard'),
 );
+const Templates = React.lazy(() => import('./pages/PaperSetting/Templates'));
+const CreateTimetable = React.lazy(
+  () => import('./pages/CreateTimetable/Timetable'),
+);
+const ResultsUpload = React.lazy(() => import('./pages/Results/ResultsUpload'));
+const PreviewAssignedRoles = React.lazy(
+  () => import('./pages/RoleAssignments/PreviewAssignedRoles'),
+);
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -130,6 +137,10 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
+      <Route
+        path="/result-Upload"
+        element={renderPage('upload result|EMS', <ResultsUpload />)}
+      />
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -332,7 +343,7 @@ function App() {
               />
 
               <Route
-                path="/paper/feedback"
+                path="/paper/feedback/:paperId/:moderatorId"
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
@@ -381,6 +392,13 @@ function App() {
                 path="/paper/roles"
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
+              <Route
+                path="/paper/preview-assigned-roles/:examinationId"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <PreviewAssignedRoles />,
+                )}
+              />
             </Route>
 
             {/*Create Timetable */}
@@ -391,7 +409,48 @@ function App() {
             >
               <Route
                 path="/createtimetable"
-                element={renderPage('Create Timetable | EMS', <CreateTimetable/>)}
+                element={renderPage(
+                  'Create Timetable | EMS',
+                  <CreateTimetable />,
+                )}
+              />
+            </Route>
+
+            {/* Result Workflow Routes */}
+            <Route
+              element={<RequireAuth allowedPermissions={['ENTER_RESULTS']} />}
+            >
+              <Route
+                path="/result/firstmarking"
+                element={renderPage('First Marking | EMS', <ResultsUpload />)}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['ENTER_RESULTS']} />}
+            >
+              <Route
+                path="/result/secondmarking"
+                element={renderPage('Second Marking | EMS', <SecondMarking />)}
+              />
+            </Route>
+            <Route
+              element={
+                <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
+              }
+            >
+              <Route
+                path="/result/secondmarking"
+                //element={renderPage('Second Marking | EMS', )}
+              />
+
+              <Route
+                path="/result/grading"
+                //element={renderPage('Results Grading | EMS', )}
+              />
+
+              <Route
+                path="/result/dashboard"
+                //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>

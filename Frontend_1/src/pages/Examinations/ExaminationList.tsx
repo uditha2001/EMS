@@ -1,25 +1,32 @@
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCalendarAlt,
+  faSync,
+  faCheckCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 interface Examination {
   id: number;
   year: string;
-  degreeProgramId: string; // ID of the degree program
+  degreeProgramId: string;
   level: string;
   semester: string;
+  status: string;
 }
 
 interface DegreeProgram {
-  id: string; // ID of the degree program
-  name: string; // Name of the degree program
+  id: string;
+  name: string;
 }
 
 interface ExaminationListProps {
-  examinations: Examination[] | null | undefined; // Allow null or undefined
-  degreePrograms: DegreeProgram[]; // Array of degree programs
+  examinations: Examination[] | null | undefined;
+  degreePrograms: DegreeProgram[];
   loading: boolean;
   handleEdit: (id: number) => void;
-  handleDelete: (id: number) => void; // Actual delete handler
+  handleDelete: (id: number) => void;
 }
 
 export default function ExaminationList({
@@ -44,17 +51,42 @@ export default function ExaminationList({
     return program ? program.name : 'Unknown Program';
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'SCHEDULED':
+        return (
+          <span className="flex items-center text-blue-500">
+            <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> Scheduled
+          </span>
+        );
+      case 'ONGOING':
+        return (
+          <span className="flex items-center text-yellow-500">
+            <FontAwesomeIcon icon={faSync} className="mr-1" spin /> Ongoing
+          </span>
+        );
+      case 'COMPLETED':
+        return (
+          <span className="flex items-center text-green-500">
+            <FontAwesomeIcon icon={faCheckCircle} className="mr-1" /> Completed
+          </span>
+        );
+      default:
+        return <span className="text-gray-500">Unknown</span>;
+    }
+  };
+
   const handleConfirmDelete = () => {
     if (deleteId !== null) {
-      handleDelete(deleteId); // Call the provided delete handler
+      handleDelete(deleteId);
       setDeleteId(null);
     }
-    setShowModal(false); // Close the modal
+    setShowModal(false);
   };
 
   const handleOpenModal = (id: number) => {
     setDeleteId(id);
-    setShowModal(true); // Show the modal
+    setShowModal(true);
   };
 
   return (
@@ -77,9 +109,12 @@ export default function ExaminationList({
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center rounded bg-gray-100 p-4 dark:bg-gray-800"
               >
                 <div>
-                  <span className="font-medium text-black dark:text-white">
-                    {year.year} - {getDegreeProgramName(year.degreeProgramId)} -
-                    Level {year.level}
+                  <span className="font-medium text-black dark:text-white flex items-center">
+                    {getStatusBadge(year.status)}
+                    <span className="ml-2">
+                      {year.year} - {getDegreeProgramName(year.degreeProgramId)}{' '}
+                      - Level {year.level}
+                    </span>
                     {year.semester !== 'b' && <> - Semester {year.semester}</>}
                   </span>
                 </div>

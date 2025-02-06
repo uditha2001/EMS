@@ -71,6 +71,20 @@ public class ExaminationController {
         ExaminationCoursesDTO response = examinationService.getExaminationWithCoursesById(examinationId);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/getExaminationWithDegreeName")
+    public ResponseEntity<StandardResponse> getExaminationWithDegreeName() {
+        return examinationService.getExaminationWithDegreeProgram();
+    }
+
+    @GetMapping("/getCoursesUsingExaminationId")
+    public ResponseEntity<StandardResponse> getCoursesUsingExaminationId(@RequestParam Long examinationId) {
+        return examinationService.getCoursesByExaminationId(examinationId);
+    }
+    @PutMapping("/{examId}/update-status")
+    public ResponseEntity<String> updateExamStatus(@PathVariable Long examId) {
+        examinationService.updateExamStatus(examId);
+        return ResponseEntity.ok("Exam status updated successfully!");
+    }
 
 
 }
