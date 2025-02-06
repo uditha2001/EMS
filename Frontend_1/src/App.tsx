@@ -92,6 +92,13 @@ const PreviewAssignedRoles = React.lazy(
   () => import('./pages/RoleAssignments/PreviewAssignedRoles'),
 );
 
+const HistoricalData = React.lazy(
+  () => import('./pages/HistoricalData/HistoricalData'),
+);
+const ArchivedPapers = React.lazy(
+  () => import('./pages/HistoricalData/ArchivedPapers'),
+);
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
@@ -327,6 +334,28 @@ function App() {
               <Route
                 path="/paper/template"
                 element={renderPage('Paper Templates | EMS', <Templates />)}
+              />
+              <Route
+                path="/paper/archived"
+                element={renderPage(
+                  'Archived Papers | EMS',
+                  <ArchivedPapers />,
+                )}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['HISTORICAL_DATA']} />}
+            >
+              <Route
+                path="/history"
+                element={renderPage('History | EMS', <HistoricalData />)}
+              />
+              <Route
+                path="/history/archived"
+                element={renderPage(
+                  'Archived Papers | EMS',
+                  <ArchivedPapers />,
+                )}
               />
             </Route>
 
