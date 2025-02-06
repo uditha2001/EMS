@@ -75,6 +75,7 @@ public class DatabaseSeeder {
             PermissionEntity p28 = createPermission("GENERATE_TRANSCRIPTS", "Allows generating student transcripts and result reports", "Result Management");
             PermissionEntity p29 = createPermission("MANAGE_REGRADES", "Allows handling regrading and appeal requests", "Result Management");
 
+            PermissionEntity p30 = createPermission("HISTORICAL_DATA", "Allows viewing of past papers,results", "Historical Data");
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -95,6 +96,7 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p27);
             assignPermissionToRole(adminRole, p28);
             assignPermissionToRole(adminRole, p29);
+            assignPermissionToRole(adminRole, p30);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(paperCreatorRole,p21);
