@@ -50,4 +50,8 @@ public class ArchivedPaper {
     @ManyToOne
     @JoinColumn(name = "examination_id", nullable = false)
     private ExaminationEntity examination;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_id",nullable = false)
+    private CoursesEntity course;
 }
