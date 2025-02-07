@@ -86,4 +86,5 @@ public class ExaminationController {
         return ResponseEntity.ok("Exam status updated successfully!");
     }
 
+
 }
