@@ -13,4 +13,8 @@ public class ArchivedPaperDTO {
     private String moderatorName;
     private LocalDateTime sharedAt;
     private LocalDateTime createdAt;
+    private String courseCode;
+    private String courseName;
+    private String paperType;
+    private String examination;
 }
