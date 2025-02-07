@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -50,4 +51,12 @@ public class ArchivedPaper {
     @ManyToOne
     @JoinColumn(name = "examination_id", nullable = false)
     private ExaminationEntity examination;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_id",nullable = false)
+    private CoursesEntity course;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaperType paperType; // THEORY or PRACTICAL
 }
