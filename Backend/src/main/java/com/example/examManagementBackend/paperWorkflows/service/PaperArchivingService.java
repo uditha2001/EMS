@@ -51,9 +51,9 @@ public class PaperArchivingService {
         this.examinationRepository = examinationRepository;
     }
 
+    @Scheduled(fixedRate = 86400000) // Runs once every 24 hours
     @Transactional
    // @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
-    @Scheduled(fixedRate = 86400000) // Runs once every 24 hours
     public void archiveSharedPapers() {
         LocalDateTime now = LocalDateTime.now();
 
@@ -84,6 +84,7 @@ public class PaperArchivingService {
                 archivedPaper.setUpdatedAt(encryptedPaper.getUpdatedAt());
                 archivedPaper.setExamination(encryptedPaper.getExamination());
                 archivedPaper.setCourse(encryptedPaper.getCourse());
+                archivedPaper.setPaperType(encryptedPaper.getPaperType());
 
                 archivedPaperRepository.save(archivedPaper);
 
@@ -131,6 +132,10 @@ public class PaperArchivingService {
         dto.setModeratorName(archivedPaper.getModerator().getUsername());
         dto.setSharedAt(archivedPaper.getSharedAt());
         dto.setCreatedAt(archivedPaper.getCreatedAt());
+        dto.setPaperType(String.valueOf(archivedPaper.getPaperType()));
+        dto.setCourseCode(archivedPaper.getCourse().getCode());
+        dto.setCourseName(archivedPaper.getCourse().getName());
+        dto.setExamination(archivedPaper.getExamination().getYear()+" "+ archivedPaper.getExamination().getLevel()+" " +archivedPaper.getExamination().getSemester()+" "+ archivedPaper.getExamination().getDegreeProgramsEntity().getDegreeName() );
         return dto;
     }
 
