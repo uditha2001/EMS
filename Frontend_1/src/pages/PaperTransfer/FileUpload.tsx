@@ -4,7 +4,6 @@ import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from '../../api/api';
-import Checkbox from '../../components/Checkbox';
 import { Link } from 'react-router-dom';
 
 interface Moderator {
@@ -23,6 +22,9 @@ interface Course {
 interface Examination {
   id: number;
   year: string;
+  level: number;
+  semester: number;
+  degreeName: string;
 }
 
 const FileUpload: React.FC = () => {
@@ -38,7 +40,7 @@ const FileUpload: React.FC = () => {
     null,
   );
   const [courses, setCourses] = useState<Course[]>([]);
-  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
   const [examinations, setExaminations] = useState<Examination[]>([]); // State for academic years
   const [selectedExamination, setSelectedExamination] = useState<number | null>(
     null,
@@ -118,8 +120,8 @@ const FileUpload: React.FC = () => {
       return;
     }
 
-    if (selectedCourses.length === 0) {
-      setErrorMessage('Please select at least one course!');
+    if (!selectedCourse) {
+      setErrorMessage('Please select a course!');
       return;
     }
 
@@ -148,18 +150,19 @@ const FileUpload: React.FC = () => {
       return;
     }
 
-    // Concatenate selected course codes and academic year name
-    const courseCodes = courses
-      .filter((course) => selectedCourses.includes(course.id))
-      .map((course) => course.code)
-      .join('_'); // Concatenate selected course codes with underscores
+    const selectedCourseCode = courses.find(
+      (course) => course.id === selectedCourse,
+    )?.code;
+    if (!selectedCourseCode) {
+      setErrorMessage('Invalid course selected!');
+      return;
+    }
 
-    // Rename the file to include the academic year name and course codes
-    const renamedFileName = `${courseCodes}_${paperType}_${selectedExaminationName.replace(
+    // Concatenate selected course codes and academic year name
+    const renamedFileName = `${selectedCourseCode}_${paperType}_${selectedExaminationName.replace(
       '/',
       '_',
     )}.pdf`;
-
     const renamedFile = new File([file], renamedFileName, { type: file.type });
 
     console.log('Renamed File Name:', renamedFileName); // For debugging
@@ -171,7 +174,7 @@ const FileUpload: React.FC = () => {
       const response = await uploadFile(
         renamedFile,
         userId,
-        selectedCourses,
+        selectedCourse,
         remarks,
         paperType,
         selectedModerator,
@@ -193,19 +196,11 @@ const FileUpload: React.FC = () => {
 
   const resetForm = () => {
     setFile(null);
-    setSelectedCourses([]);
+    setSelectedCourse(null);
     setRemarks('');
     setSelectedModerator(null);
-    setSelectedExamination(null); // Reset academic year
+    setSelectedExamination(null);
     setPaperType('');
-  };
-
-  const toggleCourseSelection = (courseId: number) => {
-    setSelectedCourses((prevSelectedCourses) =>
-      prevSelectedCourses.includes(courseId)
-        ? prevSelectedCourses.filter((id) => id !== courseId)
-        : [...prevSelectedCourses, courseId],
-    );
   };
 
   return (
@@ -233,7 +228,8 @@ const FileUpload: React.FC = () => {
             <option value={0}>Select Examination</option>
             {examinations.map((examination) => (
               <option key={examination.id} value={examination.id}>
-                {examination.year}
+                {examination.year} - Level {examination.level} - Semester{' '}
+                {examination.semester} - {examination.degreeName}
               </option>
             ))}
           </select>
@@ -256,21 +252,25 @@ const FileUpload: React.FC = () => {
             ))}
           </select>
         </div>
-        {/* File Upload */}
+        {/* Course Selection */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
-            Upload Paper
+            Select Course
           </label>
-          <input
-            type="file"
-            onChange={handleFileChange}
-            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-          />
-          {file && (
-            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <p>File Selected: {file.name}</p>
-            </div>
-          )}
+          <select
+            value={selectedCourse || ''}
+            onChange={(e) => setSelectedCourse(Number(e.target.value))}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+            required
+          >
+            <option value={''}>Select Course</option>
+
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.code} - {course.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Paper Type */}
@@ -305,24 +305,23 @@ const FileUpload: React.FC = () => {
           ></textarea>
         </div>
 
-        {/* Course Selection with Checkboxes */}
+        {/* File Upload */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
-            Select Courses
+            Upload Paper
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {courses.map((course) => (
-              <Checkbox
-                key={course.id}
-                label={`${course.code} - ${course.name}`}
-                checked={selectedCourses.includes(course.id)}
-                onChange={() => toggleCourseSelection(course.id)}
-              />
-            ))}
-          </div>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+          />
+          {file && (
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              <p>File Selected: {file.name}</p>
+            </div>
+          )}
         </div>
       </div>
-
       <div className="flex justify-between mt-4">
         <Link
           to={'/paper/transfer'}

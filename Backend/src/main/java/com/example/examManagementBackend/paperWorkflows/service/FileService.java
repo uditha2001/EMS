@@ -5,11 +5,9 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
-import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.PapersCoursesRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,31 +23,31 @@ import java.util.List;
 @Service
 public class FileService {
 
-    @Autowired
-    private EncryptionService encryptionService;
+    private final EncryptionService encryptionService;
 
-    @Autowired
-    private EncryptedPaperRepository encryptedPaperRepository;
+    private final EncryptedPaperRepository encryptedPaperRepository;
 
-    @Autowired
-    public UserManagementRepo userRepository;
+    public final UserManagementRepo userRepository;
 
-    @Autowired
-    CoursesRepository coursesRepository;
+    public final CoursesRepository coursesRepository;
 
-    @Autowired
-    PapersCoursesRepository papersCoursesRepository;
-
-    @Autowired
+    final
     ExaminationRepository examinationRepository;
 
     private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long examinationId,String paperType) {
-        // Validate courseIds
-        if (courseIds == null || courseIds.isEmpty()) {
-            throw new IllegalArgumentException("Course IDs cannot be null or empty.");
-        }
+    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository) {
+        this.encryptionService = encryptionService;
+        this.encryptedPaperRepository = encryptedPaperRepository;
+        this.userRepository = userRepository;
+        this.coursesRepository = coursesRepository;
+        this.examinationRepository = examinationRepository;
+    }
+
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType) {
+        // Validate courseId
+        CoursesEntity course = coursesRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course with ID " + courseId + " not found."));
 
         // Validate examinationId
         ExaminationEntity examination = examinationRepository.findById(examinationId)
@@ -74,20 +72,10 @@ public class FileService {
         encryptedPaper.setRemarks(remarks);
         encryptedPaper.setExamination(examination);
         encryptedPaper.setPaperType(PaperType.valueOf(paperType));
-
+        encryptedPaper.setCourse(course);
         // Save the EncryptedPaper entity
         encryptedPaperRepository.save(encryptedPaper);
 
-        // Associate the paper with the selected courses
-        for (Long courseId : courseIds) {
-            CoursesEntity course = coursesRepository.findById(courseId)
-                    .orElseThrow(() -> new RuntimeException("Course with ID " + courseId + " not found."));
-
-            PapersCoursesEntity papersCoursesEntity = new PapersCoursesEntity();
-            papersCoursesEntity.setEncryptedPaper(encryptedPaper);
-            papersCoursesEntity.setCourse(course);
-            papersCoursesRepository.save(papersCoursesEntity);
-        }
     }
 
     public void updateEncryptedPaper(Long paperId, String encryptedFile, String fileName, String remarks) {
@@ -189,6 +177,7 @@ public class FileService {
         // Save the updated paper
         encryptedPaperRepository.save(paper);
     }
+
 
 
 }

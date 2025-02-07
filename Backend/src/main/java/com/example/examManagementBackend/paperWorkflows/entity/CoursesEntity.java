@@ -66,7 +66,7 @@ public class CoursesEntity {
     private List<ExamPaperEntity> examPaperEntityList;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
-    private List<PapersCoursesEntity> papersCoursesEntityList;
+    private List<EncryptedPaper> encryptedPaperEntityList;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<RoleAssignmentEntity> roleAssignmentList;
