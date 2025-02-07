@@ -130,7 +130,7 @@ const Courses: React.FC = () => {
 
       {/* Create Course Button */}
       <div className="flex justify-end mb-4">
-        <button onClick={() => navigate("/create-course")} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Create Course</button>
+        <button onClick={() => navigate("/academic/courses/create")} className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">Create Course</button>
       </div>
 
       {/* Table */}
