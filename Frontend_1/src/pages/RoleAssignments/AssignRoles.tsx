@@ -2,173 +2,216 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
+import useApi from '../../api/api';
+import RoleAssignmentTable from './RoleAssignmentTable';
+import { Link } from 'react-router-dom';
 
-interface AcademicYear {
+interface Examination {
   id: string;
   year: string;
-}
-
-interface DegreeProgram {
-  id: string;
-  name: string;
+  level: string;
+  semester: string;
+  degreeName: string;
 }
 
 interface Course {
   id: string;
   name: string;
   code: string;
+  courseType: string;
 }
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
-  username: string;
 }
 
 interface RoleAssignments {
-  [courseId: string]: {
-    PAPER_CREATOR: string;
-    PAPER_MODERATOR: string;
-    FIRST_MAKER: string;
-    SECOND_MAKER: string;
-  };
+  PAPER_CREATOR: string;
+  PAPER_MODERATOR: string;
+  FIRST_MAKER: string;
+  SECOND_MAKER: string;
+  [key: string]: string;
+}
+
+interface AssignedRoleRow {
+  course: Course;
+  assignments: RoleAssignments;
+  paperType: 'THEORY' | 'PRACTICAL';
 }
 
 const AssignRoles: React.FC = () => {
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
-  const [degreePrograms, setDegreePrograms] = useState<DegreeProgram[]>([]);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>('');
-  const [selectedDegreeProgram, setSelectedDegreeProgram] =
-    useState<string>('');
-  const [roleAssignments, setRoleAssignments] = useState<RoleAssignments>({});
+  const [selectedExamination, setSelectedExamination] = useState<string>('');
+  const [roleAssignments, setRoleAssignments] = useState<
+    Record<string, { THEORY: RoleAssignments; PRACTICAL: RoleAssignments }>
+  >({});
+  const [assignedRoles, setAssignedRoles] = useState<AssignedRoleRow[]>([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const axiosPrivate = useAxiosPrivate();
+  const [, setIsLoading] = useState<boolean>(false);
 
+  const {
+    getExaminations,
+    fetchUsers,
+    getExaminationsCourses,
+    createRoleAssignment,
+    fetchRoleAssignments,
+  } = useApi();
+
+  // Fetch examinations and users
   useEffect(() => {
     setIsLoading(true);
-    axiosPrivate
-      .get('/academic-years')
-      .then((response) => setAcademicYears(response.data.data))
-      .catch((error) => console.error('Error fetching academic years', error));
-
-    axiosPrivate
-      .get('/degreePrograms')
-      .then((response) => setDegreePrograms(response.data))
-      .catch((error) => console.error('Error fetching degree programs', error));
-
-    axiosPrivate
-      .get('/user')
-      .then((response) => setUsers(response.data))
-      .catch((error) => console.error('Error fetching users', error))
+    Promise.all([getExaminations(), fetchUsers()])
+      .then(([examResponse, userResponse]) => {
+        setExaminations(examResponse.data.data);
+        setUsers(userResponse);
+      })
+      .catch((error) => {
+        console.error('Error fetching initial data', error);
+        setErrorMessage('Failed to fetch data. Please try again.');
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
+  // Fetch courses and existing role assignments for the selected examination
   useEffect(() => {
-    if (selectedDegreeProgram) {
+    if (selectedExamination) {
       setIsLoading(true);
-      axiosPrivate
-        .get(
-          `/courses?degreeProgramId=${selectedDegreeProgram}`,
-        )
-        .then((response) => {
-          setCourses(response.data.data);
-          const initialAssignments = response.data.data.reduce(
-            (acc: RoleAssignments, course: Course) => {
-              acc[course.id] = {
-                PAPER_CREATOR: '',
-                PAPER_MODERATOR: '',
-                FIRST_MAKER: '',
-                SECOND_MAKER: '',
-              };
-              return acc;
-            },
-            {} as RoleAssignments,
+      Promise.all([
+        getExaminationsCourses(Number(selectedExamination)),
+        fetchRoleAssignments(Number(selectedExamination)),
+      ])
+        .then(([courseResponse, roleAssignmentResponse]) => {
+          const coursesData = courseResponse.data?.activeCourses || [];
+          setCourses(coursesData);
+
+          // Initialize role assignments for each course
+          const initialAssignments = coursesData.reduce(
+            (
+              acc: Record<
+                string,
+                { THEORY: RoleAssignments; PRACTICAL: RoleAssignments }
+              >,
+              course: Course,
+            ) => ({
+              ...acc,
+              [course.id]: {
+                THEORY: roleAssignmentResponse.data[course.id]?.THEORY || {
+                  PAPER_CREATOR: '',
+                  PAPER_MODERATOR: '',
+                  FIRST_MAKER: '',
+                  SECOND_MAKER: '',
+                },
+                PRACTICAL: roleAssignmentResponse.data[course.id]
+                  ?.PRACTICAL || {
+                  PAPER_CREATOR: '',
+                  PAPER_MODERATOR: '',
+                  FIRST_MAKER: '',
+                  SECOND_MAKER: '',
+                },
+              },
+            }),
+            {},
           );
           setRoleAssignments(initialAssignments);
         })
-        .catch((error) => console.error('Error fetching courses', error))
+        .catch((error) => {
+          console.error('Error fetching courses and role assignments', error);
+          setErrorMessage('Failed to fetch courses and role assignments.');
+          setCourses([]);
+        })
         .finally(() => setIsLoading(false));
     } else {
       setCourses([]);
       setRoleAssignments({});
     }
-  }, [selectedDegreeProgram]);
+  }, [selectedExamination]);
 
-  const handleRoleChange = (courseId: string, role: string, userId: string) => {
+  const handleRoleChange = (
+    courseId: string,
+    role: string,
+    userId: string,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ) => {
     setRoleAssignments((prev) => ({
       ...prev,
       [courseId]: {
         ...prev[courseId],
-        [role]: userId,
+        [paperType]: {
+          ...prev[courseId][paperType],
+          [role]: userId,
+        },
       },
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleAssignRole = (
+    course: Course,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ) => {
+    const assignments = roleAssignments[course.id][paperType];
 
-    if (!selectedAcademicYear || !selectedDegreeProgram) {
-      setErrorMessage('Please select both academic year and degree program.');
+    // Validate that all roles are assigned
+    if (
+      !assignments.PAPER_CREATOR ||
+      !assignments.PAPER_MODERATOR ||
+      !assignments.FIRST_MAKER ||
+      !assignments.SECOND_MAKER
+    ) {
+      setErrorMessage('Please assign all roles before submitting.');
       return;
     }
 
-    const payload = Object.keys(roleAssignments)
-      .map((courseId) => {
-        const assignments = [
-          {
-            roleId: 1,
-            courseId,
-            userId: roleAssignments[courseId].PAPER_CREATOR,
-          },
-          {
-            roleId: 2,
-            courseId,
-            userId: roleAssignments[courseId].PAPER_MODERATOR,
-          },
-          {
-            roleId: 3,
-            courseId,
-            userId: roleAssignments[courseId].FIRST_MAKER,
-          },
-          {
-            roleId: 4,
-            courseId,
-            userId: roleAssignments[courseId].SECOND_MAKER,
-          },
-        ]
-          .filter((assignment) => assignment.userId) // Filter out empty userIds
-          .map((assignment) => ({
-            ...assignment,
-            academicYearId: selectedAcademicYear,
-            isAuthorized: true,
-          }));
+    setIsLoading(true);
 
-        return assignments;
-      })
-      .flat();
+    // Prepare the payload for the specified paperType
+    const payload = Object.entries(assignments).map(([role, userId]) => ({
+      courseId: Number(course.id),
+      roleId: getRoleIdByName(role),
+      userId: Number(userId),
+      examinationId: Number(selectedExamination),
+      isAuthorized: false,
+      paperType,
+    }));
 
-    axiosPrivate
-      .post('/role-assignments/bulk', payload)
-      .then((response) => {
-        if (response.status === 201) {
-          setSuccessMessage('Roles assigned successfully!');
-          setErrorMessage('');
-        }
+    createRoleAssignment(payload)
+      .then(() => {
+        setAssignedRoles((prev) => [
+          ...prev,
+          { course, assignments, paperType },
+        ]);
+        setSuccessMessage(
+          `Roles successfully assigned for ${course.name} (${paperType})`,
+        );
       })
       .catch((error) => {
-        setErrorMessage('Error assigning roles');
         console.error('Error assigning roles:', error);
-      });
+        setErrorMessage('Failed to assign roles. Please try again.');
+      })
+      .finally(() => setIsLoading(false));
   };
 
-  const handleBack = () => {
-    window.history.back();
+  const getRoleIdByName = (roleName: string): number => {
+    const roleMap: Record<string, number> = {
+      PAPER_CREATOR: 2,
+      PAPER_MODERATOR: 3,
+      FIRST_MAKER: 4,
+      SECOND_MAKER: 5,
+    };
+    return roleMap[roleName] || 0;
+  };
+
+  const isCourseAssigned = (
+    courseId: string,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ) => {
+    return assignedRoles.some(
+      (role) => role.course.id === courseId && role.paperType === paperType,
+    );
   };
 
   return (
@@ -182,151 +225,61 @@ const AssignRoles: React.FC = () => {
           </h3>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="p-6.5">
-            {/* Success and Error Messages */}
-            <SuccessMessage
-              message={successMessage}
-              onClose={() => setSuccessMessage('')}
-            />
-            <ErrorMessage
-              message={errorMessage}
-              onClose={() => setErrorMessage('')}
-            />
+        <div className="p-6.5">
+          <SuccessMessage
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+          <ErrorMessage
+            message={errorMessage}
+            onClose={() => setErrorMessage('')}
+          />
 
-            {/* Academic Year and Degree Program */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="mb-4.5">
-                <label className="mb-2.5 block text-black dark:text-white">
-                  Academic Year
-                </label>
-                <select
-                  value={selectedAcademicYear}
-                  onChange={(e) => setSelectedAcademicYear(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-                  required
+          <div className="mb-4.5">
+            <label className="mb-2.5 block text-black dark:text-white">
+              Examination
+            </label>
+            <select
+              value={selectedExamination}
+              onChange={(e) => setSelectedExamination(e.target.value)}
+              className="w-full sm:w-1/3 rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+              required
+            >
+              <option value="">Select Examination</option>
+              {examinations?.map((exam) => (
+                <option key={exam.id} value={exam.id}>
+                  {exam.year} - Level {exam.level} - Semester {exam.semester} -{' '}
+                  {exam.degreeName}
+                </option>
+              ))}
+            </select>
+            {selectedExamination && (
+              <>
+                <Link
+                  to={`/paper/preview-assigned-roles/${selectedExamination}`}
+                  className="bg-primary text-white px-4 py-2 rounded mt-3 inline-block mx-4"
                 >
-                  <option value="">Select Academic Year</option>
-                  {academicYears.map((year) => (
-                    <option key={year.id} value={year.id}>
-                      {year.year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mb-4.5">
-                <label className="mb-2.5 block text-black dark:text-white">
-                  Degree Program
-                </label>
-                <select
-                  value={selectedDegreeProgram}
-                  onChange={(e) => setSelectedDegreeProgram(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-                  required
-                >
-                  <option value="">Select Degree Program</option>
-                  {degreePrograms.map((program) => (
-                    <option key={program.id} value={program.id}>
-                      {program.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Role Assignments Table */}
-            {courses.length > 0 && !isLoading && (
-              <div className="overflow-x-auto my-8">
-                <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-form-input">
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Course Code
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Course Name
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        PAPER CREATOR
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        PAPER MODERATOR
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        FIRST MAKER
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        SECOND MAKER
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {courses.map((course) => (
-                      <tr
-                        key={course.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                          {course.code}
-                        </td>
-                        <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                          {course.name}
-                        </td>
-                        {[
-                          'PAPER_CREATOR',
-                          'PAPER_MODERATOR',
-                          'FIRST_MAKER',
-                          'SECOND_MAKER',
-                        ].map((role) => (
-                          <td
-                            key={role}
-                            className="border border-gray-300 dark:border-strokedark px-4 py-2"
-                          >
-                            <select
-                              onChange={(e) =>
-                                handleRoleChange(
-                                  course.id,
-                                  role,
-                                  e.target.value,
-                                )
-                              }
-                              className="w-full py-3 px-5 text-black bg-transparent outline-none transition focus:ring-0 dark:text-white dark:bg-transparent dark:focus:ring-0 appearance-none"
-                            >
-                              <option value="">Select User</option>
-                              {users.map((user) => (
-                                <option key={user.id} value={user.id}>
-                                  {user.firstName} {user.lastName}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  Preview Assigned Roles
+                </Link>
+              </>
             )}
-
-            {/* Submit Button */}
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="flex justify-center rounded border border-stroke py-2 px-6 font-medium text-black hover:shadow-1 dark:border-strokedark dark:text-white"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
-              >
-                Create Roles Assign Sheet
-              </button>
-            </div>
           </div>
-        </form>
+
+          {selectedExamination && (
+            <>
+              {courses?.length > 0 && (
+                <RoleAssignmentTable
+                  courses={courses}
+                  users={users}
+                  roleAssignments={roleAssignments}
+                  isCourseAssigned={isCourseAssigned}
+                  handleRoleChange={handleRoleChange}
+                  handleAssignRole={handleAssignRole}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

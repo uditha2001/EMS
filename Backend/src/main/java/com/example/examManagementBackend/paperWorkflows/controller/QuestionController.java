@@ -1,9 +1,12 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionStructureDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.QuestionTemplateDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.TemplateAndStructureDTO;
 import com.example.examManagementBackend.paperWorkflows.service.QuestionService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,6 +82,81 @@ public class QuestionController {
                 null
         ));
     }
+
+    @PostMapping("/save-template-and-structure")
+    public ResponseEntity<StandardResponse> saveTemplateAndStructure(
+            @RequestBody TemplateAndStructureDTO templateData) {
+        questionService.saveTemplateAndStructure(templateData.getTemplate(), templateData.getQuestionStructures());
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Template and question structure saved successfully.",
+                null
+        ));
+    }
+
+    // GET all templates
+    @GetMapping("/templates")
+    public ResponseEntity<StandardResponse> getAllTemplates() {
+        List<QuestionTemplateDTO> templates = questionService.getAllTemplates();
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Templates retrieved successfully.",
+                templates
+        ));
+    }
+
+    // GET a specific template by ID
+    @GetMapping("/templates/{templateId}")
+    public ResponseEntity<StandardResponse> getTemplateById(@PathVariable Long templateId) {
+        QuestionTemplateDTO template = questionService.getTemplateById(templateId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Template retrieved successfully.",
+                template
+        ));
+    }
+
+    @GetMapping("/templates/{templateId}/with-questions")
+    public ResponseEntity<StandardResponse> getTemplateWithQuestionStructure(@PathVariable Long templateId) {
+        TemplateAndStructureDTO templateWithQuestions = questionService.getTemplateWithQuestionStructure(templateId);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Template and question structure retrieved successfully.",
+                templateWithQuestions
+        ));
+    }
+
+    @GetMapping("/templates/with-questions")
+    public ResponseEntity<StandardResponse> getAllTemplatesWithQuestionStructure() {
+        List<TemplateAndStructureDTO> templatesWithQuestions = questionService.getAllTemplatesWithQuestionStructure();
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "All templates and question structures retrieved successfully.",
+                templatesWithQuestions
+        ));
+    }
+
+
+    @DeleteMapping("/delete-template/{templateId}")
+    public ResponseEntity<StandardResponse> deleteTemplateAndStructure(@PathVariable Long templateId) {
+        try {
+            questionService.deleteTemplateAndStructure(templateId);
+            // Return a response with success status
+            return ResponseEntity.ok(new StandardResponse(
+                    200,
+                    "Template and associated structures deleted successfully.",
+                    null // No data to return
+            ));
+        } catch (RuntimeException e) {
+            // Handle error and return a structured response with the error message
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StandardResponse(
+                    404,
+                    e.getMessage(),
+                    null // No data to return in case of error
+            ));
+        }
+    }
+
 
 
 }

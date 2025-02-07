@@ -3,7 +3,6 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Bar, Doughnut, Pie } from 'react-chartjs-2';
 import './chartConfig';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 import {
   faCheckCircle,
@@ -11,6 +10,7 @@ import {
   faClock,
   faPen,
 } from '@fortawesome/free-solid-svg-icons';
+import useApi from '../../api/api';
 
 interface SubSubQuestion {
   subSubQuestionId: number;
@@ -49,7 +49,7 @@ interface Paper {
   createdAt: string;
   creator: { id: number; firstName: string; lastName: string };
   moderator: { id: number; firstName: string; lastName: string };
-  academicYear: number;
+  examination: number;
   courses: { id: number; name: string; code: string }[];
   status: string;
   shared: boolean;
@@ -60,13 +60,13 @@ const ModerationDashboard: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [question, setQuestion] = useState<Question[]>([]);
   const [selectedPaperId, setSelectedPaperId] = useState<number | null>(null);
-  const axiosPrivate = useAxiosPrivate();
+  const { getPapers, getPaperStructure } = useApi();
 
   // Function to fetch paper data
   useEffect(() => {
     const fetchPapersData = async () => {
       try {
-        const paperResponse = await axiosPrivate.get('/papers');
+        const paperResponse = await getPapers();
         const paperData = paperResponse.data.data;
         setPapers(paperData);
         for (const paper of paperData) {
@@ -82,7 +82,7 @@ const ModerationDashboard: React.FC = () => {
   // Function to fetch question structure
   const fetchQuestionsData = async (paperId: number) => {
     try {
-      const questionResponse = await axiosPrivate.get(`/structure/${paperId}`);
+      const questionResponse = await getPaperStructure(paperId);
       const questionData = questionResponse.data;
       setQuestions((prevQuestions) => [...prevQuestions, ...questionData.data]);
     } catch (error) {
@@ -95,9 +95,7 @@ const ModerationDashboard: React.FC = () => {
     if (selectedPaperId !== null) {
       const fetchQuestionsData = async () => {
         try {
-          const questionResponse = await axiosPrivate.get(
-            `/structure/${selectedPaperId}`,
-          );
+          const questionResponse = await getPaperStructure(selectedPaperId);
           const questionData = questionResponse.data;
           setQuestion(questionData.data);
         } catch (error) {

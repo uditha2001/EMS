@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @CrossOrigin
@@ -31,8 +30,9 @@ public class FileUploadController {
             @RequestParam("creatorId") Long creatorId,
             @RequestParam("courseIds") List<Long> courseIds,
             @RequestParam("remarks") String remarks,
+            @RequestParam("paperType") String paperType,
             @RequestParam("moderatorId") Long moderatorId,
-            @RequestParam("academicYearId") Long academicYearId) {
+            @RequestParam("examinationId") Long examinationId) {
         try {
             // Validate courseIds
             if (courseIds == null || courseIds.isEmpty()) {
@@ -60,7 +60,7 @@ public class FileUploadController {
 
             // Encrypt and save file
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, academicYearId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, examinationId,paperType);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -124,9 +124,10 @@ public class FileUploadController {
                                 paper.getCreatedAt(),
                                 paper.getCreator(),
                                 paper.getModerator(),
-                                paper.getAcademicYear(),
+                                paper.getExamination(),
                                 courses, // Include courses in the DTO
-                                paper.getStatus()
+                                paper.getStatus(),
+                                paper.getPaperType()
                         );
                     })
                     .collect(Collectors.toList());
@@ -251,9 +252,10 @@ public class FileUploadController {
                     encryptedPaper.getCreatedAt(),
                     encryptedPaper.getCreator(),
                     encryptedPaper.getModerator(),
-                    encryptedPaper.getAcademicYear(),
+                    encryptedPaper.getExamination(),
                     courses,
-                    encryptedPaper.getStatus()// Pass the list of courses here
+                    encryptedPaper.getStatus(),
+                    encryptedPaper.getPaperType()// Pass the list of courses here
             );
 
             return ResponseEntity.ok()

@@ -12,15 +12,17 @@ const useApi = () => {
     creatorId: number,
     courseIds: number[],
     remarks: string,
+    paperType: string,
     moderatorId: number,
-    academicYearId: number,
+    examinationId: number,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
-    formData.append('academicYearId', academicYearId.toString());
+    formData.append('paperType', paperType);
+    formData.append('examinationId', examinationId.toString());
 
     // Log courseIds to verify
     console.log('Selected Course IDs:', courseIds);
@@ -217,6 +219,10 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
+  const createDegreeProgram = async (degreeProgram: any) => {
+    return axiosPrivate.post('/degreePrograms', degreeProgram);
+  };
+
   const updateRole = async (roleId: number, updatedRole: any) => {
     return axiosPrivate.put(`/roles/update/${roleId}`, updatedRole);
   };
@@ -254,6 +260,289 @@ const useApi = () => {
     return axiosPrivate.delete(`/user/deleteProfileImage/${userId}`);
   };
 
+  const getDegreePrograms = async () => {
+    return axiosPrivate.get('/degreePrograms');
+  };
+
+  const getExaminations = async () => {
+    return axiosPrivate.get('/academic-years');
+  };
+
+  const deleteExamination = async (id: number) => {
+    return axiosPrivate.delete(`/academic-years/${id}`);
+  };
+
+  const createExamination = async (newExamination: any) => {
+    return axiosPrivate.post('/academic-years', newExamination);
+  };
+
+  const updateExamination = async (id: number, updatedExamination: any) => {
+    return axiosPrivate.put(`/academic-years/${id}`, updatedExamination);
+  };
+
+  const createPaperStructure = async (paperId: any, questions: any) => {
+    return axiosPrivate.post(`/structure/${paperId}`, questions, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  const updatePaperStructure = async (paperId: any, questions: any) => {
+    return axiosPrivate.put(`/structure/${paperId}`, questions, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  const deletePaperStructure = async (paperId: number) => {
+    return axiosPrivate.delete(`/structure/${paperId}`);
+  };
+
+  const deleteSubQuestion = async (subQuestionId: number) => {
+    return axiosPrivate.delete(`/structure/subQuestion/${subQuestionId}`);
+  };
+
+  const deleteSubSubQuestion = async (subSubQuestionId: number) => {
+    return axiosPrivate.delete(`/structure/subSubQuestion/${subSubQuestionId}`);
+  };
+
+  const getPaperStructure = async (paperId: number) => {
+    return axiosPrivate.get(`structure/${paperId}`);
+  };
+
+  const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
+    return axiosPrivate.get(
+      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+      { responseType: 'blob' },
+    );
+  };
+
+  const createModeration = async (moderation: any) => {
+    return axiosPrivate.post('/moderation/question-with-hierarchy', moderation);
+  };
+
+  const getPapers = async () => {
+    return axiosPrivate.get('/papers');
+  };
+
+  const getCoursesByDegreeProgramId = async (selectedDegreeProgram: number) => {
+    return axiosPrivate.get(
+      `/courses?degreeProgramId=${selectedDegreeProgram}`,
+    );
+  };
+
+  const saveTemplate = async (templateData: any) => {
+    return axiosPrivate.post(
+      `/structure/save-template-and-structure`,
+      templateData,
+    );
+  };
+
+  const getAllTemplates = async () => {
+    return axiosPrivate.get('/structure/templates/with-questions');
+  };
+
+  const getTemplateById = async (templateId: number) => {
+    return axiosPrivate.get(
+      `/structure/templates/${templateId}/with-questions`,
+    );
+  };
+
+  const getTemplates = async () => {
+    return axiosPrivate.get('/structure/templates');
+  };
+
+  const deleteTemplate = async (templateId: number) => {
+    return axiosPrivate.delete(`/structure/delete-template/${templateId}`);
+  };
+
+  const getExaminationsCourses = async (examinationId: number) => {
+    return axiosPrivate.get(
+      `academic-years/examinations/${examinationId}/courses`,
+    );
+  };
+
+  const createRoleAssignment = async (roleAssignment: any) => {
+    return axiosPrivate.post('/role-assignments/bulk', roleAssignment);
+  };
+
+  const fetchRoleAssignments = async (examinationId: number) => {
+    return axiosPrivate.get(`/role-assignments/examination/${examinationId}`);
+  };
+
+  const authorizeRoleAssignment = async (roleAssignmentId: number) => {
+    return axiosPrivate.patch(
+      `/role-assignments/${roleAssignmentId}/authorize`,
+    );
+  };
+
+  const authorizeRoleByExamination = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/examination/${examinationId}/authorize`,
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error('Error authorizing role by examination', error);
+      throw error;
+    }
+  };
+
+  const authorizeRoleByCourseAndPaperType = async (
+    courseId: number,
+    paperType: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/role-assignments/course/${courseId}/paperType/${paperType}/authorize`,
+      );
+      return response.data; // Assuming the response data includes the status and message
+    } catch (error) {
+      console.error('Error authorizing role by course and paper type', error);
+      throw error;
+    }
+  };
+
+  const editRoleAssignment = async (
+    roleAssignmentId: number,
+    userId: number,
+  ) => {
+    try {
+      const response = await axiosPrivate.put(
+        `/role-assignments/${roleAssignmentId}?userId=${userId}`, // Pass userId as query param
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error editing role assignment', error);
+      throw error;
+    }
+  };
+
+  const getRoleAssignmentById = async (roleAssignmentId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/${roleAssignmentId}`,
+      );
+      return response.data; // Assuming the response contains the role assignment data
+    } catch (error) {
+      console.error('Error fetching role assignment', error);
+      throw error;
+    }
+  };
+
+  const unassignRoleAssignment = async (roleAssignmentId: number) => {
+    return axiosPrivate.delete(`/role-assignments/${roleAssignmentId}`);
+  };
+  const getUsersCounts = async () => {
+    try {
+      const response = await axiosPrivate.get('/user/count');
+      if (response.status === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch users count',
+      );
+    }
+  };
+
+  const getActiveUsersCount = async () => {
+    try {
+      const response = await axiosPrivate.get('/user/activeUser');
+      if (response.status === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch active users count',
+      );
+    }
+  };
+
+  const getExaminationById = async (examinationId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/academic-years/${examinationId}`,
+      );
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch examination',
+      );
+    }
+  };
+  const getDegreeProgramById=async (id:number)=>{
+    try{
+        const response =await axiosPrivate.get(`degreePrograms/${id}`);
+        if(response.status===200){
+          return response.data;
+        }
+    }
+    catch(error:any){
+      throw new Error("failed to get degree names");
+    }
+
+  }
+  const getAllExaminationDetailsWithDegreeName=async ()=>{
+    try{
+        const response=await axiosPrivate.get('academic-years/getExaminationWithDegreeName');
+        if(response.data.code===200){
+          return response.data.data;
+        }
+    }
+    catch(error:any){
+        throw new Error("failed to fetch examinations name");
+    }
+  }
+
+  const getCoursesUsingExaminationId=async (examinationId:number|undefined)=>{
+    try{
+      const response=await axiosPrivate.get('academic-years/getCoursesUsingExaminationId',{
+        params: { examinationId: examinationId }   
+           });
+      if(response.data.code===200){
+        return response.data.data;
+      }
+  }
+  catch(error:any){
+      throw new Error("failed to fetch examinations name");
+  }
+  }
+
+  const saveFirstMarkingResults=async (result:any,config={})=>{
+    try {
+      const response = await axiosPrivate.post('result/firstMarking', result,{
+        ...config
+      }); 
+        return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      return { error: true, status:500, message: error.response.data };
+  } else if (error.request) {
+      return { error: true, status: 500, message: "No response received from the server" };
+  } else {
+      return { error: true, status: 500, message: error.message };
+  }  }
+}
+const getFirstMarkingResults= async (examName:string,courseCode:string,examType:string)=>{
+      try{
+        const response=await axiosPrivate.get('result/getFirstMarking', { params: { examName, courseCode, examType } } );
+        return response.data;
+
+      }
+      catch(error:any){
+        if (error.response) {
+          return { error: true, status:500, message: error.response.data };
+      } else if (error.request) {
+          return { error: true, status: 500, message: "No response received from the server" };
+      } else {
+          return { error: true, status: 500, message: error.message };
+      } 
+      }
+  }
+  
   return {
     uploadFile,
     getAllFiles,
@@ -278,8 +567,46 @@ const useApi = () => {
     updateUserProfile,
     updateProfileImage,
     deleteProfileImage,
+    getDegreePrograms,
+    getExaminations,
+    deleteExamination,
+    createExamination,
+    updateExamination,
+    createPaperStructure,
+    updatePaperStructure,
+    deletePaperStructure,
+    deleteSubQuestion,
+    deleteSubSubQuestion,
+    getPaperStructure,
+    fetchEncryptedPaper,
+    createModeration,
+    getPapers,
+    getCoursesByDegreeProgramId,
+    saveTemplate,
+    getAllTemplates,
+    getTemplateById,
+    getTemplates,
+    deleteTemplate,
+    getExaminationsCourses,
+    createRoleAssignment,
+    fetchRoleAssignments,
+    authorizeRoleAssignment,
+    unassignRoleAssignment,
+    getUsersCounts,
+    getActiveUsersCount,
+    authorizeRoleByExamination,
+    authorizeRoleByCourseAndPaperType,
+    editRoleAssignment,
+    getRoleAssignmentById,
+    getExaminationById,
+    getDegreeProgramById,
+    getAllExaminationDetailsWithDegreeName,
+    getCoursesUsingExaminationId,
+    saveFirstMarkingResults,
+    getFirstMarkingResults,
     loading,
     error,
+    createDegreeProgram
   };
 };
 

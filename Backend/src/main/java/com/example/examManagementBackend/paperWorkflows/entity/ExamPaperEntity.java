@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.moderatorFeedbacks.FeedBackDataEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,6 +44,8 @@ public class ExamPaperEntity {
     private List<ModerationsEntity> moderations;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
     private List<PapersCoursesEntity> papersCourses;
+    @OneToOne(mappedBy = "examPaperEntity",cascade = CascadeType.ALL)
+    private FeedBackDataEntity feedBackData;
 
 
 

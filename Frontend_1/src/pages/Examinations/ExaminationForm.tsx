@@ -1,12 +1,15 @@
-import { ChangeEvent, FormEvent } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 
-interface AcademicYearFormProps {
-  formData: { year: string; level: string; semester: string };
-  setFormData: (data: {
+interface ExaminationFormProps {
+  formData: {
     year: string;
     level: string;
     semester: string;
-  }) => void;
+    examProcessStartDate: string | null;
+    paperSettingCompleteDate: string | null;
+    markingCompleteDate: string | null;
+  };
+  setFormData: (data: ExaminationFormProps['formData']) => void;
   editId: number | null;
   handleSave: () => void;
   cancelEdit: () => void;
@@ -15,7 +18,7 @@ interface AcademicYearFormProps {
   setSelectedDegreeProgram: (value: string) => void;
 }
 
-export default function AcademicYearForm({
+export default function ExaminationForm({
   formData,
   setFormData,
   editId,
@@ -24,7 +27,51 @@ export default function AcademicYearForm({
   degreePrograms,
   selectedDegreeProgram,
   setSelectedDegreeProgram,
-}: AcademicYearFormProps) {
+}: ExaminationFormProps) {
+  const [errors, setErrors] = useState({
+    examProcessStartDate: '',
+    paperSettingCompleteDate: '',
+    markingCompleteDate: '',
+  });
+
+  const validateDates = (name: string, value: string | null) => {
+    let updatedErrors = { ...errors };
+    const {
+      examProcessStartDate,
+      paperSettingCompleteDate,
+      markingCompleteDate,
+    } = {
+      ...formData,
+      [name]: value,
+    } as typeof formData;
+
+    const examStart = examProcessStartDate
+      ? new Date(examProcessStartDate)
+      : null;
+    const paperComplete = paperSettingCompleteDate
+      ? new Date(paperSettingCompleteDate)
+      : null;
+    const markingComplete = markingCompleteDate
+      ? new Date(markingCompleteDate)
+      : null;
+
+    if (examStart && paperComplete && paperComplete <= examStart) {
+      updatedErrors.paperSettingCompleteDate =
+        'Paper Setting Complete Date must be after Exam Process Start Date.';
+    } else {
+      updatedErrors.paperSettingCompleteDate = '';
+    }
+
+    if (paperComplete && markingComplete && markingComplete <= paperComplete) {
+      updatedErrors.markingCompleteDate =
+        'Marking Complete Date must be after Paper Setting Complete Date.';
+    } else {
+      updatedErrors.markingCompleteDate = '';
+    }
+
+    setErrors(updatedErrors);
+  };
+
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -33,31 +80,39 @@ export default function AcademicYearForm({
       setSelectedDegreeProgram(value);
     } else {
       setFormData({ ...formData, [name]: value });
+      validateDates(name, value);
     }
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!selectedDegreeProgram) {
       alert('Please select a degree program.');
       return;
     }
+
+    if (
+      errors.examProcessStartDate ||
+      errors.paperSettingCompleteDate ||
+      errors.markingCompleteDate
+    ) {
+      alert('Please correct the date errors before submitting.');
+      return;
+    }
+
     handleSave();
   };
-
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <form onSubmit={handleSubmit}>
-        {/* Form Header */}
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            {editId !== null ? 'Edit Academic Year' : 'Add Academic Year'}
+            {editId !== null ? 'Edit Examination' : 'Add Examination'}
           </h3>
         </div>
 
-        {/* Form Body */}
         <div className="p-6.5">
-          {/* Degree Program */}
           <div className="mb-4.5">
             <label
               htmlFor="degreeProgram"
@@ -82,13 +137,12 @@ export default function AcademicYearForm({
             </select>
           </div>
 
-          {/* Academic Year */}
           <div className="mb-4.5">
             <label
               htmlFor="year"
               className="mb-2.5 block text-black dark:text-white"
             >
-              Academic Year
+              Examination Year
             </label>
             <input
               type="text"
@@ -98,11 +152,10 @@ export default function AcademicYearForm({
               onChange={handleInputChange}
               placeholder="e.g., 2023/2024"
               required
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4"
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
             />
           </div>
 
-          {/* Level */}
           <div className="mb-4.5">
             <label
               htmlFor="level"
@@ -122,10 +175,10 @@ export default function AcademicYearForm({
               <option value="1">Level 1</option>
               <option value="2">Level 2</option>
               <option value="3">Level 3</option>
+              <option value="3">Level 4</option>
             </select>
           </div>
 
-          {/* Semester */}
           <div className="mb-4.5">
             <label
               htmlFor="semester"
@@ -148,7 +201,70 @@ export default function AcademicYearForm({
             </select>
           </div>
 
-          {/* Form Buttons */}
+          <div className="mb-4.5">
+            <label
+              htmlFor="examProcessStartDate"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Exam Process Start Date
+            </label>
+            <input
+              type="datetime-local"
+              id="examProcessStartDate"
+              name="examProcessStartDate"
+              value={formData.examProcessStartDate || ''}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              required
+            />
+          </div>
+
+          <div className="mb-4.5">
+            <label
+              htmlFor="paperSettingCompleteDate"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Paper Setting Complete Date
+            </label>
+            <input
+              type="datetime-local"
+              id="paperSettingCompleteDate"
+              name="paperSettingCompleteDate"
+              value={formData.paperSettingCompleteDate || ''}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              required
+            />
+            {errors.paperSettingCompleteDate && (
+              <p className="text-red-500 text-sm">
+                {errors.paperSettingCompleteDate}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4.5">
+            <label
+              htmlFor="markingCompleteDate"
+              className="mb-2.5 block text-black dark:text-white"
+            >
+              Marking Complete Date
+            </label>
+            <input
+              type="datetime-local"
+              id="markingCompleteDate"
+              name="markingCompleteDate"
+              value={formData.markingCompleteDate || ''}
+              onChange={handleInputChange}
+              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              required
+            />
+            {errors.markingCompleteDate && (
+              <p className="text-red-500 text-sm">
+                {errors.markingCompleteDate}
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-between">
             {editId !== null && (
               <button
@@ -163,7 +279,7 @@ export default function AcademicYearForm({
               type="submit"
               className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90"
             >
-              {editId !== null ? 'Update Data' : 'Add Data'}
+              {editId !== null ? 'Update Examination' : 'Add Examination'}
             </button>
           </div>
         </div>
