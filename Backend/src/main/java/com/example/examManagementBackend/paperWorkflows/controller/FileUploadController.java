@@ -3,7 +3,6 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
-import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -28,17 +27,15 @@ public class FileUploadController {
     public ResponseEntity<StandardResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("creatorId") Long creatorId,
-            @RequestParam("courseIds") List<Long> courseIds,
+            @RequestParam("courseId") Long courseId,  // Single course ID
             @RequestParam("remarks") String remarks,
             @RequestParam("paperType") String paperType,
             @RequestParam("moderatorId") Long moderatorId,
             @RequestParam("examinationId") Long examinationId) {
         try {
-            // Validate courseIds
-            if (courseIds == null || courseIds.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new StandardResponse(400, "At least one course must be selected.", null));
-            }
+            // Validate courseId
+            CoursesEntity course = fileService.coursesRepository.findById(courseId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid course ID."));
 
             // Validate creator existence
             UserEntity creator = fileService.userRepository.findById(creatorId)
@@ -60,7 +57,7 @@ public class FileUploadController {
 
             // Encrypt and save file
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, examinationId,paperType);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseId, remarks, examinationId, paperType);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -71,7 +68,7 @@ public class FileUploadController {
             // Log error for debugging purposes
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error uploading file: ", null));
+                    .body(new StandardResponse(500, "Error uploading file: " + e.getMessage(), null));
         }
     }
 
@@ -109,11 +106,6 @@ public class FileUploadController {
             // Map each paper to its corresponding DTO
             List<EncryptedPaperDTO> paperDTOs = papers.stream()
                     .map(paper -> {
-                        // Extract courses associated with the paper
-                        List<CoursesEntity> courses = paper.getPapersCourses()
-                                .stream()
-                                .map(PapersCoursesEntity::getCourse)
-                                .toList();
 
                         // Construct the DTO
                         return new EncryptedPaperDTO(
@@ -125,7 +117,7 @@ public class FileUploadController {
                                 paper.getCreator(),
                                 paper.getModerator(),
                                 paper.getExamination(),
-                                courses, // Include courses in the DTO
+                                paper.getCourse(),
                                 paper.getStatus(),
                                 paper.getPaperType()
                         );
@@ -237,11 +229,6 @@ public class FileUploadController {
                         .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            // Retrieve courses associated with the paper
-            List<CoursesEntity> courses = encryptedPaper.getPapersCourses()
-                    .stream()
-                    .map(PapersCoursesEntity::getCourse)
-                    .toList();
 
             // Create a DTO to send relevant paper data
             EncryptedPaperDTO paperDTO = new EncryptedPaperDTO(
@@ -253,7 +240,7 @@ public class FileUploadController {
                     encryptedPaper.getCreator(),
                     encryptedPaper.getModerator(),
                     encryptedPaper.getExamination(),
-                    courses,
+                    encryptedPaper.getCourse(),
                     encryptedPaper.getStatus(),
                     encryptedPaper.getPaperType()// Pass the list of courses here
             );

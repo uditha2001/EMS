@@ -10,7 +10,7 @@ const useApi = () => {
   const uploadFile = async (
     file: File,
     creatorId: number,
-    courseIds: number[],
+    courseId: number,
     remarks: string,
     paperType: string,
     moderatorId: number,
@@ -23,14 +23,7 @@ const useApi = () => {
     formData.append('remarks', remarks);
     formData.append('paperType', paperType);
     formData.append('examinationId', examinationId.toString());
-
-    // Log courseIds to verify
-    console.log('Selected Course IDs:', courseIds);
-
-    // Append courseIds individually
-    courseIds.forEach((courseId) =>
-      formData.append('courseIds', courseId.toString()),
-    );
+    formData.append('courseId', courseId.toString());
 
     try {
       const res = await axiosPrivate.post('/papers/upload', formData, {
@@ -473,76 +466,131 @@ const useApi = () => {
       );
     }
   };
-  const getDegreeProgramById=async (id:number)=>{
-    try{
-        const response =await axiosPrivate.get(`degreePrograms/${id}`);
-        if(response.status===200){
-          return response.data;
-        }
+  const getDegreeProgramById = async (id: number) => {
+    try {
+      const response = await axiosPrivate.get(`degreePrograms/${id}`);
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error: any) {
+      throw new Error('failed to get degree names');
     }
-    catch(error:any){
-      throw new Error("failed to get degree names");
-    }
-
-  }
-  const getAllExaminationDetailsWithDegreeName=async ()=>{
-    try{
-        const response=await axiosPrivate.get('academic-years/getExaminationWithDegreeName');
-        if(response.data.code===200){
-          return response.data.data;
-        }
-    }
-    catch(error:any){
-        throw new Error("failed to fetch examinations name");
-    }
-  }
-
-  const getCoursesUsingExaminationId=async (examinationId:number|undefined)=>{
-    try{
-      const response=await axiosPrivate.get('academic-years/getCoursesUsingExaminationId',{
-        params: { examinationId: examinationId }   
-           });
-      if(response.data.code===200){
+  };
+  const getAllExaminationDetailsWithDegreeName = async () => {
+    try {
+      const response = await axiosPrivate.get(
+        'academic-years/getExaminationWithDegreeName',
+      );
+      if (response.data.code === 200) {
         return response.data.data;
       }
-  }
-  catch(error:any){
-      throw new Error("failed to fetch examinations name");
-  }
-  }
+    } catch (error: any) {
+      throw new Error('failed to fetch examinations name');
+    }
+  };
 
-  const saveFirstMarkingResults=async (result:any,config={})=>{
+  const getCoursesUsingExaminationId = async (
+    examinationId: number | undefined,
+  ) => {
     try {
-      const response = await axiosPrivate.post('result/firstMarking', result,{
-        ...config
-      }); 
-        return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      return { error: true, status:500, message: error.response.data };
-  } else if (error.request) {
-      return { error: true, status: 500, message: "No response received from the server" };
-  } else {
-      return { error: true, status: 500, message: error.message };
-  }  }
-}
-const getFirstMarkingResults= async (examName:string,courseCode:string,examType:string)=>{
-      try{
-        const response=await axiosPrivate.get('result/getFirstMarking', { params: { examName, courseCode, examType } } );
-        return response.data;
+      const response = await axiosPrivate.get(
+        'academic-years/getCoursesUsingExaminationId',
+        {
+          params: { examinationId: examinationId },
+        },
+      );
+      if (response.data.code === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error('failed to fetch examinations name');
+    }
+  };
 
-      }
-      catch(error:any){
-        if (error.response) {
-          return { error: true, status:500, message: error.response.data };
+  const saveFirstMarkingResults = async (result: any, config = {}) => {
+    try {
+      const response = await axiosPrivate.post('result/firstMarking', result, {
+        ...config,
+      });
+      console.log(response.data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return { error: true, status: 500, message: error.response.data };
       } else if (error.request) {
-          return { error: true, status: 500, message: "No response received from the server" };
+        return {
+          error: true,
+          status: 500,
+          message: 'No response received from the server',
+        };
       } else {
-          return { error: true, status: 500, message: error.message };
-      } 
+        return { error: true, status: 500, message: error.message };
       }
-  }
-  
+    }
+  };
+
+  const getArchivedPapers = async (page = 0, size = 10) => {
+    return axiosPrivate.get(`/papers/archived`, { params: { page, size } });
+  };
+
+  const getArchivedPaperById = async (id: number) => {
+    return axiosPrivate.get(`/papers/archived/${id}`);
+  };
+
+  const archivePapersManually = async () => {
+    return axiosPrivate.post(`/papers/archive`);
+  };
+
+  const deleteArchivedPaper = async (id: number) => {
+    return axiosPrivate.delete(`/papers/archived/${id}`);
+  };
+
+  const downloadArchivedPaper = async (id: number) => {
+    return axiosPrivate.get(`/papers/archived/${id}/download`, {
+      responseType: 'blob',
+    });
+  };
+
+  const uploadArchivedPaper = async (
+    file: File,
+    uploadRequest: { title: string; description: string },
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', uploadRequest.title);
+    formData.append('description', uploadRequest.description);
+
+    return axiosPrivate.post(`/papers/archived/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  };
+  const getFirstMarkingResults = async (
+    examName: string,
+    courseCode: string,
+    examType: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.get('result/getFirstMarking', {
+        params: { examName, courseCode, examType },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return { error: true, status: 500, message: error.response.data };
+      } else if (error.request) {
+        return {
+          error: true,
+          status: 500,
+          message: 'No response received from the server',
+        };
+      } else {
+        return { error: true, status: 500, message: error.message };
+      }
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -603,10 +651,16 @@ const getFirstMarkingResults= async (examName:string,courseCode:string,examType:
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     saveFirstMarkingResults,
+    getArchivedPapers,
+    getArchivedPaperById,
+    archivePapersManually,
+    deleteArchivedPaper,
+    downloadArchivedPaper,
+    uploadArchivedPaper,
     getFirstMarkingResults,
     loading,
     error,
-    createDegreeProgram
+    createDegreeProgram,
   };
 };
 
