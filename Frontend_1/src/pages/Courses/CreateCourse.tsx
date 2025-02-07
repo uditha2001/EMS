@@ -96,7 +96,9 @@ const CreateCourse: React.FC = () => {
           </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div  className="p-6.5">
         {/* Level Selection */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-white">Level:</label>
           <div className="flex space-x-4">
@@ -131,7 +133,7 @@ const CreateCourse: React.FC = () => {
       </select>
     </div>
     <div className="flex-1">
-      <label className="block text-sm font-medium text-gray-700 dark:text-white">Degree:</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Degree:</label>
       <select
         value={degree}
         onChange={(e) => setDegree(e.target.value)}
@@ -205,6 +207,7 @@ const CreateCourse: React.FC = () => {
             ></textarea>
         </div>
 
+        </div>
         {/* Buttons */}
         <div className="flex justify-between">
           <button
@@ -221,6 +224,9 @@ const CreateCourse: React.FC = () => {
             Reset
           </button>
         </div>
+
+        </div>
+
       </form>
 
       {/* Modal */}
