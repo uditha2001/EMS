@@ -86,12 +86,13 @@ const Courses: React.FC = () => {
       <div className="grid grid-cols-2 gap-4 mb-4">
         {/* Level */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Level:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Level:</label>
           <select 
                 name="level" 
                 value={filters.level} 
                 onChange={handleFilterChange} 
-                className="w-full p-2 border rounded-md">
+                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                >
 
             <option value="">All</option>
             <option value="1">Level 1</option>
@@ -103,12 +104,13 @@ const Courses: React.FC = () => {
 
         {/* Semester */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Semester:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Semester:</label>
           <select 
                   name="semester" 
                   value={filters.semester} 
                   onChange={handleFilterChange} 
-                  className="w-full p-2 border rounded-md">
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  >
 
             <option value="">All</option>
             <option value="1">Semester 1</option>
@@ -118,12 +120,13 @@ const Courses: React.FC = () => {
 
         {/* Degree */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Degree:</label>
+          <label className="block text-sm font-medium text-gray-700  dark:text-white">Degree:</label>
           <select 
                 name="degree" 
                 value={filters.degree} 
                 onChange={handleFilterChange} 
-                className="w-full p-2 border rounded-md">
+                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                >
 
             <option value="">All</option>
             <option value="BCS">BCS</option>
@@ -135,12 +138,13 @@ const Courses: React.FC = () => {
 
         {/* Active Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Active:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Active:</label>
           <select 
                 name="active" 
                 value={filters.active} 
                 onChange={handleFilterChange} 
-                className="w-full p-2 border rounded-md">
+                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                >
 
             <option value="">All</option>
             <option value="true">Active</option>
@@ -150,25 +154,25 @@ const Courses: React.FC = () => {
 
         {/* Course Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Course Name:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Course Name:</label>
           <input 
                   type="text" 
                   name="courseName" 
                   value={filters.courseName} 
                   onChange={handleFilterChange} 
-                  className="w-full p-2 border rounded-md" 
+                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                   placeholder="Type course name..." />
         </div>
 
         {/* Course Code */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Course Code:</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-white">Course Code:</label>
           <input 
                     type="text" 
                     name="courseCode" 
                     value={filters.courseCode} 
                     onChange={handleFilterChange} 
-                    className="w-full p-2 border rounded-md" 
+                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                     placeholder="Type course code..." />
         </div>
       </div>
