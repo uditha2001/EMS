@@ -530,23 +530,23 @@ const useApi = () => {
   };
 
   const getArchivedPapers = async (page = 0, size = 10) => {
-    return axiosPrivate.get(`/archived`, { params: { page, size } });
+    return axiosPrivate.get(`/papers/archived`, { params: { page, size } });
   };
 
   const getArchivedPaperById = async (id: number) => {
-    return axiosPrivate.get(`/archived/${id}`);
+    return axiosPrivate.get(`/papers/archived/${id}`);
   };
 
   const archivePapersManually = async () => {
-    return axiosPrivate.post(`/archive`);
+    return axiosPrivate.post(`/papers/archive`);
   };
 
   const deleteArchivedPaper = async (id: number) => {
-    return axiosPrivate.delete(`/archived/${id}`);
+    return axiosPrivate.delete(`/papers/archived/${id}`);
   };
 
   const downloadArchivedPaper = async (id: number) => {
-    return axiosPrivate.get(`/archived/${id}/download`, {
+    return axiosPrivate.get(`/papers/archived/${id}/download`, {
       responseType: 'blob',
     });
   };
@@ -560,7 +560,7 @@ const useApi = () => {
     formData.append('title', uploadRequest.title);
     formData.append('description', uploadRequest.description);
 
-    return axiosPrivate.post(`/archived/upload`, formData, {
+    return axiosPrivate.post(`/papers/archived/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
