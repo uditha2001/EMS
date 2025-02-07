@@ -58,6 +58,8 @@ const Courses: React.FC = () => {
     []
   );
 
+  
+
   // Handle filter changes and trigger search
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -81,6 +83,10 @@ const Courses: React.FC = () => {
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">Courses</h3>
+          </div>
+
+          <form >
+          <div className="p-6.5">
 
       {/* Filter Inputs */}
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -217,9 +223,11 @@ const Courses: React.FC = () => {
         
       )}
       </div>
+      </form>
+      </div>
     </div>
-    </div>
+   
   );
 };
 
-export default Courses;  
+export default Courses; 
