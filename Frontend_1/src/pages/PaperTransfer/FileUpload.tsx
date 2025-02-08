@@ -24,7 +24,7 @@ interface Examination {
   year: string;
   level: number;
   semester: number;
-  degreeName: string;
+  degreeProgramName: string;
 }
 
 const FileUpload: React.FC = () => {
@@ -229,7 +229,7 @@ const FileUpload: React.FC = () => {
             {examinations.map((examination) => (
               <option key={examination.id} value={examination.id}>
                 {examination.year} - Level {examination.level} - Semester{' '}
-                {examination.semester} - {examination.degreeName}
+                {examination.semester} - {examination.degreeProgramName}
               </option>
             ))}
           </select>

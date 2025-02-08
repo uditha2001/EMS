@@ -45,14 +45,14 @@ public class ArchivedPaper {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false, columnDefinition = "DATETIME")
+    @Column(nullable = true, columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "examination_id", nullable = false)
     private ExaminationEntity examination;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "course_id",nullable = false)
     private CoursesEntity course;
 

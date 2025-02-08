@@ -3,11 +3,14 @@ package com.example.examManagementBackend.paperWorkflows.service;
 import com.example.examManagementBackend.paperWorkflows.dto.ArchivedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.UploadPaperRequestDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ArchivedPaperRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.paperWorkflows.specifications.ArchivedPaperSpecification;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.transaction.Transactional;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,12 +47,16 @@ public class PaperArchivingService {
 
     private final ExaminationRepository examinationRepository;
 
-    public PaperArchivingService(EncryptedPaperRepository encryptedPaperRepository, ArchivedPaperRepository archivedPaperRepository, EncryptionService encryptionService, UserManagementRepo userRepository, ExaminationRepository examinationRepository) {
+    private final CoursesRepository coursesRepository;
+
+
+    public PaperArchivingService(EncryptedPaperRepository encryptedPaperRepository, ArchivedPaperRepository archivedPaperRepository, EncryptionService encryptionService, UserManagementRepo userRepository, ExaminationRepository examinationRepository, CoursesRepository coursesRepository) {
         this.encryptedPaperRepository = encryptedPaperRepository;
         this.archivedPaperRepository = archivedPaperRepository;
         this.encryptionService = encryptionService;
         this.userRepository = userRepository;
         this.examinationRepository = examinationRepository;
+        this.coursesRepository = coursesRepository;
     }
 
     @Scheduled(fixedRate = 86400000) // Runs once every 24 hours
@@ -119,8 +127,41 @@ public class PaperArchivingService {
     }
 
     public void deleteArchivedPaper(Long id) {
-        archivedPaperRepository.deleteById(id);
+        Optional<ArchivedPaper> archivedPaperOptional = archivedPaperRepository.findById(id);
+        if (archivedPaperOptional.isPresent()) {
+            ArchivedPaper archivedPaper = archivedPaperOptional.get();
+
+            // Delete the file from the local storage
+            try {
+                Path filePath = Paths.get(archivedPaper.getFilePath());
+                Files.deleteIfExists(filePath);  // Delete the file from local storage
+            } catch (IOException e) {
+                throw new RuntimeException("Error deleting file from storage: " + archivedPaper.getFilePath(), e);
+            }
+
+            // Delete the record from the database
+            archivedPaperRepository.delete(archivedPaper);
+        } else {
+            throw new IllegalArgumentException("Archived paper not found with ID: " + id);
+        }
     }
+
+
+    public Page<ArchivedPaperDTO> searchArchivedPapers(
+            String fileName, String creatorName, String moderatorName,
+            String courseCode, String paperType, String degreeName,
+            String year, String level, String semester,
+            LocalDateTime startDate, LocalDateTime endDate,
+            Pageable pageable) {
+
+        Specification<ArchivedPaper> spec = ArchivedPaperSpecification.filterByCriteria(
+                fileName, creatorName, moderatorName, courseCode, paperType,
+                degreeName, year, level, semester, startDate, endDate
+        );
+
+        return archivedPaperRepository.findAll(spec, pageable).map(this::convertToDTO);
+    }
+
 
     private ArchivedPaperDTO convertToDTO(ArchivedPaper archivedPaper) {
         ArchivedPaperDTO dto = new ArchivedPaperDTO();
@@ -135,7 +176,10 @@ public class PaperArchivingService {
         dto.setPaperType(String.valueOf(archivedPaper.getPaperType()));
         dto.setCourseCode(archivedPaper.getCourse().getCode());
         dto.setCourseName(archivedPaper.getCourse().getName());
-        dto.setExamination(archivedPaper.getExamination().getYear()+" "+ archivedPaper.getExamination().getLevel()+" " +archivedPaper.getExamination().getSemester()+" "+ archivedPaper.getExamination().getDegreeProgramsEntity().getDegreeName() );
+        dto.setYear(archivedPaper.getExamination().getYear());
+        dto.setLevel(archivedPaper.getExamination().getLevel());
+        dto.setSemester(archivedPaper.getExamination().getSemester());
+        dto.setDegreeName(archivedPaper.getExamination().getDegreeProgramsEntity().getDegreeName());
         return dto;
     }
 
@@ -173,18 +217,25 @@ public class PaperArchivingService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid moderator ID."));
         ExaminationEntity examination = examinationRepository.findById(uploadRequest.getExaminationId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid examination ID."));
+        CoursesEntity course = coursesRepository.findById(uploadRequest.getCourseId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid course ID."));
 
         // Save to database
         ArchivedPaper archivedPaper = new ArchivedPaper();
-        archivedPaper.setFileName(file.getOriginalFilename());
+        archivedPaper.setFileName(uploadRequest.getFileName());
         archivedPaper.setFilePath(filePath.toString());
         archivedPaper.setRemarks(uploadRequest.getRemarks());
         archivedPaper.setCreator(creator);
         archivedPaper.setModerator(moderator);
         archivedPaper.setExamination(examination);
         archivedPaper.setCreatedAt(LocalDateTime.now());
+        archivedPaper.setCourse(course);
+        archivedPaper.setPaperType(uploadRequest.getPaperType());
+        archivedPaper.setShared(true);
 
         archivedPaperRepository.save(archivedPaper);
     }
+
+
 }
 
