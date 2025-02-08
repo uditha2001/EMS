@@ -71,6 +71,12 @@ public class ExaminationController {
         ExaminationCoursesDTO response = examinationService.getExaminationWithCoursesById(examinationId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/examinations/{examinationId}/allCourses")
+    public ResponseEntity<ExaminationCoursesDTO> getExaminationCoursesById(@PathVariable Long examinationId) {
+        ExaminationCoursesDTO response = examinationService.getExaminationWithAllActiveCoursesById(examinationId);
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/getExaminationWithDegreeName")
     public ResponseEntity<StandardResponse> getExaminationWithDegreeName() {
         return examinationService.getExaminationWithDegreeProgram();

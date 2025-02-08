@@ -16,5 +16,8 @@ public class ArchivedPaperDTO {
     private String courseCode;
     private String courseName;
     private String paperType;
-    private String examination;
+    private String year;
+    private String level;
+    private String semester;
+    private String degreeName;
 }

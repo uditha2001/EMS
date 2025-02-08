@@ -551,21 +551,53 @@ const useApi = () => {
     });
   };
 
+  const getExaminationsAllCourses = async (examinationId: number) => {
+    return axiosPrivate.get(
+      `academic-years/examinations/${examinationId}/allCourses`,
+    );
+  };
+
   const uploadArchivedPaper = async (
     file: File,
-    uploadRequest: { title: string; description: string },
+    uploadRequest: {
+      fileName: string;
+      remarks: string;
+      creatorId: number;
+      moderatorId: number;
+      examinationId: number;
+      courseId: number;
+      paperType: string;
+    },
   ) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', uploadRequest.title);
-    formData.append('description', uploadRequest.description);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', uploadRequest.fileName);
+      formData.append('remarks', uploadRequest.remarks);
+      formData.append('creatorId', uploadRequest.creatorId.toString());
+      formData.append('moderatorId', uploadRequest.moderatorId.toString());
+      formData.append('examinationId', uploadRequest.examinationId.toString());
+      formData.append('courseId', uploadRequest.courseId.toString());
+      formData.append('paperType', uploadRequest.paperType);
 
-    return axiosPrivate.post(`/papers/archived/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      const response = await axiosPrivate.post(
+        `/papers/archived/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Accept: 'application/json',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading archived paper:', error);
+      throw new Error('Failed to upload archived paper. Please try again.');
+    }
   };
+
   const getFirstMarkingResults = async (
     examName: string,
     courseCode: string,
@@ -590,6 +622,33 @@ const useApi = () => {
       }
     }
   };
+
+  const searchArchivedPapers = async (searchParams: {
+    fileName?: string;
+    creatorName?: string;
+    moderatorName?: string;
+    courseCode?: string;
+    paperType?: string;
+    degreeName?: string;
+    year?: string;
+    level?: string;
+    semester?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    try {
+      // Build the query parameters dynamically
+      const queryParams = new URLSearchParams(searchParams as any).toString();
+
+      return axiosPrivate.get(`/papers/archived/search?${queryParams}`);
+    } catch (error) {
+      console.error('Error searching archived papers:', error);
+      throw error;
+    }
+  };
+
    
   return {
     uploadFile,
@@ -661,6 +720,8 @@ const useApi = () => {
     loading,
     error,
     createDegreeProgram,
+    searchArchivedPapers,
+    getExaminationsAllCourses,
   };
 };
 

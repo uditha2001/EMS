@@ -11,7 +11,7 @@ interface Examination {
   year: string;
   level: string;
   semester: string;
-  degreeName: string;
+  degreeProgramName: string;
 }
 
 interface Course {
@@ -249,7 +249,7 @@ const AssignRoles: React.FC = () => {
               {examinations?.map((exam) => (
                 <option key={exam.id} value={exam.id}>
                   {exam.year} - Level {exam.level} - Semester {exam.semester} -{' '}
-                  {exam.degreeName}
+                  {exam.degreeProgramName}
                 </option>
               ))}
             </select>
