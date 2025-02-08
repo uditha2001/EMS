@@ -87,7 +87,7 @@ public class ResultService {
 
                         }
                         else{
-                            resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId);
+                            resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
                         }
                     }
 

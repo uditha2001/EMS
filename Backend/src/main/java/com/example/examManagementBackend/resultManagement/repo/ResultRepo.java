@@ -36,11 +36,11 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE ResultEntity r SET r.firstMarking = :firstMarking, " +
-            "r.approvedBy = :approvedBy " +
+            "r.approvedBy = :approvedBy,r.status=:status " +
             "WHERE r.resultId = :id")
     void updateFirstMarkingResults(@Param("firstMarking") float firstMarking,
                        @Param("approvedBy") UserEntity approvedBy,
-                       @Param("id") Long id);
+                       @Param("id") Long id,@Param("status") ResultStatus status);
 
     @Modifying
     @Transactional

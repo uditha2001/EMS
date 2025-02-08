@@ -69,11 +69,15 @@ const SecondMarking = () => {
                 if (data.code === 201) {
                     setAllowToSend(false);
                     setSuccessMessage("result upload successfull")
+                    setShowProgressBar(false);
+                
 
                 }
                 else if (data.status === 500) {
                     setAllowToSend(false);
                     setErrorMessage("result upload failed!")
+                    setShowProgressBar(false);
+
                 }
 
             })
@@ -378,7 +382,7 @@ const SecondMarking = () => {
                                                                     {value as string}
                                                                 </td>
                                                             ))}
-                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) ? 'bg-green-500' : ''}`}>
+                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) ? 'bg-yellow-500' : ''}`}>
                                                                 {editable ? (
                                                                     <input
                                                                         type="text"
@@ -397,7 +401,7 @@ const SecondMarking = () => {
                                                                         {Object.values(row).at(-3) as string}
 
                                                                         {highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) && (
-                                                                            <span className="absolute text-sm text-white bg-green-600 rounded-full px-2 py-1 top-0 right-0">
+                                                                            <span className="absolute text-sm text-white bg-yellow-600 rounded-full px-2 py-1 top-0 right-0">
                                                                                 Edited
                                                                             </span>
                                                                         )}
