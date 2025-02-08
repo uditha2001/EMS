@@ -146,21 +146,13 @@ const FileUpdate: React.FC = () => {
               <label className="mb-2.5 block text-black dark:text-white">
                 Examination
               </label>
-              <input
-                disabled
-                value={examinationName}
-                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-              />
+              <input disabled value={examinationName} className="input-field" />
             </div>
             <div>
               <label className="mb-2.5 block text-black dark:text-white">
                 Moderator
               </label>
-              <input
-                disabled
-                value={moderator}
-                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-              />
+              <input disabled value={moderator} className="input-field" />
             </div>
             <div>
               <label className="mb-2.5 block text-black dark:text-white">
@@ -176,21 +168,13 @@ const FileUpdate: React.FC = () => {
               <label className="mb-2.5 block text-black dark:text-white">
                 Paper Type
               </label>
-              <input
-                disabled
-                value={paperType}
-                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-              />
+              <input disabled value={paperType} className="input-field" />
             </div>
             <div>
               <label className="mb-2.5 block text-black dark:text-white">
                 Course
               </label>
-              <input
-                disabled
-                value={course}
-                className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-              />
+              <input disabled value={course} className="input-field" />
             </div>
             <div>
               <label className="mb-2.5 block text-black dark:text-white">

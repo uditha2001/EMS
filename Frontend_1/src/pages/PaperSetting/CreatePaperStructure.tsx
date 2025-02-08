@@ -368,7 +368,7 @@ const CreatePaperStructure: React.FC = () => {
                       onChange={(e) =>
                         setTotalQuestions(parseInt(e.target.value, 10))
                       }
-                      className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                      className="input-field"
                     />
                   </div>
                   <div className="mb-4.5">
@@ -381,7 +381,7 @@ const CreatePaperStructure: React.FC = () => {
                       onChange={(e) =>
                         setTotalMarks(parseInt(e.target.value, 10))
                       }
-                      className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                      className="input-field"
                     />
                   </div>
 
@@ -420,7 +420,7 @@ const CreatePaperStructure: React.FC = () => {
                       type="text"
                       value={templateName}
                       onChange={(e) => setTemplateName(e.target.value)}
-                      className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                      className="input-field"
                     />
                   </div>
                 )}
@@ -475,7 +475,7 @@ const CreatePaperStructure: React.FC = () => {
                               onChange={(e) =>
                                 handleInputChange(e, questionIndex)
                               }
-                              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                              className="input-field"
                             />
                           </td>
                           <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
@@ -527,7 +527,7 @@ const CreatePaperStructure: React.FC = () => {
                                         subQuestionIndex,
                                       )
                                     }
-                                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                    className="input-field"
                                   />
                                 </td>
                                 <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
@@ -598,7 +598,7 @@ const CreatePaperStructure: React.FC = () => {
                                             subSubQuestionIndex,
                                           )
                                         }
-                                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                                        className="input-field"
                                       />
                                     </td>
                                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">

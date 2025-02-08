@@ -31,7 +31,7 @@ interface Examination {
   year: string;
   level: string;
   semester: string;
-  degreeName: string;
+  degreeProgramName: string;
 }
 
 const PreviewAssignedRoles: React.FC = () => {
@@ -290,7 +290,7 @@ const PreviewAssignedRoles: React.FC = () => {
     // Exam details
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
-    const examDetails = `Examination: ${examination?.degreeName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
+    const examDetails = `Examination: ${examination?.degreeProgramName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
     doc.text(examDetails, margin, 40);
 
     doc.line(margin, 45, pageWidth - margin, 45); // Horizontal line separator
@@ -376,7 +376,7 @@ const PreviewAssignedRoles: React.FC = () => {
     doc.line(margin + colWidth + 30, y + 2, margin + 2 * colWidth - 20, y + 2); // Signature line in the right column
 
     // File Name: Save the PDF with examination details
-    const fileName = `assigned-roles-overview-${examination?.degreeName}-${examination?.year}.pdf`;
+    const fileName = `assigned-roles-overview-${examination?.degreeProgramName}-${examination?.year}.pdf`;
     doc.save(fileName);
   };
 
@@ -402,7 +402,7 @@ const PreviewAssignedRoles: React.FC = () => {
           {/* Responsive row for exam details and button */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <h3 className="font-semibold text-lg text-black dark:text-white">
-              Examination: {examination?.degreeName} - Level{' '}
+              Examination: {examination?.degreeProgramName} - Level{' '}
               {examination?.level} - Semester {examination?.semester} -{' '}
               {examination?.year}
             </h3>

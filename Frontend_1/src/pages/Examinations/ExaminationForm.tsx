@@ -125,7 +125,7 @@ export default function ExaminationForm({
               name="degreeProgram"
               value={selectedDegreeProgram}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Degree Program</option>
@@ -152,7 +152,7 @@ export default function ExaminationForm({
               onChange={handleInputChange}
               placeholder="e.g., 2023/2024"
               required
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
             />
           </div>
 
@@ -168,7 +168,7 @@ export default function ExaminationForm({
               name="level"
               value={formData.level}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Level</option>
@@ -191,7 +191,7 @@ export default function ExaminationForm({
               name="semester"
               value={formData.semester}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Semester</option>
@@ -214,7 +214,7 @@ export default function ExaminationForm({
               name="examProcessStartDate"
               value={formData.examProcessStartDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
           </div>
@@ -232,7 +232,7 @@ export default function ExaminationForm({
               name="paperSettingCompleteDate"
               value={formData.paperSettingCompleteDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
             {errors.paperSettingCompleteDate && (
@@ -255,7 +255,7 @@ export default function ExaminationForm({
               name="markingCompleteDate"
               value={formData.markingCompleteDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
             {errors.markingCompleteDate && (

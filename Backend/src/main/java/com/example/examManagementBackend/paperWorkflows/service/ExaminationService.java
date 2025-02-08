@@ -158,6 +158,38 @@ public class ExaminationService {
                 .build();
     }
 
+    public ExaminationCoursesDTO getExaminationWithAllActiveCoursesById(Long examinationId) {
+        // Retrieve the examination entity
+        ExaminationEntity examination = examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new RuntimeException("Examination not found with id: " + examinationId));
+
+        // Retrieve the associated degree program
+        DegreeProgramsEntity degreeProgram = examination.getDegreeProgramsEntity();
+        if (degreeProgram == null) {
+            throw new RuntimeException("Degree program not found for examination id: " + examinationId);
+        }
+
+        // Filter active courses and map to DTO
+        List<ExaminationCoursesDTO.ActiveCourseDTO> activeCourses = degreeProgram.getCoursesEntities().stream()
+                .filter(course -> isCourseActiveAndMatchesExamination(course, examination))
+                .map(course -> new ExaminationCoursesDTO.ActiveCourseDTO(
+                        course.getId(),
+                        course.getCode(),
+                        course.getName(),
+                        course.getCourseType()
+                ))
+                .collect(Collectors.toList());
+
+        // Build the ExaminationCoursesDTO
+        return ExaminationCoursesDTO.builder()
+                .id(examination.getId())
+                .degreeId(degreeProgram.getId())
+                .degreeName(degreeProgram.getDegreeName())
+                .activeCourses(activeCourses)
+                .build();
+    }
+
+
 
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
         List<String> degreeNames=new ArrayList<>();
@@ -170,7 +202,7 @@ public class ExaminationService {
             examinationDTO.setLevel(examinationEntity.getLevel());
             examinationDTO.setSemester(examinationEntity.getSemester());
             examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
             examinationDTOS.add(examinationDTO);
         }
 

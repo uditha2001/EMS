@@ -5,6 +5,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
+import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -356,6 +357,13 @@ function App() {
                 element={renderPage(
                   'Archived Papers | EMS',
                   <ArchivedPapers />,
+                )}
+              />
+              <Route
+                path="/history/archived/upload"
+                element={renderPage(
+                  'Archived Papers Upload | EMS',
+                  <UploadArchivedPaper />,
                 )}
               />
             </Route>
