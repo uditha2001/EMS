@@ -19,12 +19,16 @@ public class ResultController {
     @PostMapping("/firstMarking")
     public ResponseEntity<StandardResponse> saveFirstMarking(@RequestBody ResultDTO results, HttpServletRequest request)
     {
-        return  resultService.saveFirstMarkingResults(results,request);
+        return  resultService.saveMarkingResults(results,request);
     }
 
     @GetMapping("/getFirstMarking")
     public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  String examName,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
         return resultService.getFirstMarking(courseCode,examName,examType);
+    }
+    @PostMapping("/secondMarking")
+    public ResponseEntity<StandardResponse> saveSecondMarking(@RequestBody ResultDTO results, HttpServletRequest request){
+        return resultService.saveMarkingResults(results,request);
     }
 
 }

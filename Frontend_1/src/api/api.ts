@@ -507,7 +507,7 @@ const useApi = () => {
     }
   };
 
-  const saveFirstMarkingResults = async (result: any, config = {}) => {
+  const saveMarkingResults = async (result: any, config = {}) => {
     try {
       const response = await axiosPrivate.post('result/firstMarking', result, {
         ...config,
@@ -649,6 +649,7 @@ const useApi = () => {
     }
   };
 
+   
   return {
     uploadFile,
     getAllFiles,
@@ -708,7 +709,7 @@ const useApi = () => {
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
-    saveFirstMarkingResults,
+    saveMarkingResults,
     getArchivedPapers,
     getArchivedPaperById,
     archivePapersManually,

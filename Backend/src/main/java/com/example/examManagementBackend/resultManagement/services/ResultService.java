@@ -50,7 +50,7 @@ public class ResultService {
         this.jwtService=jwtService;
         this.userManagementRepo = userManagementRepo;
     }
-    public ResponseEntity<StandardResponse> saveFirstMarkingResults(ResultDTO results, HttpServletRequest request){
+    public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
             if(results.getExamName()!=null && results.getCourseCode()!=null && results.getStudentsData()!=null && !results.getStudentsData().isEmpty()) {
                 Object[] data=jwtService.getUserNameAndToken(request);
@@ -82,7 +82,13 @@ public class ResultService {
                     }
                     else if(resultRepo.isEmpty(examinationId,studentId,examinationTypeId,courseId)>0){
                         Long resultId= resultRepo.getResultIdIfExists(examinationId,studentId,examinationTypeId,courseId);
-                        resultRepo.updateResults(student.getFirstMarking(),approvedBy,resultId);
+                        if(student.getSecondMarking()!=null){
+                            resultRepo.updateSecondMarkingResults(student.getSecondMarking(),approvedBy,resultId,ResultStatus.SECOND_MARKING_COMPLETE);
+
+                        }
+                        else{
+                            resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
+                        }
                     }
 
                 }
@@ -98,9 +104,11 @@ public class ResultService {
 
         }
         catch(Exception e){
+            e.printStackTrace();
             return new ResponseEntity<StandardResponse>(
                     new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
-            );        }
+            );
+        }
     }
 
     private Long getCourseCodeId(String code){
@@ -134,12 +142,18 @@ public class ResultService {
             Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
             Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
-            List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId, ResultStatus.FIRST_MARKING_COMPLETE);
+            List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId);
             if(resultEntities!=null){
                 for(ResultEntity resultEntity:resultEntities){
                     StudentDTO studentDTO=new StudentDTO();
                     studentDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
                     studentDTO.setFirstMarking(resultEntity.getFirstMarking());
+                    if(resultEntity.getSecondMarking()!=0){
+                        studentDTO.setSecondMarking(resultEntity.getSecondMarking());
+                    }
+                    else{
+                        studentDTO.setSecondMarking(resultEntity.getFirstMarking());
+                    }
                     studentDTO.setStudentName(resultEntity.getStudent().getStudentName());
                     studentDTOS.add(studentDTO);
                 }
