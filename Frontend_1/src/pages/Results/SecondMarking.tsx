@@ -1,4 +1,4 @@
-import { Key, useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import SelectExaminationComponent from '../../components/resultComponent/SelectExaminationComponent'
 import useApi from '../../api/api'
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
@@ -28,35 +28,40 @@ const SecondMarking = () => {
     const [showSaveButton, setShowSaveButton] = useState(false);
     const [highlightChanges, setHighlightChanges] = useState(false);
     const [secondMarking, setSecondMarking] = useState<RowData[]>([]);
+    const originalIndexes = useRef<Number[]>([]);
 
     useEffect(() => {
-        const updatedMarking = studentsData.map((data) => ({
+        if (!originalIndexes.current) {
+            originalIndexes.current = studentsData.map((_, index) => index);
+        }
+        const updatedMarking = studentsData.map((data, index) => ({
             ...data,
-            secondMarking: data.firstMarking
-
+            secondMarking: data.firstMarking,
+            originalIndex: originalIndexes.current[index] ?? index,
         }));
+
         setSecondMarking(updatedMarking);
-
-
     }, [studentsData]);
 
 
     useEffect(() => {
-        const updatedMarking = secondMarking.map((data, index) => {
-            const checkedIndex = editedMarks.findIndex(mark => mark?.key === index);
-            if (checkedIndex !== -1) {
-                console.log(editedMarks)
-                return { ...data, secondMarking: editedMarks[checkedIndex].value }
-            } else {
-                return { ...data };
-            }
-        });
-        setSecondMarking(updatedMarking);
-    }, [editedMarks]);
+        if (highlightChanges) {
+            const updatedMarking = secondMarking.map((data, index) => {
+                const checkedIndex = editedMarks.findIndex(mark => mark?.key === index);
+                if (checkedIndex !== -1) {
+                    console.log(editedMarks)
+                    return { ...data, secondMarking: editedMarks[checkedIndex].value }
+                } else {
+                    return { ...data };
+                }
+            });
+            setSecondMarking(updatedMarking);
+        }
+
+    }, [editedMarks,highlightChanges]);
 
 
     useEffect(() => {
-
         setFilterData(
             secondMarking
         );
@@ -68,7 +73,6 @@ const SecondMarking = () => {
                 value.toString().toLowerCase().includes(searchTerm.toLowerCase())
             )
         );
-
         setFilterData(filteredData);
     }, [searchTerm])
 
@@ -76,6 +80,7 @@ const SecondMarking = () => {
     const handleEdit = () => {
         setShowSaveButton(true);
         setEditable(true);
+        setHighlightChanges(false);
     }
 
     const handleEditMarks = (studentId: number, value: string) => {
@@ -126,7 +131,7 @@ const SecondMarking = () => {
 
                 <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
                     <h3 className="font-medium text-black dark:text-white text-md">
-                        Second Marking Results Upload 
+                        Second Marking Results Upload
                     </h3>
                 </div>
                 <div className="p-6.5 flex flex-col items-center justify-start w-full min-h-screen ">
@@ -270,7 +275,7 @@ const SecondMarking = () => {
                                             <table className="min-w-full md:min-w-[800px] border-collapse max-w-6xl">
                                                 <thead>
                                                     <tr className="bg-gray-50 dark:bg-gray-700">
-                                                        {Object.keys(filterData[0]).map((key) => (
+                                                        {Object.keys(filterData[0]).slice(0, -1).map((key) => (
                                                             <th
                                                                 key={key}
                                                                 className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap"
@@ -284,7 +289,7 @@ const SecondMarking = () => {
                                                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                                     {filterData.map((row: any, rowIndex: any) => (
                                                         <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                            {Object.values(row).slice(0, -1).map((value, colIndex) => (
+                                                            {Object.values(row).slice(0, -2).map((value, colIndex) => (
                                                                 <td
                                                                     key={colIndex}
                                                                     className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 whitespace-nowrap text-center"
@@ -292,23 +297,25 @@ const SecondMarking = () => {
                                                                     {value as string}
                                                                 </td>
                                                             ))}
-                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === rowIndex) ? 'bg-green-500' : ''}`}>
+                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) ? 'bg-green-500' : ''}`}>
                                                                 {editable ? (
                                                                     <input
                                                                         type="text"
 
                                                                         className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
-                                                                        defaultValue={Object.values(row).at(-1) as string}
+                                                                        defaultValue={Object.values(row).at(-2) as string}
                                                                         onChange={(e) => {
+                                                                            console.log("befor tun edit" + row['originalIndex'])
+                                                                            handleEditMarks(row['originalIndex'], e.target.value)
+                                                                            console.log("after tun edit" + row['originalIndex'])
 
-                                                                            handleEditMarks(rowIndex, e.target.value)
                                                                         }}
                                                                     />
                                                                 ) : (
                                                                     <div className="relative">
-                                                                        {Object.values(row).at(-1) as string}
+                                                                        {Object.values(row).at(-2) as string}
 
-                                                                        {highlightChanges && editedMarks.some(mark => mark.key === rowIndex) && (
+                                                                        {highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) && (
                                                                             <span className="absolute text-sm text-white bg-green-600 rounded-full px-2 py-1 top-0 right-0">
                                                                                 Edited
                                                                             </span>
