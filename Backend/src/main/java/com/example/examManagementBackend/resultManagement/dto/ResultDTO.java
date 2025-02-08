@@ -15,5 +15,4 @@ public class ResultDTO {
    private String courseCode;
    private ExamTypesName examType;
    private List<StudentDTO> studentsData;
-
 }

@@ -32,7 +32,7 @@ const ResultsUpload = () => {
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("THEORY");
-    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
@@ -79,9 +79,8 @@ const ResultsUpload = () => {
 
 
     useEffect(() => {
-        console.log(totalData);
         if (allowToSend) {
-            saveFirstMarkingResults(totalData, {
+            saveMarkingResults(totalData, {
                 onUploadProgress: (progressEvent: any) => {
                     if (progressEvent.total != undefined) {
                         const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);

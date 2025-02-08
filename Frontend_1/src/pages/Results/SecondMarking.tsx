@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from 'react'
 import SelectExaminationComponent from '../../components/resultComponent/SelectExaminationComponent'
 import useApi from '../../api/api'
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import SuccessMessage from '../../components/SuccessMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 type requiredData = {
     courseCode: string;
     examName: string;
@@ -19,7 +21,7 @@ const SecondMarking = () => {
         examType: ""
 
     });
-    const { getFirstMarkingResults } = useApi();
+    const { getFirstMarkingResults, saveMarkingResults } = useApi();
     const [studentsData, setStudentsData] = useState<RowData[]>([]);
     const [editable, setEditable] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +31,14 @@ const SecondMarking = () => {
     const [highlightChanges, setHighlightChanges] = useState(false);
     const [secondMarking, setSecondMarking] = useState<RowData[]>([]);
     const originalIndexes = useRef<Number[]>([]);
+    const [allowToSend, setAllowToSend] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [showProgressBar, setShowProgressBar] = useState(false);
+    const [totalData, setTotalData] = useState({});
+    const [isSaved, setIsSaved] = useState(true);
+
 
     useEffect(() => {
         if (!originalIndexes.current) {
@@ -36,12 +46,41 @@ const SecondMarking = () => {
         }
         const updatedMarking = studentsData.map((data, index) => ({
             ...data,
-            secondMarking: data.firstMarking,
+            secondMarking: data.secondMarking,
             originalIndex: originalIndexes.current[index] ?? index,
         }));
 
         setSecondMarking(updatedMarking);
     }, [studentsData]);
+
+    useEffect(() => {
+        if (allowToSend) {
+            saveMarkingResults(totalData, {
+                onUploadProgress: (progressEvent: any) => {
+                    if (progressEvent.total != undefined) {
+                        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setProgress(percent);
+                    }
+                }
+            }).then((data) => {
+
+                console.log(data.code);
+
+                if (data.code === 201) {
+                    setAllowToSend(false);
+                    setSuccessMessage("result upload successfull")
+
+                }
+                else if (data.status === 500) {
+                    setAllowToSend(false);
+                    setErrorMessage("result upload failed!")
+                }
+
+            })
+        }
+
+    }, [totalData])
+
 
 
     useEffect(() => {
@@ -58,7 +97,7 @@ const SecondMarking = () => {
             setSecondMarking(updatedMarking);
         }
 
-    }, [editedMarks,highlightChanges]);
+    }, [editedMarks, highlightChanges]);
 
 
     useEffect(() => {
@@ -70,7 +109,7 @@ const SecondMarking = () => {
     useEffect(() => {
         const filteredData = secondMarking.filter(row =>
             Object.values(row).some(value =>
-                value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
             )
         );
         setFilterData(filteredData);
@@ -81,6 +120,7 @@ const SecondMarking = () => {
         setShowSaveButton(true);
         setEditable(true);
         setHighlightChanges(false);
+        setIsSaved(false)
     }
 
     const handleEditMarks = (studentId: number, value: string) => {
@@ -104,6 +144,7 @@ const SecondMarking = () => {
         setEditable(false);
         setShowSaveButton(false);
         setHighlightChanges(true);
+        setIsSaved(true);
 
 
     }
@@ -121,6 +162,22 @@ const SecondMarking = () => {
         }
     }
     const handleUpload = () => {
+        if (isSaved) {
+            setTotalData(
+                {
+                    studentsData: secondMarking,
+                    courseCode: examsData.courseCode,
+                    examName: examsData.examName,
+                    examType: examsData.examType
+
+                }
+            )
+            setShowProgressBar(true);
+            setAllowToSend(true);
+        }
+        else {
+            setErrorMessage("please save before upload")
+        }
 
     }
 
@@ -134,6 +191,14 @@ const SecondMarking = () => {
                         Second Marking Results Upload
                     </h3>
                 </div>
+                <SuccessMessage
+                    message={successMessage}
+                    onClose={() => setSuccessMessage('')}
+                />
+                <ErrorMessage
+                    message={errorMessage}
+                    onClose={() => setErrorMessage('')}
+                />
                 <div className="p-6.5 flex flex-col items-center justify-start w-full min-h-screen ">
 
                     <SelectExaminationComponent getExamData={setExamsData} />
@@ -268,6 +333,22 @@ const SecondMarking = () => {
                                             <span>Upload Results</span>
                                         </button>
                                     </div>
+                                    {showProgressBar &&
+                                        <div>
+                                            <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '5px' }}>
+                                                <div
+                                                    style={{
+                                                        width: `${progress}%`,
+                                                        backgroundColor: '#76c7c0',
+                                                        height: '10px',
+                                                        borderRadius: '5px',
+                                                    }}
+                                                ></div>
+                                            </div>
+                                            <div>Upload Progress: {progress}%</div>
+                                        </div>
+
+                                    }
 
                                     {/* Scrollable Table Container */}
                                     <div className="w-full overflow-x-auto rounded-lg shadow-sm flex justify-center">
@@ -275,7 +356,7 @@ const SecondMarking = () => {
                                             <table className="min-w-full md:min-w-[800px] border-collapse max-w-6xl">
                                                 <thead>
                                                     <tr className="bg-gray-50 dark:bg-gray-700">
-                                                        {Object.keys(filterData[0]).slice(0, -1).map((key) => (
+                                                        {Object.keys(filterData[0]).slice(0, -2).map((key) => (
                                                             <th
                                                                 key={key}
                                                                 className="px-3 py-2 sm:px-6 sm:py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b-2 border-gray-200 dark:border-gray-600 dark:text-gray-400 whitespace-nowrap"
@@ -289,7 +370,7 @@ const SecondMarking = () => {
                                                 <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                                     {filterData.map((row: any, rowIndex: any) => (
                                                         <tr key={rowIndex} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                            {Object.values(row).slice(0, -2).map((value, colIndex) => (
+                                                            {Object.values(row).slice(0, -3).map((value, colIndex) => (
                                                                 <td
                                                                     key={colIndex}
                                                                     className="px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 whitespace-nowrap text-center"
@@ -303,7 +384,7 @@ const SecondMarking = () => {
                                                                         type="text"
 
                                                                         className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
-                                                                        defaultValue={Object.values(row).at(-2) as string}
+                                                                        defaultValue={Object.values(row).at(-3) as string}
                                                                         onChange={(e) => {
                                                                             console.log("befor tun edit" + row['originalIndex'])
                                                                             handleEditMarks(row['originalIndex'], e.target.value)
@@ -313,7 +394,7 @@ const SecondMarking = () => {
                                                                     />
                                                                 ) : (
                                                                     <div className="relative">
-                                                                        {Object.values(row).at(-2) as string}
+                                                                        {Object.values(row).at(-3) as string}
 
                                                                         {highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) && (
                                                                             <span className="absolute text-sm text-white bg-green-600 rounded-full px-2 py-1 top-0 right-0">
