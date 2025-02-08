@@ -197,8 +197,17 @@ public class PaperArchivingService {
             Files.createDirectories(storagePath);
         }
 
+        // Validate filename to prevent path traversal attacks
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename.contains("..") || originalFilename.contains("/") || originalFilename.contains("\\")) {
+            throw new IllegalArgumentException("Invalid filename");
+        }
+
         // Save file to storage
-        Path filePath = storagePath.resolve(file.getOriginalFilename());
+        Path filePath = storagePath.resolve(originalFilename).normalize();
+        if (!filePath.startsWith(storagePath)) {
+            throw new IllegalArgumentException("Invalid file path");
+        }
         Files.write(filePath, file.getBytes());
 
         // Fetch associated entities
