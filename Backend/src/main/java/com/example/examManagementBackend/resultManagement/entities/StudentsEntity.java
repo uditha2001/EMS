@@ -1,14 +1,13 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -17,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public class StudentsEntity {
+    @Setter(AccessLevel.NONE)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long studentId;
@@ -30,5 +30,7 @@ public class StudentsEntity {
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "student")
+    private List<ResultEntity> results;
 
 }

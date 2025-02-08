@@ -1,10 +1,8 @@
-package com.example.examManagementBackend.examManagement.entities;
+package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.examManagement.entities.Enums.ExamTypesName;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.Set;
@@ -15,6 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Data
 public class ExamTypesEntity {
+    @Setter(AccessLevel.NONE)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
