@@ -13,6 +13,7 @@ public class CorsConfig {
     private static final String PUT = "PUT";
     private static final String DELETE = "DELETE";
     private static final String OPTIONS = "OPTIONS";
+    private static final String PATCH = "PATCH";
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -21,7 +22,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:5173")
-                        .allowedMethods(GET, POST, PUT, DELETE, OPTIONS)
+                        .allowedMethods(GET, POST, PUT, DELETE, OPTIONS,PATCH)
                         .allowedHeaders("*")
                         .allowCredentials(true); // Enable cookies and Authorization headers
             }

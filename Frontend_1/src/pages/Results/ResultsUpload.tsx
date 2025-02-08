@@ -32,7 +32,7 @@ const ResultsUpload = () => {
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("THEORY");
-    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
@@ -79,9 +79,8 @@ const ResultsUpload = () => {
 
 
     useEffect(() => {
-        console.log(totalData);
         if (allowToSend) {
-            saveFirstMarkingResults(totalData, {
+            saveMarkingResults(totalData, {
                 onUploadProgress: (progressEvent: any) => {
                     if (progressEvent.total != undefined) {
                         const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -96,12 +95,14 @@ const ResultsUpload = () => {
                     setAllowToSend(false);
                     setShowTable(false)
                     setSuccessMessage("result upload successfull")
+                    setFile(null);
 
                 }
                 else if (data.status === 500) {
                     setAllowToSend(false);
                     setShowTable(false)
                     setErrorMessage("result upload failed!")
+                    setFile(null)
                 }
 
             })
@@ -443,6 +444,7 @@ const ResultsUpload = () => {
                             onClick={() => {
                                 setShowTable(false);
                                 setShowConfirmation(false);
+                                setFile(null);
                             }}
                             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                         >
@@ -451,7 +453,7 @@ const ResultsUpload = () => {
                         <button
                             onClick={() => {
                                 setShowConfirmation(false);
-                                setStudentsData([]);
+                        
                             }}
                             className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
                         >
