@@ -422,7 +422,7 @@ const ResultsUpload = () => {
                                         }}
                                         className="w-4/5 md:w-1/2 bg-gradient-to-r from-rose-500 to-orange-400 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity border border-transparent hover:border-white dark:from-rose-600 dark:to-orange-500"
                                     >
-                                        Resubmit
+                                        Cancel
                                     </button>
                                 </div>
                             </div>
