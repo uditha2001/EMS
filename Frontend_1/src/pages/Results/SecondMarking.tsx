@@ -384,7 +384,7 @@ const SecondMarking = () => {
                                                                     {value as string}
                                                                 </td>
                                                             ))}
-                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) ? 'bg-yellow-500' : ''}`}>
+                                                            <td className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges && editedMarks.some(mark => mark.key === row['originalIndex']) ? 'bg-yellow-500 && dark:text-black' : ''}`}>
                                                                 {editable ? (
                                                                     <input
                                                                         type="text"
