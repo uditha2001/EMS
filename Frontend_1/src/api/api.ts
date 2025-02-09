@@ -649,6 +649,17 @@ const useApi = () => {
     }
   };
 
+  const getRoleAssignmentByUserId = async (userId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/user/${userId}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error('Failed to fetch role assignment');
+    }
+    
+  }
    
   return {
     uploadFile,
@@ -722,6 +733,7 @@ const useApi = () => {
     createDegreeProgram,
     searchArchivedPapers,
     getExaminationsAllCourses,
+    getRoleAssignmentByUserId,
   };
 };
 

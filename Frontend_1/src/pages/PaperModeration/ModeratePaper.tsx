@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import QuestionStructure from './QuestionStructure';
 import useApi from '../../api/api';
 
+
 export default function ModeratePaper() {
   const { paperId, moderatorId } = useParams<{
     paperId: string;
@@ -189,7 +190,7 @@ export default function ModeratePaper() {
         )}
       </div>
 
-      <div className="w-full lg:w-1/3 lg:ml-6 rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+      <div className="w-full lg:w-1/3 lg:ml-6">
         {questionStructure ? (
           <QuestionStructure
             questionStructure={questionStructure}
