@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;

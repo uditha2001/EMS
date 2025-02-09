@@ -19,7 +19,6 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.UserM
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

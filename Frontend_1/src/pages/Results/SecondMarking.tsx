@@ -64,7 +64,6 @@ const SecondMarking = () => {
                 }
             }).then((data) => {
 
-                console.log(data.code);
 
                 if (data.code === 201) {
                     setAllowToSend(false);
@@ -149,6 +148,7 @@ const SecondMarking = () => {
         setShowSaveButton(false);
         setHighlightChanges(true);
         setIsSaved(true);
+        setErrorMessage("")
 
 
     }
@@ -176,6 +176,8 @@ const SecondMarking = () => {
 
                 }
             )
+            setErrorMessage('');
+            setSuccessMessage('')
             setShowProgressBar(true);
             setAllowToSend(true);
         }
