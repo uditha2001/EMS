@@ -6,6 +6,7 @@ import {
   faCheckCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import { Link } from 'react-router-dom';
 
 interface Examination {
   id: number;
@@ -90,41 +91,57 @@ export default function ExaminationList({
   };
 
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-full mx-auto">
-      <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
-        <h3 className="font-medium text-black dark:text-white">
-          Examinations List
-        </h3>
-      </div>
-      <div className="p-6.5">
+    <div>
+      <div>
         {loading ? (
           <p>Loading...</p>
         ) : sortedExaminations.length === 0 ? (
           <p>No academic years found.</p>
         ) : (
-          <ul className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-6">
             {sortedExaminations.map((year) => (
-              <li
+              <div
                 key={year.id}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center rounded bg-gray-100 p-4 dark:bg-gray-800"
+                className="flex flex-col border p-4 rounded-sm  border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark hover:shadow-xl transition-all duration-300 "
               >
-                <div>
-                  <span className="font-medium text-black dark:text-white flex items-center">
-                    {getStatusBadge(year.status)}
-                    <span className="ml-2">
-                      {year.year} - {getDegreeProgramName(year.degreeProgramId)}{' '}
-                      - Level {year.level}
-                    </span>
-                    {year.semester !== 'b' && <> - Semester {year.semester}</>}
-                  </span>
+                <div>{getStatusBadge(year.status)}</div>
+                <div className="mt-2">
+                  <div className="text-black dark:text-white font-medium">
+                    Year: {year.year}
+                  </div>
+                  <div className="text-black dark:text-white">
+                    Degree Program: {getDegreeProgramName(year.degreeProgramId)}
+                  </div>
+                  <div className="text-black dark:text-white">
+                    Level: {year.level}
+                  </div>
+                  {year.semester !== 'b' && (
+                    <div className="text-black dark:text-white">
+                      Semester: {year.semester}
+                    </div>
+                  )}
                 </div>
-                <div className="mt-2 sm:mt-0">
+                <div className="mt-4 flex justify-normal gap-4">
                   <button
                     onClick={() => handleEdit(year.id)}
-                    className="text-blue-500 hover:text-blue-700 mr-4"
+                    className="text-blue-500 hover:text-blue-700"
                   >
                     Edit
                   </button>
+                  <Link
+                    to={`/paper/preview-assigned-roles/${year.id}`}
+                    className="text-green-500 hover:text-green-700"
+                  >
+                    Roles
+                  </Link>
+
+                  <Link
+                    to={`/paper/preview-assigned-roles/${year.id}`}
+                   className="text-purple-500 hover:text-purple-700"
+                  >
+                    Time Table
+                  </Link>
+
                   <button
                     onClick={() => handleOpenModal(year.id)}
                     className="text-red-500 hover:text-red-700"
@@ -132,9 +149,9 @@ export default function ExaminationList({
                     Delete
                   </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
 

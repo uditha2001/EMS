@@ -234,7 +234,10 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
       )}
 
       {editedQuestionStructure?.data.map((question: any) => (
-        <div key={question.questionId}>
+        <div
+          key={question.questionId}
+          className="overflow-y-auto max-h-[500px] no-scrollbar"
+        >
           <div
             className="flex justify-between cursor-pointer p-6 border-b border-gray-200 dark:border-gray-600"
             onClick={() => toggleQuestionDetails(question.questionId)}
