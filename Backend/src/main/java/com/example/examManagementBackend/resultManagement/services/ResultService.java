@@ -36,17 +36,15 @@ public class ResultService {
     private final ExaminationRepository examinationRepo;
     private final CoursesRepository coursesRepo;
     private final ExamTypeRepo examTypeRepo;
-    private final ModelMapper modelMapper;
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, ModelMapper modelMapper, JwtService jwtService, UserManagementRepo userManagementRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo,JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
         this.coursesRepo=coursesRepo;
         this.examTypeRepo=examTypeRepo;
-        this.modelMapper=modelMapper;
         this.jwtService=jwtService;
         this.userManagementRepo = userManagementRepo;
     }
@@ -128,7 +126,8 @@ public class ResultService {
     public void saveStudentsDetails(StudentDTO student){
         if(studentRepo.IsEmpty(student.getStudentNumber())==0){
             StudentsEntity studentsEntity=new StudentsEntity();
-            modelMapper.map(student, studentsEntity);
+            studentsEntity.setStudentName(student.getStudentName());
+            studentsEntity.setStudentNumber(student.getStudentNumber());
             studentRepo.save(studentsEntity);
         }
     }
