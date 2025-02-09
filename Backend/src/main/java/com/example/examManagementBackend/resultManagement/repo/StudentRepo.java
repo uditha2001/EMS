@@ -21,4 +21,9 @@ public interface StudentRepo extends JpaRepository<StudentsEntity,Long> {
         @Query("SELECT s FROM StudentsEntity s WHERE s.studentNumber=:studentNumber")
         StudentsEntity findByStudentNumber(@Param("studentNumber") String studentNumber);
 
+        @Modifying
+        @Transactional
+        @Query("UPDATE StudentsEntity s SET s.studentName=:studentName WHERE s.studentNumber=:studentNumber")
+        void updateStudentName(@Param("studentNumber") String studentNumber, @Param("studentName") String studentName);
+
 }

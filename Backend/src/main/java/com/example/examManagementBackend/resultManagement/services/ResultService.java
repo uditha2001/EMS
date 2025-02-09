@@ -129,6 +129,9 @@ public class ResultService {
             studentsEntity.setStudentNumber(student.getStudentNumber());
             studentRepo.save(studentsEntity);
         }
+        else{
+            studentRepo.updateStudentName(student.getStudentNumber(),student.getStudentName());
+        }
     }
 
     public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,String examName,ExamTypesName examType) {
