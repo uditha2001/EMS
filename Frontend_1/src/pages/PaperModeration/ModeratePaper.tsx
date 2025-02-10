@@ -280,11 +280,19 @@ export default function ModeratePaper() {
         {paperStatus !== 'APPROVED' && questionStructure === null && (
           <div className="mt-4">
             <textarea
-              className="input-field w-full p-2 border rounded"
-              placeholder="Enter feedback"
+              className="input-field w-full p-2 border rounded h-32"
+              placeholder="Enter feedback (optional)"
               value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 500) {
+                  setFeedback(e.target.value);
+                }
+              }}
+              maxLength={500} // Ensures input doesn't exceed 500 characters
             ></textarea>
+            <div className="text-sm text-gray-500 mt-1">
+              {feedback.length}/500 characters
+            </div>
             <button
               className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
               onClick={handleApproveClick}
