@@ -19,7 +19,6 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.UserM
 import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,17 +35,15 @@ public class ResultService {
     private final ExaminationRepository examinationRepo;
     private final CoursesRepository coursesRepo;
     private final ExamTypeRepo examTypeRepo;
-    private final ModelMapper modelMapper;
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, ModelMapper modelMapper, JwtService jwtService, UserManagementRepo userManagementRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo,JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
         this.coursesRepo=coursesRepo;
         this.examTypeRepo=examTypeRepo;
-        this.modelMapper=modelMapper;
         this.jwtService=jwtService;
         this.userManagementRepo = userManagementRepo;
     }
@@ -128,8 +125,12 @@ public class ResultService {
     public void saveStudentsDetails(StudentDTO student){
         if(studentRepo.IsEmpty(student.getStudentNumber())==0){
             StudentsEntity studentsEntity=new StudentsEntity();
-            modelMapper.map(student, studentsEntity);
+            studentsEntity.setStudentName(student.getStudentName());
+            studentsEntity.setStudentNumber(student.getStudentNumber());
             studentRepo.save(studentsEntity);
+        }
+        else{
+            studentRepo.updateStudentName(student.getStudentNumber(),student.getStudentName());
         }
     }
 

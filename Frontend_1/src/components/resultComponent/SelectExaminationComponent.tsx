@@ -49,7 +49,7 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
             let examData: examinationName[] = [];
             let i = 0;
             for (const obj of response) {
-                let examName = `${obj["year"]}-${obj["degreeName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
+                let examName = `${obj["year"]}-${obj["degreeProgramName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
