@@ -3,6 +3,7 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -20,8 +21,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
 
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
+
+    public FileUploadController(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<StandardResponse> uploadFile(
@@ -257,5 +261,11 @@ public class FileUploadController {
         }
 
 
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<StandardResponse> getPaperStatus(@PathVariable Long id) {
+        ExamPaperStatus status = fileService.getPaperStatus(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Paper status retrieved successfully", status));
     }
 }

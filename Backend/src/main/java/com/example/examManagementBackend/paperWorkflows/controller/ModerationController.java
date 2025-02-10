@@ -2,6 +2,8 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.FeedBackDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionModerationDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.service.ModerationService;
 import com.example.examManagementBackend.paperWorkflows.service.PdfGenrationService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -20,6 +22,8 @@ public class ModerationController {
 
     private final ModerationService moderationService;
     private final PdfGenrationService pdfGenrationService;
+
+
     public ModerationController(PdfGenrationService pdfGenrationService, ModerationService moderationService) {
         this.pdfGenrationService = pdfGenrationService;
         this.moderationService = moderationService;
@@ -47,6 +51,19 @@ public class ModerationController {
            );
        }
 
+    }
+
+    @PatchMapping("/{id}/update")
+    public ResponseEntity<StandardResponse> updateStatusAndFeedback(
+            @PathVariable Long id,
+            @RequestParam(required = false) ExamPaperStatus status,
+            @RequestParam(required = false) String feedback) {
+        String message = moderationService.updateStatusAndFeedback(id, status, feedback);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                message,
+                null
+        ));
     }
 }
 
