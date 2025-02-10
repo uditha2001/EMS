@@ -40,8 +40,6 @@ public class ExamPaperEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "createdBy",referencedColumnName = "username")
     private UserEntity user;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
-    private List<ModerationsEntity> moderations;
     @OneToOne(mappedBy = "examPaperEntity",cascade = CascadeType.ALL)
     private FeedBackDataEntity feedBackData;
 
