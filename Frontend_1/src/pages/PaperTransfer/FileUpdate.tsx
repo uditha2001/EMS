@@ -3,11 +3,10 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from '../../api/api';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 
 const FileUpdate: React.FC = () => {
-  const { fileId } = useParams<{ fileId: string }>();
   const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
   const [paperType, setPaperType] = useState<string>('');
@@ -22,6 +21,8 @@ const FileUpdate: React.FC = () => {
   const [, setExistingFileDetails] = useState<any>(null);
   const axiosPrivate = useAxiosPrivate();
   const { updateFile, getExaminationById } = useApi();
+  const location = useLocation();
+  const { fileId } = location.state || {};
 
   useEffect(() => {
     const fetchFileDetails = async () => {
@@ -54,7 +55,7 @@ const FileUpdate: React.FC = () => {
             ' ' +
             examinationResponse.semester +
             ' - ' +
-            examinationResponse.degreeName,
+            examinationResponse.degreeProgramName,
         );
       } catch (error: any) {
         setErrorMessage('Failed to fetch data: ' + error.message);

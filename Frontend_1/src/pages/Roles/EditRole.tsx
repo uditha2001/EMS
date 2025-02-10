@@ -110,7 +110,7 @@ const EditRole: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 text-sm">
       <Breadcrumb pageName="Edit Role" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
@@ -192,7 +192,7 @@ const EditRole: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 overflow-y-auto max-h-[200px] no-scrollbar">
                 {isLoading ? (
                   <p className="text-center text-gray-500">
                     Loading permissions...

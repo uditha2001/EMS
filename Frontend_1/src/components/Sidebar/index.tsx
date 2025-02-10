@@ -310,18 +310,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <NavLink
-                              to="/paper/moderate"
+                              to="/paper/moderate/dashboard"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')
                               }
                             >
-                              Paper Moderation
+                              Moderation Dashboard
                             </NavLink>
                           </li>
                           <li>
                             <NavLink
-                              to="/paper/feedback/:paperId/:moderatorId"
+                              to="/paper/feedback"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-white')

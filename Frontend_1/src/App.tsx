@@ -320,14 +320,14 @@ function App() {
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
               <Route
-                path="/paper/create/structure/:paperId"
+                path="/paper/create/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <CreatePaperStructure />,
                 )}
               />
               <Route
-                path="/paper/edit/structure/:paperId"
+                path="/paper/edit/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <EditPaperStructure />,
@@ -372,7 +372,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
               <Route
-                path="/paper/moderate/:paperId/:moderatorId"
+                path="/paper/moderate"
                 element={renderPage(
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
@@ -380,13 +380,13 @@ function App() {
               />
 
               <Route
-                path="/paper/feedback/:paperId/:moderatorId"
+                path="/paper/feedback"
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
 
             <Route
-              path="/paper/moderate"
+              path="/paper/moderate/dashboard"
               element={renderPage(
                 'Paper Moderation | EMS',
                 <ModerationDashboard />,
@@ -408,7 +408,7 @@ function App() {
                 )}
               />
               <Route
-                path="/paper/transfer/edit/:fileId"
+                path="/paper/transfer/edit"
                 element={renderPage('Paper Transfer | EMS', <FileUpdate />)}
               />
               <Route
