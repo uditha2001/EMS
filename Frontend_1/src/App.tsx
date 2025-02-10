@@ -239,7 +239,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms"
+                path="/degreeprograms"
                 element={renderPage(
                   'Degree Programs | EMS',
                   <DegreePrograms />,
@@ -253,7 +253,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms/create"
+                path="/degreeprograms/create"
                 element={renderPage(
                   'Create Degree Program | EMS',
                   <CreateDegreeProgram />,
@@ -267,7 +267,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms/edit/:degreeprogramId"
+                path="/degreeprograms/edit/:degreeprogramId"
                 element={renderPage(
                   'Edit Degree Program | EMS',
                   <EditDegreeProgram />,
@@ -280,7 +280,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['READ_COURSE']} />}
             >
               <Route
-                path="/academic/courses"
+                path="/courses"
                 element={renderPage('Courses | EMS', <Courses />)}
               />
             </Route>
@@ -289,7 +289,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['CREATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/create"
+                path="/courses/create"
                 element={renderPage('Create Course | EMS', <CreateCourse />)}
               />
             </Route>
@@ -298,15 +298,15 @@ function App() {
               element={<RequireAuth allowedPermissions={['UPDATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/edit/:courseId"
+                path="/courses/edit/:courseId"
                 element={renderPage('Edit Course | EMS', <EditCourse />)}
               />
             </Route>
             <Route
-              element={<RequireAuth allowedPermissions={['ACADEMIC_YEAR']} />}
+              element={<RequireAuth allowedPermissions={['EXAMINATION']} />}
             >
               <Route
-                path="/academic/academicyears"
+                path="/examination"
                 element={renderPage('Examinations | EMS', <Examinations />)}
               />
             </Route>
@@ -441,11 +441,11 @@ function App() {
             {/*Create Timetable */}
             <Route
               element={
-                <RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />
+                <RequireAuth allowedPermissions={['TIMETABLE']} />
               }
             >
               <Route
-                path="/createtimetable"
+                path="/timetable"
                 element={renderPage(
                   'Create Timetable | EMS',
                   <CreateTimetable />,
