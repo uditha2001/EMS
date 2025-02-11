@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import SuccessMessage from '../../components/SuccessMessage';
@@ -18,77 +18,6 @@ const CreateCourse: React.FC = () => {
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // Error state
 
-  const [courseCodeSearch, setCourseCodeSearch] = useState<string>("");
-  const [courseNameSearch, setCourseNameSearch] = useState<string>("");
-  const [filteredCourseCodes, setFilteredCourseCodes] = useState<string[]>([]);
-  const [filteredCourseNames, setFilteredCourseNames] = useState<string[]>([]);
-
-  // Debounce function
-  const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        setDebouncedValue(value);
-      }, delay);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }, [value, delay]);
-
-    return debouncedValue;
-  };
-
-  const debouncedCourseCodeSearch = useDebounce(courseCodeSearch, 300);
-  const debouncedCourseNameSearch = useDebounce(courseNameSearch, 300);
-
-  // Fetch course codes based on search input
-  useEffect(() => {
-    const fetchCourseCodes = async () => {
-      if (debouncedCourseCodeSearch.length > 0) {
-        setLoadingStatus(true);
-        setError(null); // Reset error state
-        try {
-          const courses = await courseCreateApi.fetchCourses(debouncedCourseCodeSearch);
-          setFilteredCourseCodes(courses.map(course => course.code)); // Assuming course object has a 'code' property
-        } catch (error) {
-          console.error('Error fetching course codes:', error);
-          setError('Failed to fetch course codes. Please try again.'); // Set error message
-        } finally {
-          setLoadingStatus(false);
-        }
-      } else {
-        setFilteredCourseCodes([]);
-      }
-    };
-
-    fetchCourseCodes();
-  }, [debouncedCourseCodeSearch]);
-
-  // Fetch course names based on search input
-  useEffect(() => {
-    const fetchCourseNames = async () => {
-      if (debouncedCourseNameSearch.length > 0) {
-        setLoadingStatus(true);
-        setError(null); // Reset error state
-        try {
-          const courses = await courseCreateApi.fetchCourses(debouncedCourseNameSearch);
-          setFilteredCourseNames(courses.map(course => course.name)); // Assuming course object has a 'name' property
-        } catch (error) {
-          console.error('Error fetching course names:', error);
-          setError('Failed to fetch course names. Please try again.'); // Set error message
-        } finally {
-          setLoadingStatus(false);
-        }
-      } else {
-        setFilteredCourseNames([]);
-      }
-    };
-
-    fetchCourseNames();
-  }, [debouncedCourseNameSearch]);
-
   // Reset the form
   const resetForm = () => {
     setLevel("");
@@ -99,10 +28,6 @@ const CreateCourse: React.FC = () => {
     setCourseName("");
     setCourseType("");
     setCourseDescription("");
-    setCourseCodeSearch("");
-    setCourseNameSearch("");
-    setFilteredCourseCodes([]);
-    setFilteredCourseNames([]);
     setError(null); // Reset error state
   };
 
@@ -175,7 +100,7 @@ const CreateCourse: React.FC = () => {
                   <select
                     value={semester}
                     onChange={(e) => setSemester(e.target.value)}
-                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   >
                     <option value="">--Select Semester--</option>
                     <option value="1">Semester 1</option>
@@ -204,9 +129,9 @@ const CreateCourse: React.FC = () => {
                 <div className="flex space-x-2">
                   <input
                     type="text"
-                    value={courseCodeSearch}
-                    onChange={(e) => setCourseCodeSearch(e.target.value)} // Update search query
-                    placeholder="Search Course Code"
+                    value={courseCodePrefix}
+                    onChange={(e) => setCourseCodePrefix(e.target.value)} // Allow user input
+                    placeholder="Prefix"
                     className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   />
                   <input
@@ -217,16 +142,6 @@ const CreateCourse: React.FC = () => {
                     className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   />
                 </div>
-                {/* Display filtered course codes */}
-                {filteredCourseCodes.length > 0 && (
-                  <ul className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto z-10">
-                    {filteredCourseCodes.map((code, index) => (
-                      <li key={index} onClick={() => { setCourseCodePrefix(code); setCourseCodeSearch(code); setFilteredCourseCodes([]); }} className="cursor-pointer hover:bg-gray-200 p-2">
-                        {code}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
 
               {/* Course Name */}
@@ -234,20 +149,10 @@ const CreateCourse: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-white">Course Name:</label>
                 <input
                   type="text"
-                  value={courseNameSearch}
-                  onChange={(e) => setCourseNameSearch(e.target.value)} // Update search query
+                  value={courseName}
+                  onChange={(e) => setCourseName(e.target.value)}
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                 />
-                {/* Display filtered course names */}
-                {filteredCourseNames.length > 0 && (
-                  <ul className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto z-10">
-                    {filteredCourseNames.map((name, index) => (
-                      <li key={index} onClick={() => { setCourseName(name); setCourseNameSearch(name); setFilteredCourseNames([]); }} className="cursor-pointer hover:bg-gray-200 p-2">
-                        {name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
 
               {/* Course Type */}
