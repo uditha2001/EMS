@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import SuccessMessage from '../../components/SuccessMessage';
@@ -17,6 +17,28 @@ const CreateCourse: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // Error state
+
+  // Mapping for course code prefixes based on level, semester, and degree
+  const courseCodeMapping: Record<string, string> = {
+    "1-1-BCS": "CSC11",
+    "1-2-BCS": "CSC12",
+    "2-1-BCS": "CSC21",
+    "2-2-BCS": "CSC22",
+    "3-1-BCS": "CSC31",
+    "3-2-BCS": "CSC32",
+    "1-1-BSC": "COM11",
+    "1-2-BSC": "COM12",
+    "2-1-BSC": "COM21",
+    "2-2-BSC": "COM22",
+    "3-1-BSC": "COM31",
+    "3-2-BSC": "COM32",
+    "4-1-BCS.hons": "CSCS41",
+    "4-2-BCS.hons": "CSCS42",
+    "3-1-BSC.hons": "COMS31",
+    "3-2-BSC.hons": "COMS32",
+    "4-1-BSC.hons": "COMS41",
+    "4-2-BSC.hons": "COMS42",
+  };
 
   // Reset the form
   const resetForm = () => {
@@ -38,6 +60,12 @@ const CreateCourse: React.FC = () => {
       setCourseCodeSuffix(value); // Allow up to 3 digits
     }
   };
+
+  // Update course code prefix based on level, semester, and degree
+  useEffect(() => {
+    const key = `${level}-${semester}-${degree}`;
+    setCourseCodePrefix(courseCodeMapping[key] || ""); // Set prefix based on mapping
+  }, [level, semester, degree]);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
