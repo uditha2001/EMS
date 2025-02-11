@@ -16,21 +16,47 @@ const CreateCourse: React.FC = () => {
   const [courseDescription, setCourseDescription] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
-  
+  const [error, setError] = useState<string | null>(null); // Error state
+
   const [courseCodeSearch, setCourseCodeSearch] = useState<string>("");
   const [courseNameSearch, setCourseNameSearch] = useState<string>("");
   const [filteredCourseCodes, setFilteredCourseCodes] = useState<string[]>([]);
   const [filteredCourseNames, setFilteredCourseNames] = useState<string[]>([]);
 
+  // Debounce function
+  const useDebounce = (value: string, delay: number) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+
+    return debouncedValue;
+  };
+
+  const debouncedCourseCodeSearch = useDebounce(courseCodeSearch, 300);
+  const debouncedCourseNameSearch = useDebounce(courseNameSearch, 300);
+
   // Fetch course codes based on search input
   useEffect(() => {
     const fetchCourseCodes = async () => {
-      if (courseCodeSearch.length > 0) {
+      if (debouncedCourseCodeSearch.length > 0) {
+        setLoadingStatus(true);
+        setError(null); // Reset error state
         try {
-          const courses = await courseCreateApi.fetchCourses(courseCodeSearch);
+          const courses = await courseCreateApi.fetchCourses(debouncedCourseCodeSearch);
           setFilteredCourseCodes(courses.map(course => course.code)); // Assuming course object has a 'code' property
         } catch (error) {
           console.error('Error fetching course codes:', error);
+          setError('Failed to fetch course codes. Please try again.'); // Set error message
+        } finally {
+          setLoadingStatus(false);
         }
       } else {
         setFilteredCourseCodes([]);
@@ -38,17 +64,22 @@ const CreateCourse: React.FC = () => {
     };
 
     fetchCourseCodes();
-  }, [courseCodeSearch]);
+  }, [debouncedCourseCodeSearch]);
 
   // Fetch course names based on search input
   useEffect(() => {
     const fetchCourseNames = async () => {
-      if (courseNameSearch.length > 0) {
+      if (debouncedCourseNameSearch.length > 0) {
+        setLoadingStatus(true);
+        setError(null); // Reset error state
         try {
-          const courses = await courseCreateApi.fetchCourses(courseNameSearch);
+          const courses = await courseCreateApi.fetchCourses(debouncedCourseNameSearch);
           setFilteredCourseNames(courses.map(course => course.name)); // Assuming course object has a 'name' property
         } catch (error) {
           console.error('Error fetching course names:', error);
+          setError('Failed to fetch course names. Please try again.'); // Set error message
+        } finally {
+          setLoadingStatus(false);
         }
       } else {
         setFilteredCourseNames([]);
@@ -56,7 +87,7 @@ const CreateCourse: React.FC = () => {
     };
 
     fetchCourseNames();
-  }, [courseNameSearch]);
+  }, [debouncedCourseNameSearch]);
 
   // Reset the form
   const resetForm = () => {
@@ -72,6 +103,7 @@ const CreateCourse: React.FC = () => {
     setCourseNameSearch("");
     setFilteredCourseCodes([]);
     setFilteredCourseNames([]);
+    setError(null); // Reset error state
   };
 
   // Handle course code suffix change
@@ -105,7 +137,7 @@ const CreateCourse: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      {loadingStatus ? <Loader /> : null}
+      {loadingStatus && <Loader />}
       <Breadcrumb pageName="Create Course" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
@@ -271,6 +303,22 @@ const CreateCourse: React.FC = () => {
               <p className="mb-4 text-gray-700">Please complete all fields before submitting the form.</p>
               <button
                 onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold mb-4 text-red-600">Error</h3>
+              <p className="mb-4 text-gray-700">{error}</p>
+              <button
+                onClick={() => setError(null)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
               >
                 OK
