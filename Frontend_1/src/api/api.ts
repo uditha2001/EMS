@@ -306,8 +306,9 @@ const useApi = () => {
   };
 
   const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
-    return axiosPrivate.get(
-      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+    return axiosPrivate.post(
+      'papers/view',
+      { id: paperId, moderatorId }, // Sending data in the request body
       { responseType: 'blob' },
     );
   };

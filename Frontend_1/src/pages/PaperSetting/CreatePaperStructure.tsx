@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useApi from '../../api/api';
 import SearchableSelectBox from '../../components/SearchableSelectBox';
 
@@ -36,7 +36,6 @@ interface Template {
 }
 
 const CreatePaperStructure: React.FC = () => {
-  const { paperId } = useParams<{ paperId: string }>();
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -51,6 +50,8 @@ const CreatePaperStructure: React.FC = () => {
     useApi();
 
   const [templates, setTemplates] = useState<Template[]>([]);
+  const location = useLocation();
+  const { paperId } = location.state || {};
 
   useEffect(() => {
     const fetchTemplates = async () => {

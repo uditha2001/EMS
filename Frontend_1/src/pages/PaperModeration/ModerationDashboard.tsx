@@ -9,6 +9,7 @@ import {
   faTimesCircle,
   faClock,
   faPen,
+  faComment,
 } from '@fortawesome/free-solid-svg-icons';
 import useApi from '../../api/api';
 
@@ -53,6 +54,7 @@ interface Paper {
   courses: { id: number; name: string; code: string }[];
   status: string;
   shared: boolean;
+  feedback: string;
 }
 
 const ModerationDashboard: React.FC = () => {
@@ -61,6 +63,7 @@ const ModerationDashboard: React.FC = () => {
   const [question, setQuestion] = useState<Question[]>([]);
   const [selectedPaperId, setSelectedPaperId] = useState<number | null>(null);
   const { getPapers, getPaperStructure } = useApi();
+  const [feedback, setFeedback] = useState<string>('');
 
   // Function to fetch paper data
   useEffect(() => {
@@ -156,6 +159,14 @@ const ModerationDashboard: React.FC = () => {
 
   const handleCardClick = (paperId: number) => {
     setSelectedPaperId(paperId);
+    setPaperFeedback();
+  };
+
+  const setPaperFeedback = () => {
+    const paper = papers.find((paper) => paper.id === selectedPaperId);
+    if (paper) {
+      setFeedback(paper.feedback);
+    }
   };
 
   const calculateCompletionPercentage = (questions: Question[]) => {
@@ -372,6 +383,18 @@ const ModerationDashboard: React.FC = () => {
           );
         })}
       </div>
+
+      {selectedPaperId && feedback?.length > 0 && (
+        <div className="my-6">
+          <h3 className="font-medium text-black dark:text-white flex items-center gap-2 mb-2 ">
+            <FontAwesomeIcon icon={faComment} className="text-blue-500" />
+            Feedback
+          </h3>
+          <div className="p-4 border-l-4 border-blue-500 rounded bg-white shadow-md dark:bg-boxdark dark:border-blue-400">
+            <p className="text-gray-700 dark:text-gray-300">{feedback}</p>
+          </div>
+        </div>
+      )}
 
       {selectedPaperId && question.length > 0 && (
         <div>
