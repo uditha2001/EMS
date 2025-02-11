@@ -20,6 +20,8 @@ const Courses: React.FC = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [courseCodeSuggestions, setCourseCodeSuggestions] = useState<string[]>([]);
+  const [courseNameSuggestions, setCourseNameSuggestions] = useState<string[]>([]);
   const navigate = useNavigate();
 
   // Debounced function to fetch courses
@@ -55,12 +57,57 @@ const Courses: React.FC = () => {
     []
   );
 
+  // Debounced function to fetch course codes and names for suggestions
+  const fetchCourseSuggestions = useCallback(
+    debounce(async (searchTerm: string, type: 'code' | 'name') => {
+      if (searchTerm.length > 0) {
+        try {
+          const response = await axios.get("http://localhost:8080/api/courses/search", {
+            params: {
+              courseCode: type === 'code' ? searchTerm : undefined,
+              courseName: type === 'name' ? searchTerm : undefined,
+            },
+          });
+
+          if (type === 'code') {
+            setCourseCodeSuggestions(response.data.map(course => course.courseCode));
+          } else {
+            setCourseNameSuggestions(response.data.map(course => course.courseName));
+          }
+        } catch (error) {
+          console.error("Error fetching course suggestions:", error);
+        }
+      } else {
+        if (type === 'code') {
+          setCourseCodeSuggestions([]);
+        } else {
+          setCourseNameSuggestions([]);
+        }
+      }
+    }, 500), // Wait 500ms before making API calls
+    []
+  );
+
   // Handle filter changes and trigger search
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     const updatedFilters = { ...filters, [name]: value };
     setFilters(updatedFilters);
     fetchCourses(updatedFilters); // Call API dynamically
+  };
+
+  // Handle course code input change
+  const handleCourseCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilters({ ...filters, courseCode: value });
+    fetchCourseSuggestions(value, 'code'); // Fetch suggestions for course code
+  };
+
+  // Handle course name input change
+  const handleCourseNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFilters({ ...filters, courseName: value });
+    fetchCourseSuggestions(value, 'name'); // Fetch suggestions for course name
   };
 
   // Load initial data
@@ -153,10 +200,20 @@ const Courses: React.FC = () => {
                   type="text" 
                   name="courseName" 
                   value={filters.courseName} 
-                  onChange={handleFilterChange} 
+                  onChange={handleCourseNameChange} // Updated to use the new handler
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   placeholder="Type course name..." 
                 />
+                {/* Display course name suggestions */}
+                {courseNameSuggestions.length > 0 && (
+                  <ul className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto z-10">
+                    {courseNameSuggestions.map((name, index) => (
+                      <li key={index} onClick={() => { setFilters({ ...filters, courseName: name }); setCourseNameSuggestions([]); }} className="cursor-pointer hover:bg-gray-200 p-2">
+                        {name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {/* Course Code */}
@@ -166,10 +223,20 @@ const Courses: React.FC = () => {
                   type="text" 
                   name="courseCode" 
                   value={filters.courseCode} 
-                  onChange={handleFilterChange} 
+                  onChange={handleCourseCodeChange} // Updated to use the new handler
                   className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   placeholder="Type course code..." 
                 />
+                {/* Display course code suggestions */}
+                {courseCodeSuggestions.length > 0 && (
+                  <ul className="absolute bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-auto z-10">
+                    {courseCodeSuggestions.map((code, index) => (
+                      <li key={index} onClick={() => { setFilters({ ...filters, courseCode: code }); setCourseCodeSuggestions([]); }} className="cursor-pointer hover:bg-gray-200 p-2">
+                        {code}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
 
