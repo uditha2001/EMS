@@ -22,44 +22,41 @@ const CreateCourse: React.FC = () => {
   const [filteredCourseCodes, setFilteredCourseCodes] = useState<string[]>([]);
   const [filteredCourseNames, setFilteredCourseNames] = useState<string[]>([]);
 
-  const courseCodes = ["CSC11", "CSC12", "CSC21", "CSC22", "CSC31", "CSC32", "COM11", "COM12", "COM21", "COM22", "COM31", "COM32", "CSCS41", "CSCS42", "COMS31", "COMS32", "COMS41", "COMS42"];
-  const courseNames = ["Computer Science", "Mathematics", "Physics", "Chemistry", "Biology", "Statistics", "Data Structures", "Algorithms", "Operating Systems", "Database Systems"];
-
+  // Fetch course codes based on search input
   useEffect(() => {
-    const filteredCodes = courseCodes.filter(code => code.toLowerCase().includes(courseCodeSearch.toLowerCase()));
-    setFilteredCourseCodes(filteredCodes);
+    const fetchCourseCodes = async () => {
+      if (courseCodeSearch.length > 0) {
+        try {
+          const courses = await courseCreateApi.fetchCourses(courseCodeSearch);
+          setFilteredCourseCodes(courses.map(course => course.code)); // Assuming course object has a 'code' property
+        } catch (error) {
+          console.error('Error fetching course codes:', error);
+        }
+      } else {
+        setFilteredCourseCodes([]);
+      }
+    };
+
+    fetchCourseCodes();
   }, [courseCodeSearch]);
 
+  // Fetch course names based on search input
   useEffect(() => {
-    const filteredNames = courseNames.filter(name => name.toLowerCase().includes(courseNameSearch.toLowerCase()));
-    setFilteredCourseNames(filteredNames);
-  }, [courseNameSearch]);
-
-  // Update course code prefix based on level, semester, and degree
-  useEffect(() => {
-    const key = `${level}-${semester}-${degree}`;
-    const courseCodeMapping: Record<string, string> = {
-      "1-1-BCS": "CSC11",
-      "1-2-BCS": "CSC12",
-      "2-1-BCS": "CSC21",
-      "2-2-BCS": "CSC22",
-      "3-1-BCS": "CSC31",
-      "3-2-BCS": "CSC32",
-      "1-1-BSC": "COM11",
-      "1-2-BSC": "COM12",
-      "2-1-BSC": "COM21",
-      "2-2-BSC": "COM22",
-      "3-1-BSC": "COM31",
-      "3-2-BSC": "COM32",
-      "4-1-BCS.hons": "CSCS41",
-      "4-2-BCS.hons": "CSCS42",
-      "3-1-BSC.hons": "COMS31",
-      "3-2-BSC.hons": "COMS32",
-      "4-1-BSC.hons": "COMS41",
-      "4-2-BSC.hons": "COMS42",
+    const fetchCourseNames = async () => {
+      if (courseNameSearch.length > 0) {
+        try {
+          const courses = await courseCreateApi.fetchCourses(courseNameSearch);
+          setFilteredCourseNames(courses.map(course => course.name)); // Assuming course object has a 'name' property
+        } catch (error) {
+          console.error('Error fetching course names:', error);
+        }
+      } else {
+        setFilteredCourseNames([]);
+      }
     };
-    setCourseCodePrefix(courseCodeMapping[key] || "");
-  }, [level, semester, degree]);
+
+    fetchCourseNames();
+  }, [courseNameSearch]);
 
   // Reset the form
   const resetForm = () => {
@@ -158,7 +155,7 @@ const CreateCourse: React.FC = () => {
                   <select
                     value={degree}
                     onChange={(e) => setDegree(e.target.value)}
-                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                   >
                     <option value="">--Select Degree--</option>
                     <option value="BCS">BCS</option>
