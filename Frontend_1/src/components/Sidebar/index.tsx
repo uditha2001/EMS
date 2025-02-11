@@ -13,7 +13,10 @@ import {
   faTable,
   faClipboardCheck,
   faCog,
+  faFilePen,
+  faBookOpen,
 } from '@fortawesome/free-solid-svg-icons';
+import useHasPermission from '../../hooks/useHasPermission';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -31,6 +34,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
+
+  //permissions
+  const hasUserPermission = useHasPermission('READ_USER');
+  const hasRolePermission = useHasPermission('READ_ROLE');
+  const hasCoursePermission = useHasPermission('READ_COURSE');
+  const hasDegreePermission = useHasPermission('READ_DEGREE_PROGRAM');
+  const hasExamPermission = useHasPermission('EXAMINATION');
+  const hasTimeTablePermission = useHasPermission('TIMETABLE');
+  const hasHistoricalDataPermission = useHasPermission('HISTORICAL_DATA');
+  const hasCreatePaperPermission = useHasPermission('CREATE_PAPER');
+  const hasModeratePaperPermission = useHasPermission('MODERATE_PAPER');
+  const hasTransferPaperPermission = useHasPermission('TRANSFER_PAPER');
+  const hasPaperEvaluationPermission = useHasPermission('PAPER_EVALUATION');
+  const hasAssignRolePermission = useHasPermission('ASSIGN_EXAM_ROLE');
+  const hasFirstMarkingPermission = useHasPermission('ENTER_RESULTS');
+  const hasSecondMarkingPermission = useHasPermission('MODERATE_RESULTS');
 
   // close on click outside
   useEffect(() => {
@@ -129,85 +148,91 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </li>
               {/* <!-- Menu Item Dashboard --> */}
               {/* <!-- Menu Item User Management --> */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/usermanagement' ||
-                  pathname.includes('/usermanagement')
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          (pathname === '/usermanagement' ||
-                            pathname.includes('/usermanagement')) &&
-                          'bg-graydark dark:bg-meta-4'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faUsers} />
-                        User Management
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && 'rotate-180'
+              {(hasUserPermission || hasRolePermission) && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/usermanagement' ||
+                    pathname.includes('/usermanagement')
+                  }
+                >
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                            (pathname === '/usermanagement' ||
+                              pathname.includes('/usermanagement')) &&
+                            'bg-graydark dark:bg-meta-4'
                           }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
                         >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </NavLink>
-                      {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/usermanagement/users"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Users
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/usermanagement/roles"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Roles & Permissions
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* <!-- Dropdown Menu End --> */}
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
+                          <FontAwesomeIcon icon={faUsers} />
+                          User Management
+                          <svg
+                            className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                              open && 'rotate-180'
+                            }`}
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                              fill=""
+                            />
+                          </svg>
+                        </NavLink>
+                        {/* <!-- Dropdown Menu Start --> */}
+                        <div
+                          className={`translate transform overflow-hidden ${
+                            !open && 'hidden'
+                          }`}
+                        >
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            {hasUserPermission && (
+                              <li>
+                                <NavLink
+                                  to="/usermanagement/users"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Users
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasRolePermission && (
+                              <li>
+                                <NavLink
+                                  to="/usermanagement/roles"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Roles & Permissions
+                                </NavLink>
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                        {/* <!-- Dropdown Menu End --> */}
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+              )}
               {/* <!-- Menu Item User Management --> */}
 
               {/* <!-- Menu Item Calendar --> */}
@@ -226,340 +251,326 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* <!-- Menu Item Calendar --> */}
 
               {/* <!-- Menu Item Paper Workflows --> */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/paper' || pathname.includes('paper')
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          (pathname === '/paper' ||
-                            pathname.includes('paper')) &&
-                          'bg-graydark dark:bg-meta-4'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faFileAlt} />
-                        Paper Workflows
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && 'rotate-180'
+              {(hasAssignRolePermission ||
+                hasCreatePaperPermission ||
+                hasModeratePaperPermission ||
+                hasTransferPaperPermission ||
+                hasPaperEvaluationPermission) && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/paper' || pathname.includes('paper')
+                  }
+                >
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                            (pathname === '/paper' ||
+                              pathname.includes('paper')) &&
+                            'bg-graydark dark:bg-meta-4'
                           }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
                         >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </NavLink>
-                      {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/paper/roles"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Role Assignments
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/paper/create"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Paper Setting
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/paper/transfer"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Paper Transfer
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/paper/moderate"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Paper Moderation
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/paper/feedback/:paperId/:moderatorId"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Paper Evaluation
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* <!-- Dropdown Menu End --> */}
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
+                          <FontAwesomeIcon icon={faFileAlt} />
+                          Paper Workflows
+                          <svg
+                            className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                              open && 'rotate-180'
+                            }`}
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                              fill=""
+                            />
+                          </svg>
+                        </NavLink>
+                        {/* <!-- Dropdown Menu Start --> */}
+                        <div
+                          className={`translate transform overflow-hidden ${
+                            !open && 'hidden'
+                          }`}
+                        >
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            {hasAssignRolePermission && (
+                              <li>
+                                <NavLink
+                                  to="/paper/roles"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Role Assignments
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasCreatePaperPermission && (
+                              <li>
+                                <NavLink
+                                  to="/paper/create"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Paper Setting
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasTransferPaperPermission && (
+                              <li>
+                                <NavLink
+                                  to="/paper/transfer"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Paper Transfer
+                                </NavLink>
+                              </li>
+                            )}
+                            {(hasModeratePaperPermission ||
+                              hasCreatePaperPermission) && (
+                              <li>
+                                <NavLink
+                                  to="/paper/moderate/dashboard"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Moderation Dashboard
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasPaperEvaluationPermission && (
+                              <li>
+                                <NavLink
+                                  to="/paper/feedback"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  Paper Evaluation
+                                </NavLink>
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                        {/* <!-- Dropdown Menu End --> */}
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+              )}
               {/* <!-- Menu Item Paper Workflows --> */}
 
-              {/* <!-- Menu Item Academic Exams --> */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/academic' || pathname.includes('academic')
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          (pathname === '/academic' ||
-                            pathname.includes('academic')) &&
-                          'bg-graydark dark:bg-meta-4'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faGraduationCap} />
-                        Academic
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && 'rotate-180'
-                          }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </NavLink>
-                      {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/academic/academicyears"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Examinations
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/academic/degreeprograms"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Degree Programs
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/academic/courses"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Courses
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* <!-- Dropdown Menu End --> */}
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-              {/* <!-- Menu Item Academic Exams --> */}
+              {/* <!-- Menu Item Examination --> */}
+              {hasExamPermission && (
+                <li>
+                  <NavLink
+                    to="/examination"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname.includes('examination') &&
+                      'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faFilePen} />
+                    Examinations
+                  </NavLink>
+                </li>
+              )}
+              {/* <!-- Menu Item Courses --> */}
+              {hasCoursePermission && (
+                <li>
+                  <NavLink
+                    to="/courses"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname.includes('courses') &&
+                      'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faBookOpen} />
+                    Courses
+                  </NavLink>
+                </li>
+              )}
+              {/* <!-- Menu Item Courses --> */}
+              {/* <!-- Menu Item Degree Programs --> */}
+              {hasDegreePermission && (
+                <li>
+                  <NavLink
+                    to="/degreeprograms"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname.includes('degreeprograms') &&
+                      'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faGraduationCap} />
+                    Degree Programs
+                  </NavLink>
+                </li>
+              )}
+              {/* <!-- Menu Item Degree Programs --> */}
 
-              {/* <!-- Create Timetable  --> */}
-              <li>
-                <NavLink
-                  to="/createtimetable"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes('timetable') &&
-                    'bg-graydark dark:bg-meta-4'
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faTable} />
-                  Timetable
-                </NavLink>
-              </li>
-              {/* <!-- Create Timetable  --> */}
+              {/* <!--  Timetable  --> */}
+              {hasTimeTablePermission && (
+                <li>
+                  <NavLink
+                    to="/timetable"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname.includes('timetable') &&
+                      'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faTable} />
+                    Timetable
+                  </NavLink>
+                </li>
+              )}
+              {/* <!--  Timetable  --> */}
 
               {/* <!-- Menu Item Result Management --> */}
-              <SidebarLinkGroup
-                activeCondition={
-                  pathname === '/result' || pathname.includes('result')
-                }
-              >
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <NavLink
-                        to="#"
-                        className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                          (pathname === '/result' ||
-                            pathname.includes('result')) &&
-                          'bg-graydark dark:bg-meta-4'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faClipboardCheck} />
-                        Exam Results
-                        <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && 'rotate-180'
+              {(hasFirstMarkingPermission || hasSecondMarkingPermission) && (
+                <SidebarLinkGroup
+                  activeCondition={
+                    pathname === '/result' || pathname.includes('result')
+                  }
+                >
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <NavLink
+                          to="#"
+                          className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                            (pathname === '/result' ||
+                              pathname.includes('result')) &&
+                            'bg-graydark dark:bg-meta-4'
                           }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            sidebarExpanded
+                              ? handleClick()
+                              : setSidebarExpanded(true);
+                          }}
                         >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
-                        </svg>
-                      </NavLink>
-                      {/* <!-- Dropdown Menu Start --> */}
-                      <div
-                        className={`translate transform overflow-hidden ${
-                          !open && 'hidden'
-                        }`}
-                      >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <NavLink
-                              to="/result/firstmarking"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              First Marking
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/result/secondmarking"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Second Marking
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/result/grading"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Results Grading
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              to="/result/dashboard"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-white')
-                              }
-                            >
-                              Results Dashboard
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                      {/* <!-- Dropdown Menu End --> */}
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
+                          <FontAwesomeIcon icon={faClipboardCheck} />
+                          Exam Results
+                          <svg
+                            className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                              open && 'rotate-180'
+                            }`}
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                              fill=""
+                            />
+                          </svg>
+                        </NavLink>
+                        {/* <!-- Dropdown Menu Start --> */}
+                        <div
+                          className={`translate transform overflow-hidden ${
+                            !open && 'hidden'
+                          }`}
+                        >
+                          <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                            {hasFirstMarkingPermission && (
+                              <li>
+                                <NavLink
+                                  to="/result/firstmarking"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                    (isActive && '!text-white')
+                                  }
+                                >
+                                  First Marking
+                                </NavLink>
+                              </li>
+                            )}
+                            {hasSecondMarkingPermission && (
+                              <>
+                                <li>
+                                  <NavLink
+                                    to="/result/secondmarking"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                      (isActive && '!text-white')
+                                    }
+                                  >
+                                    Second Marking
+                                  </NavLink>
+                                </li>
+                                <li>
+                                  <NavLink
+                                    to="/result/grading"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                      (isActive && '!text-white')
+                                    }
+                                  >
+                                    Results Grading
+                                  </NavLink>
+                                </li>
+                                <li>
+                                  <NavLink
+                                    to="/result/dashboard"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                      (isActive && '!text-white')
+                                    }
+                                  >
+                                    Results Dashboard
+                                  </NavLink>
+                                </li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+                        {/* <!-- Dropdown Menu End --> */}
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+              )}
               {/* <!-- Menu Item Result Management --> */}
               {/* <!-- Menu Item Historical Data --> */}
-              <li>
-                <NavLink
-                  to="/history"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes('history') && 'bg-graydark dark:bg-meta-4'
-                  }`}
-                >
-                  <FontAwesomeIcon icon={faHistory} />
-                  Historical Data
-                </NavLink>
-              </li>
+              {hasHistoricalDataPermission && (
+                <li>
+                  <NavLink
+                    to="/history"
+                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      pathname.includes('history') &&
+                      'bg-graydark dark:bg-meta-4'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={faHistory} />
+                    Historical Data
+                  </NavLink>
+                </li>
+              )}
 
               {/* <!-- Menu Item Settings --> */}
               <li>

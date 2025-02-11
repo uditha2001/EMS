@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import useApi from '../../api/api';
 
@@ -33,7 +33,6 @@ interface Question {
 }
 
 const EditPaperStructure: React.FC = () => {
-  const { paperId } = useParams<{ paperId: string }>();
   const [, setTotalQuestions] = useState(0);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -50,6 +49,8 @@ const EditPaperStructure: React.FC = () => {
     deleteSubSubQuestion,
     getPaperStructure,
   } = useApi();
+  const location = useLocation();
+  const { paperId } = location.state || {};
 
   useEffect(() => {
     fetchPaperStructure();

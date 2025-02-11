@@ -15,7 +15,6 @@ const EditUser: React.FC = () => {
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [password, setPassword] = useState('');
   const [roles, setRoles] = useState<string[]>([]);
   const [availableRoles, setAvailableRoles] = useState<any[]>([]);
   const [filteredRoles, setFilteredRoles] = useState<any[]>([]);
@@ -70,14 +69,13 @@ const EditUser: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !firstName || !lastName || !password) {
+    if (!email || !firstName || !lastName) {
       setErrorMessage('All fields are required.');
       return;
     }
 
     const updatedUser = {
       username,
-      password,
       email,
       firstName,
       lastName,
@@ -102,7 +100,7 @@ const EditUser: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 text-sm">
       <Breadcrumb pageName="Edit User" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
@@ -149,18 +147,7 @@ const EditUser: React.FC = () => {
                   required
                 />
               </div>
-              <div className="mb-4.5">
-                <label className="mb-2.5 block text-black dark:text-white">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                />
-              </div>
+             
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   First Name

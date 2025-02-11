@@ -115,7 +115,7 @@ const CreateUser: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 text-sm">
       {loadingStatus ? <Loader /> : null}
       <Breadcrumb pageName="Create User" />
 
@@ -156,7 +156,7 @@ const CreateUser: React.FC = () => {
                     placeholder="Enter username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                    className="input-field"
                     required={!useEmailAsUsername}
                   />
                 </div>
@@ -170,7 +170,7 @@ const CreateUser: React.FC = () => {
                   placeholder="Enter email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className="input-field"
                   required
                 />
                 {emailVailidity ? (
@@ -190,7 +190,7 @@ const CreateUser: React.FC = () => {
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className="input-field"
                   required
                 />
               </div>
@@ -203,7 +203,7 @@ const CreateUser: React.FC = () => {
                   placeholder="Enter first name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className="input-field"
                   required
                 />
               </div>
@@ -216,7 +216,7 @@ const CreateUser: React.FC = () => {
                   placeholder="Enter last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+                  className="input-field"
                   required
                 />
               </div>
