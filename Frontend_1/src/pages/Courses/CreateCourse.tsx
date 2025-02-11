@@ -3,7 +3,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import courseCreateApi from '../../api/api';
+import axios from 'axios';
 
 const CreateCourse: React.FC = () => {
   const [level, setLevel] = useState<string>("");
@@ -17,28 +17,7 @@ const CreateCourse: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null); // Error state
-
-  // Mapping for course code prefixes based on level, semester, and degree
-  const courseCodeMapping: Record<string, string> = {
-    "1-1-BCS": "CSC11",
-    "1-2-BCS": "CSC12",
-    "2-1-BCS": "CSC21",
-    "2-2-BCS": "CSC22",
-    "3-1-BCS": "CSC31",
-    "3-2-BCS": "CSC32",
-    "1-1-BSC": "COM11",
-    "1-2-BSC": "COM12",
-    "2-1-BSC": "COM21",
-    "2-2-BSC": "COM22",
-    "3-1-BSC": "COM31",
-    "3-2-BSC": "COM32",
-    "4-1-BCS.hons": "CSCS41",
-    "4-2-BCS.hons": "CSCS42",
-    "3-1-BSC.hons": "COMS31",
-    "3-2-BSC.hons": "COMS32",
-    "4-1-BSC.hons": "COMS41",
-    "4-2-BSC.hons": "COMS42",
-  };
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Success message state
 
   // Reset the form
   const resetForm = () => {
@@ -51,6 +30,7 @@ const CreateCourse: React.FC = () => {
     setCourseType("");
     setCourseDescription("");
     setError(null); // Reset error state
+    setSuccessMessage(null); // Reset success message
   };
 
   // Handle course code suffix change
@@ -64,11 +44,31 @@ const CreateCourse: React.FC = () => {
   // Update course code prefix based on level, semester, and degree
   useEffect(() => {
     const key = `${level}-${semester}-${degree}`;
+    const courseCodeMapping: Record<string, string> = {
+      "1-1-BCS": "CSC11",
+      "1-2-BCS": "CSC12",
+      "2-1-BCS": "CSC21",
+      "2-2-BCS": "CSC22",
+      "3-1-BCS": "CSC31",
+      "3-2-BCS": "CSC32",
+      "1-1-BSC": "COM11",
+      "1-2-BSC": "COM12",
+      "2-1-BSC": "COM21",
+      "2-2-BSC": "COM22",
+      "3-1-BSC": "COM31",
+      "3-2-BSC": "COM32",
+      "4-1-BCS.hons": "CSCS41",
+      "4-2-BCS.hons": "CSCS42",
+      "3-1-BSC.hons": "COMS31",
+      "3-2-BSC.hons": "COMS32",
+      "4-1-BSC.hons": "COMS41",
+      "4-2-BSC.hons": "COMS42",
+    };
     setCourseCodePrefix(courseCodeMapping[key] || ""); // Set prefix based on mapping
   }, [level, semester, degree]);
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate required fields
@@ -85,7 +85,29 @@ const CreateCourse: React.FC = () => {
       return;
     }
 
-    alert(`Form submitted successfully! Course Code: ${courseCodePrefix}${courseCodeSuffix}`);
+    setLoadingStatus(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/courses", {
+        level,
+        semester,
+        degree,
+        courseCode: `${courseCodePrefix}${courseCodeSuffix}`,
+        courseName,
+        courseType,
+        courseDescription,
+      });
+
+      setSuccessMessage(response.data.message); // Set success message
+      resetForm(); // Reset the form after successful submission
+    } catch (error) {
+      console.error("Error creating course:", error);
+      setError("Failed to create course. Please try again."); // Set error message
+    } finally {
+      setLoadingStatus(false);
+    }
   };
 
   return (
@@ -252,6 +274,22 @@ const CreateCourse: React.FC = () => {
               <p className="mb-4 text-gray-700">{error}</p>
               <button
                 onClick={() => setError(null)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold mb-4 text-green-600">Success</h3>
+              <p className="mb-4 text-gray-700">{successMessage}</p>
+              <button
+                onClick={() => setSuccessMessage(null)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
               >
                 OK
