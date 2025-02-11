@@ -57,43 +57,17 @@ const Courses: React.FC = () => {
     []
   );
 
-  // Debounced function to fetch course codes and names for suggestions
-  const fetchCourseSuggestions = useCallback(
-    debounce(async (searchTerm: string, type: 'code' | 'name') => {
-      if (searchTerm.length > 0) {
-        try {
-          const response = await axios.get("http://localhost:8080/api/courses/search", {
-            params: {
-              courseCode: type === 'code' ? searchTerm : undefined,
-              courseName: type === 'name' ? searchTerm : undefined,
-            },
-          });
-
-          if (type === 'code') {
-            setCourseCodeSuggestions(response.data.map(course => course.courseCode));
-          } else {
-            setCourseNameSuggestions(response.data.map(course => course.courseName));
-          }
-        } catch (error) {
-          console.error("Error fetching course suggestions:", error);
-        }
-      } else {
-        if (type === 'code') {
-          setCourseCodeSuggestions([]);
-        } else {
-          setCourseNameSuggestions([]);
-        }
-      }
-    }, 500), // Wait 500ms before making API calls
-    []
-  );
-
   // Handle filter changes and trigger search
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     const updatedFilters = { ...filters, [name]: value };
     setFilters(updatedFilters);
-    fetchCourses(updatedFilters); // Call API dynamically
+
+    // Check if all required fields are filled before fetching
+    const allFieldsFilled = updatedFilters.level && updatedFilters.semester && updatedFilters.degree && updatedFilters.courseName && updatedFilters.courseCode;
+    if (allFieldsFilled) {
+      fetchCourses(updatedFilters); // Call API dynamically
+    }
   };
 
   // Handle course code input change
@@ -250,22 +224,20 @@ const Courses: React.FC = () => {
             </div>
 
             {/* Table */}
-            {errorMessage ? (
-              <p className="text-red-500 text-center">{errorMessage}</p>
-            ) : (
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border p-2">Course Code</th>
-                    <th className="border p-2">Course Name</th>
-                    <th className="border p-2">Level</th>
-                    <th className="border p-2">Semester</th>
-                    <th className="border p-2">Degree</th>
-                    <th className="border p-2">Active</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courses.map((course) => (
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">Course Code</th>
+                  <th className="border p-2">Course Name</th>
+                  <th className="border p-2">Level</th>
+                  <th className="border p-2">Semester</th>
+                  <th className="border p-2">Degree</th>
+                  <th className="border p-2">Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {courses.length > 0 ? (
+                  courses.map((course) => (
                     <tr key={course.id} className="text-center border">
                       <td className="border p-2">{course.courseCode}</td>
                       <td className="border p-2">{course.courseName}</td>
@@ -274,10 +246,14 @@ const Courses: React.FC = () => {
                       <td className="border p-2">{course.degree}</td>
                       <td className="border p-2">{course.active ? "Yes" : "No"}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center border p-2">No courses available</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </form>
       </div>
