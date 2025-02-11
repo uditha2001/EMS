@@ -3,7 +3,6 @@ This is an exam paper management system created as a third-year project for the 
 
 ## 🚀 How to Run the Project
 
-### 1️⃣ Backend Setup
 ```bash
 cd backend
 # Install dependencies
