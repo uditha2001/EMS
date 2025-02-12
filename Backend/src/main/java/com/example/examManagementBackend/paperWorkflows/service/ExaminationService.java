@@ -37,18 +37,18 @@ public class ExaminationService {
     private final ExaminationRepository examinationRepository;
     private final ExaminationTimeTableRepository examinationTimeTableRepository;
     private final UserRolesRepository userRolesRepository;
+    private final DegreeProgramRepo degreeProgramsRepository;
+    private final RoleAssignmentRepository roleAssignmentRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
+        this.degreeProgramsRepository = degreeProgramsRepository;
+        this.roleAssignmentRepository = roleAssignmentRepository;
     }
 
-    @Autowired
-    private DegreeProgramRepo degreeProgramsRepository;
 
-    @Autowired
-    private RoleAssignmentRepository roleAssignmentRepository;
 
 
 
