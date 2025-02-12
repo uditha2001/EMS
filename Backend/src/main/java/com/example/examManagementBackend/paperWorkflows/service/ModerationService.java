@@ -34,7 +34,6 @@ public class ModerationService {
         this.encryptedPaperRepository = encryptedPaperRepository;
     }
 
-    }
     public void moderateQuestionWithHierarchy(QuestionModerationDTO dto) {
         // Moderate the main question
         if (questionRepository.existsById(dto.getQuestionId())) {
