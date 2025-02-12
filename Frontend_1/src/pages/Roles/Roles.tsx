@@ -134,7 +134,7 @@ const Roles: React.FC = () => {
     return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 text-sm">
       <Breadcrumb pageName="Roles" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
         <div className="mb-6 flex justify-between items-center">
@@ -188,7 +188,6 @@ const Roles: React.FC = () => {
         )}
 
         {/* Non-Permanent Roles Table */}
-        {/* Non-Permanent Roles Table */}
         <div className="overflow-x-auto my-8">
           {nonPermanentRoles.length > 0 ? (
             <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
@@ -221,7 +220,7 @@ const Roles: React.FC = () => {
                       {role.description}
                     </td>
                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                      {getPermissionNames(role.permissionIds)}
+                      {getPermissionNames(role.permissionIds).toLowerCase()}
                     </td>
                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       {hasEditPermission && (
@@ -284,7 +283,7 @@ const Roles: React.FC = () => {
                     {role.description}
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    {getPermissionNames(role.permissionIds)}
+                    {getPermissionNames(role.permissionIds).toLowerCase()}
                   </td>
                 </tr>
               ))}

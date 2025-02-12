@@ -112,7 +112,7 @@ export default function ExaminationForm({
           </h3>
         </div>
 
-        <div className="p-6.5 overflow-y-auto max-h-[500px] no-scrollbar ">
+        <div className="p-6.5 overflow-y-auto max-h-[500px] no-scrollbar">
           <div className="mb-4.5">
             <label
               htmlFor="degreeProgram"

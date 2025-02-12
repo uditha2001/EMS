@@ -306,8 +306,9 @@ const useApi = () => {
   };
 
   const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
-    return axiosPrivate.get(
-      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+    return axiosPrivate.post(
+      'papers/view',
+      { id: paperId, moderatorId }, // Sending data in the request body
       { responseType: 'blob' },
     );
   };
@@ -658,9 +659,38 @@ const useApi = () => {
     } catch (error: any) {
       throw new Error('Failed to fetch role assignment');
     }
-    
-  }
-   
+  };
+
+  const updatePaperStatusAndFeedback = async (
+    id: number,
+    status: string,
+    feedback: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/moderation/${id}/update`,
+        null,
+        {
+          params: { status, feedback },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating paper status and feedback:', error);
+      throw error;
+    }
+  };
+
+  const getPaperStatus = async (paperId: number) => {
+    try {
+      const response = await axiosPrivate.get(`/papers/${paperId}/status`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching paper status:', error);
+      throw error;
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -734,6 +764,8 @@ const useApi = () => {
     searchArchivedPapers,
     getExaminationsAllCourses,
     getRoleAssignmentByUserId,
+    updatePaperStatusAndFeedback,
+    getPaperStatus,
   };
 };
 

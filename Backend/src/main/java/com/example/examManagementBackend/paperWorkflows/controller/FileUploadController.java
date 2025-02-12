@@ -1,14 +1,17 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperViewRequestDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,8 +23,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
 
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
+
+    public FileUploadController(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<StandardResponse> uploadFile(
@@ -119,7 +125,8 @@ public class FileUploadController {
                                 paper.getExamination(),
                                 paper.getCourse(),
                                 paper.getStatus(),
-                                paper.getPaperType()
+                                paper.getPaperType(),
+                                paper.getFeedback()
                         );
                     })
                     .collect(Collectors.toList());
@@ -138,26 +145,39 @@ public class FileUploadController {
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse> deletePaper(@PathVariable Long id) {
         try {
+            // Retrieve the existing paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(id);
+
+            if (existingPaper == null) {
+                return new ResponseEntity<>(new StandardResponse(400, "Paper not found with the provided id.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return new ResponseEntity<>(new StandardResponse(400, "Cannot delete the paper. It has already been approved.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Proceed with deletion if not approved
             fileService.deletePaperById(id);
+
             return new ResponseEntity<>(new StandardResponse(200, "Paper deleted successfully.", null), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " , null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/view/{id}")
-    public ResponseEntity<?> viewEncryptedFile(
-            @PathVariable Long id,
-            @RequestParam("moderatorId") Long moderatorId) {
+
+    @PostMapping("/view")
+    public ResponseEntity<?> viewEncryptedFile(@RequestBody EncryptedPaperViewRequestDTO request) {
         try {
-            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(request.getId());
 
             if (encryptedPaper == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
+            byte[] decryptedData = fileService.decryptFileForUser(request.getModeratorId(), encryptedPaper.getFilePath());
 
             return ResponseEntity.ok()
                     .header("Content-Type", "application/pdf")
@@ -165,9 +185,10 @@ public class FileUploadController {
                     .body(decryptedData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error viewing file: ", null));
+                    .body(new StandardResponse(500, "Error viewing file", null));
         }
     }
+
 
     @PutMapping("/update/{fileId}")
     public ResponseEntity<StandardResponse> updatePaper(
@@ -189,6 +210,13 @@ public class FileUploadController {
                 return ResponseEntity.badRequest()
                         .body(new StandardResponse(400, "Paper not found with the provided fileId.", null));
             }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Cannot update the paper. It has already been approved.", null));
+            }
+
 
             // Get creatorId and moderatorId from the existing paper
             Long creatorId = existingPaper.getCreator().getUserId();
@@ -242,7 +270,8 @@ public class FileUploadController {
                     encryptedPaper.getExamination(),
                     encryptedPaper.getCourse(),
                     encryptedPaper.getStatus(),
-                    encryptedPaper.getPaperType()// Pass the list of courses here
+                    encryptedPaper.getPaperType(),
+                    encryptedPaper.getFeedback()// Pass the list of courses here
             );
 
             return ResponseEntity.ok()
@@ -257,5 +286,11 @@ public class FileUploadController {
         }
 
 
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<StandardResponse> getPaperStatus(@PathVariable Long id) {
+        ExamPaperStatus status = fileService.getPaperStatus(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Paper status retrieved successfully", status));
     }
 }

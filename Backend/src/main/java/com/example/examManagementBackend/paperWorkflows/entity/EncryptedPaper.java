@@ -61,9 +61,6 @@ public class EncryptedPaper {
     private LocalDateTime updatedAt;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
-    private List<ModerationsEntity> moderations;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
     private List<QuestionStructureEntity> questionStructures;
 
     @ManyToOne
@@ -81,4 +78,7 @@ public class EncryptedPaper {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaperType paperType; // THEORY or PRACTICAL
+
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
 }

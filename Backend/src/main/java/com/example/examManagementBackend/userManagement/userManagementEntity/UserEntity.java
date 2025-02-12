@@ -6,7 +6,6 @@ import com.example.examManagementBackend.resultManagement.entities.ExamTimeTable
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.ModerationsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -68,8 +67,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<ExamPaperEntity> examPapers;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "moderator")
-    private List<ModerationsEntity> moderationsEntities;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "userId")
     private List<RoleAssignmentEntity> roleAssignments;
 

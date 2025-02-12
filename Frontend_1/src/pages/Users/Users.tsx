@@ -129,7 +129,7 @@ const Users: React.FC = () => {
     return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 text-sm">
       <Breadcrumb pageName="Users" />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
         <div className="mb-6 flex justify-between items-center flex-wrap">

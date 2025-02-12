@@ -4,7 +4,7 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useAuth from '../../hooks/useAuth';
 import useApi from '../../api/api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 const FileList: React.FC = () => {
@@ -24,6 +24,19 @@ const FileList: React.FC = () => {
     null,
   );
 
+  const navigate = useNavigate();
+  const handleModerate = (paperId: number) => {
+    navigate('/paper/moderate', { state: { paperId } });
+  };
+  const setStructure = (paperId: number) => {
+    navigate('/paper/create/structure', { state: { paperId } });
+  };
+  const modifyStructure = (paperId: number) => {
+    navigate('/paper/edit/structure', { state: { paperId } });
+  };
+  const modifyPaper = (fileId: number) => {
+    navigate('/paper/transfer/edit', { state: { fileId } });
+  };
   useEffect(() => {
     fetchFiles();
   }, []);
@@ -182,7 +195,7 @@ const FileList: React.FC = () => {
                     >
                       Download
                     </button>
-                    {viewType === 'sender' && (
+                    {viewType === 'sender' && file.status !== 'APPROVED' && (
                       <>
                         <button
                           type="button"
@@ -191,45 +204,46 @@ const FileList: React.FC = () => {
                         >
                           Delete
                         </button>
-                        <Link
-                          to={`/paper/transfer/edit/${file.id}`}
+                        <button
+                          onClick={() => modifyPaper(file.id)}
                           className="ml-4 text-green-600 hover:text-opacity-80"
                         >
                           Modify
-                        </Link>
+                        </button>
                         {structureStatus[file.id] ? (
-                          <Link
-                            to={`/paper/edit/structure/${file.id}`}
+                          <button
+                            onClick={() => modifyStructure(file.id)}
                             className="ml-4 text-green-600 hover:text-opacity-80"
                           >
                             Modify Structure
-                          </Link>
+                          </button>
                         ) : (
-                          <Link
-                            to={`/paper/create/structure/${file.id}`}
+                          <button
+                            onClick={() => setStructure(file.id)}
                             className="ml-4 text-green-600 hover:text-opacity-80"
                           >
                             Set Structure
-                          </Link>
+                          </button>
                         )}
                       </>
                     )}
                     {viewType === 'receiver' && (
                       <>
-                      <Link
-                        to={`/paper/moderate/${file.id}/${moderatorId}`}
-                        className="ml-4 text-green-600 hover:text-opacity-80"
-                      >
-                        Moderate
-                      </Link>
-                      <Link
-                      to={`/paper/feedback/${file.id}/${moderatorId}`}
-                      className="ml-4 text-green-600 hover:text-opacity-80"
-                    >
-                      Feedback
-                    </Link>
-                    </>
-                      
+                        <button
+                          onClick={() => handleModerate(file.id)}
+                          className="ml-4 text-green-600 hover:text-opacity-80"
+                        >
+                          Moderate
+                        </button>
+                        {file.status === 'APPROVED' && (
+                          <Link
+                            to={`/paper/feedback`}
+                            className="ml-4 text-green-600 hover:text-opacity-80"
+                          >
+                            Feedback
+                          </Link>
+                        )}
+                      </>
                     )}
                   </td>
                 </tr>

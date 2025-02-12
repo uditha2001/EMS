@@ -9,7 +9,7 @@ import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRe
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -166,18 +166,10 @@ public class FileService {
         }
     }
 
-    public void updatePaperStatus(Long paperId, String status) {
-        // Retrieve the paper by ID
-        EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
-                .orElseThrow(() -> new IllegalArgumentException("Paper not found with ID: " + paperId));
-
-        // Update the status
-        paper.setStatus(ExamPaperStatus.valueOf(status));
-
-        // Save the updated paper
-        encryptedPaperRepository.save(paper);
+    public ExamPaperStatus getPaperStatus(Long id) {
+        EncryptedPaper paper = encryptedPaperRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Paper not found"));
+        return paper.getStatus();
     }
-
-
 
 }
