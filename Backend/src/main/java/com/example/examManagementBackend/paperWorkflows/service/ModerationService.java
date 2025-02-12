@@ -15,16 +15,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class ModerationService {
 
-    private final QuestionStructureRepository questionRepository;
-    private final SubQuestionRepository subQuestionRepository;
-    private final SubSubQuestionRepository subSubQuestionRepository;
+    @Autowired
+    private QuestionStructureRepository questionRepository;
 
-    public ModerationService(QuestionStructureRepository questionRepository, SubQuestionRepository subQuestionRepository, SubSubQuestionRepository subSubQuestionRepository) {
-        this.questionRepository = questionRepository;
-        this.subQuestionRepository = subQuestionRepository;
-        this.subSubQuestionRepository = subSubQuestionRepository;
+    @Autowired
+    private SubQuestionRepository subQuestionRepository;
 
-    }
+    @Autowired
+    private SubSubQuestionRepository subSubQuestionRepository;
+
     public void moderateQuestionWithHierarchy(QuestionModerationDTO dto) {
         // Moderate the main question
         if (questionRepository.existsById(dto.getQuestionId())) {
