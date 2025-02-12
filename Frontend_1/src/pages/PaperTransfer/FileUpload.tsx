@@ -7,16 +7,16 @@ import useApi from '../../api/api';
 import { Link } from 'react-router-dom';
 
 interface Moderator {
-  id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
+  userId: number;
+  user: string;
 }
 
 interface Course {
-  id: number;
-  code: string;
-  name: string;
+  courseId: number;
+  courseCode: string;
+  courseName: string;
+  paperType: string;
+  roleId: number;
 }
 
 interface Examination {
@@ -25,149 +25,185 @@ interface Examination {
   level: number;
   semester: number;
   degreeProgramName: string;
+  status: string;
 }
 
 const FileUpload: React.FC = () => {
   const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
+  const { uploadFile, getRoleAssignmentByUserId, getExaminationById } =
+    useApi();
+  const userId = Number(auth.id);
+
   const [file, setFile] = useState<File | null>(null);
-  const [remarks, setRemarks] = useState<string>('');
+  const [remarks, setRemarks] = useState('');
   const [paperType, setPaperType] = useState<string>('');
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [moderators, setModerators] = useState<Moderator[]>([]);
   const [selectedModerator, setSelectedModerator] = useState<number | null>(
     null,
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
-  const [examinations, setExaminations] = useState<Examination[]>([]); // State for academic years
+  const [examinations, setExaminations] = useState<Examination[]>([]);
   const [selectedExamination, setSelectedExamination] = useState<number | null>(
     null,
-  ); // State for selected academic year
-  const userId = Number(auth.id); // Current user ID
-  const axiosPrivate = useAxiosPrivate();
-  const { uploadFile } = useApi();
+  );
+  const [availablePaperTypes, setAvailablePaperTypes] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchModeratorsCoursesAndExaminations = async () => {
+    const fetchData = async () => {
       try {
-        const [usersResponse, coursesResponse, examinationsResponse] =
-          await Promise.all([
-            axiosPrivate.get('/user'),
-            axiosPrivate.get('/courses'),
-            axiosPrivate.get('/academic-years'),
-          ]);
+        // Fetch role assignments
+        const roleAssignmentsResponse = await getRoleAssignmentByUserId(
+          Number(auth.id),
+        ); // Fetch role assignments for the user
 
-        //console.log('Examinations Response:', examinationsResponse.data); // Log the response data
-
-        const allUsers = usersResponse.data;
-        const filteredModerators = allUsers.filter(
-          (user: any) =>
-            user.roles.includes('PAPER_MODERATOR') ||
-            (user.roles.includes('PAPER_CREATOR') && user.active),
+        const roleAssignments = roleAssignmentsResponse.data.filter(
+          (assignment: any) => assignment.isAuthorized, // Filter only authorized assignments
         );
 
-        setModerators(filteredModerators);
+        // Extract examination IDs from the role assignments
+        const examinationIds: number[] = Array.from(
+          new Set(
+            roleAssignments.map((assignment: any) => assignment.examinationId),
+          ),
+        );
 
-        if (filteredModerators.length > 0) {
-          setSelectedModerator(filteredModerators[0].id);
+        // Fetch exams based on the examination IDs found in the role assignments
+        const examData = await Promise.all(
+          examinationIds.map((examId: number) => getExaminationById(examId)), // Fetch each exam by ID
+        );
+
+        // Flatten the exam data array if needed
+        const ongoingExams = examData.flat().filter(
+          (exam: Examination) => exam.status === 'ONGOING', // Filter ongoing exams
+        );
+
+        setExaminations(ongoingExams);
+
+        // Filter courses based on the role assignments and selected examination
+        const filteredCourses = roleAssignments.filter(
+          (assignment: any) =>
+            examinationIds.includes(Number(assignment.examinationId)), // Filter courses for the selected exams
+        );
+
+        const uniqueCourses: Course[] = Array.from(
+          new Map(
+            filteredCourses.map((assignment: any) => [
+              assignment.courseId,
+              {
+                courseId: assignment.courseId,
+                courseCode: assignment.courseCode,
+                courseName: assignment.courseName,
+                paperType: assignment.paperType, // Single paper type per course for now
+                roleId: assignment.roleId,
+              } as Course,
+            ]),
+          ).values(),
+        ) as Course[];
+
+        setCourses(uniqueCourses);
+
+        // If a course is selected, update the paper types available for that course
+        if (selectedCourse !== null) {
+          // Filter out paper types from all assignments for the selected course
+          const courseAssignments = roleAssignments.filter(
+            (assignment: any) => assignment.courseId === selectedCourse,
+          );
+
+          // Collect unique paper types for the course
+          const paperTypes: string[] = Array.from(
+            new Set(
+              courseAssignments.map((assignment: any) => assignment.paperType),
+            ),
+          );
+
+          setAvailablePaperTypes(paperTypes); // Set available paper types based on role assignments
         }
-
-        setCourses(coursesResponse.data.data);
-
-        if (Array.isArray(examinationsResponse.data.data)) {
-          setExaminations(examinationsResponse.data.data); // Set academic years if it's an array
-        } else {
-          setErrorMessage('Invalid data format for academic years.');
-        }
-      } catch (error: any) {
-        setErrorMessage('Failed to fetch data: ' + error.message);
+      } catch (error) {
+        setErrorMessage('Failed to fetch data. Please try again.');
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchModeratorsCoursesAndExaminations();
-  }, []);
+    fetchData();
+  }, [
+    auth.id,
+    getRoleAssignmentByUserId,
+    getExaminationById,
+    selectedExamination,
+    selectedCourse,
+  ]);
+
+  useEffect(() => {
+    const fetchModerators = async () => {
+      if (!selectedCourse || !paperType) return;
+      try {
+        const response = await axiosPrivate.get(
+          `/role-assignments/moderators?courseId=${selectedCourse}&paperType=${paperType}`,
+        );
+        setModerators(response.data.data);
+      } catch (error) {
+        setModerators([]);
+        setErrorMessage('Failed to fetch moderators.');
+      }
+    };
+    fetchModerators();
+  }, [selectedCourse, paperType]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0];
-      if (selectedFile.type !== 'application/pdf') {
-        setErrorMessage('Invalid file type. Only PDF files are allowed.');
-        return;
-      }
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        setErrorMessage(
-          'File size exceeds limit. Maximum allowed size is 10 MB.',
-        );
-        return;
-      }
-
-      setFile(selectedFile);
-      setErrorMessage('');
+    if (selectedFile.type !== 'application/pdf') {
+      setErrorMessage('Invalid file type. Only PDF files are allowed.');
+      return;
     }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setErrorMessage(
+        'File size exceeds limit. Maximum allowed size is 10 MB.',
+      );
+      return;
+    }
+    setFile(selectedFile);
+    setErrorMessage('');
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      setErrorMessage('Please select a file first!');
+    if (
+      !file ||
+      !selectedModerator ||
+      !selectedCourse ||
+      !remarks.trim() ||
+      !paperType ||
+      !selectedExamination
+    ) {
+      setErrorMessage('All fields are required!');
       return;
     }
 
-    if (!selectedModerator) {
-      setErrorMessage('Please select a moderator!');
-      return;
-    }
-
-    if (!selectedCourse) {
-      setErrorMessage('Please select a course!');
-      return;
-    }
-
-    if (!remarks.trim()) {
-      setErrorMessage('Remarks are required!');
-      return;
-    }
-
-    if (!paperType) {
-      setErrorMessage('Paper Type are required!');
-      return;
-    }
-
-    if (!selectedExamination) {
-      setErrorMessage('Please select an academic year!');
-      return;
-    }
-
-    // Get the selected academic year's name
-    const selectedExaminationName = examinations.find(
-      (year) => year.id === selectedExamination,
+    const selectedExam = examinations.find(
+      (exam) => exam.id === selectedExamination,
     )?.year;
-
-    if (!selectedExaminationName) {
-      setErrorMessage('Invalid academic year selected!');
-      return;
-    }
-
     const selectedCourseCode = courses.find(
-      (course) => course.id === selectedCourse,
-    )?.code;
-    if (!selectedCourseCode) {
-      setErrorMessage('Invalid course selected!');
+      (course) => course.courseId === selectedCourse,
+    )?.courseCode;
+    if (!selectedExam || !selectedCourseCode) {
+      setErrorMessage('Invalid selection!');
       return;
     }
 
-    // Concatenate selected course codes and academic year name
-    const renamedFileName = `${selectedCourseCode}_${paperType}_${selectedExaminationName.replace(
-      '/',
-      '_',
-    )}.pdf`;
-    const renamedFile = new File([file], renamedFileName, { type: file.type });
-
-    console.log('Renamed File Name:', renamedFileName); // For debugging
-
-    setErrorMessage('');
+    const renamedFile = new File(
+      [file],
+      `${selectedCourseCode}_${paperType}_${selectedExam.replace(
+        '/',
+        '_',
+      )}.pdf`,
+      { type: file.type },
+    );
     setIsUploading(true);
 
     try {
@@ -178,9 +214,8 @@ const FileUpload: React.FC = () => {
         remarks,
         paperType,
         selectedModerator,
-        selectedExamination, // Include academic year in the request
+        selectedExamination,
       );
-
       if (response?.message) {
         setErrorMessage(response.message);
       } else {
@@ -188,7 +223,7 @@ const FileUpload: React.FC = () => {
         resetForm();
       }
     } catch (error) {
-      setErrorMessage('Failed to upload the file: ' + error);
+      setErrorMessage('Failed to upload file. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -196,11 +231,11 @@ const FileUpload: React.FC = () => {
 
   const resetForm = () => {
     setFile(null);
-    setSelectedCourse(null);
     setRemarks('');
-    setSelectedModerator(null);
-    setSelectedExamination(null);
     setPaperType('');
+    setSelectedModerator(null);
+    setSelectedCourse(null);
+    setSelectedExamination(null);
   };
 
   return (
@@ -234,24 +269,7 @@ const FileUpload: React.FC = () => {
             ))}
           </select>
         </div>
-        {/* Moderator Selection */}
-        <div>
-          <label className="mb-2.5 block text-black dark:text-white">
-            Select Moderator
-          </label>
-          <select
-            value={selectedModerator || ''}
-            onChange={(e) => setSelectedModerator(Number(e.target.value))}
-            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
-          >
-            {moderators.map((moderator) => (
-              <option key={moderator.id} value={moderator.id}>
-                {moderator.firstName} {moderator.lastName} ({moderator.username}
-                )
-              </option>
-            ))}
-          </select>
-        </div>
+
         {/* Course Selection */}
         <div>
           <label className="mb-2.5 block text-black dark:text-white">
@@ -259,15 +277,18 @@ const FileUpload: React.FC = () => {
           </label>
           <select
             value={selectedCourse || ''}
-            onChange={(e) => setSelectedCourse(Number(e.target.value))}
+            onChange={(e) => {
+              setSelectedCourse(Number(e.target.value)); // Update selected course
+              setPaperType(''); // Reset paper type when course changes
+            }}
             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
             required
           >
             <option value={''}>Select Course</option>
 
             {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.code} - {course.name}
+              <option key={course.courseId} value={course.courseId}>
+                {course.courseCode} - {course.courseName}
               </option>
             ))}
           </select>
@@ -280,14 +301,40 @@ const FileUpload: React.FC = () => {
             Paper Type
           </label>
           <select
-            value={paperType}
-            onChange={(e) => setPaperType(e.target.value)}
+            value={paperType} // The selected paper type will be dynamically set
+            onChange={(e) => setPaperType(e.target.value)} // Update paper type on change
             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
             required
           >
             <option value="">Select Paper Type</option>
-            <option value="THEORY">THEORY</option>
-            <option value="PRACTICAL">PRACTICAL</option>
+            {availablePaperTypes.length > 0 ? (
+              availablePaperTypes.map((type: string) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))
+            ) : (
+              <option disabled>No paper types available</option>
+            )}
+          </select>
+        </div>
+
+        {/* Moderator Selection */}
+        <div>
+          <label className="mb-2.5 block text-black dark:text-white">
+            Select Moderator
+          </label>
+          <select
+            value={selectedModerator || ''}
+            onChange={(e) => setSelectedModerator(Number(e.target.value))}
+            className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary appearance-none"
+          >
+            <option value={''}>Select Moderator</option>
+            {moderators.map((moderator) => (
+              <option key={moderator.userId} value={moderator.userId}>
+                {moderator.user}
+              </option>
+            ))}
           </select>
         </div>
 

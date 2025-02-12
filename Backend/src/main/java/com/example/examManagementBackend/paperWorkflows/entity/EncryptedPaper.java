@@ -63,9 +63,6 @@ public class EncryptedPaper {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
     private List<ModerationsEntity> moderations;
 
-//    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
-//    private List<PapersCoursesEntity> papersCourses;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
     private List<QuestionStructureEntity> questionStructures;
 
@@ -73,8 +70,8 @@ public class EncryptedPaper {
     @JoinColumn(name = "examination_id", nullable = false)
     private ExaminationEntity examination;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "courseId",referencedColumnName = "id",nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "courseId", referencedColumnName = "id", nullable = false)
     private CoursesEntity course;
 
     @Enumerated(EnumType.STRING)
@@ -84,7 +81,4 @@ public class EncryptedPaper {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaperType paperType; // THEORY or PRACTICAL
-
 }
-
-

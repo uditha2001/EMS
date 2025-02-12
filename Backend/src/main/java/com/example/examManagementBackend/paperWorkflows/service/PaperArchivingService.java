@@ -14,7 +14,6 @@ import com.example.examManagementBackend.paperWorkflows.specifications.ArchivedP
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,9 +58,9 @@ public class PaperArchivingService {
         this.coursesRepository = coursesRepository;
     }
 
-    @Scheduled(fixedRate = 86400000) // Runs once every 24 hours
+    //@Scheduled(fixedRate = 86400000) // Runs once every 24 hours
     @Transactional
-   // @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
+    @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
     public void archiveSharedPapers() {
         LocalDateTime now = LocalDateTime.now();
 
@@ -95,9 +94,11 @@ public class PaperArchivingService {
                 archivedPaper.setPaperType(encryptedPaper.getPaperType());
 
                 archivedPaperRepository.save(archivedPaper);
+                archivedPaperRepository.flush(); // Forces the entity to be persisted
 
                 // Delete the encrypted paper record
                 encryptedPaperRepository.delete(encryptedPaper);
+                encryptedPaperRepository.flush(); // Commit the deletion to the database
 
                 // Delete the encrypted file from storage
                 Files.deleteIfExists(Paths.get(encryptedPaper.getFilePath()));

@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.GetModeratorDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
@@ -310,6 +311,18 @@ public class RoleAssignmentService {
             userRole.setGrantAt(grantAtDate);
             userRolesRepo.save(userRole);
         }
+    }
+
+    public List<GetModeratorDTO> getPaperModeratorsByCourseAndPaperType(Long courseId, PaperType paperType) {
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByCourseIdAndPaperType(courseId, paperType);
+
+        return roleAssignments.stream()
+                .filter(roleAssignment -> roleAssignment.getRole().getRoleId() == 3) // Role ID for Paper Moderator
+                .map(roleAssignment -> new GetModeratorDTO(
+                        roleAssignment.getUserId().getUserId(),
+                        roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName()
+                ))
+                .collect(Collectors.toList());
     }
 
 
