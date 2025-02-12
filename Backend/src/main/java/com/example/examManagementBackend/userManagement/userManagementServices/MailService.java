@@ -21,12 +21,12 @@ public class MailService {
     private final JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String mailProvider;
-    @Autowired
-    UserManagementRepo userManagementRepo;
-    @Autowired
-    ForgotPasswordRepo forgotPasswordRepo;
-    public MailService(JavaMailSender mailSender) {
+    private final UserManagementRepo userManagementRepo;
+    private final ForgotPasswordRepo forgotPasswordRepo;
+    public MailService(JavaMailSender mailSender,UserManagementRepo userManagementRepo,ForgotPasswordRepo forgotPasswordRepo) {
         this.mailSender = mailSender;
+        this.userManagementRepo = userManagementRepo;
+        this.forgotPasswordRepo = forgotPasswordRepo;
     }
 
     public String sendMail(MailBody mailBody) {
