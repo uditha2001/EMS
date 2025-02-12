@@ -21,8 +21,11 @@ import java.util.stream.Collectors;
 @Service
 public class UserProfileServices {
 
-    @Autowired
-    UserManagementRepo userManagementRepo;
+    private final UserManagementRepo userManagementRepo;
+
+    public UserProfileServices(UserManagementRepo userManagementRepo) {
+        this.userManagementRepo = userManagementRepo;
+    }
     // Inject your storage path for profile images (can be a directory or cloud service)
     @Value("${profile.image.upload-dir}")
     private String uploadDir;

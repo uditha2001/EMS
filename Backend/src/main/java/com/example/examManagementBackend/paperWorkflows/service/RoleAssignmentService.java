@@ -31,27 +31,22 @@ import java.util.stream.Collectors;
 @Service
 public class RoleAssignmentService {
 
-    @Autowired
-    private RoleAssignmentRepository roleAssignmentRepository;
+    private final RoleAssignmentRepository roleAssignmentRepository;
+    private final CoursesRepository coursesRepository;
+    private final RoleRepository rolesRepository;
+    private final UserManagementRepo userRepository;
+    private final ExaminationRepository examinationRepository;
+    private final UserRolesRepository userRolesRepo;
 
-    @Autowired
-    private CoursesRepository coursesRepository;
-
-    @Autowired
-    private RoleRepository rolesRepository;
-
-    @Autowired
-    private UserManagementRepo userRepository;
-
-    @Autowired
-    private ExaminationRepository examinationRepository;
-
-    @Autowired
-    private UserManagementRepo userManagementRepo;
-    @Autowired
-    private UserRolesRepository userRolesRepo;
-    @Autowired
-    private RoleRepository roleRepository;
+    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository,CoursesRepository coursesRepository,RoleRepository roleRepository,UserManagementRepo userManagementRepo,ExaminationRepository examinationRepository,UserRolesRepository userRolesRepository)
+    {
+        this.roleAssignmentRepository = roleAssignmentRepository;
+        this.coursesRepository = coursesRepository;
+        this.rolesRepository = roleRepository;
+        this.userRepository = userManagementRepo;
+        this.examinationRepository = examinationRepository;
+        this.userRolesRepo = userRolesRepository;
+    }
 
     public RoleAssignmentDTO assignRole(CreateRoleAssignmentDTO createRoleAssignmentDTO) {
         // Fetch required entities from the database
@@ -264,9 +259,9 @@ public class RoleAssignmentService {
 
     @Transactional
     public void assignRoleToUser(Long userId, Long roleId) {
-        UserEntity user = userManagementRepo.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        RolesEntity role = roleRepository.findById(roleId)
+        RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         // Check if the role is authorized before assigning it to the user

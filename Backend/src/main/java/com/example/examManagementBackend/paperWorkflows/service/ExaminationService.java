@@ -19,7 +19,6 @@ import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,18 +36,18 @@ public class ExaminationService {
     private final ExaminationRepository examinationRepository;
     private final ExaminationTimeTableRepository examinationTimeTableRepository;
     private final UserRolesRepository userRolesRepository;
+    private final DegreeProgramRepo degreeProgramsRepository;
+    private final RoleAssignmentRepository roleAssignmentRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
+        this.degreeProgramsRepository = degreeProgramsRepository;
+        this.roleAssignmentRepository = roleAssignmentRepository;
     }
 
-    @Autowired
-    private DegreeProgramRepo degreeProgramsRepository;
 
-    @Autowired
-    private RoleAssignmentRepository roleAssignmentRepository;
 
 
 
