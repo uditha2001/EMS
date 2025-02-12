@@ -32,19 +32,20 @@ import java.util.Set;
 @Service
 public class JwtService implements UserDetailsService{
 
-    @Autowired
-    private UserManagementRepo userManagementRepo;
-    @Autowired
-    @Lazy
-    AuthenticationManager authenticationManager;
-    @Autowired
-    JwtUtill jwtUtill;
-    @Autowired
-    RoleService roleService;
-    @Autowired
-    UserRolesRepository userRolesRepository;
-    @Autowired
-    TokenRepo tokenRepo;
+    private final UserManagementRepo userManagementRepo;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtill jwtUtill;
+    private final UserRolesRepository userRolesRepository;
+    private final TokenRepo tokenRepo;
+
+    public JwtService(UserManagementRepo userManagementRepo,@Lazy AuthenticationManager authenticationManager,JwtUtill jwtUtill,UserRolesRepository userRolesRepository,TokenRepo tokenRepo) {
+        this.userManagementRepo = userManagementRepo;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtill = jwtUtill;
+        this.userRolesRepository = userRolesRepository;
+        this.tokenRepo = tokenRepo;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserEntity userEntity=userManagementRepo.findByUsername(username);

@@ -13,8 +13,12 @@ import java.util.stream.Collectors;
 @Service
 public class PermissionService {
 
-    @Autowired
-    private PermissionRepository permissionRepository;
+
+    private final PermissionRepository permissionRepository;
+
+    public PermissionService(PermissionRepository permissionRepository) {
+        this.permissionRepository = permissionRepository;
+    }
 
     // Fetch all permissions
     public List<PermissionDTO> getAllPermissions() {
