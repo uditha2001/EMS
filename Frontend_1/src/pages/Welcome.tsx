@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AOS from 'aos'; // Import AOS for animations
 import 'aos/dist/aos.css'; // Import the AOS CSS
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import FontAwesome
+import { faArrowRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons'; // Import specific icons
 
 const WelcomePage: React.FC = () => {
   // Background images array
@@ -35,18 +37,9 @@ const WelcomePage: React.FC = () => {
 
       {/* Content */}
       <div className="relative text-center text-white px-6 max-w-3xl">
-        {/* University Logo */}
-        {/* <div className="mb-8" data-aos="fade-down" data-aos-duration="1500">
-          <img
-            src="src/images/university-logo.jpg" // Replace with your logo image path
-            alt="University Logo"
-            className="mx-auto w-24 h-24"
-          />
-        </div> */}
-
         {/* Heading and Paragraph with animations */}
         <h1
-          className="text-5xl font-extrabold mb-4"
+          className="text-4xl font-extrabold mb-4"
           data-aos="fade-up"
           data-aos-duration="1500"
         >
@@ -71,7 +64,7 @@ const WelcomePage: React.FC = () => {
             data-aos-duration="1500"
             data-aos-delay="400"
           >
-            Get Started →
+            Get Started <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </Link>
           <Link
             to="/about"
@@ -80,7 +73,7 @@ const WelcomePage: React.FC = () => {
             data-aos-duration="1500"
             data-aos-delay="400"
           >
-            Learn More →
+            Learn More <FontAwesomeIcon icon={faInfoCircle} className="ml-2" />
           </Link>
         </div>
       </div>
