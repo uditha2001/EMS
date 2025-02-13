@@ -46,13 +46,6 @@ public class ExaminationService {
         this.degreeProgramsRepository = degreeProgramsRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
     }
-
-
-
-
-
-
-
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
         DegreeProgramsEntity degreeProgram = degreeProgramsRepository.findById(examinationDTO.getDegreeProgramId())
                 .orElseThrow(() -> new RuntimeException("Degree Program not found"));
@@ -186,7 +179,7 @@ public class ExaminationService {
     }
 
 
-
+    //get examination data related to selected degree program
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
         List<String> degreeNames=new ArrayList<>();
         List<ExaminationDTO> examinationDTOS=new ArrayList<>();
@@ -226,7 +219,7 @@ public class ExaminationService {
         }
         catch(Exception e){
             return new ResponseEntity<StandardResponse>(
-                   new StandardResponse(500,"erroe",null), HttpStatus.INTERNAL_SERVER_ERROR
+                   new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
