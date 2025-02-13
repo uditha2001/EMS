@@ -775,6 +775,7 @@ const useApi = () => {
     getRoleAssignmentByUserId,
     updatePaperStatusAndFeedback,
     getPaperStatus,
+    getExamTypes
   };
 };
 
