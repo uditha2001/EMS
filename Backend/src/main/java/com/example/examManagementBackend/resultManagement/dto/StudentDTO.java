@@ -11,4 +11,6 @@ public class StudentDTO {
     private String studentNumber;
     private String studentName;
     private Float firstMarking;
+    private Float secondMarking;
+    private Float finalMarking;
 }

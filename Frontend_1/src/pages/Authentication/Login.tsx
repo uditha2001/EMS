@@ -59,7 +59,7 @@ const Login = () => {
   return (
     <div>
      {loadingStatus? <Loader/>:null}
-      <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
+      <h1 className="text-xl font-bold text-center mb-6 dark:text-white">
         Welcome to EMS
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">

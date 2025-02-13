@@ -32,7 +32,7 @@ const ResultsUpload = () => {
     const [examName, setExamName] = useState<string>("");
     const [courseCode, setCourseCode] = useState<string>("");
     const [examType, setExamType] = useState<string>("THEORY");
-    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveFirstMarkingResults } = useApi();
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, saveMarkingResults } = useApi();
     const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
@@ -49,7 +49,7 @@ const ResultsUpload = () => {
             let examData: examinationName[] = [];
             let i = 0;
             for (const obj of response) {
-                let examName = `${obj["year"]}-${obj["degreeName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
+                let examName = `${obj["year"]}-${obj["degreeProgramName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
@@ -62,6 +62,7 @@ const ResultsUpload = () => {
     }, []);
 
     useEffect(() => {
+        console.log(examName)
         if (examName != "" && examName != null) {
             getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
                 setExaminationCourseCode(data);
@@ -79,9 +80,8 @@ const ResultsUpload = () => {
 
 
     useEffect(() => {
-        console.log(totalData);
         if (allowToSend) {
-            saveFirstMarkingResults(totalData, {
+            saveMarkingResults(totalData, {
                 onUploadProgress: (progressEvent: any) => {
                     if (progressEvent.total != undefined) {
                         const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -96,12 +96,14 @@ const ResultsUpload = () => {
                     setAllowToSend(false);
                     setShowTable(false)
                     setSuccessMessage("result upload successfull")
+                    setFile(null);
 
                 }
                 else if (data.status === 500) {
                     setAllowToSend(false);
                     setShowTable(false)
                     setErrorMessage("result upload failed!")
+                    setFile(null)
                 }
 
             })
@@ -420,7 +422,7 @@ const ResultsUpload = () => {
                                         }}
                                         className="w-4/5 md:w-1/2 bg-gradient-to-r from-rose-500 to-orange-400 text-white py-2 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity border border-transparent hover:border-white dark:from-rose-600 dark:to-orange-500"
                                     >
-                                        Resubmit
+                                        Cancel
                                     </button>
                                 </div>
                             </div>
@@ -443,6 +445,7 @@ const ResultsUpload = () => {
                             onClick={() => {
                                 setShowTable(false);
                                 setShowConfirmation(false);
+                                setFile(null);
                             }}
                             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                         >
@@ -451,7 +454,7 @@ const ResultsUpload = () => {
                         <button
                             onClick={() => {
                                 setShowConfirmation(false);
-                                setStudentsData([]);
+                        
                             }}
                             className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
                         >

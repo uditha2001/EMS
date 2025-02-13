@@ -31,7 +31,7 @@ interface Examination {
   year: string;
   level: string;
   semester: string;
-  degreeName: string;
+  degreeProgramName: string;
 }
 
 const PreviewAssignedRoles: React.FC = () => {
@@ -290,7 +290,7 @@ const PreviewAssignedRoles: React.FC = () => {
     // Exam details
     doc.setFontSize(14);
     doc.setFont('helvetica', 'normal');
-    const examDetails = `Examination: ${examination?.degreeName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
+    const examDetails = `Examination: ${examination?.degreeProgramName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
     doc.text(examDetails, margin, 40);
 
     doc.line(margin, 45, pageWidth - margin, 45); // Horizontal line separator
@@ -376,7 +376,7 @@ const PreviewAssignedRoles: React.FC = () => {
     doc.line(margin + colWidth + 30, y + 2, margin + 2 * colWidth - 20, y + 2); // Signature line in the right column
 
     // File Name: Save the PDF with examination details
-    const fileName = `assigned-roles-overview-${examination?.degreeName}-${examination?.year}.pdf`;
+    const fileName = `assigned-roles-overview-${examination?.degreeProgramName}-${examination?.year}.pdf`;
     doc.save(fileName);
   };
 
@@ -387,22 +387,22 @@ const PreviewAssignedRoles: React.FC = () => {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke dark:border-strokedark py-6 px-8">
           <header className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-black dark:text-white">
+            <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400">
               University of Ruhuna
-            </h2>
+            </h4>
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
               Department of Computer Science
             </h3>
-            <h4 className="text-md font-medium text-gray-600 dark:text-gray-400">
+            <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300">
               Exam Role Assignment Sheet (
               {allRolesAuthorized ? 'Authorized' : 'Unauthorized'})
-            </h4>
+            </h2>
           </header>
 
           {/* Responsive row for exam details and button */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <h3 className="font-semibold text-lg text-black dark:text-white">
-              Examination: {examination?.degreeName} - Level{' '}
+            <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-300">
+              Examination: {examination?.degreeProgramName} - Level{' '}
               {examination?.level} - Semester {examination?.semester} -{' '}
               {examination?.year}
             </h3>

@@ -5,6 +5,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
+import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -91,6 +92,13 @@ const CreateTimetable = React.lazy(
 const ResultsUpload = React.lazy(() => import('./pages/Results/ResultsUpload'));
 const PreviewAssignedRoles = React.lazy(
   () => import('./pages/RoleAssignments/PreviewAssignedRoles'),
+);
+
+const HistoricalData = React.lazy(
+  () => import('./pages/HistoricalData/HistoricalData'),
+);
+const ArchivedPapers = React.lazy(
+  () => import('./pages/HistoricalData/ArchivedPapers'),
 );
 
 function App() {
@@ -231,7 +239,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms"
+                path="/degreeprograms"
                 element={renderPage(
                   'Degree Programs | EMS',
                   <DegreePrograms />,
@@ -245,7 +253,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms/create"
+                path="/degreeprograms/create"
                 element={renderPage(
                   'Create Degree Program | EMS',
                   <CreateDegreeProgram />,
@@ -259,7 +267,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms/edit/:degreeprogramId"
+                path="/degreeprograms/edit/:degreeprogramId"
                 element={renderPage(
                   'Edit Degree Program | EMS',
                   <EditDegreeProgram />,
@@ -272,7 +280,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['READ_COURSE']} />}
             >
               <Route
-                path="/academic/courses"
+                path="/courses"
                 element={renderPage('Courses | EMS', <Courses />)}
               />
             </Route>
@@ -281,7 +289,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['CREATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/create"
+                path="/courses/create"
                 element={renderPage('Create Course | EMS', <CreateCourse />)}
               />
             </Route>
@@ -290,15 +298,15 @@ function App() {
               element={<RequireAuth allowedPermissions={['UPDATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/edit/:courseId"
+                path="/courses/edit/:courseId"
                 element={renderPage('Edit Course | EMS', <EditCourse />)}
               />
             </Route>
             <Route
-              element={<RequireAuth allowedPermissions={['ACADEMIC_YEAR']} />}
+              element={<RequireAuth allowedPermissions={['EXAMINATION']} />}
             >
               <Route
-                path="/academic/academicyears"
+                path="/examination"
                 element={renderPage('Examinations | EMS', <Examinations />)}
               />
             </Route>
@@ -312,14 +320,14 @@ function App() {
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
               <Route
-                path="/paper/create/structure/:paperId"
+                path="/paper/create/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <CreatePaperStructure />,
                 )}
               />
               <Route
-                path="/paper/edit/structure/:paperId"
+                path="/paper/edit/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <EditPaperStructure />,
@@ -329,13 +337,42 @@ function App() {
                 path="/paper/template"
                 element={renderPage('Paper Templates | EMS', <Templates />)}
               />
+              <Route
+                path="/paper/archived"
+                element={renderPage(
+                  'Archived Papers | EMS',
+                  <ArchivedPapers />,
+                )}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['HISTORICAL_DATA']} />}
+            >
+              <Route
+                path="/history"
+                element={renderPage('History | EMS', <HistoricalData />)}
+              />
+              <Route
+                path="/history/archived"
+                element={renderPage(
+                  'Archived Papers | EMS',
+                  <ArchivedPapers />,
+                )}
+              />
+              <Route
+                path="/history/archived/upload"
+                element={renderPage(
+                  'Archived Papers Upload | EMS',
+                  <UploadArchivedPaper />,
+                )}
+              />
             </Route>
 
             <Route
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
               <Route
-                path="/paper/moderate/:paperId/:moderatorId"
+                path="/paper/moderate"
                 element={renderPage(
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
@@ -343,13 +380,13 @@ function App() {
               />
 
               <Route
-                path="/paper/feedback/:paperId/:moderatorId"
+                path="/paper/feedback"
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
 
             <Route
-              path="/paper/moderate"
+              path="/paper/moderate/dashboard"
               element={renderPage(
                 'Paper Moderation | EMS',
                 <ModerationDashboard />,
@@ -371,7 +408,7 @@ function App() {
                 )}
               />
               <Route
-                path="/paper/transfer/edit/:fileId"
+                path="/paper/transfer/edit"
                 element={renderPage('Paper Transfer | EMS', <FileUpdate />)}
               />
               <Route
@@ -404,11 +441,11 @@ function App() {
             {/*Create Timetable */}
             <Route
               element={
-                <RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />
+                <RequireAuth allowedPermissions={['TIMETABLE']} />
               }
             >
               <Route
-                path="/createtimetable"
+                path="/timetable"
                 element={renderPage(
                   'Create Timetable | EMS',
                   <CreateTimetable />,

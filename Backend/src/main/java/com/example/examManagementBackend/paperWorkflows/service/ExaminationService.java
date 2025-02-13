@@ -18,9 +18,7 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.UserR
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import org.modelmapper.ModelMapper;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,21 +35,19 @@ public class ExaminationService {
 
     private final ExaminationRepository examinationRepository;
     private final ExaminationTimeTableRepository examinationTimeTableRepository;
-    private final ModelMapper modelMapper;
     private final UserRolesRepository userRolesRepository;
+    private final DegreeProgramRepo degreeProgramsRepository;
+    private final RoleAssignmentRepository roleAssignmentRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, ModelMapper modelMapper,UserRolesRepository userRolesRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
-        this.modelMapper = modelMapper;
         this.userRolesRepository = userRolesRepository;
+        this.degreeProgramsRepository = degreeProgramsRepository;
+        this.roleAssignmentRepository = roleAssignmentRepository;
     }
 
-    @Autowired
-    private DegreeProgramRepo degreeProgramsRepository;
 
-    @Autowired
-    private RoleAssignmentRepository roleAssignmentRepository;
 
 
 
@@ -158,6 +154,38 @@ public class ExaminationService {
                 .build();
     }
 
+    public ExaminationCoursesDTO getExaminationWithAllActiveCoursesById(Long examinationId) {
+        // Retrieve the examination entity
+        ExaminationEntity examination = examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new RuntimeException("Examination not found with id: " + examinationId));
+
+        // Retrieve the associated degree program
+        DegreeProgramsEntity degreeProgram = examination.getDegreeProgramsEntity();
+        if (degreeProgram == null) {
+            throw new RuntimeException("Degree program not found for examination id: " + examinationId);
+        }
+
+        // Filter active courses and map to DTO
+        List<ExaminationCoursesDTO.ActiveCourseDTO> activeCourses = degreeProgram.getCoursesEntities().stream()
+                .filter(course -> isCourseActiveAndMatchesExamination(course, examination))
+                .map(course -> new ExaminationCoursesDTO.ActiveCourseDTO(
+                        course.getId(),
+                        course.getCode(),
+                        course.getName(),
+                        course.getCourseType()
+                ))
+                .collect(Collectors.toList());
+
+        // Build the ExaminationCoursesDTO
+        return ExaminationCoursesDTO.builder()
+                .id(examination.getId())
+                .degreeId(degreeProgram.getId())
+                .degreeName(degreeProgram.getDegreeName())
+                .activeCourses(activeCourses)
+                .build();
+    }
+
+
 
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
         List<String> degreeNames=new ArrayList<>();
@@ -170,7 +198,7 @@ public class ExaminationService {
             examinationDTO.setLevel(examinationEntity.getLevel());
             examinationDTO.setSemester(examinationEntity.getSemester());
             examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
             examinationDTOS.add(examinationDTO);
         }
 
@@ -187,7 +215,15 @@ public class ExaminationService {
             for(ExamTimeTablesEntity examinationEntity:examTimeTablesEntities){
                 CourseDTO courseDTO=new CourseDTO();
                 CoursesEntity coursesEntity=examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
-                modelMapper.map(coursesEntity,courseDTO);
+                courseDTO.setId(coursesEntity.getId());
+                courseDTO.setCode(coursesEntity.getCode());
+                courseDTO.setName(coursesEntity.getName());
+                courseDTO.setDescription(coursesEntity.getDescription());
+                courseDTO.setLevel(coursesEntity.getLevel());
+                courseDTO.setSemester(coursesEntity.getSemester());
+                courseDTO.setIsActive(coursesEntity.getIsActive());
+                courseDTO.setCourseType(coursesEntity.getCourseType().name());
+                courseDTO.setDegreeProgramId(coursesEntity.getDegreeProgramsEntity().getId());
                 courseDTOS.add(courseDTO);
             }
             return new ResponseEntity<StandardResponse>(

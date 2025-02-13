@@ -112,7 +112,7 @@ export default function ExaminationForm({
           </h3>
         </div>
 
-        <div className="p-6.5">
+        <div className="p-6.5 overflow-y-auto max-h-[500px] no-scrollbar">
           <div className="mb-4.5">
             <label
               htmlFor="degreeProgram"
@@ -125,7 +125,7 @@ export default function ExaminationForm({
               name="degreeProgram"
               value={selectedDegreeProgram}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Degree Program</option>
@@ -152,7 +152,7 @@ export default function ExaminationForm({
               onChange={handleInputChange}
               placeholder="e.g., 2023/2024"
               required
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
             />
           </div>
 
@@ -168,7 +168,7 @@ export default function ExaminationForm({
               name="level"
               value={formData.level}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Level</option>
@@ -191,13 +191,12 @@ export default function ExaminationForm({
               name="semester"
               value={formData.semester}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white appearance-none"
+              className="input-field appearance-none"
               required
             >
               <option value="">Select Semester</option>
               <option value="1">Semester 1</option>
               <option value="2">Semester 2</option>
-              <option value="b">Both</option>
             </select>
           </div>
 
@@ -214,7 +213,7 @@ export default function ExaminationForm({
               name="examProcessStartDate"
               value={formData.examProcessStartDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
           </div>
@@ -232,7 +231,7 @@ export default function ExaminationForm({
               name="paperSettingCompleteDate"
               value={formData.paperSettingCompleteDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
             {errors.paperSettingCompleteDate && (
@@ -255,7 +254,7 @@ export default function ExaminationForm({
               name="markingCompleteDate"
               value={formData.markingCompleteDate || ''}
               onChange={handleInputChange}
-              className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+              className="input-field"
               required
             />
             {errors.markingCompleteDate && (
@@ -275,10 +274,7 @@ export default function ExaminationForm({
                 Cancel
               </button>
             )}
-            <button
-              type="submit"
-              className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-white hover:bg-opacity-90"
-            >
+            <button type="submit" className="btn-primary">
               {editId !== null ? 'Update Examination' : 'Add Examination'}
             </button>
           </div>

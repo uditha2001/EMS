@@ -15,20 +15,23 @@ import java.util.stream.Collectors;
 @Service
 public class QuestionService {
 
-    @Autowired
-    private EncryptedPaperRepository encryptedPaperRepository;
+    private final EncryptedPaperRepository encryptedPaperRepository;
 
-    @Autowired
-    private QuestionStructureRepository questionStructureRepository;
+    private final QuestionStructureRepository questionStructureRepository;
 
-    @Autowired
-    private SubQuestionRepository subQuestionRepository;
+    private final SubQuestionRepository subQuestionRepository;
 
-    @Autowired
-    private SubSubQuestionRepository subSubQuestionRepository;
+    private final SubSubQuestionRepository subSubQuestionRepository;
 
-    @Autowired
-    private QuestionTemplateRepository questionTemplateRepository;
+    private final QuestionTemplateRepository questionTemplateRepository;
+
+    public QuestionService(EncryptedPaperRepository encryptedPaperRepository, QuestionStructureRepository questionStructureRepository, SubQuestionRepository subQuestionRepository, SubSubQuestionRepository subSubQuestionRepository, QuestionTemplateRepository questionTemplateRepository) {
+        this.encryptedPaperRepository = encryptedPaperRepository;
+        this.questionStructureRepository = questionStructureRepository;
+        this.subQuestionRepository = subQuestionRepository;
+        this.subSubQuestionRepository = subSubQuestionRepository;
+        this.questionTemplateRepository = questionTemplateRepository;
+    }
 
     public void saveQuestionStructure(Long paperId, List<QuestionStructureDTO> questionStructureDTOs) {
         EncryptedPaper paper = encryptedPaperRepository.findById(paperId)

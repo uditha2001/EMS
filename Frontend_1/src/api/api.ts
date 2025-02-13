@@ -10,7 +10,7 @@ const useApi = () => {
   const uploadFile = async (
     file: File,
     creatorId: number,
-    courseIds: number[],
+    courseId: number,
     remarks: string,
     paperType: string,
     moderatorId: number,
@@ -23,14 +23,7 @@ const useApi = () => {
     formData.append('remarks', remarks);
     formData.append('paperType', paperType);
     formData.append('examinationId', examinationId.toString());
-
-    // Log courseIds to verify
-    console.log('Selected Course IDs:', courseIds);
-
-    // Append courseIds individually
-    courseIds.forEach((courseId) =>
-      formData.append('courseIds', courseId.toString()),
-    );
+    formData.append('courseId', courseId.toString());
 
     try {
       const res = await axiosPrivate.post('/papers/upload', formData, {
@@ -313,8 +306,9 @@ const useApi = () => {
   };
 
   const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
-    return axiosPrivate.get(
-      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+    return axiosPrivate.post(
+      'papers/view',
+      { id: paperId, moderatorId }, // Sending data in the request body
       { responseType: 'blob' },
     );
   };
@@ -473,76 +467,230 @@ const useApi = () => {
       );
     }
   };
-  const getDegreeProgramById=async (id:number)=>{
-    try{
-        const response =await axiosPrivate.get(`degreePrograms/${id}`);
-        if(response.status===200){
-          return response.data;
-        }
+  const getDegreeProgramById = async (id: number) => {
+    try {
+      const response = await axiosPrivate.get(`degreePrograms/${id}`);
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error: any) {
+      throw new Error('failed to get degree names');
     }
-    catch(error:any){
-      throw new Error("failed to get degree names");
-    }
-
-  }
-  const getAllExaminationDetailsWithDegreeName=async ()=>{
-    try{
-        const response=await axiosPrivate.get('academic-years/getExaminationWithDegreeName');
-        if(response.data.code===200){
-          return response.data.data;
-        }
-    }
-    catch(error:any){
-        throw new Error("failed to fetch examinations name");
-    }
-  }
-
-  const getCoursesUsingExaminationId=async (examinationId:number|undefined)=>{
-    try{
-      const response=await axiosPrivate.get('academic-years/getCoursesUsingExaminationId',{
-        params: { examinationId: examinationId }   
-           });
-      if(response.data.code===200){
+  };
+  const getAllExaminationDetailsWithDegreeName = async () => {
+    try {
+      const response = await axiosPrivate.get(
+        'academic-years/getExaminationWithDegreeName',
+      );
+      if (response.data.code === 200) {
         return response.data.data;
       }
-  }
-  catch(error:any){
-      throw new Error("failed to fetch examinations name");
-  }
-  }
+    } catch (error: any) {
+      throw new Error('failed to fetch examinations name');
+    }
+  };
 
-  const saveFirstMarkingResults=async (result:any,config={})=>{
+  const getCoursesUsingExaminationId = async (
+    examinationId: number | undefined,
+  ) => {
     try {
-      const response = await axiosPrivate.post('result/firstMarking', result,{
-        ...config
-      }); 
-        return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      return { error: true, status:500, message: error.response.data };
-  } else if (error.request) {
-      return { error: true, status: 500, message: "No response received from the server" };
-  } else {
-      return { error: true, status: 500, message: error.message };
-  }  }
-}
-const getFirstMarkingResults= async (examName:string,courseCode:string,examType:string)=>{
-      try{
-        const response=await axiosPrivate.get('result/getFirstMarking', { params: { examName, courseCode, examType } } );
-        return response.data;
+      const response = await axiosPrivate.get(
+        'academic-years/getCoursesUsingExaminationId',
+        {
+          params: { examinationId: examinationId },
+        },
+      );
+      if (response.data.code === 200) {
+        return response.data.data;
+      }
+    } catch (error: any) {
+      throw new Error('failed to fetch examinations name');
+    }
+  };
 
-      }
-      catch(error:any){
-        if (error.response) {
-          return { error: true, status:500, message: error.response.data };
+  const saveMarkingResults = async (result: any, config = {}) => {
+    try {
+      const response = await axiosPrivate.post('result/firstMarking', result, {
+        ...config,
+      });
+      console.log(response.data);
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return { error: true, status: 500, message: error.response.data };
       } else if (error.request) {
-          return { error: true, status: 500, message: "No response received from the server" };
+        return {
+          error: true,
+          status: 500,
+          message: 'No response received from the server',
+        };
       } else {
-          return { error: true, status: 500, message: error.message };
-      } 
+        return { error: true, status: 500, message: error.message };
       }
-  }
-  
+    }
+  };
+
+  const getArchivedPapers = async (page = 0, size = 10) => {
+    return axiosPrivate.get(`/papers/archived`, { params: { page, size } });
+  };
+
+  const getArchivedPaperById = async (id: number) => {
+    return axiosPrivate.get(`/papers/archived/${id}`);
+  };
+
+  const archivePapersManually = async () => {
+    return axiosPrivate.post(`/papers/archive`);
+  };
+
+  const deleteArchivedPaper = async (id: number) => {
+    return axiosPrivate.delete(`/papers/archived/${id}`);
+  };
+
+  const downloadArchivedPaper = async (id: number) => {
+    return axiosPrivate.get(`/papers/archived/${id}/download`, {
+      responseType: 'blob',
+    });
+  };
+
+  const getExaminationsAllCourses = async (examinationId: number) => {
+    return axiosPrivate.get(
+      `academic-years/examinations/${examinationId}/allCourses`,
+    );
+  };
+
+  const uploadArchivedPaper = async (
+    file: File,
+    uploadRequest: {
+      fileName: string;
+      remarks: string;
+      creatorId: number;
+      moderatorId: number;
+      examinationId: number;
+      courseId: number;
+      paperType: string;
+    },
+  ) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', uploadRequest.fileName);
+      formData.append('remarks', uploadRequest.remarks);
+      formData.append('creatorId', uploadRequest.creatorId.toString());
+      formData.append('moderatorId', uploadRequest.moderatorId.toString());
+      formData.append('examinationId', uploadRequest.examinationId.toString());
+      formData.append('courseId', uploadRequest.courseId.toString());
+      formData.append('paperType', uploadRequest.paperType);
+
+      const response = await axiosPrivate.post(
+        `/papers/archived/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Accept: 'application/json',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading archived paper:', error);
+      throw new Error('Failed to upload archived paper. Please try again.');
+    }
+  };
+
+  const getFirstMarkingResults = async (
+    examName: string,
+    courseCode: string,
+    examType: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.get('result/getFirstMarking', {
+        params: { examName, courseCode, examType },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        return { error: true, status: 500, message: error.response.data };
+      } else if (error.request) {
+        return {
+          error: true,
+          status: 500,
+          message: 'No response received from the server',
+        };
+      } else {
+        return { error: true, status: 500, message: error.message };
+      }
+    }
+  };
+
+  const searchArchivedPapers = async (searchParams: {
+    fileName?: string;
+    creatorName?: string;
+    moderatorName?: string;
+    courseCode?: string;
+    paperType?: string;
+    degreeName?: string;
+    year?: string;
+    level?: string;
+    semester?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    try {
+      // Build the query parameters dynamically
+      const queryParams = new URLSearchParams(searchParams as any).toString();
+
+      return axiosPrivate.get(`/papers/archived/search?${queryParams}`);
+    } catch (error) {
+      console.error('Error searching archived papers:', error);
+      throw error;
+    }
+  };
+
+  const getRoleAssignmentByUserId = async (userId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/user/${userId}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error('Failed to fetch role assignment');
+    }
+  };
+
+  const updatePaperStatusAndFeedback = async (
+    id: number,
+    status: string,
+    feedback: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/moderation/${id}/update`,
+        null,
+        {
+          params: { status, feedback },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating paper status and feedback:', error);
+      throw error;
+    }
+  };
+
+  const getPaperStatus = async (paperId: number) => {
+    try {
+      const response = await axiosPrivate.get(`/papers/${paperId}/status`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching paper status:', error);
+      throw error;
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -602,11 +750,22 @@ const getFirstMarkingResults= async (examName:string,courseCode:string,examType:
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
-    saveFirstMarkingResults,
+    saveMarkingResults,
+    getArchivedPapers,
+    getArchivedPaperById,
+    archivePapersManually,
+    deleteArchivedPaper,
+    downloadArchivedPaper,
+    uploadArchivedPaper,
     getFirstMarkingResults,
     loading,
     error,
-    createDegreeProgram
+    createDegreeProgram,
+    searchArchivedPapers,
+    getExaminationsAllCourses,
+    getRoleAssignmentByUserId,
+    updatePaperStatusAndFeedback,
+    getPaperStatus,
   };
 };
 

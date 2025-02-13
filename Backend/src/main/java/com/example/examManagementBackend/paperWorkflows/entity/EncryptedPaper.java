@@ -61,17 +61,15 @@ public class EncryptedPaper {
     private LocalDateTime updatedAt;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
-    private List<ModerationsEntity> moderations;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
-    private List<PapersCoursesEntity> papersCourses;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "encryptedPaper")
     private List<QuestionStructureEntity> questionStructures;
 
     @ManyToOne
     @JoinColumn(name = "examination_id", nullable = false)
     private ExaminationEntity examination;
+
+    @ManyToOne
+    @JoinColumn(name = "courseId", referencedColumnName = "id", nullable = false)
+    private CoursesEntity course;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -81,6 +79,6 @@ public class EncryptedPaper {
     @Column(nullable = false)
     private PaperType paperType; // THEORY or PRACTICAL
 
+    @Column(columnDefinition = "TEXT")
+    private String feedback;
 }
-
-

@@ -21,7 +21,7 @@ type requiredData = {
     courseCode: string;
     examName: string;
     examType: string
-    
+
 }
 const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispatch<React.SetStateAction<requiredData>> }) => {
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
@@ -37,19 +37,19 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
     useEffect(() => {
         getExamData(
             {
-                courseCode:courseCode,
-                examName:examName,
-                examType:examType
+                courseCode: courseCode,
+                examName: examName,
+                examType: examType
             }
         )
-    },[courseCode,examType,examName])
+    }, [courseCode, examType, examName])
 
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {
             let examData: examinationName[] = [];
             let i = 0;
             for (const obj of response) {
-                let examName = `${obj["year"]}-${obj["degreeName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
+                let examName = `${obj["year"]}-${obj["degreeProgramName"]}-Level ${obj["level"]}-Semester ${obj["semester"]}`;
                 examData.push(({ key: obj["id"], name: examName }));
                 i++;
             }
@@ -78,18 +78,20 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
     }, [examName])
 
     return (
-        <div className="bg-white shadow-xl rounded-2xl p-6 mb-6 w-full max-w-6xl dark:bg-gray-800 dark:shadow-gray-700/20">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center dark:text-gray-300">
-                <span className="bg-blue-100 p-2 rounded-lg mr-2 dark:bg-blue-900/30">⚙️</span>
-                Exam Configuration
-            </h3>
+        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+                <h3 className="font-medium text-black dark:text-white">
+                    Exam Configuration
+                </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
                 <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Name</label>
                     <select
                         value={examOptionIdentifier}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
+                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                         onChange={(e) => {
                             setExamOptionIdentifier(e.target.value);
                             const selectedIndex = parseInt(e.target.value, 10);
@@ -112,7 +114,7 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
                 <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Course Code</label>
                     <select
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
+                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                         value={courseCode}
                         onChange={(e) => setCourseCode(e.target.value)}
                     >
@@ -127,7 +129,7 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
                 <div className="space-y-1">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Exam Type</label>
                     <select
-                        className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
+                        className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                         value={examType}
                         onChange={(e) => setExamType(e.target.value)}
                     >

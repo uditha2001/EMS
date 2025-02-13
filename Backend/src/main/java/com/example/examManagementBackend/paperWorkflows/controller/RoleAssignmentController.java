@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.GetModeratorDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
@@ -123,5 +124,14 @@ public class RoleAssignmentController {
         return ResponseEntity.ok(new StandardResponse(200, "Role assignment fetched successfully", roleAssignment));
     }
 
+    @GetMapping("/moderators")
+    public ResponseEntity<StandardResponse> getPaperModeratorsByCourseAndPaperType(
+            @RequestParam Long courseId,
+            @RequestParam PaperType paperType) {
+
+        List<GetModeratorDTO> moderators = roleAssignmentService.getPaperModeratorsByCourseAndPaperType(courseId, paperType);
+
+        return ResponseEntity.ok(new StandardResponse(200, "Paper moderators fetched successfully", moderators));
+    }
 
 }
