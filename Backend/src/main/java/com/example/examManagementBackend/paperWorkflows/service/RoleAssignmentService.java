@@ -1,16 +1,15 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
-import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.GetModeratorDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.*;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
-import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentRevisionEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
-
+import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRevisionRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
@@ -18,8 +17,6 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,7 +35,9 @@ public class RoleAssignmentService {
     private final ExaminationRepository examinationRepository;
     private final UserRolesRepository userRolesRepo;
 
-    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository,CoursesRepository coursesRepository,RoleRepository roleRepository,UserManagementRepo userManagementRepo,ExaminationRepository examinationRepository,UserRolesRepository userRolesRepository)
+    private final RoleAssignmentRevisionRepository roleAssignmentRevisionRepository;
+
+    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository)
     {
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
@@ -46,6 +45,7 @@ public class RoleAssignmentService {
         this.userRepository = userManagementRepo;
         this.examinationRepository = examinationRepository;
         this.userRolesRepo = userRolesRepository;
+        this.roleAssignmentRevisionRepository = roleAssignmentRevisionRepository;
     }
 
     public RoleAssignmentDTO assignRole(CreateRoleAssignmentDTO createRoleAssignmentDTO) {
@@ -102,7 +102,7 @@ public class RoleAssignmentService {
         roleAssignment.setIsAuthorized(true);
 
         // Save the updated role assignment
-        RoleAssignmentEntity updatedRole = roleAssignmentRepository.save(roleAssignment);
+        roleAssignmentRepository.save(roleAssignment);
 
         // Assign the role to the user after authorization
         assignRoleToUser(roleAssignment.getUserId().getUserId(), roleAssignment.getRole().getRoleId());
@@ -120,29 +120,15 @@ public class RoleAssignmentService {
 
     public List<RoleAssignmentDTO> getAllRoleAssignments() {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findAll();
-        List<RoleAssignmentDTO> result = new ArrayList<>();
-
-        for (RoleAssignmentEntity roleAssignment : roleAssignments) {
-            result.add(new RoleAssignmentDTO(
-                    roleAssignment.getId(),
-                    roleAssignment.getCourse().getId(),
-                    roleAssignment.getCourse().getCode(),
-                    roleAssignment.getCourse().getName(),
-                    roleAssignment.getRole().getRoleId(),
-                    roleAssignment.getRole().getRoleName(),
-                    roleAssignment.getUserId().getUserId(),
-                    roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName(),
-                    roleAssignment.getExaminationId().getId(),
-                    roleAssignment.getIsAuthorized(),
-                    roleAssignment.getPaperType()
-            ));
-        }
-
-        return result;
+        return getRoleAssignmentDTOS(roleAssignments);
     }
 
     public List<RoleAssignmentDTO> getRoleAssignmentsByUser(Long userId) {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserId(userId);
+        return getRoleAssignmentDTOS(roleAssignments);
+    }
+
+    private List<RoleAssignmentDTO> getRoleAssignmentDTOS(List<RoleAssignmentEntity> roleAssignments) {
         List<RoleAssignmentDTO> result = new ArrayList<>();
 
         for (RoleAssignmentEntity roleAssignment : roleAssignments) {
@@ -166,25 +152,7 @@ public class RoleAssignmentService {
 
     public List<RoleAssignmentDTO> getRoleAssignmentsByExamination(Long examinationId) {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByExaminationId_Id(examinationId);
-        List<RoleAssignmentDTO> result = new ArrayList<>();
-
-        for (RoleAssignmentEntity roleAssignment : roleAssignments) {
-            result.add(new RoleAssignmentDTO(
-                    roleAssignment.getId(),
-                    roleAssignment.getCourse().getId(),
-                    roleAssignment.getCourse().getCode(),
-                    roleAssignment.getCourse().getName(),
-                    roleAssignment.getRole().getRoleId(),
-                    roleAssignment.getRole().getRoleName(),
-                    roleAssignment.getUserId().getUserId(),
-                    roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName(),
-                    roleAssignment.getExaminationId().getId(),
-                    roleAssignment.getIsAuthorized(),
-                    roleAssignment.getPaperType()
-            ));
-        }
-
-        return result;
+        return getRoleAssignmentDTOS(roleAssignments);
     }
 
     // Edit a role assignment
@@ -277,7 +245,7 @@ public class RoleAssignmentService {
         }
 
         // Assume we pick the first assignment if there are multiple
-        RoleAssignmentEntity roleAssignment = roleAssignments.get(0);
+        RoleAssignmentEntity roleAssignment = roleAssignments.getFirst();
         ExaminationEntity examination = roleAssignment.getExaminationId();
 
         // Determine the grantAt date based on the role
@@ -308,6 +276,27 @@ public class RoleAssignmentService {
         }
     }
 
+    @Transactional
+    public void unAssignRoleFromUser(Long userId, Long roleId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        rolesRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        // Find the user's role assignment
+        Optional<UserRoles> userRoleOpt = userRolesRepo.findByUser_UserIdAndRole_RoleId(userId, roleId);
+
+        if (userRoleOpt.isEmpty()) {
+            throw new RuntimeException("User does not have the assigned role.");
+        }
+
+        // Delete the role assignment
+        userRolesRepo.delete(userRoleOpt.get());
+
+    }
+
+
     public List<GetModeratorDTO> getPaperModeratorsByCourseAndPaperType(Long courseId, PaperType paperType) {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByCourseIdAndPaperType(courseId, paperType);
 
@@ -320,6 +309,56 @@ public class RoleAssignmentService {
                 .collect(Collectors.toList());
     }
 
+    public List<RoleAssignmentRevisionResponseDTO> changeAssignedUsers(List<RoleAssignmentRevisionRequestDTO> requestDTOList) {
+        return requestDTOList.stream()
+                .map(this::processUserChange)
+                .collect(Collectors.toList());
+    }
+  @Transactional
+  protected RoleAssignmentRevisionResponseDTO processUserChange(RoleAssignmentRevisionRequestDTO requestDTO) {
+        Optional<RoleAssignmentEntity> roleAssignmentOptional = roleAssignmentRepository.findById(requestDTO.getRoleAssignmentId());
+        Optional<UserEntity> newUserOptional = userRepository.findById(requestDTO.getNewUserId());
+        Optional<UserEntity> revisedByOptional = userRepository.findById(requestDTO.getRevisedById());
 
+        if (roleAssignmentOptional.isPresent() && newUserOptional.isPresent() && revisedByOptional.isPresent()) {
+            RoleAssignmentEntity roleAssignment = roleAssignmentOptional.get();
+            UserEntity previousUser = roleAssignment.getUserId();
+            UserEntity newUser = newUserOptional.get();
+            UserEntity revisedBy = revisedByOptional.get();
+
+            // Update the role assignment with the new user
+            roleAssignment.setUserId(newUser);
+            roleAssignmentRepository.save(roleAssignment);
+
+            // Create a revision record
+            RoleAssignmentRevisionEntity revision = new RoleAssignmentRevisionEntity();
+            revision.setRoleAssignment(roleAssignment);
+            revision.setPreviousUser(previousUser);
+            revision.setNewUser(newUser);
+            revision.setRevisionReason(requestDTO.getRevisionReason());
+            revision.setRevisedBy(revisedBy);
+            revision.setRevisedAt(LocalDateTime.now());
+
+            // Save revision history
+            RoleAssignmentRevisionEntity savedRevision = roleAssignmentRevisionRepository.save(revision);
+
+            unAssignRoleFromUser(revision.getPreviousUser().getUserId(),revision.getRoleAssignment().getRole().getRoleId());
+
+            assignRoleToUser(revision.getNewUser().getUserId(),revision.getRoleAssignment().getRole().getRoleId());
+
+            // Convert to DTO for response
+            RoleAssignmentRevisionResponseDTO responseDTO = new RoleAssignmentRevisionResponseDTO();
+            responseDTO.setRoleAssignmentId(roleAssignment.getId());
+            responseDTO.setPreviousUserId(previousUser.getUserId());
+            responseDTO.setNewUserId(newUser.getUserId());
+            responseDTO.setRevisionReason(savedRevision.getRevisionReason());
+            responseDTO.setRevisedById(revisedBy.getUserId());
+            responseDTO.setRevisedAt(savedRevision.getRevisedAt());
+
+            return responseDTO;
+        } else {
+            throw new RuntimeException("Role Assignment, New User, or Revised By User not found");
+        }
+    }
 
 }

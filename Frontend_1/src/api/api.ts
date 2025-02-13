@@ -691,6 +691,17 @@ const useApi = () => {
     }
   };
 
+  const reviseRoleAssignments = async (revisions:any) => {
+    try {
+      const response = await axiosPrivate.put('/role-assignments/change-users', revisions);
+      return response.data;
+    } catch (error) {
+      console.error('Error revising role assignments:', error);
+      throw error;
+    }
+  };
+  
+
   return {
     uploadFile,
     getAllFiles,
@@ -766,6 +777,7 @@ const useApi = () => {
     getRoleAssignmentByUserId,
     updatePaperStatusAndFeedback,
     getPaperStatus,
+    reviseRoleAssignments,
   };
 };
 
