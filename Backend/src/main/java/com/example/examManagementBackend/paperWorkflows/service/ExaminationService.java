@@ -192,13 +192,7 @@ public class ExaminationService {
         List<ExaminationDTO> examinationDTOS=new ArrayList<>();
         List<ExaminationEntity> examinationEntities = examinationRepository.findAll();
         for(ExaminationEntity examinationEntity : examinationEntities) {
-            ExaminationDTO examinationDTO=new ExaminationDTO();
-            examinationDTO.setId(examinationEntity.getId());
-            examinationDTO.setYear(examinationEntity.getYear());
-            examinationDTO.setLevel(examinationEntity.getLevel());
-            examinationDTO.setSemester(examinationEntity.getSemester());
-            examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
             examinationDTOS.add(examinationDTO);
         }
 
