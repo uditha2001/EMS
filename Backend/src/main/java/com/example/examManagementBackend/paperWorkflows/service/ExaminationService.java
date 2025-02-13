@@ -12,6 +12,8 @@ import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEnt
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
@@ -38,13 +40,15 @@ public class ExaminationService {
     private final UserRolesRepository userRolesRepository;
     private final DegreeProgramRepo degreeProgramsRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
+    private final ExamTypeRepo examTypeRepo;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, ExamTypeRepo examTypeRepo) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
         this.degreeProgramsRepository = degreeProgramsRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
+        this.examTypeRepo = examTypeRepo;
     }
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
         DegreeProgramsEntity degreeProgram = degreeProgramsRepository.findById(examinationDTO.getDegreeProgramId())
@@ -330,4 +334,6 @@ public class ExaminationService {
             }
         }
     }
+
+
 }
