@@ -124,27 +124,27 @@ export default function ExaminationList({
                 <div className="mt-4 flex justify-normal gap-4">
                   <button
                     onClick={() => handleEdit(year.id)}
-                    className="text-blue-500 hover:text-blue-700"
+                    className="text-primary hover:underline"
                   >
                     Edit
                   </button>
                   <Link
                     to={`/paper/preview-assigned-roles/${year.id}`}
-                    className="text-green-500 hover:text-green-700"
+                    className="text-primary hover:underline"
                   >
                     Roles
                   </Link>
 
                   <Link
                     to={`/paper/preview-assigned-roles/${year.id}`}
-                   className="text-purple-500 hover:text-purple-700"
+                    className="text-primary hover:underline"
                   >
                     Time Table
                   </Link>
 
                   <button
                     onClick={() => handleOpenModal(year.id)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-600 hover:underline"
                   >
                     Delete
                   </button>

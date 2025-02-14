@@ -691,16 +691,30 @@ const useApi = () => {
     }
   };
 
-  const reviseRoleAssignments = async (revisions:any) => {
+  const reviseRoleAssignments = async (revisions: any) => {
     try {
-      const response = await axiosPrivate.put('/role-assignments/change-users', revisions);
+      const response = await axiosPrivate.put(
+        '/role-assignments/change-users',
+        revisions,
+      );
       return response.data;
     } catch (error) {
       console.error('Error revising role assignments:', error);
       throw error;
     }
   };
-  
+
+  const fetchRoleAssignmentRevisions = async (revisionId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/revision/${revisionId}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching role assignment revisions:', error);
+      throw error;
+    }
+  };
 
   return {
     uploadFile,
@@ -778,6 +792,7 @@ const useApi = () => {
     updatePaperStatusAndFeedback,
     getPaperStatus,
     reviseRoleAssignments,
+    fetchRoleAssignmentRevisions,
   };
 };
 

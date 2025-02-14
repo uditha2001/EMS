@@ -186,6 +186,7 @@ const FileUpdate: React.FC = () => {
                 onChange={(e) => setRemarks(e.target.value)}
                 className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-strokedark dark:bg-form-input dark:text-white"
                 rows={3}
+                maxLength={100}
               ></textarea>
             </div>
           </div>

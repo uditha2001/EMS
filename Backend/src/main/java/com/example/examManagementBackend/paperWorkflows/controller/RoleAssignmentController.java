@@ -139,4 +139,11 @@ public class RoleAssignmentController {
     public List<RoleAssignmentRevisionResponseDTO> changeAssignedUsers(@RequestBody List<RoleAssignmentRevisionRequestDTO> requestDTOList) {
         return roleAssignmentService.changeAssignedUsers(requestDTOList);
     }
+
+    @GetMapping("/revision/{examinationId}")
+    public ResponseEntity<StandardResponse> getRevisionsByExamination(
+            @PathVariable String examinationId) {
+        List<RoleAssignmentRevisionDTO> revisions = roleAssignmentService.getRevisionsByExamination(Long.valueOf(examinationId));
+        return ResponseEntity.ok(new StandardResponse(200, "Role Assignment Revision fetched successfully",revisions));
+    }
 }

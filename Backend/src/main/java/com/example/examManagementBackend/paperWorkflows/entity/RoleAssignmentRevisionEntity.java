@@ -5,10 +5,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -37,6 +40,7 @@ public class RoleAssignmentRevisionEntity {
     @JoinColumn(name = "revised_by", nullable = false)
     private UserEntity revisedBy; // Who made the change
 
-    @Column(nullable = false)
+    @CreatedDate
+    @Column(columnDefinition = "DATETIME")
     private LocalDateTime revisedAt; // When the revision happened
 }

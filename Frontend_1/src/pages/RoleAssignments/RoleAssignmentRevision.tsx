@@ -208,7 +208,7 @@ const RoleAssignmentRevision: React.FC = () => {
           />
 
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Examination Selection */}
               <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
@@ -325,8 +325,11 @@ const RoleAssignmentRevision: React.FC = () => {
                 />
               </div>
 
-              {/* Revision Reason */}
-              <div className="mb-4.5">
+             
+            </div>
+
+             {/* Revision Reason */}
+             <div className="mb-4.5">
                 <label className="mb-2.5 block text-black dark:text-white">
                   Revision Reason
                 </label>
@@ -335,14 +338,15 @@ const RoleAssignmentRevision: React.FC = () => {
                   onChange={(e) => setRevisionReason(e.target.value)}
                   className="input-field"
                   required
+                  maxLength={100}
+                  placeholder="Maximum 100 characters"
                 />
               </div>
-            </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="bg-primary text-white px-4 py-2 rounded"
+              className="btn-primary"
             >
               Submit Revision
             </button>

@@ -20,6 +20,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -359,6 +360,26 @@ public class RoleAssignmentService {
         } else {
             throw new RuntimeException("Role Assignment, New User, or Revised By User not found");
         }
+    }
+
+    public List<RoleAssignmentRevisionDTO> getRevisionsByExamination(Long examinationId) {
+        List<RoleAssignmentRevisionEntity> revisions = roleAssignmentRevisionRepository.findByRoleAssignment_ExaminationId_Id(examinationId);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return revisions.stream().map(revision -> new RoleAssignmentRevisionDTO(
+                revision.getRoleAssignment().getId(),
+                revision.getRoleAssignment().getCourse().getId(),
+                revision.getRoleAssignment().getCourse().getCode(),
+                revision.getRoleAssignment().getCourse().getName(),
+                revision.getRoleAssignment().getPaperType().toString(),
+                revision.getRoleAssignment().getRole().getRoleName(),
+                revision.getPreviousUser().getFirstName()+" "+revision.getPreviousUser().getLastName(),
+                revision.getNewUser().getFirstName()+" "+revision.getNewUser().getLastName(),
+                revision.getRevisionReason(),
+                revision.getRevisedBy().getFirstName()+" "+revision.getRevisedBy().getLastName(),
+                revision.getRevisedAt().format(formatter)
+        )).collect(Collectors.toList());
     }
 
 }
