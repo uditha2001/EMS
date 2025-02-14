@@ -23,6 +23,10 @@ type requiredData = {
     examType: string
 
 }
+type examTypeData={
+    id:number;
+    name:string
+}
 const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispatch<React.SetStateAction<requiredData>> }) => {
     const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
     const [examName, setExamName] = useState<string>("");
@@ -31,8 +35,8 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
     const [courseCode, setCourseCode] = useState<string>("");
     const [examinationCourseCode, setExaminationCourseCode] = useState<courseData[]>([]);
     const [examType, setExamType] = useState<string>("THEORY");
-    const examTypes = ['THEORY', 'PRACTICAL', 'CA', 'PROJECT'];
-    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
+    const [examTypes,setExamTypes]=useState<examTypeData[]>([]);
+    const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId ,getExamTypes} = useApi();
 
     useEffect(() => {
         getExamData(
@@ -57,8 +61,9 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
 
         });
 
-
-
+        getExamTypes().then((response)=>{
+            setExamTypes(response.data);
+        })
     }, []);
 
     useEffect(() => {
@@ -135,8 +140,8 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
                     >
                         {
                             examTypes.map((type, index) => (
-                                <option key={index} value={type}>
-                                    {type}
+                                <option key={index}>
+                                    {type.name}
                                 </option>
                             ))
                         }                                    </select>
