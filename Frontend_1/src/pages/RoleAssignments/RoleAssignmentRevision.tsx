@@ -78,10 +78,14 @@ const RoleAssignmentRevision: React.FC = () => {
     if (selectedExamination) {
       fetchRoleAssignments(Number(selectedExamination))
         .then((response) => {
-          setRoleAssignments(response.data.data);
+          // Filter only authorized role assignments
+          const authorizedAssignments = response.data.data.filter(
+            (assignment: RoleAssignment) => assignment.isAuthorized,
+          );
+          setRoleAssignments(authorizedAssignments);
 
-          // Extract unique courses from role assignments
-          const uniqueCourses = response.data.data.reduce(
+          // Extract unique courses from authorized role assignments
+          const uniqueCourses = authorizedAssignments.reduce(
             (
               acc: { id: number; code: string; name: string }[],
               assignment: RoleAssignment,
@@ -324,30 +328,25 @@ const RoleAssignmentRevision: React.FC = () => {
                   placeholder="Select New User"
                 />
               </div>
-
-             
             </div>
 
-             {/* Revision Reason */}
-             <div className="mb-4.5">
-                <label className="mb-2.5 block text-black dark:text-white">
-                  Revision Reason
-                </label>
-                <textarea
-                  value={revisionReason}
-                  onChange={(e) => setRevisionReason(e.target.value)}
-                  className="input-field"
-                  required
-                  maxLength={100}
-                  placeholder="Maximum 100 characters"
-                />
-              </div>
+            {/* Revision Reason */}
+            <div className="mb-4.5">
+              <label className="mb-2.5 block text-black dark:text-white">
+                Revision Reason
+              </label>
+              <textarea
+                value={revisionReason}
+                onChange={(e) => setRevisionReason(e.target.value)}
+                className="input-field"
+                required
+                maxLength={100}
+                placeholder="Maximum 100 characters"
+              />
+            </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              className="btn-primary"
-            >
+            <button type="submit" className="btn-primary">
               Submit Revision
             </button>
           </form>
