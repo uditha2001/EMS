@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import useApi from '../../api/api';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { jsPDF } from 'jspdf';
 import useHasPermission from '../../hooks/useHasPermission';
+import autoTable from 'jspdf-autotable';
 
 interface AssignedRole {
   id: number;
@@ -263,11 +264,10 @@ const PreviewAssignedRoles: React.FC = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-
-    // Set margins for the document
     const margin = 15;
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
+    let currentY = 40; // Initial Y position
 
     // Check if all roles are authorized
     const allRolesAuthorized = Object.values(groupedRoles).every((course) =>
@@ -280,102 +280,105 @@ const PreviewAssignedRoles: React.FC = () => {
     // Header Section (Centered)
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    const headerText = 'University of Ruhuna\nDepartment of Computer Science';
-    const headerWidth =
-      (doc.getStringUnitWidth(headerText) * doc.getFontSize()) /
-      doc.internal.scaleFactor;
-    const headerX = (pageWidth - headerWidth) / 2;
-    doc.text(headerText, headerX, 20);
+    doc.text('University of Ruhuna', pageWidth / 2, 15, { align: 'center' });
+    doc.text('Department of Computer Science', pageWidth / 2, 25, {
+      align: 'center',
+    });
 
-    // Exam details
-    doc.setFontSize(14);
+    // Exam Details
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    const examDetails = `Examination: ${examination?.degreeProgramName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`;
-    doc.text(examDetails, margin, 40);
+    doc.text(
+      `Examination: ${examination?.degreeProgramName} - Level ${examination?.level} - Semester ${examination?.semester} - ${examination?.year}`,
+      margin,
+      currentY,
+    );
+    doc.line(margin, currentY + 5, pageWidth - margin, currentY + 5); // Separator line
+    currentY += 15;
 
-    doc.line(margin, 45, pageWidth - margin, 45); // Horizontal line separator
-
-    // Assigned Roles Overview Title
+    // Title
     doc.setFontSize(14);
     const titleText = allRolesAuthorized
       ? 'Exam Role Assignment Sheet (Authorized)'
       : 'Exam Role Assignment Sheet (Unauthorized)';
-    doc.text(titleText, margin, 55);
+    doc.text(titleText, margin, currentY);
+    currentY += 10;
 
-    // Table for Courses and Paper Types
-    let y = 70; // Starting Y position for the table
+    // Table Headers
+    const tableHeaders = ['Role', 'Assigned User'];
 
-    // Loop through groupedRoles to generate the table
-    Object.keys(groupedRoles).forEach((courseId) => {
-      const course = groupedRoles[Number(courseId)];
-
-      // Course Name as header
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${course.courseCode} - ${course.courseName}`, margin, y);
-      y += 7;
-
-      // Table Header
+    Object.values(groupedRoles).forEach((course) => {
+      // **Course Header**
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Paper Type', margin + 5, y);
-      doc.text('Role', margin + 60, y);
-      doc.text('Assigned User', margin + 120, y);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${course.courseCode} - ${course.courseName}`, margin, currentY);
+      currentY += 8;
 
-      doc.line(margin, y + 2, pageWidth - margin, y + 2); // Horizontal line after the header
-      y += 8;
+      ['THEORY', 'PRACTICAL'].forEach((paperType) => {
+        const roles = course.roles[paperType as 'THEORY' | 'PRACTICAL'];
+        if (roles.length === 0) return; // Skip empty paper types
 
-      // Table Rows for each Paper Type
-      (['THEORY', 'PRACTICAL'] as ('THEORY' | 'PRACTICAL')[]).forEach(
-        (paperType) => {
-          if (course.roles[paperType].length > 0) {
-            doc.text(paperType, margin + 5, y); // Paper Type label
-            y += 8;
+        // **Paper Type Sub-Header**
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${paperType} Paper`, margin, currentY);
+        currentY += 6;
 
-            course.roles[paperType].forEach((role) => {
-              doc.text(role.roleName, margin + 60, y);
-              doc.text(role.user, margin + 120, y);
-              y += 8;
-            });
+        // Data for the table
+        const tableData: any[] = roles.map((role) => [
+          role.roleName.toLowerCase(),
+          role.user,
+        ]);
 
-            y += 10; // Add space between paper types
-          }
-        },
-      );
+        // Generate Table
+        autoTable(doc, {
+          startY: currentY,
+          head: [tableHeaders],
+          body: tableData,
+          theme: 'grid',
+          styles: { fontSize: 9, cellPadding: 3 },
+          headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255] }, // Green header
+          margin: { top: 10 },
+        });
 
-      y += 15; // Add space between courses
+        // Update Y position after the table
+        currentY = (doc as any).lastAutoTable.finalY + 10;
+
+        // Handle page breaks
+        if (currentY > pageHeight - 40) {
+          doc.addPage();
+          currentY = 20; // Reset Y position for the new page
+        }
+      });
+
+      currentY += 15; // Space between courses
     });
-
-    // Check if content exceeds the page height, and add a page break if needed
-    if (y > pageHeight - 40) {
-      // If content goes beyond the page height, add a page break
-      doc.addPage();
-      y = 20; // Reset Y position after page break
-    }
 
     // Footer Section with time
     doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
-    const generatedOnTime = new Date().toLocaleString();
-    doc.text(`Generated on: ${generatedOnTime}`, margin, y + 10);
+    doc.text(
+      `Generated on: ${new Date().toLocaleString()}`,
+      margin,
+      currentY + 10,
+    );
+    currentY += 20;
 
-    y += 20; // Add space before the signature lines
+    // Signatures
+    const colWidth = (pageWidth - 3 * margin) / 2;
+    doc.setFontSize(10);
+    doc.text('Created by:', margin, currentY);
+    doc.line(margin + 30, currentY + 2, margin + colWidth - 20, currentY + 2);
 
-    // Signature Section with two columns
-    const colWidth = (pageWidth - 3 * margin) / 2; // Divide space into two columns
+    doc.text('Authorized by:', margin + colWidth, currentY);
+    doc.line(
+      margin + colWidth + 30,
+      currentY + 2,
+      margin + 2 * colWidth - 20,
+      currentY + 2,
+    );
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-
-    // Created by (left column)
-    doc.text('Created by:', margin, y);
-    doc.line(margin + 30, y + 2, margin + colWidth - 20, y + 2); // Signature line in the left column
-
-    // Authorized by (right column)
-    doc.text('Authorized by:', margin + colWidth, y); // Position in the second column
-    doc.line(margin + colWidth + 30, y + 2, margin + 2 * colWidth - 20, y + 2); // Signature line in the right column
-
-    // File Name: Save the PDF with examination details
+    // Save PDF
     const fileName = `assigned-roles-overview-${examination?.degreeProgramName}-${examination?.year}.pdf`;
     doc.save(fileName);
   };
@@ -415,12 +418,15 @@ const PreviewAssignedRoles: React.FC = () => {
                 Authorize All Roles for This Examination
               </button>
             )}
-            <button
-              className="bg-primary text-white font-medium px-5 py-2 rounded"
-              onClick={generatePDF}
-            >
+            <button className="btn-primary whitespace-nowrap" onClick={generatePDF}>
               Download PDF
             </button>
+            <Link
+              className="btn-primary whitespace-nowrap"
+              to={`/paper/preview-assigned-revision/${examinationId}`}
+            >
+              Revisions
+            </Link>
           </div>
         </div>
 
@@ -589,7 +595,7 @@ const PreviewAssignedRoles: React.FC = () => {
 
                   {/* Render PRACTICAL roles */}
                   {course.roles.PRACTICAL.length > 0 && (
-                    <div className="overflow-x-auto my-8">
+                    <div className="overflow-x-auto my-4">
                       <h5 className="font-medium text-black dark:text-white mb-4">
                         Practical
                       </h5>

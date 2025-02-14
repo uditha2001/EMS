@@ -25,7 +25,9 @@ interface DegreeProgram {
 
 export default function Examinations() {
   const [examinations, setExaminations] = useState<Examination[]>([]);
-  const [formData, setFormData] = useState<Omit<Examination, 'id' | 'degreeProgramId'|'status'>>({
+  const [formData, setFormData] = useState<
+    Omit<Examination, 'id' | 'degreeProgramId' | 'status'>
+  >({
     year: '',
     level: '',
     semester: '',
@@ -38,7 +40,8 @@ export default function Examinations() {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [degreePrograms, setDegreePrograms] = useState<DegreeProgram[]>([]);
-  const [selectedDegreeProgram, setSelectedDegreeProgram] = useState<string>('');
+  const [selectedDegreeProgram, setSelectedDegreeProgram] =
+    useState<string>('');
 
   const {
     getDegreePrograms,
@@ -159,11 +162,23 @@ export default function Examinations() {
   return (
     <div className="container mx-auto px-4">
       <Breadcrumb pageName="Examinations" />
-      <div className="grid grid-cols-5 gap-8 ">
+      <div className="grid grid-cols-5 gap-8 text-sm">
         <div className="col-span-5 xl:col-span-3">
-          <SuccessMessage message={successMessage} onClose={() => setSuccessMessage('')} />
-          <ErrorMessage message={errorMessage} onClose={() => setErrorMessage('')} />
-          <ExaminationList examinations={examinations} degreePrograms={degreePrograms} loading={loading} handleEdit={handleEdit} handleDelete={handleDelete} />
+          <SuccessMessage
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+          <ErrorMessage
+            message={errorMessage}
+            onClose={() => setErrorMessage('')}
+          />
+          <ExaminationList
+            examinations={examinations}
+            degreePrograms={degreePrograms}
+            loading={loading}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+          />
         </div>
         <div className="col-span-5 xl:col-span-2">
           <ExaminationForm

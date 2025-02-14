@@ -12,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -55,5 +56,7 @@ public class RoleAssignmentEntity {
     @Column(nullable = false)
     private PaperType paperType; // THEORY or PRACTICAL
 
+    @OneToMany(mappedBy = "roleAssignment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RoleAssignmentRevisionEntity> revisions; // Track changes to user assignments
 
 }

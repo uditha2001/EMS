@@ -689,6 +689,30 @@ const useApi = () => {
     }
   };
 
+  const reviseRoleAssignments = async (revisions: any) => {
+    try {
+      const response = await axiosPrivate.put(
+        '/role-assignments/change-users',
+        revisions,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error revising role assignments:', error);
+      throw error;
+    }
+  };
+
+  const fetchRoleAssignmentRevisions = async (revisionId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/revision/${revisionId}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching role assignment revisions:', error);
+      throw error;
+    }
+  };
   const getExamTypes=async ()=>{
     try{
       const response=await axiosPrivate.get(`/result/examType`);
@@ -775,6 +799,8 @@ const useApi = () => {
     getRoleAssignmentByUserId,
     updatePaperStatusAndFeedback,
     getPaperStatus,
+    reviseRoleAssignments,
+    fetchRoleAssignmentRevisions,
     getExamTypes
   };
 };

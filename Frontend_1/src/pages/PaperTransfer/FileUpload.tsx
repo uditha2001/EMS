@@ -349,6 +349,7 @@ const FileUpload: React.FC = () => {
             className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
             placeholder="Enter remarks"
             rows={3}
+            maxLength={100}
           ></textarea>
         </div>
 
