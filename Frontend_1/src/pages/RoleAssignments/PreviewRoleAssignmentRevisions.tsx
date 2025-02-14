@@ -190,7 +190,16 @@ const PreviewRoleAssignmentRevisions: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-270">
-      <Breadcrumb pageName="Preview Role Assignment Revisions" />
+      <Breadcrumb
+        items={[
+          {
+            label: 'Preview Assigned Roles',
+            path: `/paper/preview-assigned-roles/${examinationId}`,
+          },
+          { label: 'Revisions' },
+        ]}
+      />
+
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke dark:border-strokedark py-6 px-8">
           <header className="text-center mb-6">
