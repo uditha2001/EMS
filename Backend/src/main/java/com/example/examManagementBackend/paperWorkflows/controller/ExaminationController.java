@@ -14,9 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/academic-years")
 public class ExaminationController {
-
-
-    private ExaminationService examinationService;
+    private final ExaminationService examinationService;
     public ExaminationController(ExaminationService examinationService) {
         this.examinationService = examinationService;
     }
@@ -91,6 +89,7 @@ public class ExaminationController {
         examinationService.updateExamStatus(examId);
         return ResponseEntity.ok("Exam status updated successfully!");
     }
+
 
 
 }

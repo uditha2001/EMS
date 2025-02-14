@@ -676,7 +676,6 @@ const useApi = () => {
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating paper status and feedback:', error);
       throw error;
     }
   };
@@ -686,7 +685,6 @@ const useApi = () => {
       const response = await axiosPrivate.get(`/papers/${paperId}/status`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching paper status:', error);
       throw error;
     }
   };
@@ -715,6 +713,16 @@ const useApi = () => {
       throw error;
     }
   };
+  const getExamTypes=async ()=>{
+    try{
+      const response=await axiosPrivate.get(`/result/examType`);
+      return response.data;
+    }
+    catch(error){
+      throw error;
+    }
+  }
+
 
   return {
     uploadFile,
@@ -793,6 +801,7 @@ const useApi = () => {
     getPaperStatus,
     reviseRoleAssignments,
     fetchRoleAssignmentRevisions,
+    getExamTypes
   };
 };
 

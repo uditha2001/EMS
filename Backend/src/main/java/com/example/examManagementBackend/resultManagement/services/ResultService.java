@@ -4,6 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.resultManagement.dto.ExamTypesDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -176,4 +178,25 @@ public class ResultService {
         }
     }
 
+    public ResponseEntity<StandardResponse> getAllExamsTypes() {
+        try{
+            List<ExamTypesEntity> examTypesEntities=examTypeRepo.getAllExamTypes();
+            List<ExamTypesDTO> examTypesDTOS= new ArrayList<ExamTypesDTO>();
+            for(ExamTypesEntity examTypesEntity:examTypesEntities){
+                ExamTypesDTO examTypesDTO=new ExamTypesDTO();
+                examTypesDTO.setId(examTypesEntity.getId());
+                examTypesDTO.setName(examTypesEntity.getName());
+                examTypesDTOS.add(examTypesDTO);
+            }
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"success",examTypesDTOS), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
