@@ -269,7 +269,7 @@ export default function ExaminationForm({
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="rounded bg-gray-500 py-2 px-6 text-white hover:bg-gray-600"
+                className="btn-secondary"
               >
                 Cancel
               </button>

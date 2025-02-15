@@ -676,7 +676,6 @@ const useApi = () => {
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating paper status and feedback:', error);
       throw error;
     }
   };
@@ -686,8 +685,54 @@ const useApi = () => {
       const response = await axiosPrivate.get(`/papers/${paperId}/status`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching paper status:', error);
       throw error;
+    }
+  };
+
+  const reviseRoleAssignments = async (revisions: any) => {
+    try {
+      const response = await axiosPrivate.put(
+        '/role-assignments/change-users',
+        revisions,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error revising role assignments:', error);
+      throw error;
+    }
+  };
+
+  const fetchRoleAssignmentRevisions = async (revisionId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/revision/${revisionId}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching role assignment revisions:', error);
+      throw error;
+    }
+  };
+
+  const getExamTypes = async () => {
+    try {
+      const response = await axiosPrivate.get(`/result/examType`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getModerators = async (selectedCourse: any, paperType: any) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/moderators?courseId=${selectedCourse}&paperType=${paperType}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch moderators',
+      );
     }
   };
 
@@ -766,6 +811,10 @@ const useApi = () => {
     getRoleAssignmentByUserId,
     updatePaperStatusAndFeedback,
     getPaperStatus,
+    reviseRoleAssignments,
+    fetchRoleAssignmentRevisions,
+    getExamTypes,
+    getModerators,
   };
 };
 

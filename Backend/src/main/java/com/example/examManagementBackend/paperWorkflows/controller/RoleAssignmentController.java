@@ -1,27 +1,27 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
-import com.example.examManagementBackend.paperWorkflows.dto.CreateRoleAssignmentDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.GetModeratorDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.RoleAssignmentDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.*;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.utill.StandardResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @CrossOrigin
 @RequestMapping("/api/v1/role-assignments")
 public class RoleAssignmentController {
 
-    @Autowired
-    private RoleAssignmentService roleAssignmentService;
+    private final RoleAssignmentService roleAssignmentService;
+
+    public RoleAssignmentController(RoleAssignmentService roleAssignmentService) {
+        this.roleAssignmentService = roleAssignmentService;
+    }
 
     // Single role assignment
     @PostMapping
@@ -134,4 +134,16 @@ public class RoleAssignmentController {
         return ResponseEntity.ok(new StandardResponse(200, "Paper moderators fetched successfully", moderators));
     }
 
+    // Multiple revisions
+    @PutMapping("/change-users")
+    public List<RoleAssignmentRevisionResponseDTO> changeAssignedUsers(@RequestBody List<RoleAssignmentRevisionRequestDTO> requestDTOList) {
+        return roleAssignmentService.changeAssignedUsers(requestDTOList);
+    }
+
+    @GetMapping("/revision/{examinationId}")
+    public ResponseEntity<StandardResponse> getRevisionsByExamination(
+            @PathVariable String examinationId) {
+        List<RoleAssignmentRevisionDTO> revisions = roleAssignmentService.getRevisionsByExamination(Long.valueOf(examinationId));
+        return ResponseEntity.ok(new StandardResponse(200, "Role Assignment Revision fetched successfully",revisions));
+    }
 }
