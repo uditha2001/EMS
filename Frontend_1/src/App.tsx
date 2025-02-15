@@ -6,6 +6,7 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
 import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
+import ResultGrading from './pages/Results/ResultGrading';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -145,10 +146,7 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-      <Route
-        path="/result-Upload"
-        element={renderPage('upload result|EMS', <ResultsUpload />)}
-      />
+
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -475,19 +473,15 @@ function App() {
                 <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
               }
             >
-              <Route
-                path="/result/secondmarking"
-                //element={renderPage('Second Marking | EMS', )}
-              />
 
               <Route
                 path="/result/grading"
-                //element={renderPage('Results Grading | EMS', )}
+                element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
 
               <Route
                 path="/result/dashboard"
-                //element={renderPage('Results Dashboard | EMS', )}
+              //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
