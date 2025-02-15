@@ -130,13 +130,7 @@ const FileUpload: React.FC = () => {
     };
 
     fetchData();
-  }, [
-    auth.id,
-    getRoleAssignmentByUserId,
-    getExaminationById,
-    selectedExamination,
-    selectedCourse,
-  ]);
+  }, [auth.id, selectedCourse]);
 
   useEffect(() => {
     const fetchModerators = async () => {
