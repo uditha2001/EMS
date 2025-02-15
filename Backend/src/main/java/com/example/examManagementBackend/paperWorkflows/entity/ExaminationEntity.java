@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
+import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -74,6 +76,9 @@ public class ExaminationEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ExamStatus status = ExamStatus.SCHEDULED;
+
+    @ManyToMany(mappedBy = "examinationEntities")
+    private Set<CourseEvaluationsEntity> courseEvaluations;
 
     @PrePersist
     @PreUpdate

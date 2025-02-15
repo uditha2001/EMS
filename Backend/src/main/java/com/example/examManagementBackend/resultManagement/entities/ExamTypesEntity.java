@@ -26,6 +26,9 @@ public class ExamTypesEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private Set<ResultEntity> results;
+    private float weightage;
+    private float passMark;
+
 
 
 }
