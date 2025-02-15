@@ -9,6 +9,7 @@ const useApi = () => {
 
   const uploadFile = async (
     file: File,
+    markingFile: File | null,
     creatorId: number,
     courseId: number,
     remarks: string,
@@ -18,6 +19,9 @@ const useApi = () => {
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (markingFile) {
+      formData.append('markingFile', markingFile);
+    }
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
@@ -140,11 +144,17 @@ const useApi = () => {
     fileId: number,
     file: File,
     fileName: string,
+    markingFile: File | null,
+    markingFileName: string,
     remarks: string,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('fileName', fileName);
+    if (markingFile) {
+      formData.append('markingFile', markingFile);
+    }
+    formData.append('markingFileName', markingFileName);
     formData.append('remarks', remarks);
     try {
       setLoading(true);
@@ -168,6 +178,17 @@ const useApi = () => {
       );
       setError(errorMessage);
       throw new Error(errorMessage);
+    }
+  };
+
+  const getPaperById = async (id: number) => {
+    try {
+      const response = await axiosPrivate.get(`/papers/${id}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch paper details',
+      );
     }
   };
 
@@ -736,6 +757,92 @@ const useApi = () => {
     }
   };
 
+  const downloadMarkingFile = async (
+    id: number,
+    moderatorId: number,
+  ): Promise<void> => {
+    try {
+      const response = await axiosPrivate.post(
+        '/papers/download-marking',
+        { id, moderatorId }, // Send data in the request body
+        { responseType: 'blob' },
+      );
+  
+      // Extract filename from the Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'marking.pdf';
+      if (contentDisposition) {
+        const matches = /filename="([^"]+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+          filename = decodeURIComponent(matches[1]);
+        }
+      }
+  
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
+  
+      if (!blob || blob.size === 0) {
+        throw new Error('No data returned from the server.');
+      }
+  
+      // Create a temporary URL for the Blob and trigger the download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to download marking file');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to download marking file',
+      );
+    }
+  };
+
+  const fetchEncryptedMarking = async (paperId: number, moderatorId: number): Promise<{ data: Blob }> => {
+    try {
+      const response = await axiosPrivate.post(
+        '/papers/view-marking',
+        { id: paperId, moderatorId }, // Send data in the request body
+        { responseType: 'blob' },
+      );
+  
+      // Extract filename from the Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const matches = /filename="([^"]+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+        }
+      }
+  
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
+  
+      if (!blob || blob.size === 0) {
+        throw new Error('No data returned from the server.');
+      }
+  
+      // // Create a temporary URL for the Blob and open it in a new tab
+      // const url = window.URL.createObjectURL(blob);
+      // window.open(url, '_blank');
+      // window.URL.revokeObjectURL(url); // Clean up the URL object
+
+      return { data: blob };
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to fetch marking file');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to fetch marking file',
+      );
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -815,6 +922,9 @@ const useApi = () => {
     fetchRoleAssignmentRevisions,
     getExamTypes,
     getModerators,
+    getPaperById,
+    downloadMarkingFile,
+    fetchEncryptedMarking,
   };
 };
 
