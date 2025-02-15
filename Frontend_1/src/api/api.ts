@@ -713,16 +713,28 @@ const useApi = () => {
       throw error;
     }
   };
-  const getExamTypes=async ()=>{
-    try{
-      const response=await axiosPrivate.get(`/result/examType`);
+
+  const getExamTypes = async () => {
+    try {
+      const response = await axiosPrivate.get(`/result/examType`);
       return response.data;
-    }
-    catch(error){
+    } catch (error) {
       throw error;
     }
-  }
+  };
 
+  const getModerators = async (selectedCourse: any, paperType: any) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/moderators?courseId=${selectedCourse}&paperType=${paperType}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch moderators',
+      );
+    }
+  };
 
   return {
     uploadFile,
@@ -801,7 +813,8 @@ const useApi = () => {
     getPaperStatus,
     reviseRoleAssignments,
     fetchRoleAssignmentRevisions,
-    getExamTypes
+    getExamTypes,
+    getModerators,
   };
 };
 
