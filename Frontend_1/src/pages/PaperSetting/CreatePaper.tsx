@@ -1,271 +1,265 @@
 import React, { useState } from 'react';
-import Question from './Question';
-import { useQuestions } from '../../hooks/useQuestions';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
-type paperDetails={
-  degreeName:string,
-  degreeType:string,
-  Level:string,
-  semester:string,
-  month:string,
-  year:string,
-  courseCode:string,
-  courseName:string,
-  duration:string,
-  questions:{question:string,parts:string[]}[]
-}
-export default function CreatePaper() {
-  const {
-    questions,
-    handleQuestionChange,
-    handlePartChange,
-    addPart,
-    removePart,
-    addQuestion,
-    removeQuestion,
-  } = useQuestions();
-  const [paper,setPaper]=useState<paperDetails | null>(null);
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    const newPaper = {
-      degreeName: formData.get('degreeName') as string,
-      degreeType: formData.get('degreeType') as string,
-      Level: formData.get('Level') as string,
-      semester: formData.get('semester') as string,
-      month: formData.get('month') as string,
-      year: formData.get('year') as string,
-      courseCode: formData.get('courseCode') as string,
-      courseName: formData.get('courseName') as string,
-      duration: formData.get('duration') as string,
-      questions: questions,
-    };
-  
-    console.log(newPaper);
-    setPaper(newPaper);
+import {
+  faInfoCircle,
+  faBook,
+  faFileUpload,
+  faEye,
+  faClipboardCheck,
+} from '@fortawesome/free-solid-svg-icons';
+
+import Stepper from '../PaperTransfer/Stepper';
+import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import EssayTemplate from './EssayTemplate';
+import StructureTemplate from './StructureTemplate';
+
+import MarkingPreview from './MarkingPreview';
+import PaperPreview from './PaperPreview';
+
+// Consolidated all paper info into a single object
+const initialPaperInfo = {
+  university: 'UNIVERSITY OF RUHUNA',
+  degree: 'BACHELOR OF COMPUTER SCIENCE (GENERAL) DEGREE',
+  courseCode: 'CSC2222 – Computer Systems II',
+  examYear: 'September/October 2020',
+  semester: 'LEVEL II (SEMESTER II)',
+  duration: '2 Hours',
+  instructions: '',
+};
+
+const PaperSettings: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [paperType, setPaperType] = useState<string>('');
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [paperInfo, setPaperInfo] = useState(initialPaperInfo);
+
+  const quillModules = {
+    toolbar: [
+      [{ header: '1' }, { header: '2' }, { font: [] }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ align: [] }],
+      ['link', 'image'],
+      ['blockquote', 'code-block'],
+    ],
+  };
+
+  const steps = [
+    { id: 1, name: 'Exam Info', icon: faInfoCircle },
+    { id: 2, name: 'Paper Structure', icon: faBook },
+    { id: 3, name: 'Questions', icon: faFileUpload },
+    { id: 4, name: 'Preview Paper', icon: faEye },
+    { id: 5, name: 'Preview Marking', icon: faClipboardCheck },
+  ];
+
+  const renderQuestionTemplate = () => {
+    switch (paperType) {
+      case 'Essay':
+        return (
+          <EssayTemplate
+            questions={questions}
+            setQuestions={setQuestions}
+            quillModules={quillModules}
+          />
+        );
+      case 'Structure':
+        return (
+          <StructureTemplate
+            questions={questions}
+            setQuestions={setQuestions}
+            quillModules={quillModules}
+          />
+        );
+
+      default:
+        return (
+          <p className="text-center text-gray-500">
+            Please select a paper type to start adding questions.
+          </p>
+        );
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string,
+  ) => {
+    setPaperInfo((prev) => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 w-full p-6">
-      <h1 className="text-center text-black dark:text-white font-bold text-4xl mb-6">
-        Paper Creation
-      </h1>
-      <form
-        className="bg-gray-100 dark:bg-gray-800 p-6 rounded shadow-md mx-[10px]"
-        method="post"
-        onSubmit={handleSubmit}
-      >
-        {/* Degree Name Field */}
-        <div className="mb-4">
-          <label
-            htmlFor="degreeName"
-            className="block text-sm font-medium text-black dark:text-white"
-          >
-            Degree Name
-          </label>
-          <input
-            id="degreeName"
-            name="degreeName"
-            type="text"
-            required
-            placeholder="BACHELOR OF COMPUTER SCIENCE"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-          />
+    <div className="mx-auto max-w-270">
+      <Breadcrumb pageName="Paper Setting" />
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
+        <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
+          <h3 className="font-medium text-black dark:text-white">
+            Paper Setting
+          </h3>
         </div>
 
-        {/* Degree Type, Level, and Semester in Horizontal Line */}
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1">
-            <label
-              htmlFor="degreeType"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Degree Type
-            </label>
-            <select
-              id="degreeType"
-              name="degreeType"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="General">GENERAL</option>
-              <option value="Special">SPECIAL</option>
-            </select>
-          </div>
+        <div className="p-8">
+          <Stepper currentStep={currentStep} steps={steps} />
 
-          <div className="flex-1">
-            <label
-              htmlFor="Level"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Year Level
-            </label>
-            <select
-              id="Level"
-              name="Level"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="I">I</option>
-              <option value="II">II</option>
-              <option value="III">III</option>
-            </select>
-          </div>
+          {currentStep === 1 && (
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    University
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.university}
+                    onChange={(e) => handleInputChange(e, 'university')}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Degree Program
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.degree}
+                    onChange={(e) => handleInputChange(e, 'degree')}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Course
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.courseCode}
+                    onChange={(e) => handleInputChange(e, 'courseCode')}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Examination Year
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.examYear}
+                    onChange={(e) => handleInputChange(e, 'examYear')}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Semester
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.semester}
+                    onChange={(e) => handleInputChange(e, 'semester')}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Duration
+                  </label>
+                  <input
+                    className="input-field w-full"
+                    type="text"
+                    value={paperInfo.duration}
+                    onChange={(e) => handleInputChange(e, 'duration')}
+                  />
+                </div>
+                <div className="col-span-full">
+                  <label className="mb-2.5 block text-black dark:text-white">
+                    Instructions
+                  </label>
+                  <ReactQuill
+                    value={paperInfo.instructions}
+                    onChange={(value) =>
+                      setPaperInfo({ ...paperInfo, instructions: value })
+                    }
+                    modules={quillModules}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
-          <div className="flex-1">
-            <label
-              htmlFor="Semester"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Semester
-            </label>
-            <select
-              id="Semester"
-              name="semester"
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            >
-              <option value="I">I</option>
-              <option value="II">II</option>
-            </select>
-          </div>
-        </div>
+          {currentStep === 2 && (
+            <div>
+              <label className="mb-2.5 block text-black dark:text-white">
+                Paper Type
+              </label>
+              <select
+                className="input-field w-1/3"
+                value={paperType}
+                onChange={(e) => setPaperType(e.target.value)}
+              >
+                <option value="">Select Paper Type</option>
+                <option value="Essay">Essay</option>
+                <option value="Structure">Structure</option>
+              </select>
+            </div>
+          )}
 
-        {/* Month and Year Fields */}
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1">
-            <label
-              htmlFor="month"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Month
-            </label>
-            <input
-              id="month"
-              name="month"
-              type="text"
-              required
-              placeholder="ex: MARCH OR MARCH/APRIL"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
+          {currentStep === 3 && renderQuestionTemplate()}
+
+          {currentStep === 4 && (
+            <PaperPreview
+              university={paperInfo.university}
+              degree={paperInfo.degree}
+              courseCode={paperInfo.courseCode}
+              examYear={paperInfo.examYear}
+              semester={paperInfo.semester}
+              instructions={paperInfo.instructions}
+              questions={questions}
+              paperType={paperType}
+              duration={paperInfo.duration}
             />
-          </div>
+          )}
 
-          <div className="flex-1">
-            <label
-              htmlFor="year"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Year
-            </label>
-            <input
-              id="year"
-              name="year"
-              type="text"
-              required
-              placeholder="Enter Year"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
+          {currentStep === 5 && (
+            <MarkingPreview
+              university={paperInfo.university}
+              degree={paperInfo.degree}
+              courseCode={paperInfo.courseCode}
+              examYear={paperInfo.examYear}
+              semester={paperInfo.semester}
+              questions={questions}
+              paperType={paperType}
+              duration={paperInfo.duration}
             />
-          </div>
-        </div>
+          )}
 
-        {/* Course Code, Name, and Duration */}
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1">
-            <label
-              htmlFor="courseCode"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Course Code
-            </label>
-            <input
-              id="courseCode"
-              name="courseCode"
-              type="text"
-              required
-              placeholder="Enter Course Code"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            />
-          </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="courseName"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Course Name
-            </label>
-            <input
-              id="courseName"
-              name="courseName"
-              type="text"
-              required
-              placeholder="Enter Course Name"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            />
-          </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="duration"
-              className="block text-sm font-medium text-black dark:text-white"
-            >
-              Duration
-            </label>
-            <input
-              id="duration"
-              name="duration"
-              type="text"
-              required
-              placeholder="Enter Duration"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-            />
-          </div>
-        </div>
-
-        {/* Questions Section */}
-        <div className="mt-8">
-          <h2 className="text-xl font-bold text-black dark:text-white mb-4">
-            Questions
-          </h2>
-
-          {questions.map((question, qIndex) => (
-            <Question
-              key={qIndex}
-              qIndex={qIndex}
-              question={question}
-              handleQuestionChange={handleQuestionChange}
-              handlePartChange={handlePartChange}
-              addPart={addPart}
-              removePart={removePart}
-            />
-          ))}
-
-          <div className="flex mt-4">
+          <div className="flex justify-between mt-8 text-sm">
             <button
+              className="btn-primary"
               type="button"
-              onClick={addQuestion}
-              className="text-blue-500 text-sm"
+              onClick={() => setCurrentStep(currentStep - 1)}
+              disabled={currentStep === 1}
             >
-              Add Question
+              Previous
             </button>
-          {questions.length>0 ?    <button
+            <button
+              className="btn-primary"
               type="button"
-              onClick={() => removeQuestion(questions.length - 1)}
-              className="text-red-500 text-sm ml-4"
+              onClick={() => setCurrentStep(currentStep + 1)}
+              disabled={currentStep === steps.length}
             >
-              Remove Question
-            </button> : null}
-         
+              Next
+            </button>
           </div>
         </div>
-
-        <button
-          type="submit"
-          className="mt-6 w-full bg-blue-500 text-white py-2 rounded-md"
-        >
-          Create Paper
-        </button>
-      </form>
+      </div>
     </div>
   );
-}
+};
+
+export default PaperSettings;
