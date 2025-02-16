@@ -55,7 +55,7 @@ public class ExaminationEntity {
     @Column(nullable = false)
     private String semester;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
     @OneToMany(mappedBy = "examination",cascade = CascadeType.ALL)
@@ -76,9 +76,6 @@ public class ExaminationEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ExamStatus status = ExamStatus.SCHEDULED;
-
-    @ManyToMany(mappedBy = "examinationEntities")
-    private Set<CourseEvaluationsEntity> courseEvaluations;
 
     @PrePersist
     @PreUpdate

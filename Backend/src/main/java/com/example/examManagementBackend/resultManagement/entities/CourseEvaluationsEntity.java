@@ -27,13 +27,8 @@ public class CourseEvaluationsEntity {
     @JoinColumn(name="exam_type",referencedColumnName = "id")
     private ExamTypesEntity examTypes;
     private float weightage;
-    @ManyToMany
-    @JoinTable(
-            name = "exam_course_evaluation",
-            joinColumns = @JoinColumn(name = "courseEvaluationId"),
-            inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private Set<ExaminationEntity> examinationEntities;
+
+
 
 
 
