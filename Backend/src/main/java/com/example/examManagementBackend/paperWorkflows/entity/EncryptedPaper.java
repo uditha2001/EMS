@@ -81,4 +81,7 @@ public class EncryptedPaper {
 
     @Column(columnDefinition = "TEXT")
     private String feedback;
+
+    @Column(nullable = true)
+    private String markingFilePath;
 }
