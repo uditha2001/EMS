@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
 
+import com.example.examManagementBackend.userManagement.serviceInterfaces.MailService;
 import com.example.examManagementBackend.userManagement.userManagementDTO.MailBody;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
@@ -9,7 +10,6 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;

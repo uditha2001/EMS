@@ -1,13 +1,12 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
 
+import com.example.examManagementBackend.userManagement.serviceInterfaces.MailService;
 import com.example.examManagementBackend.userManagement.userManagementDTO.MailBody;
 import com.example.examManagementBackend.userManagement.userManagementEntity.ForgotPasswordEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.ForgotPasswordRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -17,18 +16,18 @@ import java.util.Date;
 import java.util.Random;
 
 @Service
-public class MailService {
+public class MailServiceIMPL implements MailService {
     private final JavaMailSender mailSender;
     @Value("${spring.mail.username}")
     private String mailProvider;
     private final UserManagementRepo userManagementRepo;
     private final ForgotPasswordRepo forgotPasswordRepo;
-    public MailService(JavaMailSender mailSender,UserManagementRepo userManagementRepo,ForgotPasswordRepo forgotPasswordRepo) {
+    public MailServiceIMPL(JavaMailSender mailSender, UserManagementRepo userManagementRepo, ForgotPasswordRepo forgotPasswordRepo) {
         this.mailSender = mailSender;
         this.userManagementRepo = userManagementRepo;
         this.forgotPasswordRepo = forgotPasswordRepo;
     }
-
+    @Override
     public String sendMail(MailBody mailBody) {
         try {
             if (mailBody.to() == null || mailBody.to().isEmpty()) {

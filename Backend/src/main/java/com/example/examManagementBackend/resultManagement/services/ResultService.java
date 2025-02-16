@@ -15,15 +15,14 @@ import com.example.examManagementBackend.resultManagement.entities.StudentsEntit
 import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.resultManagement.repo.StudentRepo;
+import com.example.examManagementBackend.userManagement.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
-import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,19 +39,19 @@ public class ResultService {
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo,JwtService jwtService, UserManagementRepo userManagementRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
         this.coursesRepo=coursesRepo;
         this.examTypeRepo=examTypeRepo;
-        this.jwtService=jwtService;
+        this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
     }
     public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
             if(results.getExamName()!=null && results.getCourseCode()!=null && results.getStudentsData()!=null && !results.getStudentsData().isEmpty()) {
-                Object[] data=jwtService.getUserNameAndToken(request);
+                Object[] data= jwtService.getUserNameAndToken(request);
                 String username = data[0].toString();
                 UserEntity approvedBy=userManagementRepo.findByUsername(username);
                 String[] examDetails=results.getExamName().split("-");

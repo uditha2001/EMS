@@ -1,4 +1,5 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
+import com.example.examManagementBackend.userManagement.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
@@ -12,7 +13,6 @@ import com.example.examManagementBackend.utill.JwtUtill;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class JwtService implements UserDetailsService{
+public class JwtServiceIMPL implements UserDetailsService, JwtService {
 
     private final UserManagementRepo userManagementRepo;
     private final AuthenticationManager authenticationManager;
@@ -38,7 +38,7 @@ public class JwtService implements UserDetailsService{
     private final UserRolesRepository userRolesRepository;
     private final TokenRepo tokenRepo;
 
-    public JwtService(UserManagementRepo userManagementRepo,@Lazy AuthenticationManager authenticationManager,JwtUtill jwtUtill,UserRolesRepository userRolesRepository,TokenRepo tokenRepo) {
+    public JwtServiceIMPL(UserManagementRepo userManagementRepo, @Lazy AuthenticationManager authenticationManager, JwtUtill jwtUtill, UserRolesRepository userRolesRepository, TokenRepo tokenRepo) {
         this.userManagementRepo = userManagementRepo;
         this.authenticationManager = authenticationManager;
         this.jwtUtill = jwtUtill;
@@ -193,7 +193,7 @@ public class JwtService implements UserDetailsService{
 
         return loginResponseDTO;
     }
-
+    @Override
     public Object[] getUserNameAndToken(HttpServletRequest request){
         final String authorizationHeader = request.getHeader("Authorization");
         String acesssToken=null;
