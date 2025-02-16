@@ -12,5 +12,5 @@ public class MarksPercentageDTO{
     private ExamTypesName examType;
     private float passMark;
     private float weightage;
-
+    private String courseCode;
 }

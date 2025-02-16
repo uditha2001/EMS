@@ -18,6 +18,7 @@ public class ExamTypesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Enumerated(EnumType.STRING)
+    @Column(unique = true, nullable = false)
     private ExamTypesName name;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private List<ExamTimeTablesEntity> examTimeTables;
