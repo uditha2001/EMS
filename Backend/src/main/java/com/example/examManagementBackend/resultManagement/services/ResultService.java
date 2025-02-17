@@ -90,21 +90,21 @@ public class ResultService {
                     }
 
                 }
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(201,"sucess",null), HttpStatus.CREATED
+                return new ResponseEntity<>(
+                        new StandardResponse(201, "sucess", null), HttpStatus.CREATED
                 );
             }
             else{
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+                return new ResponseEntity<>(
+                        new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
                 );
             }
 
         }
         catch(Exception e){
             e.printStackTrace();
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -143,36 +143,23 @@ public class ResultService {
             Long courseId=getCourseCodeId(courseCode);
             Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
             Long examinationTypeId=getExaminationTypeId(examType);
-            Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
             List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId);
             if(resultEntities!=null){
-                for(ResultEntity resultEntity:resultEntities){
-                    StudentDTO studentDTO=new StudentDTO();
-                    studentDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
-                    studentDTO.setFirstMarking(resultEntity.getFirstMarking());
-                    if(resultEntity.getSecondMarking()!=0){
-                        studentDTO.setSecondMarking(resultEntity.getSecondMarking());
-                    }
-                    else{
-                        studentDTO.setSecondMarking(resultEntity.getFirstMarking());
-                    }
-                    studentDTO.setStudentName(resultEntity.getStudent().getStudentName());
-                    studentDTOS.add(studentDTO);
-                }
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(200,"success",studentDTOS), HttpStatus.OK
+                Set<StudentDTO> studentDTOS=mapToStudentDTO(resultEntities);
+                return new ResponseEntity<>(
+                        new StandardResponse(200, "success", studentDTOS), HttpStatus.OK
                 );
             }
             else{
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+                return new ResponseEntity<>(
+                        new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
                 );
             }
 
         }
         catch(Exception e){
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"failed to save data",null), HttpStatus.INTERNAL_SERVER_ERROR
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -180,22 +167,40 @@ public class ResultService {
     public ResponseEntity<StandardResponse> getAllExamsTypes() {
         try{
             List<ExamTypesEntity> examTypesEntities=examTypeRepo.getAllExamTypes();
-            List<ExamTypesDTO> examTypesDTOS= new ArrayList<ExamTypesDTO>();
+            List<ExamTypesDTO> examTypesDTOS= new ArrayList<>();
             for(ExamTypesEntity examTypesEntity:examTypesEntities){
                 ExamTypesDTO examTypesDTO=new ExamTypesDTO();
                 examTypesDTO.setId(examTypesEntity.getId());
                 examTypesDTO.setName(examTypesEntity.getName());
                 examTypesDTOS.add(examTypesDTO);
             }
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"success",examTypesDTOS), HttpStatus.OK
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "success", examTypesDTOS), HttpStatus.OK
             );
         }
         catch(Exception e){
             e.printStackTrace();
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+    }
+//map results entity to student dto
+    private Set<StudentDTO> mapToStudentDTO(List<ResultEntity> resultEntities){
+        Set<StudentDTO> studentDTOS= new HashSet<>();
+        for(ResultEntity resultEntity:resultEntities){
+            StudentDTO studentDTO=new StudentDTO();
+            studentDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
+            studentDTO.setFirstMarking(resultEntity.getFirstMarking());
+            if(resultEntity.getSecondMarking()!=0){
+                studentDTO.setSecondMarking(resultEntity.getSecondMarking());
+            }
+            else{
+                studentDTO.setSecondMarking(resultEntity.getFirstMarking());
+            }
+            studentDTO.setStudentName(resultEntity.getStudent().getStudentName());
+            studentDTOS.add(studentDTO);
+        }
+        return studentDTOS;
     }
 }

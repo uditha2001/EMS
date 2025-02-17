@@ -11,9 +11,8 @@ import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GradingService {
@@ -32,23 +31,24 @@ public class GradingService {
     */
     public ResponseEntity<StandardResponse> getRequiredPercentagesAndPassMark(String courseCode){
     try{
-        List<CourseEvaluationsEntity> courseEvaluationsEntities=courseEvaluationRepo.getAllByCourseCode(courseCode);
-        List<MarksPercentageDTO> marksPercentageDTOS=new ArrayList<>();
-        for(CourseEvaluationsEntity courseEvaluationsEntity:courseEvaluationsEntities){
-            MarksPercentageDTO marksPercentageDTO=new MarksPercentageDTO();
-            marksPercentageDTO.setExamType(courseEvaluationsEntity.getExamTypes().getName());
-            marksPercentageDTO.setPassMark(courseEvaluationsEntity.getPassMark());
-            marksPercentageDTO.setWeightage(courseEvaluationsEntity.getWeightage());
-            marksPercentageDTOS.add(marksPercentageDTO);
-        }
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(200,"sucess",marksPercentageDTOS),HttpStatus.OK
+        List<MarksPercentageDTO> marksPercentageDTOS = courseEvaluationRepo.getAllByCourseCode(courseCode)
+                .stream()
+                .map(courseEvaluationsEntity -> {
+                    MarksPercentageDTO dto = new MarksPercentageDTO();
+                    dto.setExamType(courseEvaluationsEntity.getExamTypes().getName());
+                    dto.setPassMark(courseEvaluationsEntity.getPassMark());
+                    dto.setWeightage(courseEvaluationsEntity.getWeightage());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(
+                new StandardResponse(200, "sucess", marksPercentageDTOS), HttpStatus.OK
         );
     }
     catch(Exception e){
         e.printStackTrace();
-        return new ResponseEntity<StandardResponse>(
-                new StandardResponse(500,"failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+        return new ResponseEntity<>(
+                new StandardResponse(500, "failed", null), HttpStatus.INTERNAL_SERVER_ERROR
         );
         }
     }
@@ -76,27 +76,27 @@ public class GradingService {
                             courseEvaluationRepo.save(courseEvaluationsEntity);
                         }
                         else{
-                            return new ResponseEntity<StandardResponse>(
-                                    new StandardResponse(500,"failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+                            return new ResponseEntity<>(
+                                    new StandardResponse(500, "failed", null), HttpStatus.INTERNAL_SERVER_ERROR
                             );
                         }
 
                     }
                 }
-                return new ResponseEntity<StandardResponse>(
-                        new StandardResponse(200,"sucess",null), HttpStatus.OK
+                return new ResponseEntity<>(
+                        new StandardResponse(200, "sucess", null), HttpStatus.OK
                 );
             }
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "failed", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
 
         }
         catch(Exception e){
             e.printStackTrace();
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(500,"failed",null), HttpStatus.INTERNAL_SERVER_ERROR
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "failed", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
-    };
+    }
 }

@@ -1,14 +1,19 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name="permissions")
+@Data
 public class PermissionEntity {
     @Id
+    @Setter(AccessLevel.NONE)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long permissionId;
 
@@ -34,34 +39,16 @@ public class PermissionEntity {
         this.permissionDescription = permissionDescription;
         this.permissionType = permissionType;
     }
-
-    public String getPermissionName() {
-        return permissionName;
+    @Override
+    public String toString() {
+        return "PermissionEntity{" +
+                "permissionId=" + permissionId +
+                ", permissionName='" + permissionName + '\'' +
+                ", permissionDescription='" + permissionDescription + '\'' +
+                ", permissionType='" + permissionType + '\'' +
+                '}';
     }
 
-    public void setPermissionName(String permissionName) {
-        this.permissionName = permissionName;
-    }
-
-    public String getPermissionDescription() {
-        return permissionDescription;
-    }
-
-    public void setPermissionDescription(String permissionDescription) {
-        this.permissionDescription = permissionDescription;
-    }
-
-    public String getPermissionType() {
-        return permissionType;
-    }
-
-    public void setPermissionType(String permissionType) {
-        this.permissionType = permissionType;
-    }
-
-    public Long getPermissionId() {
-        return permissionId;
-    }
 
 
 }
