@@ -34,8 +34,6 @@ public class FileService {
     final
     ExaminationRepository examinationRepository;
 
-    private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
-
     public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository) {
         this.encryptionService = encryptionService;
         this.encryptedPaperRepository = encryptedPaperRepository;
@@ -44,7 +42,7 @@ public class FileService {
         this.examinationRepository = examinationRepository;
     }
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType) {
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType,String encryptedMarkingFile) {
         // Validate courseId
         CoursesEntity course = coursesRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course with ID " + courseId + " not found."));
@@ -60,6 +58,10 @@ public class FileService {
         // Save the file to the storage location and set the path
         String filePath = saveFileToStorage(encryptedFile, fileName);
         encryptedPaper.setFilePath(filePath);
+
+        // Save the marking file to the storage location and set the path
+        String markingFilePath = saveFileToStorage(encryptedMarkingFile, "MARKING_" + fileName);
+        encryptedPaper.setMarkingFilePath(markingFilePath);
 
         // Fetch and set creator
         encryptedPaper.setCreator(userRepository.findById(creatorId)
@@ -78,27 +80,47 @@ public class FileService {
 
     }
 
-    public void updateEncryptedPaper(Long paperId, String encryptedFile, String fileName, String remarks) {
+    public void updateEncryptedPaper(
+            Long paperId,
+            String encryptedFile,
+            String fileName,
+            String remarks,
+            String encryptedMarkingFile, // New parameter for marking file
+            String markingFileName // New parameter for marking file name
+    ) {
         // Retrieve the existing paper
         EncryptedPaper existingPaper = encryptedPaperRepository.findById(paperId)
                 .orElseThrow(() -> new RuntimeException("Paper not found with ID: " + paperId));
 
-        // If the file name is different, delete the old file from the system
+        // If the paper file name is different, delete the old file from the system
         if (!existingPaper.getFileName().equals(fileName)) {
             try {
                 Files.deleteIfExists(Paths.get(existingPaper.getFilePath()));
             } catch (IOException e) {
-                throw new RuntimeException("Failed to delete existing file: " + e.getMessage());
+                throw new RuntimeException("Failed to delete existing paper file: " + e.getMessage());
             }
         }
 
-        // Save the new file to the storage and get the path
+        // If the marking file name is different, delete the old marking file from the system
+        if (existingPaper.getMarkingFilePath() != null && !existingPaper.getMarkingFilePath().isEmpty()) {
+            try {
+                Files.deleteIfExists(Paths.get(existingPaper.getMarkingFilePath()));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to delete existing marking file: " + e.getMessage());
+            }
+        }
+
+        // Save the new paper file to the storage and get the path
         String filePath = saveFileToStorage(encryptedFile, fileName);
+
+        // Save the new marking file to the storage and get the path
+        String markingFilePath = saveFileToStorage(encryptedMarkingFile, markingFileName);
 
         // Update the paper fields
         existingPaper.setFileName(fileName);
         existingPaper.setFilePath(filePath);
         existingPaper.setRemarks(remarks);
+        existingPaper.setMarkingFilePath(markingFilePath); // Update marking file path
 
         // Save the updated paper record
         encryptedPaperRepository.save(existingPaper);
@@ -113,8 +135,10 @@ public class FileService {
 
         // Store the encrypted file to a location and return the file path
         try {
-            Path path = Paths.get(UPLOAD_DIR).resolve(fileName).normalize();
-            if (!path.startsWith(Paths.get(UPLOAD_DIR).normalize())) {
+            String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
+            Path path1 = Paths.get(UPLOAD_DIR);
+            Path path = path1.resolve(fileName).normalize();
+            if (!path.startsWith(path1.normalize())) {
                 throw new IllegalArgumentException("Invalid file name");
             }
             Files.write(path, encryptedFile.getBytes()); // Save file bytes
@@ -139,6 +163,7 @@ public class FileService {
         // Delete the file from the file system
         try {
             Files.deleteIfExists(Paths.get(encryptedPaper.getFilePath()));
+            Files.deleteIfExists(Paths.get(encryptedPaper.getMarkingFilePath()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete file: " + e.getMessage());
         }

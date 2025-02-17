@@ -196,7 +196,7 @@ public class ExaminationService {
        );
     }
 
-    //create a methode to get coursedata which ara belongs to particular exam
+    //create a methode to get course data which ara belongs to particular exam
     public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
         try{
             Set<CourseDTO> courseDTOS=new HashSet<>();
