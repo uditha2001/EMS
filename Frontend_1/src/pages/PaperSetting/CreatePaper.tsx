@@ -1,24 +1,73 @@
-import React, { useState } from 'react';
-import ReactQuill from 'react-quill';
+import React, { useEffect, useState } from 'react';
 import 'react-quill/dist/quill.snow.css';
-
 import {
   faInfoCircle,
   faBook,
   faFileUpload,
   faEye,
   faClipboardCheck,
+  faPaperPlane,
 } from '@fortawesome/free-solid-svg-icons';
-
 import Stepper from '../PaperTransfer/Stepper';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import EssayTemplate from './EssayTemplate';
 import StructureTemplate from './StructureTemplate';
-
 import MarkingPreview from './MarkingPreview';
 import PaperPreview from './PaperPreview';
+import useApi from '../../api/api';
+import jsPDF from 'jspdf';
+import useAuth from '../../hooks/useAuth';
+import PaperInfoForm from './PaperInfoForm';
+import SelectPaperType from './SelectPaperType';
+import FinalPaperTransfer from './FinalPaperTransfer';
+import SuccessMessage from '../../components/SuccessMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 
-// Consolidated all paper info into a single object
+interface Moderator {
+  userId: number;
+  user: string;
+}
+
+interface Course {
+  courseId: number;
+  courseCode: string;
+  courseName: string;
+  paperType: string;
+  roleId: number;
+}
+
+interface Examination {
+  id: number;
+  year: string;
+  level: number;
+  semester: number;
+  degreeProgramName: string;
+  status: string;
+}
+
+interface SubSubQuestion {
+  subSubQuestionId?: number;
+  subSubQuestionNumber: number;
+  questionType: string;
+  marks: number;
+}
+
+interface SubQuestion {
+  subQuestionId?: number;
+  subQuestionNumber: number;
+  questionType: string;
+  marks: number;
+  subSubQuestions: SubSubQuestion[];
+}
+
+interface Question {
+  questionId?: number;
+  questionNumber: number;
+  questionType: string;
+  totalMarks: number;
+  subQuestions: SubQuestion[];
+}
+
 const initialPaperInfo = {
   university: 'UNIVERSITY OF RUHUNA',
   degree: 'BACHELOR OF COMPUTER SCIENCE (GENERAL) DEGREE',
@@ -32,8 +81,134 @@ const initialPaperInfo = {
 const PaperSettings: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [paperType, setPaperType] = useState<string>('');
+  const [paperType_, setPaperType_] = useState<string>('');
   const [questions, setQuestions] = useState<any[]>([]);
   const [paperInfo, setPaperInfo] = useState(initialPaperInfo);
+  const [isUploading, setIsUploading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [questions_, setQuestions_] = useState<Question[]>([]);
+
+  const { auth } = useAuth();
+  const {
+    uploadFile,
+    getRoleAssignmentByUserId,
+    getExaminationById,
+    getModerators,
+    createPaperStructure,
+  } = useApi();
+  const userId = Number(auth.id);
+  const [remarks, setRemarks] = useState('');
+  const [moderators, setModerators] = useState<Moderator[]>([]);
+  const [selectedModerator, setSelectedModerator] = useState<number | null>(
+    null,
+  );
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [examinations, setExaminations] = useState<Examination[]>([]);
+  const [selectedExamination, setSelectedExamination] = useState<number | null>(
+    null,
+  );
+  const [availablePaperTypes, setAvailablePaperTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const roleAssignmentsResponse = await getRoleAssignmentByUserId(
+          Number(auth.id),
+        );
+        const roleAssignments = roleAssignmentsResponse.data.filter(
+          (assignment: any) => assignment.isAuthorized,
+        );
+        const examinationIds: number[] = Array.from(
+          new Set(
+            roleAssignments.map((assignment: any) => assignment.examinationId),
+          ),
+        );
+        const examData = await Promise.all(
+          examinationIds.map((examId: number) => getExaminationById(examId)),
+        );
+        const ongoingExams = examData
+          .flat()
+          .filter((exam: Examination) => exam.status === 'ONGOING');
+        setExaminations(ongoingExams);
+
+        const filteredCourses = roleAssignments.filter((assignment: any) =>
+          examinationIds.includes(Number(assignment.examinationId)),
+        );
+        const uniqueCourses: Course[] = Array.from(
+          new Map<number, Course>(
+            filteredCourses.map((assignment: any) => [
+              assignment.courseId,
+              {
+                courseId: assignment.courseId,
+                courseCode: assignment.courseCode,
+                courseName: assignment.courseName,
+                paperType: assignment.paperType,
+                roleId: assignment.roleId,
+              },
+            ]),
+          ).values(),
+        );
+
+        setCourses(uniqueCourses);
+
+        if (selectedCourse !== null) {
+          const courseAssignments = roleAssignments.filter(
+            (assignment: any) => assignment.courseId === selectedCourse,
+          );
+          const paperTypes: string[] = Array.from(
+            new Set(
+              courseAssignments.map((assignment: any) => assignment.paperType),
+            ),
+          );
+          setAvailablePaperTypes(paperTypes);
+        }
+      } catch (error) {
+        setErrorMessage('Failed to fetch data. Please try again.');
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [auth.id, selectedCourse]);
+
+  useEffect(() => {
+    const fetchModerators = async () => {
+      if (!selectedCourse || !paperType) return;
+      try {
+        const response = await getModerators(selectedCourse, paperType);
+        setModerators(response.data);
+      } catch (error) {
+        setModerators([]);
+        setErrorMessage('Failed to fetch moderators.');
+      }
+    };
+    fetchModerators();
+  }, [selectedCourse, paperType]);
+
+  // Synchronize questions and questions_
+  useEffect(() => {
+    const updatedQuestions_ = questions.map((question, index) => ({
+      questionNumber: index + 1,
+      questionType: paperType_,
+      totalMarks: question.marks,
+      subQuestions: question.subquestions.map((sub: any, subIndex: number) => ({
+        subQuestionNumber: subIndex + 1,
+        questionType: paperType_,
+        marks: sub.marks,
+        subSubQuestions: sub.subquestions.map(
+          (subSub: any, subSubIndex: number) => ({
+            subSubQuestionNumber: subSubIndex + 1,
+            questionType: paperType_,
+            marks: subSub.marks,
+          }),
+        ),
+      })),
+    }));
+
+    setQuestions_(updatedQuestions_);
+  }, [questions, paperType_]);
 
   const quillModules = {
     toolbar: [
@@ -53,11 +228,12 @@ const PaperSettings: React.FC = () => {
     { id: 3, name: 'Questions', icon: faFileUpload },
     { id: 4, name: 'Preview Paper', icon: faEye },
     { id: 5, name: 'Preview Marking', icon: faClipboardCheck },
+    { id: 6, name: 'Transfer Paper & Marking', icon: faPaperPlane },
   ];
 
   const renderQuestionTemplate = () => {
-    switch (paperType) {
-      case 'Essay':
+    switch (paperType_) {
+      case 'ESSAY':
         return (
           <EssayTemplate
             questions={questions}
@@ -73,7 +249,6 @@ const PaperSettings: React.FC = () => {
             quillModules={quillModules}
           />
         );
-
       default:
         return (
           <p className="text-center text-gray-500">
@@ -93,6 +268,493 @@ const PaperSettings: React.FC = () => {
     }));
   };
 
+  // Helper function to strip HTML tags from a string
+  const stripHtml = (html: string): string => {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
+  };
+
+  // Function to convert numbers to Roman numerals
+  const toRoman = (num: number): string => {
+    const romanNumerals = [
+      '',
+      'i',
+      'ii',
+      'iii',
+      'iv',
+      'v',
+      'vi',
+      'vii',
+      'viii',
+      'ix',
+      'x',
+    ];
+    return romanNumerals[num] || num.toString();
+  };
+
+  const handleTransfer = async () => {
+    if (!paperType || questions.length === 0) {
+      setErrorMessage('Please complete all steps before transferring.');
+      return;
+    }
+
+    setIsUploading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      // Generate PDFs for paper and marking scheme
+      const paperPdf = new jsPDF();
+      const margin = 20;
+      const pageWidth = paperPdf.internal.pageSize.width;
+      const maxWidth = pageWidth - 2 * margin;
+      const pageHeight = paperPdf.internal.pageSize.height;
+      let currentY = 20;
+
+      // Title and Heading
+      paperPdf.setFontSize(12);
+      paperPdf.setFont('helvetica', 'bold');
+      paperPdf.text(paperInfo.university, pageWidth / 2, currentY, {
+        align: 'center',
+      });
+      currentY += 6;
+
+      paperPdf.text(paperInfo.degree, pageWidth / 2, currentY, {
+        align: 'center',
+      });
+      currentY += 6;
+
+      paperPdf.text(
+        `${paperInfo.semester} Examination - ${paperInfo.examYear}`,
+        pageWidth / 2,
+        currentY,
+        {
+          align: 'center',
+        },
+      );
+      currentY += 10;
+
+      // Course Code and Duration
+      paperPdf.setFontSize(10);
+      paperPdf.text(paperInfo.courseCode, margin, currentY);
+      paperPdf.text(
+        `Duration: ${paperInfo.duration}`,
+        pageWidth - margin,
+        currentY,
+        {
+          align: 'right',
+        },
+      );
+      currentY += 5;
+
+      // Draw a line
+      paperPdf.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 5;
+
+      // Instructions Section
+      paperPdf.setFontSize(10);
+      paperPdf.setFont('helvetica', 'bold');
+      paperPdf.text('Instructions:', margin, currentY);
+      currentY += 5;
+
+      paperPdf.setFontSize(10);
+      paperPdf.setFont('helvetica', 'normal');
+      const instructionsLines = paperPdf.splitTextToSize(
+        stripHtml(paperInfo.instructions) || 'No instructions provided.',
+        maxWidth,
+      );
+      paperPdf.text(instructionsLines, margin, currentY);
+      currentY += instructionsLines.length * 5 + 5;
+
+      // Questions Section
+      paperPdf.setFontSize(10);
+      paperPdf.setFont('helvetica', 'bold');
+      paperPdf.text('Questions:', margin, currentY);
+      currentY += 10;
+
+      questions.forEach((q, idx) => {
+        // Check if we need a new page
+        if (currentY > pageHeight - 20) {
+          paperPdf.addPage();
+          currentY = 20;
+        }
+
+        // Main Question Text with proper alignment
+        paperPdf.setFont('helvetica', 'bold');
+        const questionNumber = `${idx + 1}.`;
+        const questionText = stripHtml(q.questionText);
+        const questionLines = paperPdf.splitTextToSize(
+          questionText,
+          maxWidth - 20,
+        );
+
+        paperPdf.text(questionNumber, margin, currentY); // Print the question number
+        paperPdf.text(questionLines[0], margin + 10, currentY); // First line after question number
+        currentY += 5;
+
+        if (questionLines.length > 1) {
+          paperPdf.text(questionLines.slice(1), margin + 10, currentY);
+          currentY += (questionLines.length - 1) * 5;
+        }
+
+        // Handle subquestions
+        if (q.subquestions && q.subquestions.length > 0) {
+          q.subquestions.forEach((sub: any, subIdx: number) => {
+            if (currentY > pageHeight - 20) {
+              paperPdf.addPage();
+              currentY = 20;
+            }
+
+            const label = String.fromCharCode(97 + subIdx); // a, b, c, etc.
+            const subQuestionText = stripHtml(sub.text);
+            const subQuestionLines = paperPdf.splitTextToSize(
+              subQuestionText,
+              maxWidth - 30,
+            );
+
+            paperPdf.setFont('helvetica', 'normal');
+            paperPdf.text(`  ${label})`, margin + 10, currentY); // Print the sub-question label
+            paperPdf.text(subQuestionLines[0], margin + 20, currentY); // Print first line of sub-question
+            currentY += 5;
+
+            if (subQuestionLines.length > 1) {
+              paperPdf.text(subQuestionLines.slice(1), margin + 20, currentY);
+              currentY += (subQuestionLines.length - 1) * 5;
+            }
+
+            // Display marks only if they are greater than 0
+            if (sub.marks > 0) {
+              paperPdf.text(
+                `(${sub.marks} marks)`,
+                pageWidth - margin,
+                currentY,
+                {
+                  align: 'right',
+                },
+              );
+              currentY += 5;
+            }
+
+            // Handle sub-subquestions
+            if (sub.subquestions && sub.subquestions.length > 0) {
+              sub.subquestions.forEach((subSub: any, subSubIdx: number) => {
+                if (currentY > pageHeight - 20) {
+                  paperPdf.addPage();
+                  currentY = 20;
+                }
+
+                const subSubLabel = `(${toRoman(subSubIdx + 1)})`; // Roman numerals (i), (ii), etc.
+                const subSubQuestionText = stripHtml(subSub.text);
+                const subSubQuestionLines = paperPdf.splitTextToSize(
+                  subSubQuestionText,
+                  maxWidth - 40,
+                );
+
+                paperPdf.setFont('helvetica', 'normal');
+                paperPdf.text(`    ${subSubLabel}`, margin + 20, currentY); // Print the sub-subquestion label
+                paperPdf.text(subSubQuestionLines[0], margin + 30, currentY); // Print first line of sub-subquestion
+                currentY += 5;
+
+                if (subSubQuestionLines.length > 1) {
+                  paperPdf.text(
+                    subSubQuestionLines.slice(1),
+                    margin + 30,
+                    currentY,
+                  );
+                  currentY += (subSubQuestionLines.length - 1) * 5;
+                }
+
+                // Display marks only if they are greater than 0
+                if (subSub.marks > 0) {
+                  paperPdf.text(
+                    `(${subSub.marks} marks)`,
+                    pageWidth - margin,
+                    currentY,
+                    { align: 'right' },
+                  );
+                  currentY += 5;
+                }
+
+                // Answer box for Structure type questions
+                if (
+                  paperType === 'Structure' &&
+                  subSub.answer &&
+                  subSub.answer.length > 0
+                ) {
+                  const boxHeight = subSub.answer.length * 2; // Adjust height based on answer length
+                  paperPdf.rect(margin + 20, currentY, 150, boxHeight); // Draw answer box
+                  currentY += boxHeight + 10;
+                }
+              });
+            }
+          });
+        } else if (
+          paperType === 'Structure' &&
+          q.answer &&
+          q.answer.length > 0
+        ) {
+          // If no subquestions, provide an answer box for the main question
+          const boxHeight = q.answer.length * 2; // Adjust height based on answer length
+          paperPdf.rect(margin + 10, currentY, 150, boxHeight); // Draw answer box
+          currentY += boxHeight + 10;
+        }
+      });
+
+      const markingPdf = new jsPDF();
+      const marking_margin = 20;
+      const marking_pageWidth = markingPdf.internal.pageSize.width;
+      const marking_maxWidth = marking_pageWidth - 2 * marking_margin;
+      const marking_pageHeight = markingPdf.internal.pageSize.height;
+      let marking_currentY = 20;
+
+      // Title and Heading
+      markingPdf.setFontSize(12);
+      markingPdf.setFont('helvetica', 'bold');
+      markingPdf.text(
+        paperInfo.university,
+        marking_pageWidth / 2,
+        marking_currentY,
+        {
+          align: 'center',
+        },
+      );
+      marking_currentY += 6;
+
+      markingPdf.text(
+        paperInfo.degree,
+        marking_pageWidth / 2,
+        marking_currentY,
+        {
+          align: 'center',
+        },
+      );
+      marking_currentY += 6;
+
+      markingPdf.text(
+        `${paperInfo.semester} Marking Scheme - ${paperInfo.examYear}`,
+        marking_pageWidth / 2,
+        marking_currentY,
+        { align: 'center' },
+      );
+      marking_currentY += 10;
+
+      // Course Code and Duration
+      markingPdf.setFontSize(10);
+      markingPdf.text(paperInfo.courseCode, margin, marking_currentY);
+      markingPdf.text(
+        `Duration: ${paperInfo.duration}`,
+        marking_pageWidth - margin,
+        marking_currentY,
+        {
+          align: 'right',
+        },
+      );
+      marking_currentY += 5;
+
+      // Draw a line
+      markingPdf.line(
+        margin,
+        marking_currentY,
+        marking_pageWidth - margin,
+        marking_currentY,
+      );
+      marking_currentY += 5;
+
+      // Marking Guide Section
+      markingPdf.setFontSize(10);
+      markingPdf.setFont('helvetica', 'bold');
+      markingPdf.text('Marking Guide:', margin, marking_currentY);
+      marking_currentY += 10;
+
+      questions.forEach((q, idx) => {
+        // Check if we need a new page
+        if (marking_currentY > marking_pageHeight - 20) {
+          markingPdf.addPage();
+          marking_currentY = 20;
+        }
+
+        // Main Question Text with proper alignment
+        markingPdf.setFont('helvetica', 'bold');
+        const questionNumber = `${idx + 1}.`;
+        const questionText = stripHtml(q.questionText);
+        const questionLines = markingPdf.splitTextToSize(
+          questionText,
+          marking_maxWidth - 20,
+        );
+
+        markingPdf.text(questionNumber, margin, marking_currentY); // Print the question number
+        markingPdf.text(questionLines[0], margin + 10, marking_currentY); // First line after question number
+        marking_currentY += 5;
+
+        if (questionLines.length > 1) {
+          markingPdf.text(
+            questionLines.slice(1),
+            margin + 10,
+            marking_currentY,
+          );
+          marking_currentY += (questionLines.length - 1) * 5;
+        }
+
+        marking_currentY += 5;
+
+        // Handle subquestions
+        if (q.subquestions && q.subquestions.length > 0) {
+          q.subquestions.forEach((sub: any, subIdx: number) => {
+            if (marking_currentY > marking_pageHeight - 20) {
+              markingPdf.addPage();
+              marking_currentY = 20;
+            }
+
+            const label = String.fromCharCode(97 + subIdx); // a, b, c, etc.
+            const subQuestionText = stripHtml(sub.text);
+            const subQuestionLines = markingPdf.splitTextToSize(
+              subQuestionText,
+              marking_maxWidth - 30,
+            );
+
+            markingPdf.setFont('helvetica', 'normal');
+            markingPdf.text(`  ${label})`, margin + 10, marking_currentY); // Print the sub-question label
+            markingPdf.text(subQuestionLines[0], margin + 20, marking_currentY); // Print first line of sub-question
+            marking_currentY += 5;
+
+            if (subQuestionLines.length > 1) {
+              markingPdf.text(
+                subQuestionLines.slice(1),
+                margin + 20,
+                marking_currentY,
+              );
+              marking_currentY += (subQuestionLines.length - 1) * 5;
+            }
+
+            // Display marks only if they are greater than 0
+            if (sub.marks > 0) {
+              markingPdf.text(
+                `(${sub.marks} marks)`,
+                marking_pageWidth - margin,
+                marking_currentY,
+                {
+                  align: 'right',
+                },
+              );
+              marking_currentY += 5;
+            }
+
+            // Answer section
+            markingPdf.setFont('helvetica', 'italic');
+            markingPdf.text(
+              `    Answer: ${sub.answer || 'No answer available'}`,
+              margin + 20,
+              marking_currentY,
+            );
+            marking_currentY += 10;
+
+            // Handle sub-subquestions
+            if (sub.subquestions && sub.subquestions.length > 0) {
+              sub.subquestions.forEach((subSub: any, subSubIdx: number) => {
+                if (marking_currentY > marking_pageHeight - 20) {
+                  markingPdf.addPage();
+                  marking_currentY = 20;
+                }
+
+                const subSubLabel = `(${toRoman(subSubIdx + 1)})`; // Roman numerals (i), (ii), etc.
+                const subSubQuestionText = stripHtml(subSub.text);
+                const subSubQuestionLines = markingPdf.splitTextToSize(
+                  subSubQuestionText,
+                  marking_maxWidth - 40,
+                );
+
+                markingPdf.setFont('helvetica', 'normal');
+                markingPdf.text(
+                  `      ${subSubLabel}`,
+                  margin + 20,
+                  marking_currentY,
+                ); // Print the sub-subquestion label
+                markingPdf.text(
+                  subSubQuestionLines[0],
+                  margin + 30,
+                  marking_currentY,
+                ); // Print first line of sub-subquestion
+                marking_currentY += 5;
+
+                if (subSubQuestionLines.length > 1) {
+                  markingPdf.text(
+                    subSubQuestionLines.slice(1),
+                    margin + 30,
+                    marking_currentY,
+                  );
+                  marking_currentY += (subSubQuestionLines.length - 1) * 5;
+                }
+
+                // Display marks only if they are greater than 0
+                if (subSub.marks > 0) {
+                  markingPdf.text(
+                    `(${subSub.marks} marks)`,
+                    marking_pageWidth - margin,
+                    marking_currentY,
+                    { align: 'right' },
+                  );
+                  marking_currentY += 5;
+                }
+
+                // Answer section
+                markingPdf.setFont('helvetica', 'italic');
+                markingPdf.text(
+                  `        Answer: ${subSub.answer || 'No answer available'}`,
+                  margin + 30,
+                  marking_currentY,
+                );
+                marking_currentY += 10;
+              });
+            }
+          });
+        }
+      });
+
+      // Convert PDFs to Blobs
+      const paperBlob = paperPdf.output('blob');
+      const markingBlob = markingPdf.output('blob');
+
+      // Create File objects
+      const paperFile = new File([paperBlob], 'exam_paper.pdf', {
+        type: 'application/pdf',
+      });
+      const markingFile = new File([markingBlob], 'marking_scheme.pdf', {
+        type: 'application/pdf',
+      });
+
+      // Upload files using the API
+      const response = await uploadFile(
+        paperFile,
+        markingFile,
+        userId,
+        selectedCourse!,
+        remarks,
+        paperType,
+        selectedModerator!,
+        selectedExamination!,
+      );
+
+      console.log('Response:', response);
+      console.log('Questions:', questions_);
+      await createPaperStructure(response, questions_);
+
+      if (response?.message) {
+        setErrorMessage(response.message);
+      } else {
+        setSuccessMessage('Paper and marking scheme transferred successfully!');
+        setCurrentStep(1);
+      }
+    } catch (error) {
+      setErrorMessage(
+        'An error occurred during the transfer. Please try again.',
+      );
+      console.error('Transfer error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-270">
       <Breadcrumb pageName="Paper Setting" />
@@ -106,107 +768,28 @@ const PaperSettings: React.FC = () => {
         <div className="p-8">
           <Stepper currentStep={currentStep} steps={steps} />
 
+          <SuccessMessage
+            message={successMessage}
+            onClose={() => setSuccessMessage('')}
+          />
+          <ErrorMessage
+            message={errorMessage}
+            onClose={() => setErrorMessage('')}
+          />
+
           {currentStep === 1 && (
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    University
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.university}
-                    onChange={(e) => handleInputChange(e, 'university')}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Degree Program
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.degree}
-                    onChange={(e) => handleInputChange(e, 'degree')}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Course
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.courseCode}
-                    onChange={(e) => handleInputChange(e, 'courseCode')}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Examination Year
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.examYear}
-                    onChange={(e) => handleInputChange(e, 'examYear')}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Semester
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.semester}
-                    onChange={(e) => handleInputChange(e, 'semester')}
-                  />
-                </div>
-                <div>
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Duration
-                  </label>
-                  <input
-                    className="input-field w-full"
-                    type="text"
-                    value={paperInfo.duration}
-                    onChange={(e) => handleInputChange(e, 'duration')}
-                  />
-                </div>
-                <div className="col-span-full">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Instructions
-                  </label>
-                  <ReactQuill
-                    value={paperInfo.instructions}
-                    onChange={(value) =>
-                      setPaperInfo({ ...paperInfo, instructions: value })
-                    }
-                    modules={quillModules}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
+            <PaperInfoForm
+              paperInfo={paperInfo}
+              handleInputChange={handleInputChange}
+              setPaperInfo={setPaperInfo}
+            />
           )}
 
           {currentStep === 2 && (
-            <div>
-              <label className="mb-2.5 block text-black dark:text-white">
-                Paper Type
-              </label>
-              <select
-                className="input-field w-1/3"
-                value={paperType}
-                onChange={(e) => setPaperType(e.target.value)}
-              >
-                <option value="">Select Paper Type</option>
-                <option value="Essay">Essay</option>
-                <option value="Structure">Structure</option>
-              </select>
-            </div>
+            <SelectPaperType
+              paperType_={paperType}
+              setPaperType_={setPaperType_}
+            />
           )}
 
           {currentStep === 3 && renderQuestionTemplate()}
@@ -238,6 +821,27 @@ const PaperSettings: React.FC = () => {
             />
           )}
 
+          {currentStep === 6 && (
+            <FinalPaperTransfer
+              isUploading={isUploading}
+              handleTransfer={handleTransfer}
+              selectedExamination={selectedExamination}
+              examinations={examinations}
+              selectedCourse={selectedCourse}
+              courses={courses}
+              paperType={paperType}
+              availablePaperTypes={availablePaperTypes}
+              moderators={moderators}
+              selectedModerator={selectedModerator}
+              remarks={remarks}
+              setRemarks={setRemarks}
+              setSelectedExamination={setSelectedExamination}
+              setSelectedCourse={setSelectedCourse}
+              setSelectedModerator={setSelectedModerator}
+              setPaperType={setPaperType}
+            />
+          )}
+
           <div className="flex justify-between mt-8 text-sm">
             <button
               className="btn-primary"
@@ -251,7 +855,7 @@ const PaperSettings: React.FC = () => {
               className="btn-primary"
               type="button"
               onClick={() => setCurrentStep(currentStep + 1)}
-              disabled={currentStep === steps.length}
+              disabled={currentStep === steps.length || isUploading}
             >
               Next
             </button>

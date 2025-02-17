@@ -37,7 +37,7 @@ public class FileUploadController {
             @RequestParam("examinationId") Long examinationId) {
         try {
             // Validate courseId
-          fileService.coursesRepository.findById(courseId)
+            fileService.coursesRepository.findById(courseId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid course ID."));
 
             // Validate creator existence
@@ -72,10 +72,12 @@ public class FileUploadController {
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
             // Encrypt and save marking file
             String encryptedMarkingFile = fileService.uploadAndEncryptFileForUsers(markingFile, creatorId, moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseId, remarks, examinationId, paperType, encryptedMarkingFile);
+
+            // Save the encrypted paper and get the ID
+            Long encryptedPaperId = fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseId, remarks, examinationId, paperType, encryptedMarkingFile);
 
             return ResponseEntity.ok()
-                    .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
+                    .body(new StandardResponse(200, "File uploaded and encrypted successfully.", encryptedPaperId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(new StandardResponse(400, e.getMessage(), null));
