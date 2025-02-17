@@ -1,7 +1,8 @@
-package com.example.examManagementBackend.paperWorkflows.service;
+package com.example.examManagementBackend.utill;
 
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.FeedBackDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.questionData;
+import com.example.examManagementBackend.paperWorkflows.service.EncryptionService;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.font.PdfFont;
@@ -33,10 +34,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
-public class PdfGenrationService {
+public class PdfGenrationUtill {
     private final EncryptionService encryptionService;
 
-    public PdfGenrationService(EncryptionService encryptionService) {
+    public PdfGenrationUtill(EncryptionService encryptionService) {
         this.encryptionService = encryptionService;
     }
 
@@ -49,21 +50,7 @@ public class PdfGenrationService {
 
             // Construct the file path securely
             Path basePath = Paths.get("src/main/resources/moderatorsFeedBacks", year);
-            Path filePath = basePath.resolve(sanitizedCourseCode + "_" + timeStamp + "_feedback.pdf");
-
-            // Create the directory if it doesn't exist
-            File directory = basePath.toFile();
-            if (!directory.exists() && !directory.mkdirs()) {
-                throw new IllegalStateException("Failed to create directory: " + basePath);
-            }
-
-            // Ensure the file path is within the expected directory
-            if (!filePath.toAbsolutePath().startsWith(basePath.toAbsolutePath())) {
-                throw new IllegalArgumentException("Invalid file path: " + filePath);
-            }
-
-            // Use the file path safely
-            String fileName = filePath.toString();
+            String fileName = getString(basePath, sanitizedCourseCode, timeStamp);
             PdfWriter writer = new PdfWriter(fileName);
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf, PageSize.A4);
@@ -250,6 +237,25 @@ public class PdfGenrationService {
         return new ResponseEntity<>(
                 null, null, HttpStatus.EXPECTATION_FAILED
         );
+    }
+
+    private static String getString(Path basePath, String sanitizedCourseCode, String timeStamp) {
+        Path filePath = basePath.resolve(sanitizedCourseCode + "_" + timeStamp + "_feedback.pdf");
+
+        // Create the directory if it doesn't exist
+        File directory = basePath.toFile();
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IllegalStateException("Failed to create directory: " + basePath);
+        }
+
+        // Ensure the file path is within the expected directory
+        if (!filePath.toAbsolutePath().startsWith(basePath.toAbsolutePath())) {
+            throw new IllegalArgumentException("Invalid file path: " + filePath);
+        }
+
+        // Use the file path safely
+        String fileName = filePath.toString();
+        return fileName;
     }
 
     private Cell createStyledCell(String text) throws IOException {

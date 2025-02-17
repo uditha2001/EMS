@@ -1,11 +1,16 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
 
 @Entity
+@Data
 public class TokenEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Long token_id;
     private String refreshToken;
     private String acessToken;
@@ -23,35 +28,4 @@ public class TokenEntity {
         this.acessToken = acessToken;
     }
 
-    public String getAcessToken() {
-        return acessToken;
-    }
-
-    public void setAcessToken(String acessToken) {
-        this.acessToken = acessToken;
-    }
-
-    public Long getToken_id() {
-        return token_id;
-    }
-
-    public void setToken_id(Long token_id) {
-        this.token_id = token_id;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String token) {
-        this.refreshToken = token;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
 }

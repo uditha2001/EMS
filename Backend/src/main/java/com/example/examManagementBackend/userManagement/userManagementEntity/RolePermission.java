@@ -1,6 +1,9 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -9,11 +12,13 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "role_permissions")
+@Data
 public class RolePermission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_permission_id")
+    @Setter(AccessLevel.NONE)
     private Long rolePermissionId;
 
    // @ManyToOne(cascade = CascadeType.ALL) 
@@ -39,36 +44,4 @@ public class RolePermission {
         this.permissionEntity = permissionEntity;
     }
 
-
-    public Long getRolePermissionId() {
-        return rolePermissionId;
-    }
-
-    public void setRolePermissionId(Long rolePermissionId) {
-        this.rolePermissionId = rolePermissionId;
-    }
-
-    public RolesEntity getRolesEntity() {
-        return rolesEntity;
-    }
-
-    public void setRolesEntity(RolesEntity rolesEntity) {
-        this.rolesEntity = rolesEntity;
-    }
-
-    public PermissionEntity getPermissionEntity() {
-        return permissionEntity;
-    }
-
-    public void setPermissionEntity(PermissionEntity permissionEntity) {
-        this.permissionEntity = permissionEntity;
-    }
-
-    public LocalDateTime getGrantedAt() {
-        return grantedAt;
-    }
-
-    public void setGrantedAt(LocalDateTime grantedAt) {
-        this.grantedAt = grantedAt;
-    }
 }

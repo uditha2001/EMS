@@ -20,4 +20,6 @@ public interface ExamTypeRepo extends JpaRepository<ExamTypesEntity,Long> {
     ExamTypesEntity getUsingId( @Param("id") long id);
     @Query("SELECT et FROM ExamTypesEntity  et")
     List<ExamTypesEntity> getAllExamTypes();
+    @Query("SELECT et FROM ExamTypesEntity et WHERE et.name=:examType")
+    ExamTypesEntity getExamTypeByName(@Param("examType") ExamTypesName examTypeName);
 }

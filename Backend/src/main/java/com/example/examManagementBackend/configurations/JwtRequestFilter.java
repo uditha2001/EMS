@@ -1,5 +1,5 @@
 package com.example.examManagementBackend.configurations;
-import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
+import com.example.examManagementBackend.userManagement.userManagementServices.JwtServiceIMPL;
 import com.example.examManagementBackend.utill.JwtUtill;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,7 +26,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private String token = null;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtServiceIMPL jwtServiceIMPL;
 
     // Define excluded paths
     private static final List<String> EXCLUDED_PATHS = List.of(
@@ -60,7 +60,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         try {
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = jwtService.loadUserByUsername(userName);
+                UserDetails userDetails = jwtServiceIMPL.loadUserByUsername(userName);
 
                 // Validate the token
                 if (jwtUtill.validateToken(token, userDetails)) {

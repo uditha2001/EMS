@@ -1,0 +1,29 @@
+package com.example.examManagementBackend.resultManagement.repo;
+
+import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Repository
+@EnableJpaRepositories
+public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEntity,Long> {
+    @Query("SELECT ce FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode")
+    public List<CourseEvaluationsEntity> getAllByCourseCode(@Param("courseCode") String courseCode);
+
+    @Query("SELECT count(ce) FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes=:type")
+    public Integer countByCourseCodeAndExamType(@Param("courseCode") String courseCode, @Param("type") ExamTypesName type);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE CourseEvaluationsEntity ce set ce.passMark=:newPassMark,ce.weightage=:newWeightage WHERE ce.courses.code=:courseCode AND ce.examTypes=:type")
+    public void updateByCourseCodeANdExamType(@Param("newPassMark") float newPassMark, @Param("newWeightage") float newWeightage, @Param("courseCode") String courseCode, @Param("type") ExamTypesName type);
+
+}
