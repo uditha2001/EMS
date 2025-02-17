@@ -1,5 +1,5 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
-import com.example.examManagementBackend.userManagement.serviceInterfaces.JwtService;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;

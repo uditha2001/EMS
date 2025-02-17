@@ -1,6 +1,6 @@
 package com.example.examManagementBackend.userManagement.userManagementServices;
 
-import com.example.examManagementBackend.userManagement.serviceInterfaces.MailService;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.MailService;
 import com.example.examManagementBackend.userManagement.userManagementDTO.MailBody;
 import com.example.examManagementBackend.userManagement.userManagementEntity.ForgotPasswordEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;

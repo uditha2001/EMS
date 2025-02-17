@@ -15,7 +15,7 @@ import com.example.examManagementBackend.resultManagement.entities.StudentsEntit
 import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.resultManagement.repo.StudentRepo;
-import com.example.examManagementBackend.userManagement.serviceInterfaces.JwtService;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.utill.StandardResponse;
