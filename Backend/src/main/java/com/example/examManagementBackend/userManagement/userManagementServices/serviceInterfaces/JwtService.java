@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.userManagement.serviceInterfaces;
+package com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces;
 
 import jakarta.servlet.http.HttpServletRequest;
 
