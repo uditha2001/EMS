@@ -9,6 +9,7 @@ import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
 import ResultGrading from './pages/Results/ResultGrading';
 import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
 import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
+import GradeConditions from './pages/Results/GradeConditions';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -487,6 +488,10 @@ function App() {
             >
 
               <Route
+                path="/result/conditions"
+                element={renderPage('Results Grading | EMS', <GradeConditions />)}
+              />
+               <Route
                 path="/result/grading"
                 element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
