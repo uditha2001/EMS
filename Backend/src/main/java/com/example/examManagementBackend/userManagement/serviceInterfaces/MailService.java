@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces;
+package com.example.examManagementBackend.userManagement.serviceInterfaces;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.MailBody;
 
