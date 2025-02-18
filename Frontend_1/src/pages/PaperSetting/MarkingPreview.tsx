@@ -8,7 +8,6 @@ interface MarkingPreviewProps {
   examYear: string;
   semester: string;
   questions: any[];
-  paperType: string;
   duration: string;
 }
 
@@ -25,7 +24,6 @@ const MarkingPreview: React.FC<MarkingPreviewProps> = ({
   examYear,
   semester,
   questions,
-  paperType,
   duration,
 }) => {
   // Function to convert numbers to Roman numerals
@@ -217,11 +215,10 @@ const MarkingPreview: React.FC<MarkingPreviewProps> = ({
                 currentY,
               );
               currentY += 10;
-            
             });
           }
         });
-      } 
+      }
     });
 
     // Save the PDF document
@@ -326,21 +323,9 @@ const MarkingPreview: React.FC<MarkingPreviewProps> = ({
             </div>
           ) : (
             <div>
-              {/* For questions without subquestions */}
-              {paperType === 'Essay' && (
-                <p className="text-gray-500 dark:text-gray-400">
-                  No marking guide available for essay questions.
-                </p>
-              )}
-
-              {paperType === 'Structure' && q.answer && q.answer.length > 0 && (
-                <div>
-                  <p className="italic">
-                    <strong>Answer:</strong>{' '}
-                    {q.answer || 'No marking guide available'}
-                  </p>
-                </div>
-              )}
+              <p className="text-gray-500 dark:text-gray-400">
+                No marking guide available.
+              </p>
             </div>
           )}
         </div>

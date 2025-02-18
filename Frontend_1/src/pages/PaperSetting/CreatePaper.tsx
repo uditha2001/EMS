@@ -3,14 +3,12 @@ import 'react-quill/dist/quill.snow.css';
 import {
   faInfoCircle,
   faBook,
-  faFileUpload,
   faEye,
   faClipboardCheck,
   faPaperPlane,
 } from '@fortawesome/free-solid-svg-icons';
 import Stepper from '../PaperTransfer/Stepper';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import EssayTemplate from './EssayTemplate';
 import StructureTemplate from './StructureTemplate';
 import MarkingPreview from './MarkingPreview';
 import PaperPreview from './PaperPreview';
@@ -18,7 +16,6 @@ import useApi from '../../api/api';
 import jsPDF from 'jspdf';
 import useAuth from '../../hooks/useAuth';
 import PaperInfoForm from './PaperInfoForm';
-import SelectPaperType from './SelectPaperType';
 import FinalPaperTransfer from './FinalPaperTransfer';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -81,7 +78,6 @@ const initialPaperInfo = {
 const PaperSettings: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [paperType, setPaperType] = useState<string>('');
-  const [paperType_, setPaperType_] = useState<string>('');
   const [questions, setQuestions] = useState<any[]>([]);
   const [paperInfo, setPaperInfo] = useState(initialPaperInfo);
   const [isUploading, setIsUploading] = useState(false);
@@ -191,16 +187,16 @@ const PaperSettings: React.FC = () => {
   useEffect(() => {
     const updatedQuestions_ = questions.map((question, index) => ({
       questionNumber: index + 1,
-      questionType: paperType_,
+      questionType: question.type,
       totalMarks: question.marks,
       subQuestions: question.subquestions.map((sub: any, subIndex: number) => ({
         subQuestionNumber: subIndex + 1,
-        questionType: paperType_,
+        questionType: question.type,
         marks: sub.marks,
         subSubQuestions: sub.subquestions.map(
           (subSub: any, subSubIndex: number) => ({
             subSubQuestionNumber: subSubIndex + 1,
-            questionType: paperType_,
+            questionType: question.type,
             marks: subSub.marks,
           }),
         ),
@@ -208,7 +204,7 @@ const PaperSettings: React.FC = () => {
     }));
 
     setQuestions_(updatedQuestions_);
-  }, [questions, paperType_]);
+  }, [questions]);
 
   const quillModules = {
     toolbar: [
@@ -224,38 +220,20 @@ const PaperSettings: React.FC = () => {
 
   const steps = [
     { id: 1, name: 'Exam Info', icon: faInfoCircle },
-    { id: 2, name: 'Paper Structure', icon: faBook },
-    { id: 3, name: 'Questions', icon: faFileUpload },
-    { id: 4, name: 'Preview Paper', icon: faEye },
-    { id: 5, name: 'Preview Marking', icon: faClipboardCheck },
-    { id: 6, name: 'Transfer Paper & Marking', icon: faPaperPlane },
+    { id: 2, name: 'Questions', icon: faBook },
+    { id: 3, name: 'Preview Paper', icon: faEye },
+    { id: 4, name: 'Preview Marking', icon: faClipboardCheck },
+    { id: 5, name: 'Transfer Paper & Marking', icon: faPaperPlane },
   ];
 
   const renderQuestionTemplate = () => {
-    switch (paperType_) {
-      case 'ESSAY':
-        return (
-          <EssayTemplate
-            questions={questions}
-            setQuestions={setQuestions}
-            quillModules={quillModules}
-          />
-        );
-      case 'Structure':
-        return (
-          <StructureTemplate
-            questions={questions}
-            setQuestions={setQuestions}
-            quillModules={quillModules}
-          />
-        );
-      default:
-        return (
-          <p className="text-center text-gray-500">
-            Please select a paper type to start adding questions.
-          </p>
-        );
-    }
+    return (
+      <StructureTemplate
+        questions={questions}
+        setQuestions={setQuestions}
+        quillModules={quillModules}
+      />
+    );
   };
 
   const handleInputChange = (
@@ -475,29 +453,9 @@ const PaperSettings: React.FC = () => {
                   );
                   currentY += 5;
                 }
-
-                // Answer box for Structure type questions
-                if (
-                  paperType === 'Structure' &&
-                  subSub.answer &&
-                  subSub.answer.length > 0
-                ) {
-                  const boxHeight = subSub.answer.length * 2; // Adjust height based on answer length
-                  paperPdf.rect(margin + 20, currentY, 150, boxHeight); // Draw answer box
-                  currentY += boxHeight + 10;
-                }
               });
             }
           });
-        } else if (
-          paperType === 'Structure' &&
-          q.answer &&
-          q.answer.length > 0
-        ) {
-          // If no subquestions, provide an answer box for the main question
-          const boxHeight = q.answer.length * 2; // Adjust height based on answer length
-          paperPdf.rect(margin + 10, currentY, 150, boxHeight); // Draw answer box
-          currentY += boxHeight + 10;
         }
       });
 
@@ -715,13 +673,38 @@ const PaperSettings: React.FC = () => {
       const paperBlob = paperPdf.output('blob');
       const markingBlob = markingPdf.output('blob');
 
+      const selectedExam = examinations.find(
+        (exam) => exam.id === selectedExamination,
+      )?.year;
+      const selectedCourseCode = courses.find(
+        (course) => course.courseId === selectedCourse,
+      )?.courseCode;
+      if (!selectedExam || !selectedCourseCode) {
+        setErrorMessage('Invalid selection!');
+        return;
+      }
+
       // Create File objects
-      const paperFile = new File([paperBlob], 'exam_paper.pdf', {
-        type: 'application/pdf',
-      });
-      const markingFile = new File([markingBlob], 'marking_scheme.pdf', {
-        type: 'application/pdf',
-      });
+      const paperFile = new File(
+        [paperBlob],
+        `${selectedCourseCode}_${paperType}_${selectedExam.replace(
+          '/',
+          '_',
+        )}.pdf`,
+        {
+          type: 'application/pdf',
+        },
+      );
+      const markingFile = new File(
+        [markingBlob],
+        `MARKING_${selectedCourseCode}_${paperType}_${selectedExam.replace(
+          '/',
+          '_',
+        )}.pdf`,
+        {
+          type: 'application/pdf',
+        },
+      );
 
       // Upload files using the API
       const response = await uploadFile(
@@ -756,9 +739,9 @@ const PaperSettings: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-300">
       <Breadcrumb pageName="Paper Setting" />
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-300 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
             Paper Setting
@@ -785,16 +768,9 @@ const PaperSettings: React.FC = () => {
             />
           )}
 
-          {currentStep === 2 && (
-            <SelectPaperType
-              paperType_={paperType}
-              setPaperType_={setPaperType_}
-            />
-          )}
+          {currentStep === 2 && renderQuestionTemplate()}
 
-          {currentStep === 3 && renderQuestionTemplate()}
-
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <PaperPreview
               university={paperInfo.university}
               degree={paperInfo.degree}
@@ -803,12 +779,11 @@ const PaperSettings: React.FC = () => {
               semester={paperInfo.semester}
               instructions={paperInfo.instructions}
               questions={questions}
-              paperType={paperType}
               duration={paperInfo.duration}
             />
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 4 && (
             <MarkingPreview
               university={paperInfo.university}
               degree={paperInfo.degree}
@@ -816,12 +791,11 @@ const PaperSettings: React.FC = () => {
               examYear={paperInfo.examYear}
               semester={paperInfo.semester}
               questions={questions}
-              paperType={paperType}
               duration={paperInfo.duration}
             />
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 5 && (
             <FinalPaperTransfer
               isUploading={isUploading}
               handleTransfer={handleTransfer}

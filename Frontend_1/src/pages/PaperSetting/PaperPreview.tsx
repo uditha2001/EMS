@@ -9,7 +9,6 @@ interface PaperPreviewProps {
   semester: string;
   instructions: string;
   questions: any[];
-  paperType: string;
   duration: string;
 }
 
@@ -21,7 +20,6 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
   semester,
   instructions,
   questions,
-  paperType,
   duration,
 }) => {
   // Helper function to strip HTML tags from a string
@@ -195,25 +193,9 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                 );
                 currentY += 5;
               }
-
-              // Answer box for Structure type questions
-              if (
-                paperType === 'Structure' &&
-                subSub.answer &&
-                subSub.answer.length > 0
-              ) {
-                const boxHeight = subSub.answer.length * 2; // Adjust height based on answer length
-                doc.rect(margin + 20, currentY, 150, boxHeight); // Draw answer box
-                currentY += boxHeight + 10;
-              }
             });
           }
         });
-      } else if (paperType === 'Structure' && q.answer && q.answer.length > 0) {
-        // If no subquestions, provide an answer box for the main question
-        const boxHeight = q.answer.length * 2; // Adjust height based on answer length
-        doc.rect(margin + 10, currentY, 150, boxHeight); // Draw answer box
-        currentY += boxHeight + 10;
       }
     });
 
@@ -259,7 +241,7 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
           </div>
 
           {/* Main Question with Subquestions */}
-          {q.subquestions && q.subquestions.length > 0 ? (
+          {q.subquestions && q.subquestions.length > 0 && (
             <div>
               {q.subquestions.map((sub: any, subIdx: number) => (
                 <div key={subIdx} className="ml-4 mb-2">
@@ -309,26 +291,6 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                   )}
                 </div>
               ))}
-            </div>
-          ) : (
-            <div>
-              {/* For questions without subquestions */}
-              {paperType === 'Essay' && (
-                <p className="text-gray-500 dark:text-gray-400">
-                  No answer box for essay questions.
-                </p>
-              )}
-
-              {paperType === 'Structure' && q.answer && q.answer.length > 0 && (
-                <div>
-                  <label>Answer:</label>
-                  <textarea
-                    className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full h-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
-                    placeholder="Write your answer here..."
-                    disabled
-                  />
-                </div>
-              )}
             </div>
           )}
         </div>
