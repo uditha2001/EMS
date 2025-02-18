@@ -1,29 +1,35 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Entity
-@Data
 public class ForgotPasswordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer forgotPasswordId;
-
     @Column(nullable = false)
-    @Setter(AccessLevel.NONE)
     private Integer otp;
-
     @Column(nullable = false)
-    @Setter(AccessLevel.NONE)
     private Date expirationDate;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
-    @Setter(AccessLevel.NONE)
     private UserEntity user;
+
+    public Integer getOtp() {
+        return otp;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
 
     public ForgotPasswordEntity() {
     }
