@@ -331,7 +331,7 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
         </div>
         {filteredQuestions.map((question, idx) => (
           <div id={`question-${idx}`} key={idx} className="mb-6">
-            <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded">
+            <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
               <label className="block text-black dark:text-white font-semibold">
                 Question {idx + 1}
               </label>
@@ -409,172 +409,171 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
 
                 {question.subquestions.map((sub, subIdx) => (
                   <>
-                  <div key={subIdx} className="ml-4 mb-4">
-                    <div className="flex justify-between items-center">
-                      <label className="mb-2.5 block text-black dark:text-white">
-                        Subquestion {subIdx + 1}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => removeSubQuestion(idx, subIdx)}
-                          className="text-red-500 hover:text-red-700 transition"
-                        >
-                          <FaMinus />
-                        </button>
-                      </div>
-                    </div>
-                    <ReactQuill
-                      value={sub.text}
-                      onChange={(value) => {
-                        const newQuestions = [...questions];
-                        newQuestions[idx].subquestions[subIdx].text = value;
-                        setQuestions(newQuestions);
-                      }}
-                      modules={quillModules}
-                      className="w-full mb-2"
-                      placeholder="Enter subquestion text..."
-                    />
-                    <div className="flex gap-4 mb-4 text-xs">
-                      <div className="w-1/3">
-                        <label className="mb-2.5 block text-black dark:text-white">
-                          Type
+                    <div key={subIdx} className="ml-4 mb-4">
+                    <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+                    <label className="block text-black dark:text-white">
+                          Subquestion {subIdx + 1}
                         </label>
-                        <select
-                          value={sub.type}
-                          onChange={(e) => {
-                            const newQuestions = [...questions];
-                            newQuestions[idx].subquestions[subIdx].type = e
-                              .target.value as QuestionType;
-                            setQuestions(newQuestions);
-                          }}
-                          className="input-field w-full"
-                        >
-                          <option value="ESSAY">Essay</option>
-                          <option value="MCQ">MCQ</option>
-                          <option value="SHORT_ANSWER">Short Answer</option>
-                          <option value="TRUE_FALSE">True/False</option>
-                          <option value="STRUCTURE">Structure</option>
-                        </select>
-                      </div>
-                      <div className="w-1/3">
-                        <label className="mb-2.5 block text-black dark:text-white">
-                          Marks
-                        </label>
-                        <input
-                          type="number"
-                          value={sub.marks}
-                          onChange={(e) =>
-                            updateSubQuestionMarks(
-                              idx,
-                              subIdx,
-                              Number(e.target.value),
-                            )
-                          }
-                          className="input-field w-full"
-                        />
-                      </div>
-                    </div>
-
-                    {sub.subquestions.length === 0 && (
-                      <div className="w-2/3">
-                        <label className="mb-2.5 block text-black dark:text-white">
-                          Suggested Answer
-                        </label>
-                        {renderInputFields(sub, idx, subIdx)}
-                      </div>
-                    )}
-
-                    {sub.subquestions.map((subSub, subSubIdx) => (
-                      <div key={subSubIdx} className="ml-8 mb-4">
-                        <div className="flex justify-between items-center">
-                          <label className="mb-2.5 block text-black dark:text-white">
-                            Sub-Subquestion {subSubIdx + 1}
-                          </label>
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() =>
-                              removeSubSubQuestion(idx, subIdx, subSubIdx)
-                            }
+                            onClick={() => removeSubQuestion(idx, subIdx)}
                             className="text-red-500 hover:text-red-700 transition"
                           >
                             <FaMinus />
                           </button>
                         </div>
-                        <ReactQuill
-                          value={subSub.text}
-                          onChange={(value) => {
-                            const newQuestions = [...questions];
-                            newQuestions[idx].subquestions[subIdx].subquestions[
-                              subSubIdx
-                            ].text = value;
-                            setQuestions(newQuestions);
-                          }}
-                          modules={quillModules}
-                          className="w-full mb-2"
-                          placeholder="Enter sub-subquestion text..."
-                        />
-                        <div className="flex gap-4 mb-4 text-xs">
-                          <div className="w-1/3">
-                            <label className="mb-2.5 block text-black dark:text-white">
-                              Type
-                            </label>
-                            <select
-                              value={subSub.type}
-                              onChange={(e) => {
-                                const newQuestions = [...questions];
-                                newQuestions[idx].subquestions[
-                                  subIdx
-                                ].subquestions[subSubIdx].type = e.target
-                                  .value as QuestionType;
-                                setQuestions(newQuestions);
-                              }}
-                              className="input-field w-full"
-                            >
-                              <option value="ESSAY">Essay</option>
-                              <option value="MCQ">MCQ</option>
-                              <option value="SHORT_ANSWER">Short Answer</option>
-                              <option value="TRUE_FALSE">True/False</option>
-                              <option value="STRUCTURE">Structure</option>
-                            </select>
-                          </div>
-                          <div className="w-1/3">
-                            <label className="mb-2.5 block text-black dark:text-white">
-                              Marks
-                            </label>
-                            <input
-                              type="number"
-                              value={subSub.marks}
-                              onChange={(e) =>
-                                updateSubSubQuestionMarks(
-                                  idx,
-                                  subIdx,
-                                  subSubIdx,
-                                  Number(e.target.value),
-                                )
-                              }
-                              className="input-field w-full"
-                            />
-                          </div>
+                      </div>
+                      <ReactQuill
+                        value={sub.text}
+                        onChange={(value) => {
+                          const newQuestions = [...questions];
+                          newQuestions[idx].subquestions[subIdx].text = value;
+                          setQuestions(newQuestions);
+                        }}
+                        modules={quillModules}
+                        className="w-full mb-2"
+                        placeholder="Enter subquestion text..."
+                      />
+                      <div className="flex gap-4 mb-4 text-xs">
+                        <div className="w-1/3">
+                          <label className="mb-2.5 block text-black dark:text-white">
+                            Type
+                          </label>
+                          <select
+                            value={sub.type}
+                            onChange={(e) => {
+                              const newQuestions = [...questions];
+                              newQuestions[idx].subquestions[subIdx].type = e
+                                .target.value as QuestionType;
+                              setQuestions(newQuestions);
+                            }}
+                            className="input-field w-full"
+                          >
+                            <option value="ESSAY">Essay</option>
+                            <option value="MCQ">MCQ</option>
+                            <option value="SHORT_ANSWER">Short Answer</option>
+                            <option value="TRUE_FALSE">True/False</option>
+                            <option value="STRUCTURE">Structure</option>
+                          </select>
                         </div>
+                        <div className="w-1/3">
+                          <label className="mb-2.5 block text-black dark:text-white">
+                            Marks
+                          </label>
+                          <input
+                            type="number"
+                            value={sub.marks}
+                            onChange={(e) =>
+                              updateSubQuestionMarks(
+                                idx,
+                                subIdx,
+                                Number(e.target.value),
+                              )
+                            }
+                            className="input-field w-full"
+                          />
+                        </div>
+                      </div>
+
+                      {sub.subquestions.length === 0 && (
                         <div className="w-2/3">
                           <label className="mb-2.5 block text-black dark:text-white">
                             Suggested Answer
                           </label>
-                          {renderInputFields(subSub, idx, subIdx, subSubIdx)}
+                          {renderInputFields(sub, idx, subIdx)}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-  onClick={() => addSubSubQuestion(idx, subIdx)}
-  className="flex items-center text-primary text-sm font-medium hover:underline mt-2 ml-auto"
->
-  <FaPlus className="mr-1" /> Add Sub-Subquestion
-</button>
+                      )}
 
+                      {sub.subquestions.map((subSub, subSubIdx) => (
+                        <div key={subSubIdx} className="ml-8 mb-4">
+                          <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+                          <label className="block text-black dark:text-white">
+                              Sub-Subquestion {subSubIdx + 1}
+                            </label>
+                            <button
+                              onClick={() =>
+                                removeSubSubQuestion(idx, subIdx, subSubIdx)
+                              }
+                              className="text-red-500 hover:text-red-700 transition"
+                            >
+                              <FaMinus />
+                            </button>
+                          </div>
+                          <ReactQuill
+                            value={subSub.text}
+                            onChange={(value) => {
+                              const newQuestions = [...questions];
+                              newQuestions[idx].subquestions[
+                                subIdx
+                              ].subquestions[subSubIdx].text = value;
+                              setQuestions(newQuestions);
+                            }}
+                            modules={quillModules}
+                            className="w-full mb-2"
+                            placeholder="Enter sub-subquestion text..."
+                          />
+                          <div className="flex gap-4 mb-4 text-xs">
+                            <div className="w-1/3">
+                              <label className="mb-2.5 block text-black dark:text-white">
+                                Type
+                              </label>
+                              <select
+                                value={subSub.type}
+                                onChange={(e) => {
+                                  const newQuestions = [...questions];
+                                  newQuestions[idx].subquestions[
+                                    subIdx
+                                  ].subquestions[subSubIdx].type = e.target
+                                    .value as QuestionType;
+                                  setQuestions(newQuestions);
+                                }}
+                                className="input-field w-full"
+                              >
+                                <option value="ESSAY">Essay</option>
+                                <option value="MCQ">MCQ</option>
+                                <option value="SHORT_ANSWER">
+                                  Short Answer
+                                </option>
+                                <option value="TRUE_FALSE">True/False</option>
+                                <option value="STRUCTURE">Structure</option>
+                              </select>
+                            </div>
+                            <div className="w-1/3">
+                              <label className="mb-2.5 block text-black dark:text-white">
+                                Marks
+                              </label>
+                              <input
+                                type="number"
+                                value={subSub.marks}
+                                onChange={(e) =>
+                                  updateSubSubQuestionMarks(
+                                    idx,
+                                    subIdx,
+                                    subSubIdx,
+                                    Number(e.target.value),
+                                  )
+                                }
+                                className="input-field w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="w-2/3">
+                            <label className="mb-2.5 block text-black dark:text-white">
+                              Suggested Answer
+                            </label>
+                            {renderInputFields(subSub, idx, subIdx, subSubIdx)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => addSubSubQuestion(idx, subIdx)}
+                      className="flex items-center text-primary text-sm font-medium hover:underline mt-2 ml-auto"
+                    >
+                      <FaPlus className="mr-1" /> Add Sub-Subquestion
+                    </button>
                   </>
                 ))}
-
-              
               </div>
             )}
 

@@ -208,10 +208,8 @@ const PaperSettings: React.FC = () => {
 
   const quillModules = {
     toolbar: [
-      [{ header: '1' }, { header: '2' }, { font: [] }],
-      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ header: '1' }, { header: '2' }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ color: [] }, { background: [] }],
       [{ align: [] }],
       ['link', 'image'],
       ['blockquote', 'code-block'],

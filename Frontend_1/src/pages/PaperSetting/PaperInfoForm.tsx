@@ -11,12 +11,11 @@ interface PaperInfoProps {
 const PaperInfoForm: React.FC<PaperInfoProps> = ({ paperInfo, handleInputChange, setPaperInfo }) => {
   const quillModules = {
     toolbar: [
-      [{ header: '1' }, { header: '2' }, { font: [] }],
+      [{ header: '1' }, { header: '2' }],
       [{ list: 'ordered' }, { list: 'bullet' }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ color: [] }, { background: [] }],
       [{ align: [] }],
-      ['link', 'image'],
+      ['link'],
       ['blockquote', 'code-block'],
     ],
   };
