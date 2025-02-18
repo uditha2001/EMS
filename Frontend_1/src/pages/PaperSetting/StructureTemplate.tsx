@@ -342,12 +342,7 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                 >
                   {collapsed[idx] ? 'Show' : 'Hide'}
                 </button>
-                <button
-                  onClick={() => addSubQuestion(idx)}
-                  className="text-primary text-sm font-medium hover:underline mr-2"
-                >
-                  Add Subquestion
-                </button>
+
                 <button
                   onClick={() => removeQuestion(idx)}
                   className="text-red-500 hover:text-red-700 transition"
@@ -369,7 +364,7 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                   modules={quillModules}
                   className="w-full mb-2"
                 />
-                <div className="flex gap-4 mb-4">
+                <div className="flex gap-4 mb-4 text-xs">
                   <div className="w-1/3">
                     <label className="mb-2.5 block text-black dark:text-white">
                       Type
@@ -381,7 +376,7 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                         newQuestions[idx].type = e.target.value as QuestionType;
                         setQuestions(newQuestions);
                       }}
-                      className="input-field w-full"
+                      className="input-field w-full "
                     >
                       <option value="ESSAY">Essay</option>
                       <option value="MCQ">MCQ</option>
@@ -413,18 +408,13 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                 )}
 
                 {question.subquestions.map((sub, subIdx) => (
+                  <>
                   <div key={subIdx} className="ml-4 mb-4">
                     <div className="flex justify-between items-center">
                       <label className="mb-2.5 block text-black dark:text-white">
                         Subquestion {subIdx + 1}
                       </label>
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => addSubSubQuestion(idx, subIdx)}
-                          className="flex items-center text-primary text-sm font-medium hover:underline"
-                        >
-                          <FaPlus className="mr-1" /> Add Sub-Subquestion
-                        </button>
                         <button
                           onClick={() => removeSubQuestion(idx, subIdx)}
                           className="text-red-500 hover:text-red-700 transition"
@@ -441,10 +431,10 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                         setQuestions(newQuestions);
                       }}
                       modules={quillModules}
-                      className="w-full"
+                      className="w-full mb-2"
                       placeholder="Enter subquestion text..."
                     />
-                    <div className="flex gap-4 mb-4">
+                    <div className="flex gap-4 mb-4 text-xs">
                       <div className="w-1/3">
                         <label className="mb-2.5 block text-black dark:text-white">
                           Type
@@ -519,10 +509,10 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                             setQuestions(newQuestions);
                           }}
                           modules={quillModules}
-                          className="w-full"
+                          className="w-full mb-2"
                           placeholder="Enter sub-subquestion text..."
                         />
-                        <div className="flex gap-4 mb-4">
+                        <div className="flex gap-4 mb-4 text-xs">
                           <div className="w-1/3">
                             <label className="mb-2.5 block text-black dark:text-white">
                               Type
@@ -574,9 +564,26 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                       </div>
                     ))}
                   </div>
+                  <button
+  onClick={() => addSubSubQuestion(idx, subIdx)}
+  className="flex items-center text-primary text-sm font-medium hover:underline mt-2 ml-auto"
+>
+  <FaPlus className="mr-1" /> Add Sub-Subquestion
+</button>
+
+                  </>
                 ))}
+
+              
               </div>
             )}
+
+            <button
+              onClick={() => addSubQuestion(idx)}
+              className="flex items-center text-primary text-sm font-medium hover:underline mt-2"
+            >
+              <FaPlus className="mr-1" /> Add Subquestion
+            </button>
           </div>
         ))}
       </div>
