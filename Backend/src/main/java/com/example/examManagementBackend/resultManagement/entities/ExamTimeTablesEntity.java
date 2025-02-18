@@ -19,7 +19,8 @@ import java.util.Set;
 @Table(name="exam_time_table")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class ExamTimeTablesEntity {
     @Setter(AccessLevel.NONE)
     @Id

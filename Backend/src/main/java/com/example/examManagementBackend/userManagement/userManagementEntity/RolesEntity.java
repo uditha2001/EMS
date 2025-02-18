@@ -2,6 +2,8 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Set;
@@ -9,11 +11,16 @@ import java.util.Set;
 @Entity
 @Table(name="roles")
 public class RolesEntity {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long roleId;
+    @Setter
+    @Getter
     @Column(nullable = false,unique = true)
     private String roleName;
+    @Setter
+    @Getter
     @Column
     private String roleDescription;
     @OneToMany(mappedBy = "role",cascade = CascadeType.ALL)
@@ -31,31 +38,6 @@ public class RolesEntity {
     public RolesEntity(String roleName, String roleDescription) {
         this.roleName = roleName;
         this.roleDescription = roleDescription;
-    }
-
-    public String getRoleName() {
-
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-
-        this.roleName = roleName;
-    }
-
-    public String getRoleDescription() {
-
-        return roleDescription;
-    }
-
-    public void setRoleDescription(String roleDescription) {
-
-        this.roleDescription = roleDescription;
-    }
-
-    public Long getRoleId() {
-
-        return roleId;
     }
 
 

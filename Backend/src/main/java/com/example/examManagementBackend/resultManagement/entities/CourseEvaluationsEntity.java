@@ -13,7 +13,8 @@ import java.util.Set;
 @Table(name="course_evaluation")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Setter
+@Getter
 public class CourseEvaluationsEntity {
     @Setter(AccessLevel.NONE)
     @Id
