@@ -8,7 +8,8 @@ import lombok.*;
 @Table(name="exam_invigilators ")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Setter
+@Getter
 public class ExamInvigilatorsEntity {
     @Setter(AccessLevel.NONE)
     @Id

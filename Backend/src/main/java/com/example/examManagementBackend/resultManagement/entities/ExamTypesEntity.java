@@ -11,7 +11,8 @@ import java.util.Set;
 @Table(name="exam_types")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class ExamTypesEntity {
     @Setter(AccessLevel.NONE)
     @Id

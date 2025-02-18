@@ -5,9 +5,7 @@ import com.example.examManagementBackend.resultManagement.entities.CourseEvaluat
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,7 +24,8 @@ import java.util.Set;
 )
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class ExaminationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
