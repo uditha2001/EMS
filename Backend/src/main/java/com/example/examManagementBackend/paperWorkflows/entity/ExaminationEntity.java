@@ -1,18 +1,18 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
+import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -24,7 +24,8 @@ import java.util.List;
 )
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class ExaminationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,7 +54,7 @@ public class ExaminationEntity {
     @Column(nullable = false)
     private String semester;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
     @OneToMany(mappedBy = "examination",cascade = CascadeType.ALL)

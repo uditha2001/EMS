@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -15,10 +16,12 @@ public class UserRoles {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name="userId")
     UserEntity user;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name="roleId")
     RolesEntity role;
@@ -27,6 +30,7 @@ public class UserRoles {
     @Column(nullable = false)
     private LocalDateTime assignedAt;
 
+    @Setter
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime grantAt;  // New field to store the grant date
 
@@ -48,18 +52,6 @@ public class UserRoles {
 
     public LocalDateTime getGrantAt() {
         return grantAt;
-    }
-
-    public void setRole(RolesEntity role) {
-        this.role = role;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
-
-    public void setGrantAt(LocalDateTime grantAt) {
-        this.grantAt = grantAt;
     }
 
     // Method to check if role should be unassigned based on the grant date

@@ -5,9 +5,7 @@ import com.example.examManagementBackend.resultManagement.entities.ExamTimeTable
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,7 +17,8 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "courses")
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CoursesEntity {

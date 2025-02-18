@@ -14,7 +14,8 @@ import java.util.List;
 @Table(name="students_details")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class StudentsEntity {
     @Setter(AccessLevel.NONE)
     @Id
