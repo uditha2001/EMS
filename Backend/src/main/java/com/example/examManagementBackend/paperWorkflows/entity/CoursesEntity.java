@@ -57,9 +57,9 @@ public class CoursesEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
-    private DegreeProgramsEntity degreeProgramsEntity;
+    private DegreeProgramsEntity degreeProgramsEntity; // Removed cascade
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;
@@ -69,6 +69,7 @@ public class CoursesEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<RoleAssignmentEntity> roleAssignmentList;
+
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "")
     private List<ExamTimeTablesEntity> examTimeTablesEntityList;
 

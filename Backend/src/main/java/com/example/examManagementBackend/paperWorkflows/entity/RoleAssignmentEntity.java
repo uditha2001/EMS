@@ -58,4 +58,7 @@ public class RoleAssignmentEntity {
     @OneToMany(mappedBy = "roleAssignment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RoleAssignmentRevisionEntity> revisions; // Track changes to user assignments
 
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime grantAt;
+
 }

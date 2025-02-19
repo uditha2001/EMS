@@ -1,12 +1,10 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.CourseDTO;
-import com.example.examManagementBackend.paperWorkflows.dto.DegreeProgramDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.service.CourseService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +16,11 @@ import java.util.List;
 @RequestMapping("/api/v1/courses")
 public class CourseController {
 
-    @Autowired
-    private CourseService coursesService;
+    private final CourseService coursesService;
+
+    public CourseController(CourseService coursesService) {
+        this.coursesService = coursesService;
+    }
 
     @GetMapping
     public ResponseEntity<StandardResponse> getAllCourses() {

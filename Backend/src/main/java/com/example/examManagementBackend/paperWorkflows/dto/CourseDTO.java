@@ -25,6 +25,7 @@ public class CourseDTO {
         private String courseType; // Added courseType field as String for flexibility
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
-        private Long degreeProgramId; // Reference to DegreeProgramsEntity
+        private Long degreeProgramId;
+        private String degreeName;
 
 }
