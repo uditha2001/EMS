@@ -16,8 +16,7 @@ public class ExaminationDTO {
     private String level;
     private String semester;
     private Long degreeProgramId;
-    private String degreeName;
-
+    private String degreeProgramName;
     private LocalDateTime examProcessStartDate;
     private LocalDateTime paperSettingCompleteDate;
     private LocalDateTime markingCompleteDate;

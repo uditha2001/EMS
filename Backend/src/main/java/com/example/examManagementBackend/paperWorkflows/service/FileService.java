@@ -5,13 +5,11 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
-import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.PapersCoursesRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,31 +23,29 @@ import java.util.List;
 @Service
 public class FileService {
 
-    @Autowired
-    private EncryptionService encryptionService;
+    private final EncryptionService encryptionService;
 
-    @Autowired
-    private EncryptedPaperRepository encryptedPaperRepository;
+    private final EncryptedPaperRepository encryptedPaperRepository;
 
-    @Autowired
-    public UserManagementRepo userRepository;
+    public final UserManagementRepo userRepository;
 
-    @Autowired
-    CoursesRepository coursesRepository;
+    public final CoursesRepository coursesRepository;
 
-    @Autowired
-    PapersCoursesRepository papersCoursesRepository;
-
-    @Autowired
+    final
     ExaminationRepository examinationRepository;
 
-    private final String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
+    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository) {
+        this.encryptionService = encryptionService;
+        this.encryptedPaperRepository = encryptedPaperRepository;
+        this.userRepository = userRepository;
+        this.coursesRepository = coursesRepository;
+        this.examinationRepository = examinationRepository;
+    }
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, List<Long> courseIds, String remarks, Long examinationId,String paperType) {
-        // Validate courseIds
-        if (courseIds == null || courseIds.isEmpty()) {
-            throw new IllegalArgumentException("Course IDs cannot be null or empty.");
-        }
+    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType,String encryptedMarkingFile) {
+        // Validate courseId
+        CoursesEntity course = coursesRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course with ID " + courseId + " not found."));
 
         // Validate examinationId
         ExaminationEntity examination = examinationRepository.findById(examinationId)
@@ -63,6 +59,10 @@ public class FileService {
         String filePath = saveFileToStorage(encryptedFile, fileName);
         encryptedPaper.setFilePath(filePath);
 
+        // Save the marking file to the storage location and set the path
+        String markingFilePath = saveFileToStorage(encryptedMarkingFile, "MARKING_" + fileName);
+        encryptedPaper.setMarkingFilePath(markingFilePath);
+
         // Fetch and set creator
         encryptedPaper.setCreator(userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("Creator not found.")));
@@ -74,43 +74,53 @@ public class FileService {
         encryptedPaper.setRemarks(remarks);
         encryptedPaper.setExamination(examination);
         encryptedPaper.setPaperType(PaperType.valueOf(paperType));
-
+        encryptedPaper.setCourse(course);
         // Save the EncryptedPaper entity
         encryptedPaperRepository.save(encryptedPaper);
 
-        // Associate the paper with the selected courses
-        for (Long courseId : courseIds) {
-            CoursesEntity course = coursesRepository.findById(courseId)
-                    .orElseThrow(() -> new RuntimeException("Course with ID " + courseId + " not found."));
-
-            PapersCoursesEntity papersCoursesEntity = new PapersCoursesEntity();
-            papersCoursesEntity.setEncryptedPaper(encryptedPaper);
-            papersCoursesEntity.setCourse(course);
-            papersCoursesRepository.save(papersCoursesEntity);
-        }
     }
 
-    public void updateEncryptedPaper(Long paperId, String encryptedFile, String fileName, String remarks) {
+    public void updateEncryptedPaper(
+            Long paperId,
+            String encryptedFile,
+            String fileName,
+            String remarks,
+            String encryptedMarkingFile, // New parameter for marking file
+            String markingFileName // New parameter for marking file name
+    ) {
         // Retrieve the existing paper
         EncryptedPaper existingPaper = encryptedPaperRepository.findById(paperId)
                 .orElseThrow(() -> new RuntimeException("Paper not found with ID: " + paperId));
 
-        // If the file name is different, delete the old file from the system
+        // If the paper file name is different, delete the old file from the system
         if (!existingPaper.getFileName().equals(fileName)) {
             try {
                 Files.deleteIfExists(Paths.get(existingPaper.getFilePath()));
             } catch (IOException e) {
-                throw new RuntimeException("Failed to delete existing file: " + e.getMessage());
+                throw new RuntimeException("Failed to delete existing paper file: " + e.getMessage());
             }
         }
 
-        // Save the new file to the storage and get the path
+        // If the marking file name is different, delete the old marking file from the system
+        if (existingPaper.getMarkingFilePath() != null && !existingPaper.getMarkingFilePath().isEmpty()) {
+            try {
+                Files.deleteIfExists(Paths.get(existingPaper.getMarkingFilePath()));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to delete existing marking file: " + e.getMessage());
+            }
+        }
+
+        // Save the new paper file to the storage and get the path
         String filePath = saveFileToStorage(encryptedFile, fileName);
+
+        // Save the new marking file to the storage and get the path
+        String markingFilePath = saveFileToStorage(encryptedMarkingFile, markingFileName);
 
         // Update the paper fields
         existingPaper.setFileName(fileName);
         existingPaper.setFilePath(filePath);
         existingPaper.setRemarks(remarks);
+        existingPaper.setMarkingFilePath(markingFilePath); // Update marking file path
 
         // Save the updated paper record
         encryptedPaperRepository.save(existingPaper);
@@ -125,8 +135,10 @@ public class FileService {
 
         // Store the encrypted file to a location and return the file path
         try {
-            Path path = Paths.get(UPLOAD_DIR).resolve(fileName).normalize();
-            if (!path.startsWith(Paths.get(UPLOAD_DIR).normalize())) {
+            String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
+            Path path1 = Paths.get(UPLOAD_DIR);
+            Path path = path1.resolve(fileName).normalize();
+            if (!path.startsWith(path1.normalize())) {
                 throw new IllegalArgumentException("Invalid file name");
             }
             Files.write(path, encryptedFile.getBytes()); // Save file bytes
@@ -151,6 +163,7 @@ public class FileService {
         // Delete the file from the file system
         try {
             Files.deleteIfExists(Paths.get(encryptedPaper.getFilePath()));
+            Files.deleteIfExists(Paths.get(encryptedPaper.getMarkingFilePath()));
         } catch (IOException e) {
             throw new RuntimeException("Failed to delete file: " + e.getMessage());
         }
@@ -178,17 +191,10 @@ public class FileService {
         }
     }
 
-    public void updatePaperStatus(Long paperId, String status) {
-        // Retrieve the paper by ID
-        EncryptedPaper paper = encryptedPaperRepository.findById(paperId)
-                .orElseThrow(() -> new IllegalArgumentException("Paper not found with ID: " + paperId));
-
-        // Update the status
-        paper.setStatus(ExamPaperStatus.valueOf(status));
-
-        // Save the updated paper
-        encryptedPaperRepository.save(paper);
+    public ExamPaperStatus getPaperStatus(Long id) {
+        EncryptedPaper paper = encryptedPaperRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Paper not found"));
+        return paper.getStatus();
     }
-
 
 }

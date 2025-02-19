@@ -9,8 +9,10 @@ import {
   faTimesCircle,
   faClock,
   faPen,
+  faComment,
 } from '@fortawesome/free-solid-svg-icons';
 import useApi from '../../api/api';
+import useAuth from '../../hooks/useAuth';
 
 interface SubSubQuestion {
   subSubQuestionId: number;
@@ -53,6 +55,7 @@ interface Paper {
   courses: { id: number; name: string; code: string }[];
   status: string;
   shared: boolean;
+  feedback: string;
 }
 
 const ModerationDashboard: React.FC = () => {
@@ -61,23 +64,40 @@ const ModerationDashboard: React.FC = () => {
   const [question, setQuestion] = useState<Question[]>([]);
   const [selectedPaperId, setSelectedPaperId] = useState<number | null>(null);
   const { getPapers, getPaperStructure } = useApi();
+  const [feedback, setFeedback] = useState<string>('');
+  const { auth } = useAuth();
 
   // Function to fetch paper data
   useEffect(() => {
     const fetchPapersData = async () => {
       try {
-        const paperResponse = await getPapers();
-        const paperData = paperResponse.data.data;
-        setPapers(paperData);
-        for (const paper of paperData) {
-          fetchQuestionsData(paper.id);
+        if (!auth?.id) {
+          console.error('User ID is undefined');
+          return;
         }
+
+        const response = await getPapers();
+        const allPapers = response.data.data;
+
+        // Filter papers where the user is either the creator or the moderator
+        const userPapers = allPapers.filter(
+          (paper: Paper) =>
+            paper.creator.id === Number(auth.id) ||
+            paper.moderator.id === Number(auth.id),
+        );
+
+        setPapers(userPapers);
+
+        userPapers.forEach((paper: Paper) => {
+          fetchQuestionsData(paper.id);
+        });
       } catch (error) {
         console.error('Error fetching paper data:', error);
       }
     };
+
     fetchPapersData();
-  }, []);
+  }, [auth.id]); // Add auth.id as a dependency to refetch when it changes
 
   // Function to fetch question structure
   const fetchQuestionsData = async (paperId: number) => {
@@ -156,6 +176,14 @@ const ModerationDashboard: React.FC = () => {
 
   const handleCardClick = (paperId: number) => {
     setSelectedPaperId(paperId);
+    setPaperFeedback();
+  };
+
+  const setPaperFeedback = () => {
+    const paper = papers.find((paper) => paper.id === selectedPaperId);
+    if (paper) {
+      setFeedback(paper.feedback);
+    }
   };
 
   const calculateCompletionPercentage = (questions: Question[]) => {
@@ -194,7 +222,14 @@ const ModerationDashboard: React.FC = () => {
       const paperQuestions = questions.filter(
         (question) => question.paperId === paper.id,
       );
-      return calculateCompletionPercentage(paperQuestions);
+
+      let completionPercentage = calculateCompletionPercentage(paperQuestions);
+
+      if (paper.status === 'APPROVED') {
+        completionPercentage = 100;
+      }
+
+      return completionPercentage;
     });
 
     return {
@@ -232,92 +267,97 @@ const ModerationDashboard: React.FC = () => {
 
   const renderQuestionsTable = (questions: Question[]) => {
     return (
-      <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
-        <thead>
-          <tr className="bg-gray-100 dark:bg-form-input">
-            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-              Question Number
-            </th>
-            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-              Sub-Questions
-            </th>
-            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-              Moderation Status
-            </th>
-            <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-              Remarks
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {questions.map((question) => (
-            <tr
-              key={question.questionId}
-              className="hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              {/* Main Question */}
-              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                {question.questionNumber}
-              </td>
-              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                {question.subQuestions.length > 0
-                  ? question.subQuestions.map((subQuestion) => (
-                      <div key={subQuestion.subQuestionId}>
-                        {/* Sub-Question */}
-                        <strong>
-                          {question.questionNumber}.
-                          {subQuestion.subQuestionNumber}
-                        </strong>{' '}
-                        {subQuestion.moderatorComment && (
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            (Comment: {subQuestion.moderatorComment})
-                          </span>
-                        )}
-                        <ul className="ml-4 mt-1">
-                          {subQuestion.subSubQuestions.map((subSubQuestion) => (
-                            <li
-                              key={subSubQuestion.subSubQuestionId}
-                              className="mb-1"
-                            >
-                              {/* Sub-Sub-Question */}
-                              {question.questionNumber}.
-                              {subQuestion.subQuestionNumber}.
-                              {subSubQuestion.subSubQuestionNumber}{' '}
-                              {getProgress(subSubQuestion.status)}
-                              {subSubQuestion.moderatorComment && (
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  {' '}
-                                  (Comment: {subSubQuestion.moderatorComment})
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))
-                  : 'No sub-questions'}
-              </td>
-              {/* Main Question Moderation Status */}
-              <td
-                className={`border px-4 py-2 ${getStatusColor(
-                  question.status,
-                )}`}
-              >
-                {getProgress(question.status)}
-              </td>
-              {/* Main Question Remarks */}
-              <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                {question.moderatorComment || 'No comments'}
-              </td>
+      <div className="overflow-x-auto mt-6">
+        <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-form-input">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                Question Number
+              </th>
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                Sub-Questions
+              </th>
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                Moderation Status
+              </th>
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                Remarks
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {questions.map((question) => (
+              <tr
+                key={question.questionId}
+                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                {/* Main Question */}
+                <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                  {question.questionNumber}
+                </td>
+                <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                  {question.subQuestions.length > 0
+                    ? question.subQuestions.map((subQuestion) => (
+                        <div key={subQuestion.subQuestionId}>
+                          {/* Sub-Question */}
+                          <strong>
+                            {question.questionNumber}.
+                            {subQuestion.subQuestionNumber}
+                          </strong>{' '}
+                          {subQuestion.moderatorComment && (
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              (Comment: {subQuestion.moderatorComment})
+                            </span>
+                          )}
+                          <ul className="ml-4 mt-1">
+                            {subQuestion.subSubQuestions.map(
+                              (subSubQuestion) => (
+                                <li
+                                  key={subSubQuestion.subSubQuestionId}
+                                  className="mb-1"
+                                >
+                                  {/* Sub-Sub-Question */}
+                                  {question.questionNumber}.
+                                  {subQuestion.subQuestionNumber}.
+                                  {subSubQuestion.subSubQuestionNumber}{' '}
+                                  {getProgress(subSubQuestion.status)}
+                                  {subSubQuestion.moderatorComment && (
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {' '}
+                                      (Comment:{' '}
+                                      {subSubQuestion.moderatorComment})
+                                    </span>
+                                  )}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      ))
+                    : 'No sub-questions'}
+                </td>
+                {/* Main Question Moderation Status */}
+                <td
+                  className={`border px-4 py-2 ${getStatusColor(
+                    question.status,
+                  )}`}
+                >
+                  {getProgress(question.status)}
+                </td>
+                {/* Main Question Remarks */}
+                <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                  {question.moderatorComment || 'No comments'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4">
       <Breadcrumb pageName="Moderation Dashboard" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -326,8 +366,11 @@ const ModerationDashboard: React.FC = () => {
             (question) => question.paperId === paper.id,
           );
 
-          const paperCompletionPercentage =
+          let paperCompletionPercentage =
             calculateCompletionPercentage(paperQuestions);
+          if (paper.status === 'APPROVED') {
+            paperCompletionPercentage = 100;
+          }
 
           return (
             <div
@@ -372,6 +415,18 @@ const ModerationDashboard: React.FC = () => {
           );
         })}
       </div>
+
+      {selectedPaperId && feedback.length > 0 && question.length == 0 && (
+        <div className="my-6">
+          <h3 className="font-medium text-black dark:text-white flex items-center gap-2 mb-2 ">
+            <FontAwesomeIcon icon={faComment} className="text-blue-500" />
+            Feedback
+          </h3>
+          <div className="p-4 border-l-4 border-blue-500 rounded bg-white shadow-md dark:bg-boxdark dark:border-blue-400">
+            <p className="text-gray-700 dark:text-gray-300">{feedback}</p>
+          </div>
+        </div>
+      )}
 
       {selectedPaperId && question.length > 0 && (
         <div>

@@ -1,13 +1,11 @@
 package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperViewRequestDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
-import com.example.examManagementBackend.paperWorkflows.entity.PapersCoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
-import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.utill.StandardResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,27 +19,29 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/papers")
 public class FileUploadController {
 
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
+
+    public FileUploadController(FileService fileService) {
+        this.fileService = fileService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<StandardResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
+            @RequestParam("markingFile") MultipartFile markingFile,
             @RequestParam("creatorId") Long creatorId,
-            @RequestParam("courseIds") List<Long> courseIds,
+            @RequestParam("courseId") Long courseId,
             @RequestParam("remarks") String remarks,
             @RequestParam("paperType") String paperType,
             @RequestParam("moderatorId") Long moderatorId,
             @RequestParam("examinationId") Long examinationId) {
         try {
-            // Validate courseIds
-            if (courseIds == null || courseIds.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new StandardResponse(400, "At least one course must be selected.", null));
-            }
+            // Validate courseId
+          fileService.coursesRepository.findById(courseId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid course ID."));
 
             // Validate creator existence
-            UserEntity creator = fileService.userRepository.findById(creatorId)
+            fileService.userRepository.findById(creatorId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid creator ID."));
 
             // Validate moderator existence
@@ -58,9 +58,21 @@ public class FileUploadController {
                         .body(new StandardResponse(400, "Invalid file type. Only PDF files are allowed.", null));
             }
 
+            // Validate file type for marking
+            if (markingFile == null || markingFile.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "No marking file provided.", null));
+            }
+            if (!"application/pdf".equals(markingFile.getContentType())) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Invalid marking file type. Only PDF files are allowed.", null));
+            }
+
             // Encrypt and save file
             String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
-            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseIds, remarks, examinationId,paperType);
+            // Encrypt and save marking file
+            String encryptedMarkingFile = fileService.uploadAndEncryptFileForUsers(markingFile, creatorId, moderatorId);
+            fileService.saveEncryptedPaper(encryptedFile, creatorId, file.getOriginalFilename(), moderatorId, courseId, remarks, examinationId, paperType, encryptedMarkingFile);
 
             return ResponseEntity.ok()
                     .body(new StandardResponse(200, "File uploaded and encrypted successfully.", null));
@@ -71,7 +83,7 @@ public class FileUploadController {
             // Log error for debugging purposes
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error uploading file: ", null));
+                    .body(new StandardResponse(500, "Error uploading file: " + e.getMessage(), null));
         }
     }
 
@@ -99,6 +111,31 @@ public class FileUploadController {
         }
     }
 
+    @PostMapping("/download-marking")
+    public ResponseEntity<?> downloadMarkingFile(@RequestBody EncryptedPaperViewRequestDTO request) {
+        try {
+            // Retrieve the encrypted paper
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(request.getId());
+
+            if (encryptedPaper == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
+            }
+
+            // Decrypt the marking file
+            byte[] decryptedData = fileService.decryptFileForUser(request.getModeratorId(), encryptedPaper.getMarkingFilePath());
+
+            // Return the file as an attachment for download
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=marking_" + encryptedPaper.getFileName())
+                    .body(decryptedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error downloading marking file: " + e.getMessage(), null));
+        }
+    }
+
 
     @GetMapping
     public ResponseEntity<StandardResponse> getAllPapers() {
@@ -109,11 +146,6 @@ public class FileUploadController {
             // Map each paper to its corresponding DTO
             List<EncryptedPaperDTO> paperDTOs = papers.stream()
                     .map(paper -> {
-                        // Extract courses associated with the paper
-                        List<CoursesEntity> courses = paper.getPapersCourses()
-                                .stream()
-                                .map(PapersCoursesEntity::getCourse)
-                                .toList();
 
                         // Construct the DTO
                         return new EncryptedPaperDTO(
@@ -125,9 +157,11 @@ public class FileUploadController {
                                 paper.getCreator(),
                                 paper.getModerator(),
                                 paper.getExamination(),
-                                courses, // Include courses in the DTO
+                                paper.getCourse(),
                                 paper.getStatus(),
-                                paper.getPaperType()
+                                paper.getPaperType(),
+                                paper.getFeedback(),
+                                paper.getMarkingFilePath()
                         );
                     })
                     .collect(Collectors.toList());
@@ -146,26 +180,39 @@ public class FileUploadController {
     @DeleteMapping("/{id}")
     public ResponseEntity<StandardResponse> deletePaper(@PathVariable Long id) {
         try {
+            // Retrieve the existing paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(id);
+
+            if (existingPaper == null) {
+                return new ResponseEntity<>(new StandardResponse(400, "Paper not found with the provided id.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return new ResponseEntity<>(new StandardResponse(400, "Cannot delete the paper. It has already been approved.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Proceed with deletion if not approved
             fileService.deletePaperById(id);
+
             return new ResponseEntity<>(new StandardResponse(200, "Paper deleted successfully.", null), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: " , null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new StandardResponse(500, "Error deleting paper: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping("/view/{id}")
-    public ResponseEntity<?> viewEncryptedFile(
-            @PathVariable Long id,
-            @RequestParam("moderatorId") Long moderatorId) {
+
+    @PostMapping("/view")
+    public ResponseEntity<?> viewEncryptedFile(@RequestBody EncryptedPaperViewRequestDTO request) {
         try {
-            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(id);
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(request.getId());
 
             if (encryptedPaper == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            byte[] decryptedData = fileService.decryptFileForUser(moderatorId, encryptedPaper.getFilePath());
+            byte[] decryptedData = fileService.decryptFileForUser(request.getModeratorId(), encryptedPaper.getFilePath());
 
             return ResponseEntity.ok()
                     .header("Content-Type", "application/pdf")
@@ -173,22 +220,56 @@ public class FileUploadController {
                     .body(decryptedData);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new StandardResponse(500, "Error viewing file: ", null));
+                    .body(new StandardResponse(500, "Error viewing file", null));
         }
     }
+
+    @PostMapping("/view-marking")
+    public ResponseEntity<?> viewMarkingFile(@RequestBody EncryptedPaperViewRequestDTO request) {
+        try {
+            // Retrieve the encrypted paper
+            EncryptedPaper encryptedPaper = fileService.getEncryptedPaperById(request.getId());
+
+            if (encryptedPaper == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new StandardResponse(404, "Paper not found.", null));
+            }
+
+            // Decrypt the marking file
+            byte[] decryptedData = fileService.decryptFileForUser(request.getModeratorId(), encryptedPaper.getMarkingFilePath());
+
+            // Return the file as a PDF for viewing in the browser
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "inline; filename=marking_" + encryptedPaper.getFileName())
+                    .body(decryptedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new StandardResponse(500, "Error viewing marking file: " + e.getMessage(), null));
+        }
+    }
+
 
     @PutMapping("/update/{fileId}")
     public ResponseEntity<StandardResponse> updatePaper(
             @PathVariable Long fileId,
             @RequestParam("file") MultipartFile file,
             @RequestParam("fileName") String fileName,
-            @RequestParam("remarks") String remarks) {
-
+            @RequestParam("remarks") String remarks,
+            @RequestParam("markingFile") MultipartFile markingFile, // New parameter for marking file
+            @RequestParam("markingFileName") String markingFileName // New parameter for marking file name
+    ) {
         try {
-            // Validate file type
+            // Validate file type for paper
             if (!"application/pdf".equals(file.getContentType())) {
                 return ResponseEntity.badRequest()
-                        .body(new StandardResponse(400, "Invalid file type. Only PDF files are allowed.", null));
+                        .body(new StandardResponse(400, "Invalid paper file type. Only PDF files are allowed.", null));
+            }
+
+            // Validate file type for marking
+            if (!"application/pdf".equals(markingFile.getContentType())) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Invalid marking file type. Only PDF files are allowed.", null));
             }
 
             // Retrieve existing paper details
@@ -198,18 +279,34 @@ public class FileUploadController {
                         .body(new StandardResponse(400, "Paper not found with the provided fileId.", null));
             }
 
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return ResponseEntity.badRequest()
+                        .body(new StandardResponse(400, "Cannot update the paper. It has already been approved.", null));
+            }
+
             // Get creatorId and moderatorId from the existing paper
             Long creatorId = existingPaper.getCreator().getUserId();
             Long moderatorId = existingPaper.getModerator().getUserId();
 
-            // Encrypt the file before saving it
-            String encryptedFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
+            // Encrypt the paper file before saving it
+            String encryptedPaperFile = fileService.uploadAndEncryptFileForUsers(file, creatorId, moderatorId);
 
-            // Update the paper with the new file, file name, and remarks
-            fileService.updateEncryptedPaper(fileId, encryptedFile, fileName, remarks);
+            // Encrypt the marking file before saving it
+            String encryptedMarkingFile = fileService.uploadAndEncryptFileForUsers(markingFile, creatorId, moderatorId);
+
+            // Update the paper with the new file, file name, remarks, and marking file
+            fileService.updateEncryptedPaper(
+                    fileId,
+                    encryptedPaperFile,
+                    fileName,
+                    remarks,
+                    encryptedMarkingFile,
+                    markingFileName
+            );
 
             return ResponseEntity.ok()
-                    .body(new StandardResponse(200, "Paper updated successfully", null));
+                    .body(new StandardResponse(200, "Paper and marking updated successfully", null));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -237,11 +334,6 @@ public class FileUploadController {
                         .body(new StandardResponse(404, "Paper not found.", null));
             }
 
-            // Retrieve courses associated with the paper
-            List<CoursesEntity> courses = encryptedPaper.getPapersCourses()
-                    .stream()
-                    .map(PapersCoursesEntity::getCourse)
-                    .toList();
 
             // Create a DTO to send relevant paper data
             EncryptedPaperDTO paperDTO = new EncryptedPaperDTO(
@@ -253,9 +345,11 @@ public class FileUploadController {
                     encryptedPaper.getCreator(),
                     encryptedPaper.getModerator(),
                     encryptedPaper.getExamination(),
-                    courses,
+                    encryptedPaper.getCourse(),
                     encryptedPaper.getStatus(),
-                    encryptedPaper.getPaperType()// Pass the list of courses here
+                    encryptedPaper.getPaperType(),
+                    encryptedPaper.getFeedback(),
+                    encryptedPaper.getMarkingFilePath()
             );
 
             return ResponseEntity.ok()
@@ -270,5 +364,11 @@ public class FileUploadController {
         }
 
 
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity<StandardResponse> getPaperStatus(@PathVariable Long id) {
+        ExamPaperStatus status = fileService.getPaperStatus(id);
+        return ResponseEntity.ok(new StandardResponse(200, "Paper status retrieved successfully", status));
     }
 }

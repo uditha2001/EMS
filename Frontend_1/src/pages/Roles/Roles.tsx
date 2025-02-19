@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import SelectBox from '../../components/SelectBox';
 import useHasPermission from '../../hooks/useHasPermission';
 import useApi from '../../api/api';
+import Loader from '../../common/Loader';
 
 type Permission = {
   permissionId: number;
@@ -128,15 +129,19 @@ const Roles: React.FC = () => {
   const nonPermanentRoles = filteredRoles.filter((role) => !role.permanent);
 
   if (loading)
-    return <div className="text-center mt-8 text-gray-500">Loading...</div>;
+    return (
+      <div className="text-center mt-8 text-gray-500">
+        <Loader />
+      </div>
+    );
 
   if (error)
     return <div className="text-center mt-8 text-red-500">{error}</div>;
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="container mx-auto  px-4">
       <Breadcrumb pageName="Roles" />
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5">
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark p-6.5 text-sm">
         <div className="mb-6 flex justify-between items-center">
           <h3 className="font-medium text-black dark:text-white">Role List</h3>
           {hasCreatePermission && (
@@ -188,7 +193,6 @@ const Roles: React.FC = () => {
         )}
 
         {/* Non-Permanent Roles Table */}
-        {/* Non-Permanent Roles Table */}
         <div className="overflow-x-auto my-8">
           {nonPermanentRoles.length > 0 ? (
             <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
@@ -221,7 +225,7 @@ const Roles: React.FC = () => {
                       {role.description}
                     </td>
                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                      {getPermissionNames(role.permissionIds)}
+                      {getPermissionNames(role.permissionIds).toLowerCase()}
                     </td>
                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       {hasEditPermission && (
@@ -284,7 +288,7 @@ const Roles: React.FC = () => {
                     {role.description}
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                    {getPermissionNames(role.permissionIds)}
+                    {getPermissionNames(role.permissionIds).toLowerCase()}
                   </td>
                 </tr>
               ))}

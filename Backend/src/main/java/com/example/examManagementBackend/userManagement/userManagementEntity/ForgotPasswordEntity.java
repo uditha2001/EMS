@@ -3,10 +3,14 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.Date;
 
 @Entity
+@Getter
+@Setter
 public class ForgotPasswordEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,17 +23,6 @@ public class ForgotPasswordEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private UserEntity user;
 
-    public Integer getOtp() {
-        return otp;
-    }
-
-    public Date getExpirationDate() {
-        return expirationDate;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
 
     public ForgotPasswordEntity() {
     }

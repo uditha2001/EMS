@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,15 +9,19 @@ import java.util.Set;
 @Entity
 @Table(name="permissions")
 public class PermissionEntity {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long permissionId;
 
+    @Getter
     @Column(nullable = false,unique = true)
     private String permissionName;
 
+    @Getter
     private String permissionDescription;
 
+    @Getter
     @Column(nullable = false)
     private String permissionType;
     //@OneToMany(mappedBy = "rolePermission")
@@ -35,32 +40,16 @@ public class PermissionEntity {
         this.permissionType = permissionType;
     }
 
-    public String getPermissionName() {
-        return permissionName;
-    }
-
     public void setPermissionName(String permissionName) {
         this.permissionName = permissionName;
-    }
-
-    public String getPermissionDescription() {
-        return permissionDescription;
     }
 
     public void setPermissionDescription(String permissionDescription) {
         this.permissionDescription = permissionDescription;
     }
 
-    public String getPermissionType() {
-        return permissionType;
-    }
-
     public void setPermissionType(String permissionType) {
         this.permissionType = permissionType;
-    }
-
-    public Long getPermissionId() {
-        return permissionId;
     }
 
 
