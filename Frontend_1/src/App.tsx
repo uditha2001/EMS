@@ -10,6 +10,7 @@ import ResultGrading from './pages/Results/ResultGrading';
 import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
 import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
 
+
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
 const Profile = React.lazy(() => import('./pages/Profile'));
@@ -48,10 +49,10 @@ const DegreePrograms = React.lazy(
   () => import('./pages/DegreePrograms/DegreePrograms'),
 );
 const CreateDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/CreateDegreeProgram'),
+  () => import('./pages/DegreePrograms/DegreeProgramForm'),
 );
 const EditDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/EditDegreeProgram'),
+  () => import('./pages/DegreePrograms/DegreeProgramList'),
 );
 const Courses = React.lazy(() => import('./pages/Courses/Courses'));
 const CreateCourse = React.lazy(() => import('./pages/Courses/CreateCourse'));
@@ -148,7 +149,6 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -247,33 +247,7 @@ function App() {
               />
             </Route>
 
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['CREATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/degreeprograms/create"
-                element={renderPage(
-                  'Create Degree Program | EMS',
-                  <CreateDegreeProgram />,
-                )}
-              />
-            </Route>
-
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['UPDATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/degreeprograms/edit/:degreeprogramId"
-                element={renderPage(
-                  'Edit Degree Program | EMS',
-                  <EditDegreeProgram />,
-                )}
-              />
-            </Route>
+           
 
             {/* Courses Routes */}
             <Route
@@ -485,7 +459,6 @@ function App() {
                 <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
               }
             >
-
               <Route
                 path="/result/grading"
                 element={renderPage('Results Grading | EMS', <ResultGrading />)}
@@ -493,7 +466,7 @@ function App() {
 
               <Route
                 path="/result/dashboard"
-              //element={renderPage('Results Dashboard | EMS', )}
+                //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
@@ -503,4 +476,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
