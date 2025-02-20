@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import useApi from "../../api/api";
 import SearchIcon from "../../images/search/search.svg"; // Import SVG file
-import { FiEdit,FiAlertCircle } from "react-icons/fi";
+import { FiEdit, FiAlertCircle } from "react-icons/fi";
 
 type ExaminationName = {
   key: number;
@@ -20,7 +20,7 @@ type CourseData = {
 };
 
 const ResultGrading = () => {
-  const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, getGradesConditionsValues} = useApi();
+  const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId, getGradesConditionsValues } = useApi();
   const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
   const [examName, setExamName] = useState<string>("");
   const [courseCode, setCourseCode] = useState<string>("");
@@ -29,7 +29,7 @@ const ResultGrading = () => {
   const [showGradeConditions, setShowGradeConditions] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean>(false);
-  const [marksConditions, setMarksConditions] = useState({});
+  const [marksConditions, setMarksConditions] = useState<any[]>([]);
 
   useEffect(() => {
     getAllExaminationDetailsWithDegreeName().then((response) => {
@@ -56,7 +56,7 @@ const ResultGrading = () => {
   };
 
   const saveChanges = () => {
-    
+
     setIsEditing(false);
     console.log("Saving changes:", marksConditions);
   };
@@ -73,9 +73,10 @@ const ResultGrading = () => {
   const handleSearch = () => {
     if (examName && courseCode) {
       setShowGradeConditions(true);
-      if(courseCode!=null){
+      if (courseCode != null) {
         getGradesConditionsValues(courseCode).then((data) => {
-           console.log(data.data);
+          setMarksConditions(data.data);
+          console.log(data.data);
         });
       }
     } else {
@@ -137,6 +138,24 @@ const ResultGrading = () => {
             <h2 className="text-2xl font-semibold text-black dark:text-white mb-6 text-center flex items-center justify-center gap-2 mt-6">
               <FiEdit className="text-blue-500" /> Mark Conditions
             </h2>
+            {marksConditions && (
+            
+              marksConditions.map((mark: any) => (
+                <div key={mark.id} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-black dark:text-gray-300 mb-2">{mark.paperType}</label>
+                    <input
+                      type="number"
+                      name={mark.paperType}
+                      value={mark.percentage}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
             <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-6 flex items-center gap-2">
               <FiAlertCircle className="text-yellow-500" /> Please check each mark percentage for each paper type and ensure it meets the minimum marks required to pass the exam.
             </p>
