@@ -25,21 +25,50 @@ const EssayTemplate: React.FC<EssayTemplateProps> = ({
     setQuestions(newQuestions);
   };
 
-  const addSubQuestion = (questionIndex: number) => {
+  const addSubQuestion = (questionIndex: number, parentSubIndex?: number) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex].subquestions.push({
-      text: '',
-      marks: 0,
-      answer: '',
-    });
+
+    if (parentSubIndex !== undefined) {
+      // Add sub-subquestion
+      newQuestions[questionIndex].subquestions[parentSubIndex].subquestions.push({
+        text: '',
+        marks: 0,
+        answer: '',
+        subquestions: [], // Allow further nesting if needed
+      });
+    } else {
+      // Add subquestion
+      newQuestions[questionIndex].subquestions.push({
+        text: '',
+        marks: 0,
+        answer: '',
+        subquestions: [], // Allow further nesting if needed
+      });
+    }
+
     setQuestions(newQuestions);
   };
 
-  const removeSubQuestion = (questionIndex: number, subIndex: number) => {
+  const removeSubQuestion = (
+    questionIndex: number,
+    subIndex: number,
+    parentSubIndex?: number,
+  ) => {
     const newQuestions = [...questions];
-    newQuestions[questionIndex].subquestions = newQuestions[
-      questionIndex
-    ].subquestions.filter((_: any, idx: number) => idx !== subIndex);
+
+    if (parentSubIndex !== undefined) {
+      // Remove sub-subquestion
+      newQuestions[questionIndex].subquestions[parentSubIndex].subquestions =
+        newQuestions[questionIndex].subquestions[parentSubIndex].subquestions.filter(
+          (_: any, idx: number) => idx !== subIndex,
+        );
+    } else {
+      // Remove subquestion
+      newQuestions[questionIndex].subquestions = newQuestions[
+        questionIndex
+      ].subquestions.filter((_: any, idx: number) => idx !== subIndex);
+    }
+
     setQuestions(newQuestions);
   };
 
@@ -120,12 +149,21 @@ const EssayTemplate: React.FC<EssayTemplateProps> = ({
                   Subquestion {subIdx + 1}
                 </label>
 
-                <button
-                  onClick={() => removeSubQuestion(idx, subIdx)}
-                  className="text-red-500"
-                >
-                  <FaMinus />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => addSubQuestion(idx, subIdx)}
+                    className="flex items-center text-primary text-sm font-medium hover:underline"
+                  >
+                    <FaPlus className="mr-1" /> Add Sub-Subquestion
+                  </button>
+
+                  <button
+                    onClick={() => removeSubQuestion(idx, subIdx)}
+                    className="text-red-500 hover:text-red-700 transition"
+                  >
+                    <FaMinus />
+                  </button>
+                </div>
               </div>
               <ReactQuill
                 value={sub.text}
@@ -174,6 +212,74 @@ const EssayTemplate: React.FC<EssayTemplateProps> = ({
                   />
                 </div>
               </div>
+
+              {/* Render sub-subquestions */}
+              {sub.subquestions.map((subSub: any, subSubIdx: number) => (
+                <div key={subSubIdx} className="ml-8 mb-4">
+                  <div className="flex justify-between items-center">
+                    <label className="mb-2.5 block text-black dark:text-white">
+                      Sub-Subquestion {subSubIdx + 1}
+                    </label>
+
+                    <button
+                      onClick={() => removeSubQuestion(idx, subSubIdx, subIdx)}
+                      className="text-red-500 hover:text-red-700 transition"
+                    >
+                      <FaMinus />
+                    </button>
+                  </div>
+                  <ReactQuill
+                    value={subSub.text}
+                    onChange={(value) => {
+                      const newQuestions = [...questions];
+                      newQuestions[idx].subquestions[subIdx].subquestions[
+                        subSubIdx
+                      ].text = value;
+                      setQuestions(newQuestions);
+                    }}
+                    modules={quillModules}
+                    className="w-full"
+                    placeholder="Enter sub-subquestion text..."
+                  />
+
+                  <div className="flex gap-4 mb-4">
+                    <div className="w-2/3">
+                      <label className="mb-2.5 block text-black dark:text-white">
+                        Suggested Answer
+                      </label>
+                      <textarea
+                        value={subSub.answer}
+                        onChange={(e) => {
+                          const newQuestions = [...questions];
+                          newQuestions[idx].subquestions[subIdx].subquestions[
+                            subSubIdx
+                          ].answer = e.target.value;
+                          setQuestions(newQuestions);
+                        }}
+                        className="input-field w-full"
+                        placeholder="Enter suggested answer..."
+                      />
+                    </div>
+                    <div className="w-1/3">
+                      <label className="mb-2.5 block text-black dark:text-white">
+                        Marks
+                      </label>
+                      <input
+                        type="number"
+                        value={subSub.marks}
+                        onChange={(e) => {
+                          const newQuestions = [...questions];
+                          newQuestions[idx].subquestions[subIdx].subquestions[
+                            subSubIdx
+                          ].marks = Number(e.target.value);
+                          setQuestions(newQuestions);
+                        }}
+                        className="input-field w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

@@ -228,7 +228,7 @@ const FileUpload: React.FC = () => {
 
     const renamedMarkingFile = new File(
       [markingFile],
-      `${selectedCourseCode}_${paperType}_${selectedExam.replace('/', '_')}_marking.pdf`,
+      `MARKING_${selectedCourseCode}_${paperType}_${selectedExam.replace('/', '_')}.pdf`,
       { type: markingFile.type },
     );
 

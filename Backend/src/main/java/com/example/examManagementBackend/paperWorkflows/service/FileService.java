@@ -42,14 +42,14 @@ public class FileService {
         this.examinationRepository = examinationRepository;
     }
 
-    public void saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType,String encryptedMarkingFile) {
+    public Long saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType, String encryptedMarkingFile) {
         // Validate courseId
         CoursesEntity course = coursesRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course with ID " + courseId + " not found."));
 
         // Validate examinationId
         ExaminationEntity examination = examinationRepository.findById(examinationId)
-                .orElseThrow(() -> new RuntimeException("Academic year with ID " + examinationId + " not found."));
+                .orElseThrow(() -> new RuntimeException("Examination with ID " + examinationId + " not found."));
 
         // Create and populate the EncryptedPaper entity
         EncryptedPaper encryptedPaper = new EncryptedPaper();
@@ -75,9 +75,10 @@ public class FileService {
         encryptedPaper.setExamination(examination);
         encryptedPaper.setPaperType(PaperType.valueOf(paperType));
         encryptedPaper.setCourse(course);
-        // Save the EncryptedPaper entity
-        encryptedPaperRepository.save(encryptedPaper);
 
+        // Save the EncryptedPaper entity and get the generated ID
+        EncryptedPaper savedPaper = encryptedPaperRepository.save(encryptedPaper);
+        return savedPaper.getId();  // Return the ID
     }
 
     public void updateEncryptedPaper(
