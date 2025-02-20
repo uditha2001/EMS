@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import useApi from "../../api/api";
-import SearchIcon from "../../images/search/search.svg"; // Import SVG file
+import SearchIcon from "../../images/search/search.svg";
 import { FiEdit, FiAlertCircle, FiCheck, FiArrowRight, FiSave, FiX } from "react-icons/fi";
 
 type ExaminationName = {
@@ -30,6 +30,7 @@ const ResultGrading = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean>(false);
   const [marksConditions, setMarksConditions] = useState<any[]>([]);
+  const [isAcceptEnable,setIsAcceptEnable]=useState(true);
 
   useEffect(() => {
     getAllExaminationDetailsWithDegreeName().then((response) => {
@@ -56,6 +57,7 @@ const ResultGrading = () => {
   const handleEdit = () => {
     setIsEditing(true);
     setIsAccepted(false);
+    setIsAcceptEnable(true)
   };
 
   const handleConfirm = () => {
@@ -69,6 +71,7 @@ const ResultGrading = () => {
   const handleAccept = () => {
     setIsAccepted(true);
     setIsEditing(false);
+    setIsAcceptEnable(false);
   };
 
   const handleNext = () => {
@@ -198,20 +201,25 @@ const ResultGrading = () => {
                   </div>
                 ))}
 
-              <div className="flex justify-end gap-4 mt-6">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                 {!isEditing ? (
                   <>
                     <button
                       type="button"
                       onClick={handleEdit}
-                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       <FiEdit /> Edit
                     </button>
                     <button
                       type="button"
                       onClick={handleAccept}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-2"
+                      disabled={!isAcceptEnable}
+                      className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-white rounded-lg shadow hover:scale-105 transition-all duration-150 focus:ring-2  focus:ring-offset-2 flex items-center justify-center gap-2 text-sm sm:text-base ${
+                        isAcceptEnable
+                        ?  "bg-green-600 text-white hover:bg-green-700 hover:scale-105 focus:ring-green-500"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      }`}
                     >
                       <FiCheck /> Accept
                     </button>
@@ -219,10 +227,11 @@ const ResultGrading = () => {
                       type="button"
                       onClick={handleNext}
                       disabled={!isAccepted}
-                      className={`px-6 py-3 rounded-lg shadow transition-all duration-150 focus:ring-2 focus:ring-offset-2 flex items-center gap-2 ${isAccepted
+                      className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 rounded-lg shadow transition-all duration-150 focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm sm:text-base ${
+                        isAccepted
                           ? "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 focus:ring-blue-500"
                           : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
+                      }`}
                     >
                       <FiArrowRight /> Next
                     </button>
@@ -232,14 +241,14 @@ const ResultGrading = () => {
                     <button
                       type="button"
                       onClick={handleConfirm}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       <FiSave /> Confirm
                     </button>
                     <button
                       type="button"
                       onClick={handleCancel}
-                      className="px-6 py-3 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 bg-red-600 text-white rounded-lg shadow hover:bg-red-700 hover:scale-105 transition-all duration-150 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       <FiX /> Cancel
                     </button>
