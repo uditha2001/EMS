@@ -18,6 +18,7 @@ type courseData = {
 };
 
 type requiredData = {
+    id:number|undefined;
     courseCode: string;
     examName: string;
     examType: string
@@ -40,13 +41,14 @@ const SelectExaminationComponent = ({ getExamData }: { getExamData: React.Dispat
 
     useEffect(() => {
         getExamData(
-            {
+            {   
+                id:selectedExaminationKey,
                 courseCode: courseCode,
                 examName: examName,
                 examType: examType
             }
         )
-    }, [courseCode, examType, examName])
+    }, [courseCode, examType, examName,selectedExaminationKey])
 
     useEffect(() => {
         getAllExaminationDetailsWithDegreeName().then((response) => {

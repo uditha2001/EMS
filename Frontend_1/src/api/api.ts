@@ -626,13 +626,14 @@ const useApi = () => {
   };
 
   const getFirstMarkingResults = async (
-    examName: string,
+
+    id: number|undefined,
     courseCode: string,
     examType: string,
   ) => {
     try {
       const response = await axiosPrivate.get('result/getFirstMarking', {
-        params: { examName, courseCode, examType },
+        params: { id, courseCode, examType },
       });
       return response.data;
     } catch (error: any) {
