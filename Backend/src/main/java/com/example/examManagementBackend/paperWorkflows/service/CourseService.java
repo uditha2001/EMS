@@ -45,7 +45,8 @@ public class CourseService {
                         course.getCourseType().name(), // Convert enum to string
                         course.getCreatedAt(),
                         course.getUpdatedAt(),
-                        course.getDegreeProgramsEntity().getId()
+                        course.getDegreeProgramsEntity().getId(),
+                        course.getDegreeProgramsEntity().getDegreeName()
                 ))
                 .collect(Collectors.toList());
     }
@@ -92,7 +93,9 @@ public class CourseService {
                 course.getCourseType().name(), // Convert enum to string
                 course.getCreatedAt(),
                 course.getUpdatedAt(),
-                course.getDegreeProgramsEntity().getId()
+                course.getDegreeProgramsEntity().getId(),
+                course.getDegreeProgramsEntity().getDegreeName()
+
         );
     }
 
@@ -113,11 +116,12 @@ public class CourseService {
      * Delete a course.
      */
     public void deleteCourse(Long id) {
-        CoursesEntity course = coursesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + id));
-
-        coursesRepository.delete(course);
+        if (!coursesRepository.existsById(id)) {
+            throw new RuntimeException("Course not found with ID: " + id);
+        }
+        coursesRepository.deleteById(id);
     }
+
     public ResponseEntity<StandardResponse> getCourseByDegreeProgram(String degreeProgram) {
         List<CoursesEntity> coursesEntity=coursesRepository.getdataByDegreeName(degreeProgram);
         if(coursesEntity!=null) {

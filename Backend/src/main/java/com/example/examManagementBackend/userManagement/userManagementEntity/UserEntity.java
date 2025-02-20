@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
+import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
 import com.example.examManagementBackend.resultManagement.entities.ExamInvigilatorsEntity;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
@@ -47,7 +48,7 @@ public class UserEntity {
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
     Set<UserRoles> userRoles;
 
     // New columns
@@ -80,9 +81,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "moderator", cascade = CascadeType.ALL)
     private List<EncryptedPaper> moderatedPapers; // Papers moderated by the user
 
-//    @Column(columnDefinition = "LONGTEXT")
-//    private String publicKey;
-
     @Column(name = "public_key",columnDefinition = "LONGTEXT")
     private String publicKey;
 
@@ -97,6 +95,9 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "invigilators")
     private Set<ExamInvigilatorsEntity> invigilators;
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArchivedPaper> archivedPapers;
 
     public UserEntity() {
 

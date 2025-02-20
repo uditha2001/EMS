@@ -9,6 +9,7 @@ import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
 import ResultGrading from './pages/Results/ResultGrading';
 import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
 import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
+import LearnMore from './components/LearnMore';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -128,6 +129,10 @@ function App() {
   return (
     <Routes>
       <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+      <Route
+        path="/learn-more"
+        element={renderPage('Welcome | EMS', <LearnMore />)}
+      />
 
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
@@ -148,7 +153,6 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -485,7 +489,6 @@ function App() {
                 <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
               }
             >
-
               <Route
                 path="/result/grading"
                 element={renderPage('Results Grading | EMS', <ResultGrading />)}
@@ -493,7 +496,7 @@ function App() {
 
               <Route
                 path="/result/dashboard"
-              //element={renderPage('Results Dashboard | EMS', )}
+                //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
