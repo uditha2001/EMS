@@ -52,8 +52,8 @@ const ResultGrading = () => {
   }, [examinationCourseCode]);
 
   return (
-    <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 dark:from-gray-900 dark:to-gray-800">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-4xl dark:bg-gray-800 dark:shadow-gray-700/30">
+    <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 dark:from-gray-900 dark:to-gray-800">
+      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-5xl dark:bg-gray-800 dark:shadow-gray-700/30">
         <h2 className="text-2xl font-semibold text-black dark:text-white mb-6 text-center">Result Grading</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -66,7 +66,7 @@ const ResultGrading = () => {
                 setExamName(createdExamNames[selectedIndex]?.name || "");
                 setSelectedExaminationKey(createdExamNames[selectedIndex]?.key);
               }}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="" disabled>
                 -- Select the exam Name --
@@ -83,7 +83,7 @@ const ResultGrading = () => {
             <select
               value={courseCode}
               onChange={(e) => setCourseCode(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {examinationCourseCode.map((course) => (
                 <option key={course.id} value={course.code}>
@@ -98,7 +98,7 @@ const ResultGrading = () => {
             className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 hover:bg-blue-600 transition-all dark:bg-blue-700 dark:hover:bg-blue-800"
             onClick={() => alert(`Fetching grading for ${examName} - ${courseCode}`)}
           >
-            <img src={SearchIcon} alt="Search" className="w-5 h-5" /> Load Results
+            <img src={SearchIcon} alt="Search" className="w-5 h-5" /> View Grades Conditions
           </button>
         </div>
       </div>
