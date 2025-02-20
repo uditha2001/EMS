@@ -286,21 +286,30 @@ public class UserManagementServices {
 
 //get all users count and each user count acording to their assign roles
     public ResponseEntity<StandardResponse> getAllUserCountWithRoles() {
-        int totalUsersCount=0;
-        Map<String,Integer> users=new LinkedHashMap<>();
-        List<String> userRolesNames=roleRepository.getallRoles();
-        List<UserEntity> allUsers = userManagementRepo.findAll();
-        for(UserEntity user:allUsers){
-            totalUsersCount++;
+        try{
+            int totalUsersCount=0;
+            Map<String,Integer> users=new LinkedHashMap<>();
+            List<String> userRolesNames=roleRepository.getallRoles();
+            List<UserEntity> allUsers = userManagementRepo.findAll();
+            for(UserEntity user:allUsers){
+                totalUsersCount++;
+            }
+            users.put("TOTAL",totalUsersCount);
+            for(int i =0;i<userRolesNames.size();i++){
+                int count=userRolesRepo.getNumberOfUsers(userRolesNames.get(i));
+                users.put(userRolesNames.get(i)+"S",count);
+            }
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"sucess",users), HttpStatus.OK
+            );
         }
-        users.put("TOTAL",totalUsersCount);
-        for(int i =0;i<userRolesNames.size();i++){
-            int count=userRolesRepo.getNumberOfUsers(userRolesNames.get(i));
-            users.put(userRolesNames.get(i)+"S",count);
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"error occur",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
-        return new ResponseEntity<>(
-                new StandardResponse(200,"sucess",users), HttpStatus.OK
-        );
+
 
     }
 
