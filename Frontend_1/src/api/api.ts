@@ -36,6 +36,7 @@ const useApi = () => {
         },
       });
       return res.data.data;
+     
     } catch (error: any) {
       if (error.response) {
         console.error('Error uploading file:', error.response.data?.message);

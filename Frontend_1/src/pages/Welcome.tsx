@@ -67,7 +67,7 @@ const WelcomePage: React.FC = () => {
             Get Started <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </Link>
           <Link
-            to="/about"
+            to="/learn-more"
             className="inline-flex items-center py-2 px-6 border border-white hover:bg-white hover:text-black rounded-md shadow-lg transition focus:outline-none focus:ring focus:ring-white"
             data-aos="zoom-in"
             data-aos-duration="1500"

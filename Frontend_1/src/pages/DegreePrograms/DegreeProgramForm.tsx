@@ -94,6 +94,6 @@ export default function DegreeProgramForm({
           </div>
         </div>
       </form>
-    </div>
-  );
+    </div>
+  );
 }
