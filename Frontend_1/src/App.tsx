@@ -50,10 +50,10 @@ const DegreePrograms = React.lazy(
   () => import('./pages/DegreePrograms/DegreePrograms'),
 );
 const CreateDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/CreateDegreeProgram'),
+  () => import('./pages/DegreePrograms/DegreeProgramForm'),
 );
 const EditDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/EditDegreeProgram'),
+  () => import('./pages/DegreePrograms/DegreeProgramList'),
 );
 const Courses = React.lazy(() => import('./pages/Courses/Courses'));
 const CreateCourse = React.lazy(() => import('./pages/Courses/CreateCourse'));
