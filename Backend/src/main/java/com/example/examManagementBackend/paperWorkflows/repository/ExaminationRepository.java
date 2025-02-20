@@ -24,7 +24,8 @@ public interface ExaminationRepository extends JpaRepository<ExaminationEntity, 
     @Query("SELECT e.id FROM ExaminationEntity e WHERE e.year = :year AND e.level = :level AND e.semester = :semester")
     Long getExaminationIdByYearAndSemesterAndLevel(@Param("year") String year,
                                                    @Param("level") String level,
-                                                   @Param("semester") String semester);
+                                                   @Param("semester") String semester
+                                                   );
 
 
 }

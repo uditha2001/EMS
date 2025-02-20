@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class ResultDTO {
+   private Long id;
    private String examName;
    private String courseCode;
    private ExamTypesName examType;

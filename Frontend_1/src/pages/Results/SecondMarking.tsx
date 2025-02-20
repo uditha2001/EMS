@@ -5,6 +5,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 type requiredData = {
+    id:number|undefined;
     courseCode: string;
     examName: string;
     examType: string
@@ -15,7 +16,7 @@ type RowData = {
 
 const SecondMarking = () => {
     const [examsData, setExamsData] = useState<requiredData>({
-
+        id:0,
         courseCode: "",
         examName: "",
         examType: ""
@@ -158,7 +159,7 @@ const SecondMarking = () => {
 
     const handleSubmit = () => {
         if (examsData.courseCode != "" && examsData.examName != "" && examsData.examType != "") {
-            getFirstMarkingResults(examsData.examName, examsData.courseCode, examsData.examType).then((data) => {
+            getFirstMarkingResults(examsData.id, examsData.courseCode, examsData.examType,).then((data) => {
                 if (data.code === 200) {
                     setStudentsData(data.data);
                 }

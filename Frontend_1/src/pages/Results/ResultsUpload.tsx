@@ -76,6 +76,7 @@ const ResultsUpload = () => {
 
     }, [examName])
 
+
     useEffect(() => {
         if (examinationCourseCode != null && examOptionIdentifier != "" && examinationCourseCode[0] != undefined) {
             setCourseCode(examinationCourseCode[0].code);
@@ -191,7 +192,8 @@ const ResultsUpload = () => {
 
     const sendDataToTheServer = () => {
         setTotalData(
-            {
+            {   
+                id:selectedExaminationKey,
                 studentsData,
                 courseCode,
                 examName,
@@ -237,6 +239,7 @@ const ResultsUpload = () => {
                                             value={examOptionIdentifier}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all dark:bg-gray-700 dark:border-gray-600 dark:text-white text-black-2 dark:focus:ring-blue-500/50"
                                             onChange={(e) => {
+                                                console.log(e.target.value)
                                                 setExamOptionIdentifier(e.target.value);
                                                 const selectedIndex = parseInt(e.target.value, 10);
                                                 setExamName(createdExamNames[selectedIndex].name);
