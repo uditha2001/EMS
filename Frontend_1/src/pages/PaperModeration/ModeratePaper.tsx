@@ -7,7 +7,10 @@ import QuestionStructure from './QuestionStructure';
 import useApi from '../../api/api';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+  faEdit,
+  faCheckCircle,
+} from '@fortawesome/free-solid-svg-icons';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import useAuth from '../../hooks/useAuth';
 
@@ -15,9 +18,11 @@ export default function ModeratePaper() {
   const { auth } = useAuth();
   const moderatorId = Number(auth.id);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [markingPdfUrl, setMarkingPdfUrl] = useState<string | null>(null); 
   const [questionStructure, setQuestionStructure] = useState<any>(null);
   const {
     fetchEncryptedPaper,
+    fetchEncryptedMarking, 
     getPaperStructure,
     createModeration,
     updatePaperStatusAndFeedback,
@@ -26,12 +31,14 @@ export default function ModeratePaper() {
   const [feedback, setFeedback] = useState<string>('');
   const [paperStatus, setPaperStatus] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isViewingMarking, setIsViewingMarking] = useState(false); 
   const location = useLocation();
   const { paperId } = location.state || {};
 
+  // Fetch the paper PDF
   const fetchPdf = async () => {
     try {
-      const response = await fetchEncryptedPaper(
+      const response: { data: Blob } = await fetchEncryptedPaper(
         Number(paperId),
         Number(moderatorId),
       );
@@ -39,6 +46,20 @@ export default function ModeratePaper() {
       setPdfUrl(url);
     } catch (error) {
       console.error('Error fetching PDF:', error);
+    }
+  };
+
+  // Fetch the marking PDF
+  const fetchMarkingPdf = async () => {
+    try {
+      const response: { data: Blob } = await fetchEncryptedMarking(
+        Number(paperId),
+        Number(moderatorId),
+      );
+      const url = URL.createObjectURL(response.data);
+      setMarkingPdfUrl(url);
+    } catch (error) {
+      console.error('Error fetching marking PDF:', error);
     }
   };
 
@@ -214,8 +235,14 @@ export default function ModeratePaper() {
     setQuestionStructure(updatedStructure);
   };
 
+  // Toggle between paper and marking view
+  const toggleView = () => {
+    setIsViewingMarking(!isViewingMarking);
+  };
+
   useEffect(() => {
     fetchPdf();
+    fetchMarkingPdf(); 
     fetchQuestionStructure();
     fetchPaperStatus();
 
@@ -223,15 +250,39 @@ export default function ModeratePaper() {
       if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl);
       }
+      if (markingPdfUrl) {
+        URL.revokeObjectURL(markingPdfUrl);
+      }
     };
   }, [paperId, moderatorId]);
 
   return (
     <div>
       <Breadcrumb pageName="Paper Moderation" />
-      <div className="flex h-screen ">
+      <div className="flex h-screen">
         <div className="flex-1 bg-white rounded shadow-lg overflow-hidden">
-          {pdfUrl ? (
+          {/* Toggle Button */}
+          <div className="flex justify-end p-2">
+            <button
+              onClick={toggleView}
+              className="btn-primary text-sm"
+            >
+              {isViewingMarking ? 'View Paper' : 'View Marking'}
+            </button>
+          </div>
+
+          {/* PDF Viewer */}
+          {isViewingMarking ? (
+            markingPdfUrl ? (
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                <Viewer fileUrl={markingPdfUrl} />
+              </Worker>
+            ) : (
+              <div className="flex justify-center items-center h-full text-xl text-gray-500">
+                <Loader />
+              </div>
+            )
+          ) : pdfUrl ? (
             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
               <Viewer fileUrl={pdfUrl} />
             </Worker>

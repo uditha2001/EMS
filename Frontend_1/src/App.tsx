@@ -6,8 +6,12 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
 import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
+import ResultGrading from './pages/Results/ResultGrading';
 import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
 import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
+import GradeConditions from './pages/Results/GradeConditions';
+import LearnMore from './components/LearnMore';
+
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -45,12 +49,6 @@ const CreateBulkUsers = React.lazy(
 );
 const DegreePrograms = React.lazy(
   () => import('./pages/DegreePrograms/DegreePrograms'),
-);
-const CreateDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/CreateDegreeProgram'),
-);
-const EditDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/EditDegreeProgram'),
 );
 const Courses = React.lazy(() => import('./pages/Courses/Courses'));
 const CreateCourse = React.lazy(() => import('./pages/Courses/CreateCourse'));
@@ -127,6 +125,10 @@ function App() {
   return (
     <Routes>
       <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+      <Route
+        path="/learn-more"
+        element={renderPage('Welcome | EMS', <LearnMore />)}
+      />
 
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
@@ -147,10 +149,7 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-      <Route
-        path="/result-Upload"
-        element={renderPage('upload result|EMS', <ResultsUpload />)}
-      />
+
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -249,33 +248,7 @@ function App() {
               />
             </Route>
 
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['CREATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/degreeprograms/create"
-                element={renderPage(
-                  'Create Degree Program | EMS',
-                  <CreateDegreeProgram />,
-                )}
-              />
-            </Route>
-
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['UPDATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/degreeprograms/edit/:degreeprogramId"
-                element={renderPage(
-                  'Edit Degree Program | EMS',
-                  <EditDegreeProgram />,
-                )}
-              />
-            </Route>
+           
 
             {/* Courses Routes */}
             <Route
@@ -488,18 +461,18 @@ function App() {
               }
             >
               <Route
-                path="/result/secondmarking"
-                //element={renderPage('Second Marking | EMS', )}
+                path="/result/conditions"
+                element={renderPage('Results Grading | EMS', <GradeConditions />)}
               />
 
               <Route
                 path="/result/grading"
-                //element={renderPage('Results Grading | EMS', )}
+                element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
 
               <Route
                 path="/result/dashboard"
-                //element={renderPage('Results Dashboard | EMS', )}
+              //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
@@ -509,4 +482,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

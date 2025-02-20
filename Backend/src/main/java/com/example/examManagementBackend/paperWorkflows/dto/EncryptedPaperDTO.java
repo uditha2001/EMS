@@ -26,6 +26,7 @@ public class EncryptedPaperDTO {
     private ExamPaperStatus status;
     private PaperType paperType;
     private String feedback;
+    private String markingFilePath;
 
     // Constructor for converting entity to DTO
     public EncryptedPaperDTO(
@@ -40,7 +41,9 @@ public class EncryptedPaperDTO {
             CoursesEntity course,
             ExamPaperStatus status,
             PaperType paperType,
-            String feedback
+            String feedback,
+            String markingFilePath
+
     ) {
         this.id = id;
         this.fileName = fileName;
@@ -54,6 +57,7 @@ public class EncryptedPaperDTO {
         this.status = status;
         this.paperType = paperType;
         this.feedback=feedback;
+        this.markingFilePath = markingFilePath;
     }
 
     @Data

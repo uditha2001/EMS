@@ -15,7 +15,8 @@ import static com.example.examManagementBackend.resultManagement.entities.Enums.
 @Table(name="result")
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class ResultEntity {
     @Setter(AccessLevel.NONE)
     @Id
