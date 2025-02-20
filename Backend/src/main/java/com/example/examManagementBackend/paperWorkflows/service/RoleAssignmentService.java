@@ -68,14 +68,25 @@ public class RoleAssignmentService {
         if (exists) {
             throw new RuntimeException("Role assignment already exists for the specified course, role, and Examination.");
         }
+
         // Create and save role assignment
         RoleAssignmentEntity roleAssignment = new RoleAssignmentEntity();
+
+        // Determine the grantAt date based on the role
+        LocalDateTime grantAtDate = null;
+        if (role.getRoleId() == 2 || role.getRoleId() == 3) { // Paper creator/modifier roles
+            grantAtDate = examination.getPaperSettingCompleteDate();
+        } else if (role.getRoleId() == 4 || role.getRoleId() == 5) { // First and second marker roles
+            grantAtDate = examination.getMarkingCompleteDate();
+        }
+
         roleAssignment.setCourse(course);
         roleAssignment.setRole(role);
         roleAssignment.setUserId(user);
         roleAssignment.setExaminationId(examination);
         roleAssignment.setIsAuthorized(createRoleAssignmentDTO.getIsAuthorized());
         roleAssignment.setPaperType(createRoleAssignmentDTO.getPaperType());
+        roleAssignment.setGrantAt(grantAtDate);
         roleAssignment = roleAssignmentRepository.save(roleAssignment);
 
         // Convert to DTO for return
@@ -261,7 +272,7 @@ public class RoleAssignmentService {
         Optional<UserRoles> existingUserRoleOpt = userRolesRepo.findByUser_UserIdAndRole_RoleId(userId, roleId);
 
         if (existingUserRoleOpt.isPresent()) {
-            // Update the grantAt date if the new date is more recent
+            // Update the grantAt date only if the new date is more recent
             UserRoles existingUserRole = existingUserRoleOpt.get();
             if (grantAtDate != null && (existingUserRole.getGrantAt() == null || grantAtDate.isAfter(existingUserRole.getGrantAt()))) {
                 existingUserRole.setGrantAt(grantAtDate);
@@ -276,6 +287,7 @@ public class RoleAssignmentService {
             userRolesRepo.save(userRole);
         }
     }
+
 
     @Transactional
     public void unAssignRoleFromUser(Long userId, Long roleId) {

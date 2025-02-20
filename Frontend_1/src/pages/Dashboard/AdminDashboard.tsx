@@ -24,7 +24,6 @@ const AdminDashboard = () => {
       if (Users) {
         setActiveUsers(Users);
       }
-      console.log(activeUsers + 'checking');
     });
     getDegreePrograms().then((degreePrograms) => {
       setDegreeProgramsCount(degreePrograms.data.length);

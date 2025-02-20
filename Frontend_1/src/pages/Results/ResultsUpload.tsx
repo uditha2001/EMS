@@ -68,7 +68,6 @@ const ResultsUpload = () => {
     }, []);
 
     useEffect(() => {
-        console.log(examName)
         if (examName != "" && examName != null) {
             getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
                 setExaminationCourseCode(data);

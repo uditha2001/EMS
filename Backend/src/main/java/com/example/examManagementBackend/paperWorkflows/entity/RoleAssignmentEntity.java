@@ -4,9 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,7 +16,8 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Table(
         name = "role_assignment",
         uniqueConstraints = @UniqueConstraint(columnNames = {"examination_id", "course_id", "role_id","paperType"})
@@ -58,5 +57,8 @@ public class RoleAssignmentEntity {
 
     @OneToMany(mappedBy = "roleAssignment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RoleAssignmentRevisionEntity> revisions; // Track changes to user assignments
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime grantAt;
 
 }

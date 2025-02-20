@@ -5,9 +5,7 @@ import com.example.examManagementBackend.resultManagement.entities.ExamTimeTable
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,7 +17,8 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "courses")
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CoursesEntity {
@@ -58,9 +57,9 @@ public class CoursesEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
-    private DegreeProgramsEntity degreeProgramsEntity;
+    private DegreeProgramsEntity degreeProgramsEntity; // Removed cascade
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;
@@ -70,6 +69,7 @@ public class CoursesEntity {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<RoleAssignmentEntity> roleAssignmentList;
+
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "")
     private List<ExamTimeTablesEntity> examTimeTablesEntityList;
 

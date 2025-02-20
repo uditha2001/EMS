@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
-import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import useApi from '../../api/api';
 import { Link, useLocation } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
@@ -15,6 +14,7 @@ import {
 
 const FileUpdate: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [markingFile, setMarkingFile] = useState<File | null>(null); // New state for marking file
   const [remarks, setRemarks] = useState<string>('');
   const [paperType, setPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -26,18 +26,18 @@ const FileUpdate: React.FC = () => {
   const [examination, setExamination] = useState<string>('');
   const [examinationName, setExaminationName] = useState<string>('');
   const [, setExistingFileDetails] = useState<any>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false); // Drag-and-drop state
-  const axiosPrivate = useAxiosPrivate();
-  const { updateFile, getExaminationById } = useApi();
+  const [isDragging, setIsDragging] = useState<boolean>(false); // Drag-and-drop state for paper file
+  const [isMarkingDragging, setIsMarkingDragging] = useState<boolean>(false); // Drag-and-drop state for marking file
+  const { updateFile, getExaminationById, getPaperById } = useApi();
   const location = useLocation();
   const { fileId } = location.state || {};
 
   useEffect(() => {
     const fetchFileDetails = async () => {
       try {
-        const fileDetailsResponse = await axiosPrivate.get(`/papers/${fileId}`);
+        const fileDetailsResponse = await getPaperById(fileId);
 
-        const fileDetails = fileDetailsResponse.data.data;
+        const fileDetails = fileDetailsResponse;
         setExistingFileDetails(fileDetails);
         const examinationResponse = await getExaminationById(
           fileDetails.examination,
@@ -73,32 +73,53 @@ const FileUpdate: React.FC = () => {
     fetchFileDetails();
   }, [fileId]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isMarkingFile = false,
+  ) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      validateAndSetFile(selectedFile);
+      validateAndSetFile(selectedFile, isMarkingFile);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (
+    e: React.DragEvent<HTMLDivElement>,
+    isMarkingFile = false,
+  ) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (isMarkingFile) {
+      setIsMarkingDragging(true);
+    } else {
+      setIsDragging(true);
+    }
   };
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
+  const handleDragLeave = (isMarkingFile = false) => {
+    if (isMarkingFile) {
+      setIsMarkingDragging(false);
+    } else {
+      setIsDragging(false);
+    }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    isMarkingFile = false,
+  ) => {
     e.preventDefault();
-    setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const selectedFile = e.dataTransfer.files[0];
-      validateAndSetFile(selectedFile);
+      validateAndSetFile(selectedFile, isMarkingFile);
+    }
+    if (isMarkingFile) {
+      setIsMarkingDragging(false);
+    } else {
+      setIsDragging(false);
     }
   };
 
-  const validateAndSetFile = (selectedFile: File) => {
+  const validateAndSetFile = (selectedFile: File, isMarkingFile: boolean) => {
     if (selectedFile.type !== 'application/pdf') {
       setErrorMessage('Invalid file type. Only PDF files are allowed.');
       return;
@@ -111,42 +132,64 @@ const FileUpdate: React.FC = () => {
       return;
     }
 
-    setFile(selectedFile);
+    if (isMarkingFile) {
+      setMarkingFile(selectedFile);
+    } else {
+      setFile(selectedFile);
+    }
     setErrorMessage('');
   };
 
   const handleUpdate = async () => {
-    if (!file && !remarks.trim()) {
+    if (!file && !markingFile && !remarks.trim()) {
       setErrorMessage('Please select a file or update remarks!');
       return;
     }
+
+    if (!file && !markingFile) {
+      setErrorMessage('No files selected.');
+      return;
+    }
+
     const renamedFileName = `${courseCode}_${paperType}_${examination.replace(
       '/',
       '_',
     )}.pdf`;
-    if (!file) {
-      setErrorMessage('No file selected.');
-      return;
-    }
-    const renamedFile = new File([file], renamedFileName, { type: file.type });
+    const renamedMarkingFileName = `MARKING_${courseCode}_${paperType}_${examination.replace(
+      '/',
+      '_',
+    )}.pdf`;
+
+    const renamedFile = file
+      ? new File([file], renamedFileName, { type: file.type })
+      : null;
+    const renamedMarkingFile = markingFile
+      ? new File([markingFile], renamedMarkingFileName, {
+          type: markingFile.type,
+        })
+      : null;
+
     setErrorMessage('');
     setIsUploading(true);
 
     try {
       const response = await updateFile(
         Number(fileId),
-        renamedFile,
+        renamedFile as File,
         renamedFileName,
+        renamedMarkingFile as File,
+        renamedMarkingFileName,
         remarks,
       );
       if (response?.message) {
         setErrorMessage(response.message);
       } else {
-        setSuccessMessage('File updated successfully.');
+        setSuccessMessage('Files updated successfully.');
       }
     } catch (error: any) {
       setErrorMessage(
-        error?.response?.data?.message || 'Failed to update the file: ' + error,
+        error?.response?.data?.message ||
+          'Failed to update the files: ' + error,
       );
     } finally {
       setIsUploading(false);
@@ -225,22 +268,23 @@ const FileUpdate: React.FC = () => {
               </div>
             </div>
           </div>
+
           {/* Upload Paper */}
           <div>
             <label className="mb-2.5 block text-black dark:text-white mt-4">
               Upload Paper
             </label>
             <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              onDragOver={(e) => handleDragOver(e, false)}
+              onDragLeave={() => handleDragLeave(false)}
+              onDrop={(e) => handleDrop(e, false)}
               className={`border-2 border-dashed rounded-lg p-6 ${
                 isDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
               }`}
             >
               <input
                 type="file"
-                onChange={handleFileChange}
+                onChange={(e) => handleFileChange(e, false)}
                 className="hidden"
                 id="file-upload"
               />
@@ -264,6 +308,47 @@ const FileUpdate: React.FC = () => {
             </div>
           </div>
 
+          {/* Upload Marking */}
+          <div>
+            <label className="mb-2.5 block text-black dark:text-white mt-4">
+              Upload Marking
+            </label>
+            <div
+              onDragOver={(e) => handleDragOver(e, true)}
+              onDragLeave={() => handleDragLeave(true)}
+              onDrop={(e) => handleDrop(e, true)}
+              className={`border-2 border-dashed rounded-lg p-6 ${
+                isMarkingDragging
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-300'
+              }`}
+            >
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, true)}
+                className="hidden"
+                id="marking-file-upload"
+              />
+              <label
+                htmlFor="marking-file-upload"
+                className="cursor-pointer block text-center"
+              >
+                <div className="text-gray-600 dark:text-gray-400">
+                  Drag and drop a PDF file here, or{' '}
+                  <span className="text-primary underline">
+                    click to browse
+                  </span>
+                  .
+                </div>
+              </label>
+              {markingFile && (
+                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p>File Selected: {markingFile.name}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Remarks */}
           <div>
             <label className="mb-2.5 block text-black dark:text-white mt-4">
@@ -275,9 +360,10 @@ const FileUpdate: React.FC = () => {
               className="input-field"
               rows={2}
               maxLength={100}
-              placeholder='Enter remarks here...(Max 100 characters)'
+              placeholder="Enter remarks here...(Max 100 characters)"
             ></textarea>
           </div>
+
           <div className="flex justify-between mt-4">
             <Link to={'/paper/transfer'} className="btn-secondary">
               Back
@@ -287,7 +373,7 @@ const FileUpdate: React.FC = () => {
               disabled={isUploading}
               className="btn-primary"
             >
-              {isUploading ? 'Updating...' : 'Update File'}
+              {isUploading ? 'Updating...' : 'Update Files'}
             </button>
           </div>
         </div>
