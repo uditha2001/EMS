@@ -130,6 +130,10 @@ function App() {
   return (
     <Routes>
       <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+      <Route
+        path="/learn-more"
+        element={renderPage('Welcome | EMS', <LearnMore />)}
+      />
 
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
@@ -487,6 +491,10 @@ function App() {
                 <RequireAuth allowedPermissions={['MODERATE_RESULTS']} />
               }
             >
+              <Route
+                path="/result/conditions"
+                element={renderPage('Results Grading | EMS', <GradeConditions />)}
+              />
 
               <Route
                 path="/result/grading"
