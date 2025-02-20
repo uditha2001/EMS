@@ -9,6 +9,7 @@ import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
 import ResultGrading from './pages/Results/ResultGrading';
 import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
 import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
+import GradeConditions from './pages/Results/GradeConditions';
 import LearnMore from './components/LearnMore';
 
 // Lazy-loaded components
@@ -153,6 +154,7 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
+
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -490,13 +492,18 @@ function App() {
               }
             >
               <Route
+                path="/result/conditions"
+                element={renderPage('Results Grading | EMS', <GradeConditions />)}
+              />
+
+              <Route
                 path="/result/grading"
                 element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
 
               <Route
                 path="/result/dashboard"
-                //element={renderPage('Results Dashboard | EMS', )}
+              //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>

@@ -844,6 +844,23 @@ const useApi = () => {
     }
   };
 
+  const getGradesConditionsValues=async (courseCode:string)=>{
+    try{
+        const response=await axiosPrivate.get('grading/marksPercentage',
+          {
+            params: {courseCode}
+          }
+        );
+        return response.data;
+    }
+    catch(error:any){
+      setError(error?.response?.data?.message || 'Failed to fetch grades conditions values');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to fetch grades conditions values',
+      );
+    }
+  }
+
   return {
     uploadFile,
     getAllFiles,
@@ -926,6 +943,7 @@ const useApi = () => {
     getPaperById,
     downloadMarkingFile,
     fetchEncryptedMarking,
+    getGradesConditionsValues
   };
 };
 
