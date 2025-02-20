@@ -361,10 +361,10 @@ const ModerationDashboard: React.FC = () => {
       <Breadcrumb pageName="Moderation Dashboard" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {papers.map((paper) => {
-          const paperQuestions = questions.filter(
-            (question) => question.paperId === paper.id,
-          );
+        {papers?.map((paper) => {
+          const paperQuestions =
+            questions?.filter((question) => question.paperId === paper.id) ||
+            [];
 
           let paperCompletionPercentage =
             calculateCompletionPercentage(paperQuestions);
@@ -375,7 +375,7 @@ const ModerationDashboard: React.FC = () => {
           return (
             <div
               key={paper.id}
-              className="border p-4 rounded-sm cursor-pointer  border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+              className="border p-4 rounded-sm cursor-pointer border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
               onClick={() => handleCardClick(paper.id)}
             >
               <h3 className="font-semibold">{paper.fileName}</h3>
@@ -384,11 +384,11 @@ const ModerationDashboard: React.FC = () => {
                 <span className={`ml-2 ${getStatusColor(paper.status)}`} />
               </p>
               <p>
-                Created by: {paper.creator.firstName} {paper.creator.lastName}
+                Created by: {paper.creator?.firstName} {paper.creator?.lastName}
               </p>
               <p>
-                Moderator: {paper.moderator.firstName}{' '}
-                {paper.moderator.lastName}
+                Moderator: {paper.moderator?.firstName}{' '}
+                {paper.moderator?.lastName}
               </p>
 
               <div className="mt-4">
@@ -401,13 +401,11 @@ const ModerationDashboard: React.FC = () => {
                       {paperCompletionPercentage}% Completed
                     </span>
                   </div>
-                  <div className="flex mb-2 items-center justify-between">
-                    <div className="w-full bg-gray-300 rounded-full">
-                      <div
-                        className={`h-2 rounded-full bg-primary`}
-                        style={{ width: `${paperCompletionPercentage}%` }}
-                      ></div>
-                    </div>
+                  <div className="w-full bg-gray-300 rounded-full">
+                    <div
+                      className={`h-2 rounded-full bg-primary`}
+                      style={{ width: `${paperCompletionPercentage}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -416,7 +414,9 @@ const ModerationDashboard: React.FC = () => {
         })}
       </div>
 
-      {selectedPaperId && feedback.length > 0 && question.length == 0 && (
+      {selectedPaperId &&
+      (feedback?.length ?? 0) > 0 &&
+      (question?.length ?? 0) === 0 ? (
         <div className="my-6">
           <h3 className="font-medium text-black dark:text-white flex items-center gap-2 mb-2 ">
             <FontAwesomeIcon icon={faComment} className="text-blue-500" />
@@ -426,9 +426,13 @@ const ModerationDashboard: React.FC = () => {
             <p className="text-gray-700 dark:text-gray-300">{feedback}</p>
           </div>
         </div>
+      ) : (
+        <p className="text-center text-gray-500 dark:text-gray-400 mt-6">
+          No feedback available for this paper
+        </p>
       )}
 
-      {selectedPaperId && question.length > 0 && (
+      {selectedPaperId && (question?.length ?? 0) > 0 && (
         <div>
           <h3 className="font-medium text-black dark:text-white my-6">
             Questions Moderation Progress
@@ -436,7 +440,8 @@ const ModerationDashboard: React.FC = () => {
           {renderQuestionsTable(question)}
         </div>
       )}
-      {questions.length > 0 ? (
+
+      {(questions?.length ?? 0) > 0 ? (
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
           <div className="p-4 rounded-sm border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
             <h4 className="text-md font-semibold mb-4">
