@@ -136,5 +136,5 @@ export default function DegreePrograms() {
         </div>
       </div>
     </div>
-  );
+  );
 }

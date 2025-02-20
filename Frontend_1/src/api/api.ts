@@ -234,8 +234,12 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
-  const createDegreeProgram = async (degreeProgram: any) => {
+  const createDegreeProgram = async (degreeProgram: {name: string, description: string}) => {
     return axiosPrivate.post('/degreePrograms', degreeProgram);
+  };
+
+  const deleteDegreeProgram = async (id: number) => {
+    return axiosPrivate.delete('/degreePrograms/' + id);
   };
 
   const updateRole = async (roleId: number, updatedRole: any) => {
@@ -931,6 +935,7 @@ const useApi = () => {
     loading,
     error,
     createDegreeProgram,
+    deleteDegreeProgram,
     searchArchivedPapers,
     getExaminationsAllCourses,
     getRoleAssignmentByUserId,

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
-import { Loader } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import Loader from '../../common/Loader';
 
 interface DegreeProgram {
   id: number;
@@ -87,6 +87,6 @@ export default function DegreeProgramList({
           onCancel={() => setShowModal(false)}
         />
       )}
-    </div>
-  );
+    </div>
+  );
 }
