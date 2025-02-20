@@ -31,4 +31,9 @@ public class ResultController {
         return resultService.saveMarkingResults(results,request);
     }
 
+    @GetMapping("/examType")
+    public ResponseEntity<StandardResponse> getExamTypes(){
+        return resultService.getAllExamsTypes();
+    }
+
 }

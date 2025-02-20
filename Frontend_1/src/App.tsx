@@ -6,6 +6,8 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
 import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
+import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
+import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -430,20 +432,30 @@ function App() {
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
               <Route
+                path="/paper/roles-assigned-revision"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <RoleAssignmentRevision />,
+                )}
+              />
+              <Route
                 path="/paper/preview-assigned-roles/:examinationId"
                 element={renderPage(
                   'Role Assignments | EMS',
                   <PreviewAssignedRoles />,
                 )}
               />
+              <Route
+                path="/paper/preview-assigned-revision/:examinationId"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <PreviewRoleAssignmentRevisions />,
+                )}
+              />
             </Route>
 
             {/*Create Timetable */}
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['TIMETABLE']} />
-              }
-            >
+            <Route element={<RequireAuth allowedPermissions={['TIMETABLE']} />}>
               <Route
                 path="/timetable"
                 element={renderPage(

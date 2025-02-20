@@ -12,6 +12,8 @@ import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEnt
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
 import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
@@ -38,21 +40,16 @@ public class ExaminationService {
     private final UserRolesRepository userRolesRepository;
     private final DegreeProgramRepo degreeProgramsRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
+    private final ExamTypeRepo examTypeRepo;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository,UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, ExamTypeRepo examTypeRepo) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
         this.degreeProgramsRepository = degreeProgramsRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
+        this.examTypeRepo = examTypeRepo;
     }
-
-
-
-
-
-
-
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
         DegreeProgramsEntity degreeProgram = degreeProgramsRepository.findById(examinationDTO.getDegreeProgramId())
                 .orElseThrow(() -> new RuntimeException("Degree Program not found"));
@@ -186,19 +183,13 @@ public class ExaminationService {
     }
 
 
-
+    //get examination data related to selected degree program
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
         List<String> degreeNames=new ArrayList<>();
         List<ExaminationDTO> examinationDTOS=new ArrayList<>();
         List<ExaminationEntity> examinationEntities = examinationRepository.findAll();
         for(ExaminationEntity examinationEntity : examinationEntities) {
-            ExaminationDTO examinationDTO=new ExaminationDTO();
-            examinationDTO.setId(examinationEntity.getId());
-            examinationDTO.setYear(examinationEntity.getYear());
-            examinationDTO.setLevel(examinationEntity.getLevel());
-            examinationDTO.setSemester(examinationEntity.getSemester());
-            examinationDTO.setDegreeProgramId(examinationEntity.getDegreeProgramsEntity().getId());
-            examinationDTO.setDegreeProgramName(examinationEntity.getDegreeProgramsEntity().getDegreeName());
+            ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
             examinationDTOS.add(examinationDTO);
         }
 
@@ -207,7 +198,7 @@ public class ExaminationService {
        );
     }
 
-    //create a methode to get coursedata which ara belongs to particular exam
+    //create a methode to get course data which ara belongs to particular exam
     public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
         try{
             Set<CourseDTO> courseDTOS=new HashSet<>();
@@ -232,7 +223,7 @@ public class ExaminationService {
         }
         catch(Exception e){
             return new ResponseEntity<StandardResponse>(
-                   new StandardResponse(500,"erroe",null), HttpStatus.INTERNAL_SERVER_ERROR
+                   new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -343,4 +334,6 @@ public class ExaminationService {
             }
         }
     }
+
+
 }
