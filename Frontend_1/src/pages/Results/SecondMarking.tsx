@@ -170,6 +170,7 @@ const SecondMarking = () => {
         if (isSaved) {
             setTotalData(
                 {
+                    id: examsData.id,
                     studentsData: secondMarking,
                     courseCode: examsData.courseCode,
                     examName: examsData.examName,

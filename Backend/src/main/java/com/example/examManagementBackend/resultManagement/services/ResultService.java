@@ -110,9 +110,7 @@ public class ResultService {
     private Long getCourseCodeId(String code){
         return coursesRepo.getCourseIdByCode(code);
     }
-    private Long getExaminationNameId(String year,String level,String semester){
-        return examinationRepo.getExaminationIdByYearAndSemesterAndLevel(year,level,semester);
-    }
+
     private Long getStudentsTableId(String studentNumber ){
         return studentRepo.getIdBystudentNumber(studentNumber);
     }
