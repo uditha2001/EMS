@@ -46,7 +46,6 @@ const Profile: React.FC = () => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-
         const imageResponse = await axiosPrivate.get(
           `user/getProfileImage/${userId}`,
           { responseType: 'arraybuffer' },
