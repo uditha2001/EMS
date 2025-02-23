@@ -42,9 +42,8 @@ export default function DegreeProgramList({
   return (
     <div>
       {loading ? (
-        <p>
           <Loader />
-        </p>
+      
       ) : !degreePrograms || degreePrograms.length === 0 ? (
         <p>No degree programs found.</p>
       ) : (
