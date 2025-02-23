@@ -35,6 +35,8 @@ interface User {
 }
 
 const RoleAssignmentRevision: React.FC = () => {
+  const { auth } = useAuth();
+  const userId = Number(auth.id);
   const [examinations, setExaminations] = useState<Examination[]>([]);
   const [selectedExamination, setSelectedExamination] = useState<string>('');
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([]);
@@ -53,8 +55,6 @@ const RoleAssignmentRevision: React.FC = () => {
   const [revisionReason, setRevisionReason] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { auth } = useAuth();
-  const userId = Number(auth.id);
 
   const {
     getExaminations,
@@ -62,6 +62,10 @@ const RoleAssignmentRevision: React.FC = () => {
     fetchUsers,
     reviseRoleAssignments,
   } = useApi();
+
+  useEffect(() => {
+    setRevisedById(userId.toString());
+  }, [userId]);
 
   // Fetch examinations
   useEffect(() => {
@@ -144,7 +148,6 @@ const RoleAssignmentRevision: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRevisedById(userId.toString());
 
     if (
       !selectedExamination ||
