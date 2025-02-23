@@ -55,10 +55,8 @@ public class ResultService {
                 String username = data[0].toString();
                 UserEntity approvedBy=userManagementRepo.findByUsername(username);
                 String[] examDetails=results.getExamName().split("-");
-                String[] level=examDetails[2].split(" ");
-                String[] semester=examDetails[3].split(" ");
                 Long courseId=getCourseCodeId(results.getCourseCode());
-                Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+                Long examinationId=results.getId();
                 Long examinationTypeId=getExaminationTypeId(results.getExamType());
                 for(StudentDTO student: results.getStudentsData()){
                     Long studentId=getStudentsTableId(student.getStudentNumber());
@@ -112,9 +110,7 @@ public class ResultService {
     private Long getCourseCodeId(String code){
         return coursesRepo.getCourseIdByCode(code);
     }
-    private Long getExaminationNameId(String year,String level,String semester){
-        return examinationRepo.getExaminationIdByYearAndSemesterAndLevel(year,level,semester);
-    }
+
     private Long getStudentsTableId(String studentNumber ){
         return studentRepo.getIdBystudentNumber(studentNumber);
     }
@@ -135,13 +131,11 @@ public class ResultService {
         }
     }
 
-    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,String examName,ExamTypesName examType) {
+    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,long id,ExamTypesName examType) {
         try{
-            String[] examDetails=examName.split("-");
-            String[] level=examDetails[2].split(" ");
-            String[] semester=examDetails[3].split(" ");
+
             Long courseId=getCourseCodeId(courseCode);
-            Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+            Long examinationId=id;
             Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
             List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId);

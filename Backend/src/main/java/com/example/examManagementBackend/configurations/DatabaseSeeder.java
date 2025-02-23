@@ -112,7 +112,7 @@ public class DatabaseSeeder {
 
 
             // Create admin user
-            createUser("admin", "admin@example.com", "pwd", adminRole);
+            createUser("admin", "gimhanadeshan00@gmail.com", "pwd", adminRole);
             //createUser("coordinator", "coordinator@example.com", "pwd", academyCoordinatorRole);
         } catch (Exception e) {
             System.err.println("Error during database seeding: " + e.getMessage());

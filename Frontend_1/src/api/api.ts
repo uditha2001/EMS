@@ -234,8 +234,12 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
-  const createDegreeProgram = async (degreeProgram: any) => {
+  const createDegreeProgram = async (degreeProgram: {name: string, description: string}) => {
     return axiosPrivate.post('/degreePrograms', degreeProgram);
+  };
+
+  const deleteDegreeProgram = async (id: number) => {
+    return axiosPrivate.delete('/degreePrograms/' + id);
   };
 
   const updateRole = async (roleId: number, updatedRole: any) => {
@@ -459,7 +463,7 @@ const useApi = () => {
       }
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || 'Failed to fetch users count',
+        error.response.data.message || 'Failed to fetch users count',
       );
     }
   };
@@ -622,13 +626,14 @@ const useApi = () => {
   };
 
   const getFirstMarkingResults = async (
-    examName: string,
+
+    id: number|undefined,
     courseCode: string,
     examType: string,
   ) => {
     try {
       const response = await axiosPrivate.get('result/getFirstMarking', {
-        params: { examName, courseCode, examType },
+        params: { id, courseCode, examType },
       });
       return response.data;
     } catch (error: any) {
@@ -931,6 +936,7 @@ const useApi = () => {
     loading,
     error,
     createDegreeProgram,
+    deleteDegreeProgram,
     searchArchivedPapers,
     getExaminationsAllCourses,
     getRoleAssignmentByUserId,
