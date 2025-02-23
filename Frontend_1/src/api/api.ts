@@ -534,28 +534,6 @@ const useApi = () => {
     }
   };
 
-  const saveMarkingResults = async (result: any, config = {}) => {
-    try {
-      const response = await axiosPrivate.post('result/firstMarking', result, {
-        ...config,
-      });
-      console.log(response.data);
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        return { error: true, status: 500, message: error.response.data };
-      } else if (error.request) {
-        return {
-          error: true,
-          status: 500,
-          message: 'No response received from the server',
-        };
-      } else {
-        return { error: true, status: 500, message: error.message };
-      }
-    }
-  };
-
   const getArchivedPapers = async (page = 0, size = 10) => {
     return axiosPrivate.get(`/papers/archived`, { params: { page, size } });
   };
@@ -625,31 +603,7 @@ const useApi = () => {
     }
   };
 
-  const getFirstMarkingResults = async (
-
-    id: number|undefined,
-    courseCode: string,
-    examType: string,
-  ) => {
-    try {
-      const response = await axiosPrivate.get('result/getFirstMarking', {
-        params: { id, courseCode, examType },
-      });
-      return response.data;
-    } catch (error: any) {
-      if (error.response) {
-        return { error: true, status: 500, message: error.response.data };
-      } else if (error.request) {
-        return {
-          error: true,
-          status: 500,
-          message: 'No response received from the server',
-        };
-      } else {
-        return { error: true, status: 500, message: error.message };
-      }
-    }
-  };
+  
 
   const searchArchivedPapers = async (searchParams: {
     fileName?: string;
@@ -925,14 +879,12 @@ const useApi = () => {
     getDegreeProgramById,
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
-    saveMarkingResults,
     getArchivedPapers,
     getArchivedPaperById,
     archivePapersManually,
     deleteArchivedPaper,
     downloadArchivedPaper,
     uploadArchivedPaper,
-    getFirstMarkingResults,
     loading,
     error,
     createDegreeProgram,

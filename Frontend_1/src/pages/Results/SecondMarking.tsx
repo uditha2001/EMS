@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import SelectExaminationComponent from '../../components/resultComponent/SelectExaminationComponent';
-import useApi from '../../api/api';
+import useResultsApi from '../../api/ResultsApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -21,7 +21,7 @@ const SecondMarking = () => {
     examName: '',
     examType: '',
   });
-  const { getFirstMarkingResults, saveMarkingResults } = useApi();
+  const { getFirstMarkingResults, saveMarkingResults } = useResultsApi();
   const [studentsData, setStudentsData] = useState<RowData[]>([]);
   const [editable, setEditable] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
