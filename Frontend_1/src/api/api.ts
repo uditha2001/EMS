@@ -458,7 +458,7 @@ const useApi = () => {
   const getUsersCounts = async () => {
     try {
       const response = await axiosPrivate.get('/user/count');
-      if (response.status === 200) {
+      if (response?.data?.code === 200) {
         return response.data.data;
       }
     } catch (error: any) {
