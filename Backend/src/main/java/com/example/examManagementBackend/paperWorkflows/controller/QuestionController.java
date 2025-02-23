@@ -3,6 +3,8 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionStructureDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionTemplateDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.TemplateAndStructureDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.service.FileService;
 import com.example.examManagementBackend.paperWorkflows.service.QuestionService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,20 +18,43 @@ import java.util.List;
 @RequestMapping("/api/v1/structure")
 public class QuestionController {
 
-    @Autowired
-    private QuestionService questionService;
+    private final QuestionService questionService;
+    private final FileService fileService;
+
+    public QuestionController(QuestionService questionService, FileService fileService) {
+        this.questionService = questionService;
+        this.fileService = fileService;
+    }
 
     @PostMapping("/{paperId}")
     public ResponseEntity<StandardResponse> addQuestionStructure(
             @PathVariable Long paperId,
             @RequestBody List<QuestionStructureDTO> questionStructureDTOs) {
-        questionService.saveQuestionStructure(paperId, questionStructureDTOs);
-        return ResponseEntity.ok(new StandardResponse(
-                200,
-                "Question structure added successfully.",
-                null // No additional data to return
-        ));
+        try {
+            // Retrieve the paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(paperId);
+
+            if (existingPaper == null) {
+                return new ResponseEntity<>(new StandardResponse(400, "Paper not found with the provided id.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return new ResponseEntity<>(new StandardResponse(400, "Cannot add question structure. The paper has already been approved.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Proceed with adding the question structure if not approved
+            questionService.saveQuestionStructure(paperId, questionStructureDTOs);
+            return ResponseEntity.ok(new StandardResponse(
+                    200,
+                    "Question structure added successfully.",
+                    null // No additional data to return
+            ));
+        } catch (Exception e) {
+            return new ResponseEntity<>(new StandardResponse(500, "Error adding question structure: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     @GetMapping("/{paperId}")
     public ResponseEntity<StandardResponse> getQuestionStructure(@PathVariable Long paperId) {
@@ -45,23 +70,59 @@ public class QuestionController {
     public ResponseEntity<StandardResponse> updateQuestionStructure(
             @PathVariable Long paperId,
             @RequestBody List<QuestionStructureDTO> updatedQuestionStructures) {
-        questionService.updateQuestionStructure(paperId, updatedQuestionStructures);
-        return ResponseEntity.ok(new StandardResponse(
-                200,
-                "Question structure updated successfully.",
-                null // No additional data to return
-        ));
+        try {
+            // Retrieve the paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(paperId);
+
+            if (existingPaper == null) {
+                return new ResponseEntity<>(new StandardResponse(400, "Paper not found with the provided id.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return new ResponseEntity<>(new StandardResponse(400, "Cannot update the question structure. The paper has already been approved.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Proceed with the update if not approved
+            questionService.updateQuestionStructure(paperId, updatedQuestionStructures);
+            return ResponseEntity.ok(new StandardResponse(
+                    200,
+                    "Question structure updated successfully.",
+                    null // No additional data to return
+            ));
+        } catch (Exception e) {
+            return new ResponseEntity<>(new StandardResponse(500, "Error updating question structure: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     @DeleteMapping("/{paperId}")
     public ResponseEntity<StandardResponse> deleteQuestionStructure(@PathVariable Long paperId) {
-        questionService.deleteQuestionStructure(paperId);
-        return ResponseEntity.ok(new StandardResponse(
-                200,
-                "Question structure deleted successfully.",
-                null
-        ));
+        try {
+            // Retrieve the paper details
+            EncryptedPaper existingPaper = fileService.getEncryptedPaperById(paperId);
+
+            if (existingPaper == null) {
+                return new ResponseEntity<>(new StandardResponse(400, "Paper not found with the provided id.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if the paper is approved
+            if (existingPaper.getStatus().toString().equals("APPROVED")) {
+                return new ResponseEntity<>(new StandardResponse(400, "Cannot delete the question structure. The paper has already been approved.", null), HttpStatus.BAD_REQUEST);
+            }
+
+            // Proceed with deletion if not approved
+            questionService.deleteQuestionStructure(paperId);
+            return ResponseEntity.ok(new StandardResponse(
+                    200,
+                    "Question structure deleted successfully.",
+                    null
+            ));
+        } catch (Exception e) {
+            return new ResponseEntity<>(new StandardResponse(500, "Error deleting question structure: ", null), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     @DeleteMapping("/subQuestion/{subQuestionId}")
     public ResponseEntity<StandardResponse> deleteSubQuestion(@PathVariable Long subQuestionId) {

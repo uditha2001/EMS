@@ -2,8 +2,8 @@ package com.example.examManagementBackend.userManagement.userManagementControlle
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginRequestDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.LoginResponseDTO;
-import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
-import com.example.examManagementBackend.userManagement.userManagementServices.MailService;
+import com.example.examManagementBackend.userManagement.userManagementServices.JwtServiceIMPL;
+import com.example.examManagementBackend.userManagement.userManagementServices.MailServiceIMPL;
 import com.example.examManagementBackend.userManagement.userManagementServices.UserManagementServices;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,14 +19,14 @@ import java.io.IOException;
 @RequestMapping("/api/v1/login")
 public class LogginController {
     @Autowired
-    private JwtService jwtService;
+    private JwtServiceIMPL jwtServiceIMPL;
     @Autowired
     private UserManagementServices userManagementServices;
     @Autowired
-    private MailService mailService;
+    private MailServiceIMPL mailServiceIMPL;
     @PostMapping("/authentication")
     public ResponseEntity<StandardResponse> createJwtTokenAndLogin(@RequestBody LoginRequestDTO loginRequestDTO) throws IOException {
-            LoginResponseDTO loginResponseDTO= jwtService.CreateJwtToken(loginRequestDTO);
+            LoginResponseDTO loginResponseDTO= jwtServiceIMPL.CreateJwtToken(loginRequestDTO);
             if(loginResponseDTO!=null){
                 return new ResponseEntity<>(new StandardResponse(200,"login sucess",loginResponseDTO),HttpStatus.OK);
             }
@@ -36,12 +36,12 @@ public class LogginController {
     }
     @PostMapping("/refresh-token")
     public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-             return   jwtService.refreshToken(request,response);
+             return   jwtServiceIMPL.refreshToken(request,response);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<StandardResponse> logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-               String message=jwtService.cleanTokens(request);
+               String message= jwtServiceIMPL.cleanTokens(request);
                if(message.equals("ok")){
                    return new ResponseEntity<>(new StandardResponse(200,"logout ",message), HttpStatus.OK);
                }
@@ -52,7 +52,7 @@ public class LogginController {
 
     @PostMapping("/verifyuser")
     public ResponseEntity<StandardResponse> verifyUser(@RequestParam String username) throws IOException {
-            String message=mailService.verifyUserMail(username);
+            String message= mailServiceIMPL.verifyUserMail(username);
             if(message.equals("ok")){
                 String confirmMessage="verified sucessfully";
                 return new ResponseEntity<>(new StandardResponse(200,"verify ",confirmMessage), HttpStatus.OK);
@@ -64,7 +64,7 @@ public class LogginController {
     }
     @PostMapping("/otpValidate")
     public ResponseEntity<StandardResponse> otpValidate(@RequestParam String enteredOtp,@RequestParam String username) throws IOException {
-        String message=mailService.verifyOtp(enteredOtp,username);
+        String message= mailServiceIMPL.verifyOtp(enteredOtp,username);
         if(message.equals("ok")){
             return new ResponseEntity<>(new StandardResponse(200,"verify ",message), HttpStatus.OK);
         }

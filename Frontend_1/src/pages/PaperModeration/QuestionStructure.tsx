@@ -234,7 +234,10 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
       )}
 
       {editedQuestionStructure?.data.map((question: any) => (
-        <div key={question.questionId}>
+        <div
+          key={question.questionId}
+          className="overflow-y-auto max-h-[500px] no-scrollbar"
+        >
           <div
             className="flex justify-between cursor-pointer p-6 border-b border-gray-200 dark:border-gray-600"
             onClick={() => toggleQuestionDetails(question.questionId)}
@@ -260,6 +263,9 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
 
           {openQuestionId === question.questionId && (
             <div className="p-4">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {question.comment?.length || 0}/100 characters
+              </span>
               <textarea
                 className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4 text-sm"
                 value={question.comment || ''}
@@ -271,7 +277,9 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
                   )
                 }
                 placeholder="Add your comment"
+                maxLength={100}
               />
+
               <select
                 value={question.status || 'PENDING'}
                 onChange={(e) =>
@@ -317,7 +325,7 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
                   </div>
 
                   {openSubQuestionIds.has(subQuestion.subQuestionId) && (
-                    <div className="mt-2 bg-gray-100 p-4 rounded-md dark:bg-gray-700">
+                    <div className="mt-2 bg-gray-100 p-4 rounded-sm dark:bg-gray-700">
                       <textarea
                         className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white mb-4 text-sm"
                         value={subQuestion.comment || ''}
@@ -330,6 +338,7 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
                           )
                         }
                         placeholder="Add comment"
+                        maxLength={100}
                       />
                       <select
                         value={subQuestion.status || 'PENDING'}
@@ -352,7 +361,7 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
                         (subSubQuestion: any) => (
                           <div
                             key={subSubQuestion.subSubQuestionId}
-                            className="mt-4 bg-gray-200 p-4 rounded-md dark:bg-gray-800"
+                            className="mt-4 bg-gray-200 p-4 rounded-sm dark:bg-gray-800"
                           >
                             <div
                               className="flex justify-between cursor-pointer"
@@ -402,6 +411,7 @@ const QuestionStructure: React.FC<QuestionStructureProps> = ({
                                     )
                                   }
                                   placeholder="Add comment"
+                                  maxLength={100}
                                 />
                                 <select
                                   value={subSubQuestion.status || 'PENDING'}

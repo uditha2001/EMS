@@ -3,16 +3,15 @@ package com.example.examManagementBackend.paperWorkflows.entity;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionModerationStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.QuestionType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Table(
         name = "question_structure",
         uniqueConstraints = @UniqueConstraint(columnNames = {"encrypted_paper_id", "questionNumber"})

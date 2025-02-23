@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import AuthService from '../../services/Auth-Service';
 import useAuth from '../../hooks/useAuth';
@@ -10,7 +9,7 @@ const Login = () => {
   const [shouldNavigate, setShouldNavigate] = useState(false); // State for navigation
   const [deActiveStatus, setDeActiveStatus] = useState(false);
   const [error, setError] = useState(false);
-  const [loadingStatus,setLoadingStatus]=useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(false);
   const { setAuth } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -31,22 +30,20 @@ const Login = () => {
           });
           setLoadingStatus(false);
           setShouldNavigate(true); // Trigger navigation
-        }
-        else if (response.data.code === 304) {
-          setLoadingStatus(false)
+        } else if (response.data.code === 304) {
+          setLoadingStatus(false);
           setDeActiveStatus(true);
           console.log('data is null');
         }
       }
     } catch (error) {
-      if (error.response.data.code === 304) {
-        setLoadingStatus(false)
+      if ((error as any).response.data.code === 304) {
+        setLoadingStatus(false);
         setDeActiveStatus(true);
         setError(false);
-      }
-      else {
+      } else {
         setError(true);
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         setDeActiveStatus(false);
       }
     }
@@ -58,8 +55,8 @@ const Login = () => {
   }
   return (
     <div>
-     {loadingStatus? <Loader/>:null}
-      <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
+      {loadingStatus ? <Loader /> : null}
+      <h1 className="text-xl font-bold text-center mb-6 dark:text-white">
         Welcome to EMS
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">

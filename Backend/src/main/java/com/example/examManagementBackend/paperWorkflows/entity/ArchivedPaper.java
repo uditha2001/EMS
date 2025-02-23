@@ -45,7 +45,7 @@ public class ArchivedPaper {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(nullable = false, columnDefinition = "DATETIME")
+    @Column(nullable = true, columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
 
     @ManyToOne

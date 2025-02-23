@@ -14,9 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/academic-years")
 public class ExaminationController {
-
-
-    private ExaminationService examinationService;
+    private final ExaminationService examinationService;
     public ExaminationController(ExaminationService examinationService) {
         this.examinationService = examinationService;
     }
@@ -71,6 +69,12 @@ public class ExaminationController {
         ExaminationCoursesDTO response = examinationService.getExaminationWithCoursesById(examinationId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/examinations/{examinationId}/allCourses")
+    public ResponseEntity<ExaminationCoursesDTO> getExaminationCoursesById(@PathVariable Long examinationId) {
+        ExaminationCoursesDTO response = examinationService.getExaminationWithAllActiveCoursesById(examinationId);
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/getExaminationWithDegreeName")
     public ResponseEntity<StandardResponse> getExaminationWithDegreeName() {
         return examinationService.getExaminationWithDegreeProgram();
@@ -85,6 +89,7 @@ public class ExaminationController {
         examinationService.updateExamStatus(examId);
         return ResponseEntity.ok("Exam status updated successfully!");
     }
+
 
 
 }

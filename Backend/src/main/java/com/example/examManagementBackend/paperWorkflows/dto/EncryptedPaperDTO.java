@@ -25,6 +25,8 @@ public class EncryptedPaperDTO {
     private CourseDTO course;
     private ExamPaperStatus status;
     private PaperType paperType;
+    private String feedback;
+    private String markingFilePath;
 
     // Constructor for converting entity to DTO
     public EncryptedPaperDTO(
@@ -38,7 +40,10 @@ public class EncryptedPaperDTO {
             ExaminationEntity examination,
             CoursesEntity course,
             ExamPaperStatus status,
-            PaperType paperType
+            PaperType paperType,
+            String feedback,
+            String markingFilePath
+
     ) {
         this.id = id;
         this.fileName = fileName;
@@ -51,6 +56,8 @@ public class EncryptedPaperDTO {
         this.course = (course != null) ? new CourseDTO(course.getId(), course.getName(), course.getCode()) : null;
         this.status = status;
         this.paperType = paperType;
+        this.feedback=feedback;
+        this.markingFilePath = markingFilePath;
     }
 
     @Data

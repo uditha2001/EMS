@@ -94,16 +94,15 @@ const CreateRole: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270">
+    <div className="mx-auto max-w-270 ">
       <Breadcrumb pageName="Create Role" />
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
             Create Role
           </h3>
         </div>
-
         <form onSubmit={handleSubmit}>
           <div className="p-6.5">
             {/* Success and Error Messages */}
@@ -150,7 +149,7 @@ const CreateRole: React.FC = () => {
             </div>
 
             {/* Second Section: Permissions */}
-            <div className="mb-6">
+            <div className="mb-6 ">
               <label className="mb-2.5 block text-black dark:text-white">
                 Permissions
               </label>
@@ -179,7 +178,7 @@ const CreateRole: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 overflow-y-auto max-h-[200px] no-scrollbar">
                 {isLoading ? (
                   <p className="text-center text-gray-500">
                     Loading permissions...
@@ -192,7 +191,7 @@ const CreateRole: React.FC = () => {
                     )
                     .map((category) => (
                       <div key={category}>
-                        <h4 className="mb-4 text-lg">{category}</h4>
+                        <h4 className="mb-4 text-md">{category}</h4>
                         {groupedPermissions[category]
                           .filter((permission) =>
                             permission.permissionName
@@ -202,7 +201,7 @@ const CreateRole: React.FC = () => {
                           .map((permission) => (
                             <div className="mb-2" key={permission.permissionId}>
                               <Checkbox
-                                label={permission.permissionName}
+                                label={permission.permissionName.toLowerCase()}
                                 checked={permissions.includes(
                                   permission.permissionId,
                                 )}

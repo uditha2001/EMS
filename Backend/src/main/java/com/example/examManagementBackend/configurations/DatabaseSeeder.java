@@ -64,8 +64,9 @@ public class DatabaseSeeder {
             PermissionEntity p19 = createPermission("MODERATE_PAPER", "Allows moderating exam papers", "Paper Workflow");
             PermissionEntity p20 = createPermission("ASSIGN_EXAM_ROLE", "Allows assigning exam roles to users", "Paper Workflow");
             PermissionEntity p21 = createPermission("TRANSFER_PAPER", "Allows transferring exam papers between departments", "Paper Workflow");
-            PermissionEntity p22 = createPermission("ACADEMIC_YEAR", "Allows Managing Academic Years", "Paper Workflow");
+            PermissionEntity p22 = createPermission("EXAMINATION", "Allows Managing Examinations", "Paper Workflow");
             PermissionEntity p23 = createPermission("APPROVE_EXAM_ROLE", "Allows approving exam roles to users", "Paper Workflow");
+
 
             // Result Management Permissions
             PermissionEntity p24 = createPermission("ENTER_RESULTS", "Allows entering student exam results", "Result Management");
@@ -76,6 +77,9 @@ public class DatabaseSeeder {
             PermissionEntity p29 = createPermission("MANAGE_REGRADES", "Allows handling regrading and appeal requests", "Result Management");
 
             PermissionEntity p30 = createPermission("HISTORICAL_DATA", "Allows viewing of past papers,results", "Historical Data");
+
+            PermissionEntity p31 = createPermission("TIMETABLE", "Allows viewing of Time Table", "Scheduling");
+            PermissionEntity p32 = createPermission("PAPER_EVALUATION", "Allows Add exam paper Evaluation", "Paper Workflow");
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -97,15 +101,18 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p28);
             assignPermissionToRole(adminRole, p29);
             assignPermissionToRole(adminRole, p30);
+            assignPermissionToRole(adminRole, p31);
+            assignPermissionToRole(adminRole, p32);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
+            assignPermissionToRole(academyCoordinatorRole,p20);
             assignPermissionToRole(paperCreatorRole,p21);
             assignPermissionToRole(paperModeratorRole,p21);
             assignPermissionToRole(paperModeratorRole,p19);
 
 
             // Create admin user
-            createUser("admin", "admin@example.com", "pwd", adminRole);
+            createUser("admin", "gimhanadeshan00@gmail.com", "pwd", adminRole);
             //createUser("coordinator", "coordinator@example.com", "pwd", academyCoordinatorRole);
         } catch (Exception e) {
             System.err.println("Error during database seeding: " + e.getMessage());

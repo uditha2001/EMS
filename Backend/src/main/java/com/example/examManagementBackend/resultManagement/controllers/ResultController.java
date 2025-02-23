@@ -23,12 +23,17 @@ public class ResultController {
     }
 
     @GetMapping("/getFirstMarking")
-    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  String examName,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
-        return resultService.getFirstMarking(courseCode,examName,examType);
+    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  Long id,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
+        return resultService.getFirstMarking(courseCode,id,examType);
     }
     @PostMapping("/secondMarking")
     public ResponseEntity<StandardResponse> saveSecondMarking(@RequestBody ResultDTO results, HttpServletRequest request){
         return resultService.saveMarkingResults(results,request);
+    }
+
+    @GetMapping("/examType")
+    public ResponseEntity<StandardResponse> getExamTypes(){
+        return resultService.getAllExamsTypes();
     }
 
 }

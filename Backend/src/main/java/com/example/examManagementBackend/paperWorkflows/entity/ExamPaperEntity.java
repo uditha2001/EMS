@@ -4,9 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperSt
 import com.example.examManagementBackend.paperWorkflows.entity.moderatorFeedbacks.FeedBackDataEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,7 +17,8 @@ import java.util.List;
 @Table(name="exam_paper")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class ExamPaperEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,8 +39,6 @@ public class ExamPaperEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "createdBy",referencedColumnName = "username")
     private UserEntity user;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examPaper")
-    private List<ModerationsEntity> moderations;
     @OneToOne(mappedBy = "examPaperEntity",cascade = CascadeType.ALL)
     private FeedBackDataEntity feedBackData;
 

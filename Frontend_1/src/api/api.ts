@@ -9,6 +9,7 @@ const useApi = () => {
 
   const uploadFile = async (
     file: File,
+    markingFile: File | null,
     creatorId: number,
     courseId: number,
     remarks: string,
@@ -18,6 +19,9 @@ const useApi = () => {
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
+    if (markingFile) {
+      formData.append('markingFile', markingFile);
+    }
     formData.append('creatorId', creatorId.toString());
     formData.append('moderatorId', moderatorId.toString());
     formData.append('remarks', remarks);
@@ -32,6 +36,7 @@ const useApi = () => {
         },
       });
       return res.data.data;
+     
     } catch (error: any) {
       if (error.response) {
         console.error('Error uploading file:', error.response.data?.message);
@@ -140,11 +145,17 @@ const useApi = () => {
     fileId: number,
     file: File,
     fileName: string,
+    markingFile: File | null,
+    markingFileName: string,
     remarks: string,
   ): Promise<{ message: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('fileName', fileName);
+    if (markingFile) {
+      formData.append('markingFile', markingFile);
+    }
+    formData.append('markingFileName', markingFileName);
     formData.append('remarks', remarks);
     try {
       setLoading(true);
@@ -168,6 +179,17 @@ const useApi = () => {
       );
       setError(errorMessage);
       throw new Error(errorMessage);
+    }
+  };
+
+  const getPaperById = async (id: number) => {
+    try {
+      const response = await axiosPrivate.get(`/papers/${id}`);
+      return response.data.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch paper details',
+      );
     }
   };
 
@@ -212,8 +234,12 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
-  const createDegreeProgram = async (degreeProgram: any) => {
+  const createDegreeProgram = async (degreeProgram: {name: string, description: string}) => {
     return axiosPrivate.post('/degreePrograms', degreeProgram);
+  };
+
+  const deleteDegreeProgram = async (id: number) => {
+    return axiosPrivate.delete('/degreePrograms/' + id);
   };
 
   const updateRole = async (roleId: number, updatedRole: any) => {
@@ -306,8 +332,9 @@ const useApi = () => {
   };
 
   const fetchEncryptedPaper = async (paperId: number, moderatorId: number) => {
-    return axiosPrivate.get(
-      `papers/view/${paperId}?moderatorId=${moderatorId}`,
+    return axiosPrivate.post(
+      'papers/view',
+      { id: paperId, moderatorId }, // Sending data in the request body
       { responseType: 'blob' },
     );
   };
@@ -436,7 +463,7 @@ const useApi = () => {
       }
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || 'Failed to fetch users count',
+        error.response.data.message || 'Failed to fetch users count',
       );
     }
   };
@@ -551,29 +578,62 @@ const useApi = () => {
     });
   };
 
+  const getExaminationsAllCourses = async (examinationId: number) => {
+    return axiosPrivate.get(
+      `academic-years/examinations/${examinationId}/allCourses`,
+    );
+  };
+
   const uploadArchivedPaper = async (
     file: File,
-    uploadRequest: { title: string; description: string },
+    uploadRequest: {
+      fileName: string;
+      remarks: string;
+      creatorId: number;
+      moderatorId: number;
+      examinationId: number;
+      courseId: number;
+      paperType: string;
+    },
   ) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', uploadRequest.title);
-    formData.append('description', uploadRequest.description);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', uploadRequest.fileName);
+      formData.append('remarks', uploadRequest.remarks);
+      formData.append('creatorId', uploadRequest.creatorId.toString());
+      formData.append('moderatorId', uploadRequest.moderatorId.toString());
+      formData.append('examinationId', uploadRequest.examinationId.toString());
+      formData.append('courseId', uploadRequest.courseId.toString());
+      formData.append('paperType', uploadRequest.paperType);
 
-    return axiosPrivate.post(`/papers/archived/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      const response = await axiosPrivate.post(
+        `/papers/archived/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Accept: 'application/json',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading archived paper:', error);
+      throw new Error('Failed to upload archived paper. Please try again.');
+    }
   };
+
   const getFirstMarkingResults = async (
-    examName: string,
+
+    id: number|undefined,
     courseCode: string,
     examType: string,
   ) => {
     try {
       const response = await axiosPrivate.get('result/getFirstMarking', {
-        params: { examName, courseCode, examType },
+        params: { id, courseCode, examType },
       });
       return response.data;
     } catch (error: any) {
@@ -590,7 +650,222 @@ const useApi = () => {
       }
     }
   };
-   
+
+  const searchArchivedPapers = async (searchParams: {
+    fileName?: string;
+    creatorName?: string;
+    moderatorName?: string;
+    courseCode?: string;
+    paperType?: string;
+    degreeName?: string;
+    year?: string;
+    level?: string;
+    semester?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    size?: number;
+  }) => {
+    try {
+      // Build the query parameters dynamically
+      const queryParams = new URLSearchParams(searchParams as any).toString();
+
+      return axiosPrivate.get(`/papers/archived/search?${queryParams}`);
+    } catch (error) {
+      console.error('Error searching archived papers:', error);
+      throw error;
+    }
+  };
+
+  const getRoleAssignmentByUserId = async (userId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/user/${userId}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error('Failed to fetch role assignment');
+    }
+  };
+
+  const updatePaperStatusAndFeedback = async (
+    id: number,
+    status: string,
+    feedback: string,
+  ) => {
+    try {
+      const response = await axiosPrivate.patch(
+        `/moderation/${id}/update`,
+        null,
+        {
+          params: { status, feedback },
+        },
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getPaperStatus = async (paperId: number) => {
+    try {
+      const response = await axiosPrivate.get(`/papers/${paperId}/status`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const reviseRoleAssignments = async (revisions: any) => {
+    try {
+      const response = await axiosPrivate.put(
+        '/role-assignments/change-users',
+        revisions,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error revising role assignments:', error);
+      throw error;
+    }
+  };
+
+  const fetchRoleAssignmentRevisions = async (revisionId: number) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/revision/${revisionId}`,
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching role assignment revisions:', error);
+      throw error;
+    }
+  };
+
+  const getExamTypes = async () => {
+    try {
+      const response = await axiosPrivate.get(`/result/examType`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getModerators = async (selectedCourse: any, paperType: any) => {
+    try {
+      const response = await axiosPrivate.get(
+        `/role-assignments/moderators?courseId=${selectedCourse}&paperType=${paperType}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Failed to fetch moderators',
+      );
+    }
+  };
+
+  const downloadMarkingFile = async (
+    id: number,
+    moderatorId: number,
+  ): Promise<void> => {
+    try {
+      const response = await axiosPrivate.post(
+        '/papers/download-marking',
+        { id, moderatorId }, // Send data in the request body
+        { responseType: 'blob' },
+      );
+  
+      // Extract filename from the Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'marking.pdf';
+      if (contentDisposition) {
+        const matches = /filename="([^"]+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+          filename = decodeURIComponent(matches[1]);
+        }
+      }
+  
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
+  
+      if (!blob || blob.size === 0) {
+        throw new Error('No data returned from the server.');
+      }
+  
+      // Create a temporary URL for the Blob and trigger the download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to download marking file');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to download marking file',
+      );
+    }
+  };
+
+  const fetchEncryptedMarking = async (paperId: number, moderatorId: number): Promise<{ data: Blob }> => {
+    try {
+      const response = await axiosPrivate.post(
+        '/papers/view-marking',
+        { id: paperId, moderatorId }, // Send data in the request body
+        { responseType: 'blob' },
+      );
+  
+      // Extract filename from the Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition) {
+        const matches = /filename="([^"]+)"/.exec(contentDisposition);
+        if (matches && matches[1]) {
+        }
+      }
+  
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type'],
+      });
+  
+      if (!blob || blob.size === 0) {
+        throw new Error('No data returned from the server.');
+      }
+  
+      // // Create a temporary URL for the Blob and open it in a new tab
+      // const url = window.URL.createObjectURL(blob);
+      // window.open(url, '_blank');
+      // window.URL.revokeObjectURL(url); // Clean up the URL object
+
+      return { data: blob };
+    } catch (error: any) {
+      setError(error?.response?.data?.message || 'Failed to fetch marking file');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to fetch marking file',
+      );
+    }
+  };
+
+  const getGradesConditionsValues=async (courseCode:string)=>{
+    try{
+        const response=await axiosPrivate.get('grading/marksPercentage',
+          {
+            params: {courseCode}
+          }
+        );
+        return response.data;
+    }
+    catch(error:any){
+      setError(error?.response?.data?.message || 'Failed to fetch grades conditions values');
+      throw new Error(
+        error?.response?.data?.message || 'Failed to fetch grades conditions values',
+      );
+    }
+  }
+
   return {
     uploadFile,
     getAllFiles,
@@ -661,6 +936,20 @@ const useApi = () => {
     loading,
     error,
     createDegreeProgram,
+    deleteDegreeProgram,
+    searchArchivedPapers,
+    getExaminationsAllCourses,
+    getRoleAssignmentByUserId,
+    updatePaperStatusAndFeedback,
+    getPaperStatus,
+    reviseRoleAssignments,
+    fetchRoleAssignmentRevisions,
+    getExamTypes,
+    getModerators,
+    getPaperById,
+    downloadMarkingFile,
+    fetchEncryptedMarking,
+    getGradesConditionsValues
   };
 };
 

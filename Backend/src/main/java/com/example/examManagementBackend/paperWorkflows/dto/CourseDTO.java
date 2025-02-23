@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class CourseDTO {
         private String courseType; // Added courseType field as String for flexibility
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
-        private Long degreeProgramId; // Reference to DegreeProgramsEntity
+        private Long degreeProgramId;
+        private String degreeName;
 
 }

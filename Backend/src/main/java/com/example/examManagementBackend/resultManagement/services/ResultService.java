@@ -4,6 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.resultManagement.dto.ExamTypesDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
@@ -14,17 +15,16 @@ import com.example.examManagementBackend.resultManagement.entities.StudentsEntit
 import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.resultManagement.repo.StudentRepo;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
-import com.example.examManagementBackend.userManagement.userManagementServices.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,31 +36,27 @@ public class ResultService {
     private final ExaminationRepository examinationRepo;
     private final CoursesRepository coursesRepo;
     private final ExamTypeRepo examTypeRepo;
-    private final ModelMapper modelMapper;
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, ModelMapper modelMapper, JwtService jwtService, UserManagementRepo userManagementRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
         this.coursesRepo=coursesRepo;
         this.examTypeRepo=examTypeRepo;
-        this.modelMapper=modelMapper;
-        this.jwtService=jwtService;
+        this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
     }
     public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
             if(results.getExamName()!=null && results.getCourseCode()!=null && results.getStudentsData()!=null && !results.getStudentsData().isEmpty()) {
-                Object[] data=jwtService.getUserNameAndToken(request);
+                Object[] data= jwtService.getUserNameAndToken(request);
                 String username = data[0].toString();
                 UserEntity approvedBy=userManagementRepo.findByUsername(username);
                 String[] examDetails=results.getExamName().split("-");
-                String[] level=examDetails[2].split(" ");
-                String[] semester=examDetails[3].split(" ");
                 Long courseId=getCourseCodeId(results.getCourseCode());
-                Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+                Long examinationId=results.getId();
                 Long examinationTypeId=getExaminationTypeId(results.getExamType());
                 for(StudentDTO student: results.getStudentsData()){
                     Long studentId=getStudentsTableId(student.getStudentNumber());
@@ -114,9 +110,7 @@ public class ResultService {
     private Long getCourseCodeId(String code){
         return coursesRepo.getCourseIdByCode(code);
     }
-    private Long getExaminationNameId(String year,String level,String semester){
-        return examinationRepo.getExaminationIdByYearAndSemesterAndLevel(year,level,semester);
-    }
+
     private Long getStudentsTableId(String studentNumber ){
         return studentRepo.getIdBystudentNumber(studentNumber);
     }
@@ -128,18 +122,20 @@ public class ResultService {
     public void saveStudentsDetails(StudentDTO student){
         if(studentRepo.IsEmpty(student.getStudentNumber())==0){
             StudentsEntity studentsEntity=new StudentsEntity();
-            modelMapper.map(student, studentsEntity);
+            studentsEntity.setStudentName(student.getStudentName());
+            studentsEntity.setStudentNumber(student.getStudentNumber());
             studentRepo.save(studentsEntity);
+        }
+        else{
+            studentRepo.updateStudentName(student.getStudentNumber(),student.getStudentName());
         }
     }
 
-    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,String examName,ExamTypesName examType) {
+    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,long id,ExamTypesName examType) {
         try{
-            String[] examDetails=examName.split("-");
-            String[] level=examDetails[2].split(" ");
-            String[] semester=examDetails[3].split(" ");
+
             Long courseId=getCourseCodeId(courseCode);
-            Long examinationId=getExaminationNameId(examDetails[0],level[1],semester[1]);
+            Long examinationId=id;
             Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS=new HashSet<StudentDTO>();
             List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId);
@@ -175,4 +171,25 @@ public class ResultService {
         }
     }
 
+    public ResponseEntity<StandardResponse> getAllExamsTypes() {
+        try{
+            List<ExamTypesEntity> examTypesEntities=examTypeRepo.getAllExamTypes();
+            List<ExamTypesDTO> examTypesDTOS= new ArrayList<ExamTypesDTO>();
+            for(ExamTypesEntity examTypesEntity:examTypesEntities){
+                ExamTypesDTO examTypesDTO=new ExamTypesDTO();
+                examTypesDTO.setId(examTypesEntity.getId());
+                examTypesDTO.setName(examTypesEntity.getName());
+                examTypesDTOS.add(examTypesDTO);
+            }
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(200,"success",examTypesDTOS), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<StandardResponse>(
+                    new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }

@@ -5,6 +5,13 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SecondMarking from './pages/Results/SecondMarking';
+import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
+import ResultGrading from './pages/Results/ResultGrading';
+import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
+import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
+import GradeConditions from './pages/Results/GradeConditions';
+import LearnMore from './components/LearnMore';
+
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -42,12 +49,6 @@ const CreateBulkUsers = React.lazy(
 );
 const DegreePrograms = React.lazy(
   () => import('./pages/DegreePrograms/DegreePrograms'),
-);
-const CreateDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/CreateDegreeProgram'),
-);
-const EditDegreeProgram = React.lazy(
-  () => import('./pages/DegreePrograms/EditDegreeProgram'),
 );
 const Courses = React.lazy(() => import('./pages/Courses/Courses'));
 const CreateCourse = React.lazy(() => import('./pages/Courses/CreateCourse'));
@@ -124,6 +125,10 @@ function App() {
   return (
     <Routes>
       <Route index element={renderPage('Welcome | EMS', <Welcome />)} />
+      <Route
+        path="/learn-more"
+        element={renderPage('Welcome | EMS', <LearnMore />)}
+      />
 
       {/* Unauthorized Route */}
       <Route path="/unauthorized" element={<Unauthorized />} />
@@ -144,10 +149,7 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-      <Route
-        path="/result-Upload"
-        element={renderPage('upload result|EMS', <ResultsUpload />)}
-      />
+
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -238,7 +240,7 @@ function App() {
               }
             >
               <Route
-                path="/academic/degreeprograms"
+                path="/degreeprograms"
                 element={renderPage(
                   'Degree Programs | EMS',
                   <DegreePrograms />,
@@ -246,40 +248,14 @@ function App() {
               />
             </Route>
 
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['CREATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/academic/degreeprograms/create"
-                element={renderPage(
-                  'Create Degree Program | EMS',
-                  <CreateDegreeProgram />,
-                )}
-              />
-            </Route>
-
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['UPDATE_DEGREE_PROGRAM']} />
-              }
-            >
-              <Route
-                path="/academic/degreeprograms/edit/:degreeprogramId"
-                element={renderPage(
-                  'Edit Degree Program | EMS',
-                  <EditDegreeProgram />,
-                )}
-              />
-            </Route>
+           
 
             {/* Courses Routes */}
             <Route
               element={<RequireAuth allowedPermissions={['READ_COURSE']} />}
             >
               <Route
-                path="/academic/courses"
+                path="/courses"
                 element={renderPage('Courses | EMS', <Courses />)}
               />
             </Route>
@@ -288,7 +264,7 @@ function App() {
               element={<RequireAuth allowedPermissions={['CREATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/create"
+                path="/courses/create"
                 element={renderPage('Create Course | EMS', <CreateCourse />)}
               />
             </Route>
@@ -297,15 +273,15 @@ function App() {
               element={<RequireAuth allowedPermissions={['UPDATE_COURSE']} />}
             >
               <Route
-                path="/academic/courses/edit/:courseId"
+                path="/courses/edit/:courseId"
                 element={renderPage('Edit Course | EMS', <EditCourse />)}
               />
             </Route>
             <Route
-              element={<RequireAuth allowedPermissions={['ACADEMIC_YEAR']} />}
+              element={<RequireAuth allowedPermissions={['EXAMINATION']} />}
             >
               <Route
-                path="/academic/academicyears"
+                path="/examination"
                 element={renderPage('Examinations | EMS', <Examinations />)}
               />
             </Route>
@@ -319,14 +295,14 @@ function App() {
                 element={renderPage('Paper Setting | EMS', <CreatePaper />)}
               />
               <Route
-                path="/paper/create/structure/:paperId"
+                path="/paper/create/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <CreatePaperStructure />,
                 )}
               />
               <Route
-                path="/paper/edit/structure/:paperId"
+                path="/paper/edit/structure"
                 element={renderPage(
                   'Paper Setting | EMS',
                   <EditPaperStructure />,
@@ -358,13 +334,20 @@ function App() {
                   <ArchivedPapers />,
                 )}
               />
+              <Route
+                path="/history/archived/upload"
+                element={renderPage(
+                  'Archived Papers Upload | EMS',
+                  <UploadArchivedPaper />,
+                )}
+              />
             </Route>
 
             <Route
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
               <Route
-                path="/paper/moderate/:paperId/:moderatorId"
+                path="/paper/moderate"
                 element={renderPage(
                   'Paper Moderation | EMS',
                   <ModeratePaper />,
@@ -372,13 +355,13 @@ function App() {
               />
 
               <Route
-                path="/paper/feedback/:paperId/:moderatorId"
+                path="/paper/feedback"
                 element={renderPage('Feedback | EMS', <Feedback />)}
               />
             </Route>
 
             <Route
-              path="/paper/moderate"
+              path="/paper/moderate/dashboard"
               element={renderPage(
                 'Paper Moderation | EMS',
                 <ModerationDashboard />,
@@ -400,7 +383,7 @@ function App() {
                 )}
               />
               <Route
-                path="/paper/transfer/edit/:fileId"
+                path="/paper/transfer/edit"
                 element={renderPage('Paper Transfer | EMS', <FileUpdate />)}
               />
               <Route
@@ -422,22 +405,32 @@ function App() {
                 element={renderPage('Role Assignments | EMS', <AssignRoles />)}
               />
               <Route
+                path="/paper/roles-assigned-revision"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <RoleAssignmentRevision />,
+                )}
+              />
+              <Route
                 path="/paper/preview-assigned-roles/:examinationId"
                 element={renderPage(
                   'Role Assignments | EMS',
                   <PreviewAssignedRoles />,
                 )}
               />
+              <Route
+                path="/paper/preview-assigned-revision/:examinationId"
+                element={renderPage(
+                  'Role Assignments | EMS',
+                  <PreviewRoleAssignmentRevisions />,
+                )}
+              />
             </Route>
 
             {/*Create Timetable */}
-            <Route
-              element={
-                <RequireAuth allowedPermissions={['ASSIGN_EXAM_ROLE']} />
-              }
-            >
+            <Route element={<RequireAuth allowedPermissions={['TIMETABLE']} />}>
               <Route
-                path="/createtimetable"
+                path="/timetable"
                 element={renderPage(
                   'Create Timetable | EMS',
                   <CreateTimetable />,
@@ -468,18 +461,18 @@ function App() {
               }
             >
               <Route
-                path="/result/secondmarking"
-                //element={renderPage('Second Marking | EMS', )}
+                path="/result/conditions"
+                element={renderPage('Results Grading | EMS', <GradeConditions />)}
               />
 
               <Route
                 path="/result/grading"
-                //element={renderPage('Results Grading | EMS', )}
+                element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
 
               <Route
                 path="/result/dashboard"
-                //element={renderPage('Results Dashboard | EMS', )}
+              //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
@@ -489,4 +482,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
