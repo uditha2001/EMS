@@ -185,7 +185,7 @@ public class ExaminationService {
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
         List<String> degreeNames=new ArrayList<>();
         List<ExaminationDTO> examinationDTOS=new ArrayList<>();
-        List<ExaminationEntity> examinationEntities = examinationRepository.findAll();
+        List<ExaminationEntity> examinationEntities = examinationRepository.findAllOngoingExams(ExamStatus.ONGOING);
         for(ExaminationEntity examinationEntity : examinationEntities) {
             ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
             examinationDTOS.add(examinationDTO);
