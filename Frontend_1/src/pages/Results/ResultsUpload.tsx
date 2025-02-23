@@ -14,6 +14,7 @@ import {
   faTimesCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import useResultsApi from '../../api/ResultsApi';
 
 type RowData = {
   [key: string]: any;
@@ -52,9 +53,10 @@ const ResultsUpload = () => {
   const {
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
-    saveMarkingResults,
     getExamTypes,
   } = useApi();
+  const {saveMarkingResults}=useResultsApi();
+
   const [selectedExaminationKey, setSelectedExaminationKey] =
     useState<number>();
   const [examinationCourseCode, setExaminationCourseCode] = useState<
