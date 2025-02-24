@@ -38,6 +38,8 @@ type CourseData = {
 
 const GradeConditions = () => {
   const [isConfirm, setIsConfirm] = useState(false);
+  const [isValuesChanged,setIsValueChanged]=useState(false);
+  const [previousData,setPreviousData]=useState<marksConditions[]>();
   const {
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
@@ -82,18 +84,24 @@ const GradeConditions = () => {
   }, [selectedExaminationKey]);
 
   useEffect(() => {
-    if (isConfirm) {
+    if (isConfirm && isValuesChanged) {
       saveChangeMarksConditions(marksConditions).then((data) => {
         setIsEditing(false);
+        setIsValueChanged(false);
         console.log(data);
+        setPreviousData(marksConditions);
       })
         .catch((error) => {
+          setIsEditing(false);
+          setIsValueChanged(false);
           console.log(error);
         })
     }
   }, [marksConditions]);
 
   const handleInputChange = (e: any) => {
+    setIsValueChanged(true);
+    setIsConfirm(false);
     setMarksConditions((prev) => prev?.map((mark) => {
       if (mark.examType + " passMarks" === e.target.name) {
         return { ...mark, passMark: e.target.value };
@@ -123,6 +131,9 @@ const GradeConditions = () => {
 
   const handleCancel = () => {
     setIsEditing(false);
+    setIsConfirm(false);
+    setIsValueChanged(false);
+    setMarksConditions(previousData);
   };
 
   const handleAccept = () => {
@@ -146,6 +157,7 @@ const GradeConditions = () => {
           setMarksConditions(
             data.data
           );
+          setPreviousData(data.data);
         });
       }
     } else {
