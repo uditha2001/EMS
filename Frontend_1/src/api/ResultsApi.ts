@@ -23,7 +23,7 @@ const useResultsApi = () => {
         }
       };
 
-      const getFirstMarkingResults = async (
+    const getFirstMarkingResults = async (
 
         id: number|undefined,
         courseCode: string,
@@ -48,9 +48,33 @@ const useResultsApi = () => {
           }
         }
       };
+    const saveChangeMarksConditions=async (conditions:any)=>{
+       try{
+        const response=await axiosPrivate.post('grading/changedMarksPercentages',conditions);
+        return response.data;
+       }
+
+       catch (error: any) {
+        if (error.response) {
+          return { error: true, status: 500, message: error.response.data };
+        } else if (error.request) {
+          return {
+            error: true,
+            status: 500,
+            message: 'No response received from the server',
+          };
+        } else {
+          return { error: true, status: 500, message: error.message };
+        }
+      }    }
+
+
+
+
   return {
     saveMarkingResults,
-    getFirstMarkingResults
+    getFirstMarkingResults,
+    saveChangeMarksConditions
     }
 }
 

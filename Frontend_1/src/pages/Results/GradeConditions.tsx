@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useApi from '../../api/api';
+import { useNavigate } from 'react-router-dom';
 import {
   FiEdit,
   FiAlertCircle,
@@ -9,11 +10,22 @@ import {
   FiX,
 } from 'react-icons/fi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import useResultsApi from '../../api/ResultsApi';
+import SuccessMessage from '../../components/SuccessMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 
 type ExaminationName = {
   key: number;
   name: string;
 };
+
+type marksConditions = {
+  id: number;
+  examType: string;
+  weightage: number;
+  passMark: number;
+  courseCode: string;
+}
 type CourseData = {
   id: number;
   code: string;
@@ -26,28 +38,24 @@ type CourseData = {
   degreeProgramId: string;
 };
 
-const ResultGrading = () => {
-  const {
-    getAllExaminationDetailsWithDegreeName,
-    getCoursesUsingExaminationId,
-    getGradesConditionsValues,
-  } = useApi();
-  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>(
-    [],
-  );
+const GradeConditions = () => {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isConfirm, setIsConfirm] = useState(false);
+  const [isValuesChanged, setIsValueChanged] = useState(false);
+  const [previousData, setPreviousData] = useState<marksConditions[]>();
+  const {getAllExaminationDetailsWithDegreeName,getCoursesUsingExaminationId,getGradesConditionsValues,} = useApi();
+  const { saveChangeMarksConditions } = useResultsApi();
+  const navigate = useNavigate();
+  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
   const [examName, setExamName] = useState<string>('');
   const [courseCode, setCourseCode] = useState<string>('');
-  const [examinationCourseCode, setExaminationCourseCode] = useState<
-    CourseData[]
-  >([]);
-  const [selectedExaminationKey, setSelectedExaminationKey] = useState<
-    number | undefined
-  >(undefined);
-  const [showGradeConditions, setShowGradeConditions] =
-    useState<boolean>(false);
+  const [examinationCourseCode, setExaminationCourseCode] = useState<CourseData[]>([]);
+  const [selectedExaminationKey, setSelectedExaminationKey] = useState<number | undefined>(undefined);
+  const [showGradeConditions, setShowGradeConditions] =useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean>(false);
-  const [marksConditions, setMarksConditions] = useState<any[]>([]);
+  const [marksConditions, setMarksConditions] = useState<marksConditions[]>();
   const [isAcceptEnable, setIsAcceptEnable] = useState(true);
 
   useEffect(() => {
@@ -68,33 +76,79 @@ const ResultGrading = () => {
     }
   }, [selectedExaminationKey]);
 
+  useEffect(() => {
+    if (isConfirm && isValuesChanged) {
+      saveChangeMarksConditions(marksConditions).then((data) => {
+        if (data.code === 200) {
+          setSuccessMessage('Marks conditions updated successfully');
+          setPreviousData(marksConditions);
+        }
+        else if (data.code === 500) {
+          setErrorMessage('Failed to update marks conditions');
+        }
+
+      })
+        .catch(() => {
+          setErrorMessage('Failed to update marks conditions');
+        })
+        .finally(() => {
+          setIsEditing(false);
+          setIsValueChanged(false);
+        })
+    }
+  }, [marksConditions]);
+
   const handleInputChange = (e: any) => {
-    console.log(e.target.name, e.target.value);
+    setIsValueChanged(true);
+    setIsConfirm(false);
+    setMarksConditions((prev) => prev?.map((mark) => {
+      if (mark.examType + " passMarks" === e.target.name) {
+        return { ...mark, passMark: e.target.value };
+      } else if (mark.examType + " weightage" === e.target.name) {
+        return { ...mark, weightage: e.target.value };
+      }
+      return mark;
+    }) || []);
   };
 
   const handleEdit = () => {
+    setSuccessMessage('');
+    setErrorMessage('');
     setIsEditing(true);
     setIsAccepted(false);
     setIsAcceptEnable(true);
+    setIsConfirm(false);
   };
 
   const handleConfirm = () => {
-    setIsEditing(false);
+    setMarksConditions((prev) => {
+      if (prev) {
+        return prev.map((mark) => ({ ...mark, courseCode: courseCode }));
+      }
+      return prev;
+    });
+    setIsConfirm(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
+    setIsConfirm(false);
+    setIsValueChanged(false);
+    setMarksConditions(previousData);
   };
 
   const handleAccept = () => {
+    setSuccessMessage('');
+    setErrorMessage('');
     setIsAccepted(true);
     setIsEditing(false);
     setIsAcceptEnable(false);
+    setIsConfirm(false);
   };
 
   const handleNext = () => {
     if (isAccepted) {
-      console.log('Proceeding to next step');
+      navigate('/result/grading');
     }
   };
 
@@ -103,8 +157,10 @@ const ResultGrading = () => {
       setShowGradeConditions(true);
       if (courseCode != null) {
         getGradesConditionsValues(courseCode).then((data) => {
-          setMarksConditions(data.data);
-          console.log(data.data);
+          setMarksConditions(
+            data.data
+          );
+          setPreviousData(data.data);
         });
       }
     } else {
@@ -175,7 +231,12 @@ const ResultGrading = () => {
               <h2 className="text-xl font-semibold text-black dark:text-white mb-6 text-center flex items-center justify-center gap-2 mt-8 ">
                 <FiEdit className="text-primary" /> Mark Conditions
               </h2>
-
+              {errorMessage && <ErrorMessage message={errorMessage} onClose={()=>{
+                setErrorMessage('');
+              }} />}
+              {successMessage && <SuccessMessage message={successMessage} onClose={()=>{
+                setSuccessMessage('');
+              }} />}
               <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded mb-6 flex items-center gap-2 mx-6">
                 <FiAlertCircle className="text-yellow-500" />
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -204,7 +265,7 @@ const ResultGrading = () => {
                         </label>
                         <input
                           type="number"
-                          name={mark.weightage}
+                          name={mark.examType + ' weightage'}
                           value={mark.weightage}
                           onChange={handleInputChange}
                           className="input-field"
@@ -219,7 +280,7 @@ const ResultGrading = () => {
                         </label>
                         <input
                           type="number"
-                          name={mark.passMark}
+                          name={mark.examType + " passMarks"}
                           value={mark.passMark}
                           onChange={handleInputChange}
                           className="input-field"
@@ -244,11 +305,10 @@ const ResultGrading = () => {
                         type="button"
                         onClick={handleAccept}
                         disabled={!isAcceptEnable}
-                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-white rounded shadow hover:scale-105 transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${
-                          isAcceptEnable
-                            ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105 '
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-white rounded shadow hover:scale-105 transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${isAcceptEnable
+                          ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105 '
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         <FiCheck /> Accept
                       </button>
@@ -256,11 +316,10 @@ const ResultGrading = () => {
                         type="button"
                         onClick={handleNext}
                         disabled={!isAccepted}
-                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 rounded shadow transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${
-                          isAccepted
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 '
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 rounded shadow transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${isAccepted
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 '
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         <FiArrowRight /> Next
                       </button>
@@ -293,4 +352,4 @@ const ResultGrading = () => {
   );
 };
 
-export default ResultGrading;
+export default GradeConditions;
