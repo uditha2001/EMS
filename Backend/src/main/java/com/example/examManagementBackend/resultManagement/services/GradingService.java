@@ -61,7 +61,7 @@ public class GradingService {
             if(!marksPercentageDTOs.isEmpty()){
                 for(MarksPercentageDTO marksPercentageDTO:marksPercentageDTOs){
                     if(courseEvaluationRepo.countByCourseCodeAndExamType(marksPercentageDTO.getCourseCode(),marksPercentageDTO.getExamType())>0){
-                        courseEvaluationRepo.updateByCourseCodeANdExamType(marksPercentageDTO.getPassMark(),marksPercentageDTO.getWeightage(),marksPercentageDTO.getCourseCode(),marksPercentageDTO.getExamType());
+                        courseEvaluationRepo.updateByCourseCodeAndExamType(marksPercentageDTO.getPassMark(),marksPercentageDTO.getWeightage(),marksPercentageDTO.getCourseCode(),marksPercentageDTO.getExamType());
 
                     }
                     else if(courseEvaluationRepo.countByCourseCodeAndExamType(marksPercentageDTO.getCourseCode(),marksPercentageDTO.getExamType())==0){

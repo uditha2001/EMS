@@ -22,8 +22,8 @@ public class GradeController {
     }
 
     @PostMapping("/changedMarksPercentages")
-    public ResponseEntity<StandardResponse> saveChangeMarksPercentages(@RequestBody List<MarksPercentageDTO> marksPercentageDTO){
-        return  null;
+    public ResponseEntity<StandardResponse> saveChangeMarksPercentages(@RequestBody List<MarksPercentageDTO> conditions){
+        return gradingService.saveChangedGradings(conditions);
     }
 
 

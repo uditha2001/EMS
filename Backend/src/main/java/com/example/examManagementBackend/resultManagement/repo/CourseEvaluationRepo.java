@@ -18,12 +18,18 @@ public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEnt
     @Query("SELECT ce FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode")
     public List<CourseEvaluationsEntity> getAllByCourseCode(@Param("courseCode") String courseCode);
 
-    @Query("SELECT count(ce) FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes=:type")
+    @Query("SELECT count(ce) FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.name=:type")
     public Integer countByCourseCodeAndExamType(@Param("courseCode") String courseCode, @Param("type") ExamTypesName type);
 
     @Transactional
     @Modifying
-    @Query("UPDATE CourseEvaluationsEntity ce set ce.passMark=:newPassMark,ce.weightage=:newWeightage WHERE ce.courses.code=:courseCode AND ce.examTypes=:type")
-    public void updateByCourseCodeANdExamType(@Param("newPassMark") float newPassMark, @Param("newWeightage") float newWeightage, @Param("courseCode") String courseCode, @Param("type") ExamTypesName type);
+    @Query("UPDATE CourseEvaluationsEntity ce " +
+            "SET ce.passMark = :newPassMark, ce.weightage = :newWeightage " +
+            "WHERE ce.courses.code = :courseCode AND ce.examTypes.name = :type")
+    void updateByCourseCodeAndExamType(@Param("newPassMark") float newPassMark,
+                                       @Param("newWeightage") float newWeightage,
+                                       @Param("courseCode") String courseCode,
+                                       @Param("type") ExamTypesName type);
+
 
 }

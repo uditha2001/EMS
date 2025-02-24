@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useApi from '../../api/api';
+import { useNavigate } from 'react-router-dom';
 import {
   FiEdit,
   FiAlertCircle,
@@ -9,11 +10,20 @@ import {
   FiX,
 } from 'react-icons/fi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import useResultsApi from '../../api/ResultsApi';
 
 type ExaminationName = {
   key: number;
   name: string;
 };
+
+type marksConditions = {
+  id: number;
+  examType: string;
+  weightage: number;
+  passMark: number;
+  courseCode: string;
+}
 type CourseData = {
   id: number;
   code: string;
@@ -26,12 +36,15 @@ type CourseData = {
   degreeProgramId: string;
 };
 
-const ResultGrading = () => {
+const GradeConditions = () => {
+  const [isConfirm, setIsConfirm] = useState(false);
   const {
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     getGradesConditionsValues,
   } = useApi();
+  const { saveChangeMarksConditions } = useResultsApi();
+  const navigate = useNavigate();
   const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>(
     [],
   );
@@ -47,7 +60,7 @@ const ResultGrading = () => {
     useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean>(false);
-  const [marksConditions, setMarksConditions] = useState<any[]>([]);
+  const [marksConditions, setMarksConditions] = useState<marksConditions[]>();
   const [isAcceptEnable, setIsAcceptEnable] = useState(true);
 
   useEffect(() => {
@@ -68,18 +81,44 @@ const ResultGrading = () => {
     }
   }, [selectedExaminationKey]);
 
+  useEffect(() => {
+    if (isConfirm) {
+      saveChangeMarksConditions(marksConditions).then((data) => {
+        setIsEditing(false);
+        console.log(data);
+      })
+        .catch((error) => {
+          console.log(error);
+        })
+    }
+  }, [marksConditions]);
+
   const handleInputChange = (e: any) => {
-    console.log(e.target.name, e.target.value);
+    setMarksConditions((prev) => prev?.map((mark) => {
+      if (mark.examType + " passMarks" === e.target.name) {
+        return { ...mark, passMark: e.target.value };
+      } else if (mark.examType + " weightage" === e.target.name) {
+        return { ...mark, weightage: e.target.value };
+      }
+      return mark;
+    }) || []);
   };
 
   const handleEdit = () => {
     setIsEditing(true);
     setIsAccepted(false);
     setIsAcceptEnable(true);
+    setIsConfirm(false);
   };
 
   const handleConfirm = () => {
-    setIsEditing(false);
+    setMarksConditions((prev) => {
+      if (prev) {
+        return prev.map((mark) => ({ ...mark, courseCode: courseCode }));
+      }
+      return prev;
+    });
+    setIsConfirm(true);
   };
 
   const handleCancel = () => {
@@ -90,11 +129,12 @@ const ResultGrading = () => {
     setIsAccepted(true);
     setIsEditing(false);
     setIsAcceptEnable(false);
+    setIsConfirm(false);
   };
 
   const handleNext = () => {
     if (isAccepted) {
-      console.log('Proceeding to next step');
+      navigate('/result/grading');
     }
   };
 
@@ -103,8 +143,9 @@ const ResultGrading = () => {
       setShowGradeConditions(true);
       if (courseCode != null) {
         getGradesConditionsValues(courseCode).then((data) => {
-          setMarksConditions(data.data);
-          console.log(data.data);
+          setMarksConditions(
+            data.data
+          );
         });
       }
     } else {
@@ -204,7 +245,7 @@ const ResultGrading = () => {
                         </label>
                         <input
                           type="number"
-                          name={mark.weightage}
+                          name={mark.examType + ' weightage'}
                           value={mark.weightage}
                           onChange={handleInputChange}
                           className="input-field"
@@ -219,7 +260,7 @@ const ResultGrading = () => {
                         </label>
                         <input
                           type="number"
-                          name={mark.passMark}
+                          name={mark.examType + " passMarks"}
                           value={mark.passMark}
                           onChange={handleInputChange}
                           className="input-field"
@@ -244,11 +285,10 @@ const ResultGrading = () => {
                         type="button"
                         onClick={handleAccept}
                         disabled={!isAcceptEnable}
-                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-white rounded shadow hover:scale-105 transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${
-                          isAcceptEnable
-                            ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105 '
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-white rounded shadow hover:scale-105 transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${isAcceptEnable
+                          ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-105 '
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         <FiCheck /> Accept
                       </button>
@@ -256,11 +296,10 @@ const ResultGrading = () => {
                         type="button"
                         onClick={handleNext}
                         disabled={!isAccepted}
-                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 rounded shadow transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${
-                          isAccepted
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 '
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
+                        className={`w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 rounded shadow transition-all duration-150  flex items-center justify-center gap-2 text-sm sm:text-base ${isAccepted
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 '
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                       >
                         <FiArrowRight /> Next
                       </button>
@@ -293,4 +332,4 @@ const ResultGrading = () => {
   );
 };
 
-export default ResultGrading;
+export default GradeConditions;
