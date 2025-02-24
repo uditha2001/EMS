@@ -11,6 +11,8 @@ import {
 } from 'react-icons/fi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import useResultsApi from '../../api/ResultsApi';
+import SuccessMessage from '../../components/SuccessMessage';
+import ErrorMessage from '../../components/ErrorMessage';
 
 type ExaminationName = {
   key: number;
@@ -37,29 +39,20 @@ type CourseData = {
 };
 
 const GradeConditions = () => {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isConfirm, setIsConfirm] = useState(false);
-  const [isValuesChanged,setIsValueChanged]=useState(false);
-  const [previousData,setPreviousData]=useState<marksConditions[]>();
-  const {
-    getAllExaminationDetailsWithDegreeName,
-    getCoursesUsingExaminationId,
-    getGradesConditionsValues,
-  } = useApi();
+  const [isValuesChanged, setIsValueChanged] = useState(false);
+  const [previousData, setPreviousData] = useState<marksConditions[]>();
+  const {getAllExaminationDetailsWithDegreeName,getCoursesUsingExaminationId,getGradesConditionsValues,} = useApi();
   const { saveChangeMarksConditions } = useResultsApi();
   const navigate = useNavigate();
-  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>(
-    [],
-  );
+  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
   const [examName, setExamName] = useState<string>('');
   const [courseCode, setCourseCode] = useState<string>('');
-  const [examinationCourseCode, setExaminationCourseCode] = useState<
-    CourseData[]
-  >([]);
-  const [selectedExaminationKey, setSelectedExaminationKey] = useState<
-    number | undefined
-  >(undefined);
-  const [showGradeConditions, setShowGradeConditions] =
-    useState<boolean>(false);
+  const [examinationCourseCode, setExaminationCourseCode] = useState<CourseData[]>([]);
+  const [selectedExaminationKey, setSelectedExaminationKey] = useState<number | undefined>(undefined);
+  const [showGradeConditions, setShowGradeConditions] =useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean>(false);
   const [marksConditions, setMarksConditions] = useState<marksConditions[]>();
@@ -86,15 +79,21 @@ const GradeConditions = () => {
   useEffect(() => {
     if (isConfirm && isValuesChanged) {
       saveChangeMarksConditions(marksConditions).then((data) => {
-        setIsEditing(false);
-        setIsValueChanged(false);
-        console.log(data);
-        setPreviousData(marksConditions);
+        if (data.code === 200) {
+          setSuccessMessage('Marks conditions updated successfully');
+          setPreviousData(marksConditions);
+        }
+        else if (data.code === 500) {
+          setErrorMessage('Failed to update marks conditions');
+        }
+
       })
-        .catch((error) => {
+        .catch(() => {
+          setErrorMessage('Failed to update marks conditions');
+        })
+        .finally(() => {
           setIsEditing(false);
           setIsValueChanged(false);
-          console.log(error);
         })
     }
   }, [marksConditions]);
@@ -113,6 +112,8 @@ const GradeConditions = () => {
   };
 
   const handleEdit = () => {
+    setSuccessMessage('');
+    setErrorMessage('');
     setIsEditing(true);
     setIsAccepted(false);
     setIsAcceptEnable(true);
@@ -137,6 +138,8 @@ const GradeConditions = () => {
   };
 
   const handleAccept = () => {
+    setSuccessMessage('');
+    setErrorMessage('');
     setIsAccepted(true);
     setIsEditing(false);
     setIsAcceptEnable(false);
@@ -228,7 +231,12 @@ const GradeConditions = () => {
               <h2 className="text-xl font-semibold text-black dark:text-white mb-6 text-center flex items-center justify-center gap-2 mt-8 ">
                 <FiEdit className="text-primary" /> Mark Conditions
               </h2>
-
+              {errorMessage && <ErrorMessage message={errorMessage} onClose={()=>{
+                setErrorMessage('');
+              }} />}
+              {successMessage && <SuccessMessage message={successMessage} onClose={()=>{
+                setSuccessMessage('');
+              }} />}
               <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded mb-6 flex items-center gap-2 mx-6">
                 <FiAlertCircle className="text-yellow-500" />
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
