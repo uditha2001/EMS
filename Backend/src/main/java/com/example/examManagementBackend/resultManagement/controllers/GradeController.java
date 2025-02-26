@@ -26,5 +26,10 @@ public class GradeController {
         return gradingService.saveChangedGradings(conditions);
     }
 
+    @GetMapping("/grades")
+    public ResponseEntity<StandardResponse> getGrades(@RequestParam String courseCode, @RequestParam Long ExaminationId) {
+        return  gradingService.getGradingsMark(courseCode, ExaminationId);
+    }
+
 
 }

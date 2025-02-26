@@ -64,6 +64,7 @@ const GradeConditions = () => {
         key: obj.id,
         name: `${obj.year}-${obj.degreeProgramName}-Level ${obj.level}-Semester ${obj.semester}`,
       }));
+      
       setCreatedExamNames(examData);
     });
   }, []);
@@ -148,7 +149,7 @@ const GradeConditions = () => {
 
   const handleNext = () => {
     if (isAccepted) {
-      navigate('/result/grading');
+      navigate(`/result/grading?examinationId=${selectedExaminationKey}&courseCode=${courseCode}`);
     }
   };
 

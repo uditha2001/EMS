@@ -88,6 +88,7 @@ const ResultsUpload = () => {
     });
   }, []);
 
+ 
   useEffect(() => {
     if (examName != '' && examName != null) {
       getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
@@ -403,7 +404,7 @@ const ResultsUpload = () => {
                           Exam Type:
                         </span>
                         <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                          THEORY
+                          {examType || 'N/A'}
                         </span>
                       </div>
                     </div>

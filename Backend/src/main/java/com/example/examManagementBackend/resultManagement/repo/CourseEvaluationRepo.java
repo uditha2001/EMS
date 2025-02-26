@@ -21,6 +21,11 @@ public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEnt
     @Query("SELECT count(ce) FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.name=:type")
     public Integer countByCourseCodeAndExamType(@Param("courseCode") String courseCode, @Param("type") ExamTypesName type);
 
+    @Query("SELECT count(ce) FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.id=:id")
+    public Integer countByCourseCodeAndExamTypeId(@Param("courseCode") String courseCode, @Param("id") Long id);
+
+
+
     @Transactional
     @Modifying
     @Query("UPDATE CourseEvaluationsEntity ce " +
@@ -30,6 +35,9 @@ public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEnt
                                        @Param("newWeightage") float newWeightage,
                                        @Param("courseCode") String courseCode,
                                        @Param("type") ExamTypesName type);
-
+    @Query("SELECT ce.passMark FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.name=:name ")
+    float getPassMarkByCourseCodeAndCourseEvaluationId(String courseCode, ExamTypesName name);
+    @Query("SELECT ce.weightage FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.name=:name ")
+    float getWeightageByCourseCodeAndCourseEvaluationId(String courseCode, ExamTypesName name);
 
 }

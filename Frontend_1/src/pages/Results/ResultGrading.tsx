@@ -1,107 +1,89 @@
-import { useState, useEffect } from "react";
-import useApi from "../../api/api";
-import SearchIcon from "../../images/search/search.svg"; // Import SVG file
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import useResultsApi from "../../api/ResultsApi";
 
-type ExaminationName = {
-  key: number;
-  name: string;
-};
-type CourseData = {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  level: string;
-  semester: string;
-  isActive: boolean;
-  courseType: string;
-  degreeProgramId: string;
+type ExamType = Record<string, number>;
+
+type GradeDetails = {
+  studentName: string;
+  studentNumber: string;
+  examTypesName: ExamType;
+  totalMarks: number;
+  grade: string;
 };
 
 const ResultGrading = () => {
-  const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
-  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
-  const [examName, setExamName] = useState<string>("");
-  const [courseCode, setCourseCode] = useState<string>("");
-  const [examinationCourseCode, setExaminationCourseCode] = useState<CourseData[]>([]);
-  const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
-  const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const examinationId = queryParams.get("examinationId");
+  const courseCode = queryParams.get("courseCode");
+  const { getGradingResults } = useResultsApi();
+
+  const [grades, setGrades] = useState<GradeDetails[]>([]);
+  const [examTypes, setExamTypes] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
-      let examData: ExaminationName[] = response.map((obj: any) => ({
-        key: obj.id,
-        name: `${obj.year}-${obj.degreeProgramName}-Level ${obj.level}-Semester ${obj.semester}`,
-      }));
-      setCreatedExamNames(examData);
-    });
+    if (examinationId && courseCode) {
+      getGradingResults(courseCode, examinationId)
+        .then((response) => {
+          if (response.code === 200) {
+            setGrades(response.data);
+          } else if (response.code === 404) {
+            setError("Results not found");
+            setGrades([]);
+          }
+        })
+        .catch((err) => {
+          console.error("Fetch error:", err);
+          setError("An error occurred while fetching data.");
+          setGrades([]);
+        });
+    }
   }, []);
 
   useEffect(() => {
-    if (examName) {
-      getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
-        setExaminationCourseCode(data);
-      });
+    if (grades.length > 0) {
+      setExamTypes(Object.keys(grades[0]?.examTypesName || {}));
     }
-  }, [examName]);
-
-  useEffect(() => {
-    if (examinationCourseCode.length > 0 && examOptionIdentifier) {
-      setCourseCode(examinationCourseCode[0].code);
-    }
-  }, [examinationCourseCode]);
+  }, [grades]);
 
   return (
-    <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 dark:from-gray-900 dark:to-gray-800">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-5xl dark:bg-gray-800 dark:shadow-gray-700/30">
-        <h2 className="text-2xl font-semibold text-black dark:text-white mb-6 text-center">Result Grading</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-black dark:text-gray-300 mb-2">Exam Name</label>
-            <select
-              value={examOptionIdentifier}
-              onChange={(e) => {
-                setExamOptionIdentifier(e.target.value);
-                const selectedIndex = parseInt(e.target.value, 10);
-                setExamName(createdExamNames[selectedIndex]?.name || "");
-                setSelectedExaminationKey(createdExamNames[selectedIndex]?.key);
-              }}
-              className="input-field"
-            >
-              <option value="" disabled>
-                -- Select the exam Name --
-              </option>
-              {createdExamNames.map((exam, index) => (
-                <option key={exam.key} value={index}>
-                  {exam.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-black dark:text-gray-300 mb-2">Course Code</label>
-            <select
-              value={courseCode}
-              onChange={(e) => setCourseCode(e.target.value)}
-              className="input-field"
-            >
-              {examinationCourseCode.map((course) => (
-                <option key={course.id} value={course.code}>
-                  {course.code}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-center">
-          <button
-            className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 hover:bg-blue-600 transition-all dark:bg-blue-700 dark:hover:bg-blue-800"
-            onClick={() => alert(`Fetching grading for ${examName} - ${courseCode}`)}
-          >
-            <img src={SearchIcon} alt="Search" className="w-5 h-5" /> View Grades Conditions
-          </button>
-        </div>
-      </div>
+    <div className="overflow-x-auto p-4">
+      <table className="min-w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-md rounded-lg">
+        <thead>
+          <tr className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+            <th className="px-4 py-2 border dark:border-gray-600">Student Name</th>
+            <th className="px-4 py-2 border dark:border-gray-600">Student Number</th>
+            {examTypes.map((examType) => (
+              <th key={examType} className="px-4 py-2 border dark:border-gray-600">
+                {examType}
+              </th>
+            ))}
+            <th className="px-4 py-2 border dark:border-gray-600">Total Marks</th>
+            <th className="px-4 py-2 border dark:border-gray-600">Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(grades) &&
+            grades.map((data, index) => (
+              <tr
+                key={index}
+                className="text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <td className="px-4 py-2 border dark:border-gray-600">{data.studentName}</td>
+                <td className="px-4 py-2 border dark:border-gray-600">{data.studentNumber}</td>
+                {examTypes.map((examType) => (
+                  <td key={examType} className="px-4 py-2 border dark:border-gray-600">
+                    {data.examTypesName[examType] ?? "-"}
+                  </td>
+                ))}
+                <td className="px-4 py-2 border dark:border-gray-600">{data.totalMarks}</td>
+                <td className="px-4 py-2 border dark:border-gray-600">{data.grade}</td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
     </div>
   );
 };
