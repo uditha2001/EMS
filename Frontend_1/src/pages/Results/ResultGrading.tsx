@@ -29,9 +29,8 @@ const ResultGrading = () => {
         .then((response) => {
           if (response.code === 200) {
             setGrades(response.data);
-          }
-          else if (response.code === 404) {
-            setError("results not found");
+          } else if (response.code === 404) {
+            setError("Results not found");
             setGrades([]);
           }
         })
@@ -39,7 +38,7 @@ const ResultGrading = () => {
           console.error("Fetch error:", err);
           setError("An error occurred while fetching data.");
           setGrades([]);
-        })
+        });
     }
   }, []);
 
@@ -51,31 +50,36 @@ const ResultGrading = () => {
 
   return (
     <div className="overflow-x-auto p-4">
-      <table className="min-w-full bg-white border border-gray-300 shadow-md rounded-lg">
+      <table className="min-w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 shadow-md rounded-lg">
         <thead>
-          <tr className="bg-gray-200">
-            <th className="px-4 py-2 border">Student Name</th>
-            <th className="px-4 py-2 border">Student Number</th>
+          <tr className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+            <th className="px-4 py-2 border dark:border-gray-600">Student Name</th>
+            <th className="px-4 py-2 border dark:border-gray-600">Student Number</th>
             {examTypes.map((examType) => (
-              <th key={examType} className="px-4 py-2 border">{examType}</th>
+              <th key={examType} className="px-4 py-2 border dark:border-gray-600">
+                {examType}
+              </th>
             ))}
-            <th className="px-4 py-2 border">Total Marks</th>
-            <th className="px-4 py-2 border">Grade</th>
+            <th className="px-4 py-2 border dark:border-gray-600">Total Marks</th>
+            <th className="px-4 py-2 border dark:border-gray-600">Grade</th>
           </tr>
         </thead>
         <tbody>
           {Array.isArray(grades) &&
             grades.map((data, index) => (
-              <tr key={index} className="text-center">
-                <td className="px-4 py-2 border">{data.studentName}</td>
-                <td className="px-4 py-2 border">{data.studentNumber}</td>
+              <tr
+                key={index}
+                className="text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <td className="px-4 py-2 border dark:border-gray-600">{data.studentName}</td>
+                <td className="px-4 py-2 border dark:border-gray-600">{data.studentNumber}</td>
                 {examTypes.map((examType) => (
-                  <td key={examType} className="px-4 py-2 border">
+                  <td key={examType} className="px-4 py-2 border dark:border-gray-600">
                     {data.examTypesName[examType] ?? "-"}
                   </td>
                 ))}
-                <td className="px-4 py-2 border">{data.totalMarks}</td>
-                <td className="px-4 py-2 border">{data.grade}</td>
+                <td className="px-4 py-2 border dark:border-gray-600">{data.totalMarks}</td>
+                <td className="px-4 py-2 border dark:border-gray-600">{data.grade}</td>
               </tr>
             ))}
         </tbody>
