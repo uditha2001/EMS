@@ -193,28 +193,28 @@ public class GradingService {
         if(85<=totalMarks && totalMarks<=100){
             return "A+";
         } else if (70<=totalMarks && totalMarks<=84) {
-            return "A";
+            return "A ";
         }else if (65<=totalMarks && totalMarks<=69) {
             return "A-";
         }else if (60<=totalMarks && totalMarks<=64) {
             return "B+";
         }else if (55<=totalMarks && totalMarks<=59) {
-            return "B";
+            return "B ";
         }else if (50<=totalMarks && totalMarks<=54) {
             return "B-";
         }else if (45<=totalMarks && totalMarks<=49) {
             return "C+";
         }else if (40<=totalMarks && totalMarks<=44) {
-            return "C";
+            return "C ";
         }else if (35<=totalMarks && totalMarks<=39) {
             return "C-";
         }else if (30<=totalMarks && totalMarks<=34) {
             return "D+";
         }else if (25<=totalMarks && totalMarks<=29) {
-            return "D";
+            return "D ";
         }
         else{
-            return "E";
+            return "E ";
         }
     }
 

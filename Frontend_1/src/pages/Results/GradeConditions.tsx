@@ -69,6 +69,7 @@ const GradeConditions = () => {
     });
   }, []);
 
+
   useEffect(() => {
     if (selectedExaminationKey !== undefined) {
       getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
@@ -149,7 +150,7 @@ const GradeConditions = () => {
 
   const handleNext = () => {
     if (isAccepted) {
-      navigate(`/result/grading?examinationId=${selectedExaminationKey}&courseCode=${courseCode}`);
+      navigate(`/result/grading?examinationId=${selectedExaminationKey}&courseCode=${courseCode}&examName=${examName}`);
     }
   };
 
