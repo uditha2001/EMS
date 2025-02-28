@@ -67,6 +67,7 @@ const SecondMarking = () => {
         },
       }).then((data) => {
         if (data.code === 201) {
+          setHighlightChanges(false);
           setAllowToSend(false);
           setSuccessMessage('result upload successfull');
           setShowProgressBar(false);
