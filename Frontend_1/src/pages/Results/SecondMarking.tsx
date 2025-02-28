@@ -67,6 +67,7 @@ const SecondMarking = () => {
         },
       }).then((data) => {
         if (data.code === 201) {
+          setHighlightChanges(false);
           setAllowToSend(false);
           setSuccessMessage('result upload successfull');
           setShowProgressBar(false);
@@ -140,6 +141,7 @@ const SecondMarking = () => {
   };
 
   const handleSubmit = () => {
+    if(isSaved){
     if (
       examsData.courseCode != '' &&
       examsData.examName != '' &&
@@ -155,6 +157,9 @@ const SecondMarking = () => {
         }
       });
     }
+  }else{
+    setErrorMessage('please save before search');
+  }
   };
   const handleUpload = () => {
     if (isSaved) {

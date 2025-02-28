@@ -49,6 +49,7 @@ const ResultGrading = () => {
     }
   }, [grades]);
 
+
   const handleBack = () => {
     navigate(-1);
   }
@@ -128,7 +129,7 @@ const ResultGrading = () => {
                 <td key={examType} className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400
                               whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
                   {data.examTypesName[examType] || (
-                    <span className="text-gray-400 dark:text-gray-500">-</span>
+                    <span className="text-red dark:text-red">failed</span>
                   )}
                 </td>
               ))}

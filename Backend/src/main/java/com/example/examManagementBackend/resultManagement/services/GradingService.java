@@ -180,8 +180,11 @@ public class GradingService {
             Map<ExamTypesName, Float> studentMarks = marksData.get(resultEntity.getStudent().getStudentNumber());
 
             for (Map.Entry<ExamTypesName, Float> entry : studentMarks.entrySet()) {
+
                 Float marks = entry.getValue();
-                totalMarks += marks;
+                    totalMarks += marks;
+
+
             }
 
         }
