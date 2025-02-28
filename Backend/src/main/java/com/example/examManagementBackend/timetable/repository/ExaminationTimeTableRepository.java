@@ -17,4 +17,6 @@ public interface ExaminationTimeTableRepository extends JpaRepository<ExamTimeTa
     CoursesEntity getCourseEntities(@Param("id") Long id);
 
     List<ExamTimeTablesEntity> findByExaminationId(Long examinationId);
+    @Query("SELECT DISTINCT ett.examType.id FROM ExamTimeTablesEntity ett WHERE ett.course.code=:courseCode AND ett.examination.id=:id")
+    List<Long> getExamTypesId(@Param("courseCode") String courseCode, @Param("id") Long id);
 }

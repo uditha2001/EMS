@@ -1,108 +1,161 @@
-import { useState, useEffect } from "react";
-import useApi from "../../api/api";
-import SearchIcon from "../../images/search/search.svg"; // Import SVG file
+import { useEffect, useState } from "react";
+import { useLocation ,useNavigate} from "react-router-dom";
+import useResultsApi from "../../api/ResultsApi";
 
-type ExaminationName = {
-  key: number;
-  name: string;
-};
-type CourseData = {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  level: string;
-  semester: string;
-  isActive: boolean;
-  courseType: string;
-  degreeProgramId: string;
+type ExamType = Record<string, number>;
+
+type GradeDetails = {
+  studentName: string;
+  studentNumber: string;
+  examTypesName: ExamType;
+  totalMarks: number;
+  grade: string;
 };
 
 const ResultGrading = () => {
-  const { getAllExaminationDetailsWithDegreeName, getCoursesUsingExaminationId } = useApi();
-  const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
-  const [examName, setExamName] = useState<string>("");
-  const [courseCode, setCourseCode] = useState<string>("");
-  const [examinationCourseCode, setExaminationCourseCode] = useState<CourseData[]>([]);
-  const [selectedExaminationKey, setSelectedExaminationKey] = useState<number>();
-  const [examOptionIdentifier, setExamOptionIdentifier] = useState<string>("");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const examinationId = queryParams.get("examinationId");
+  const courseCode = queryParams.get("courseCode");
+  const examName=queryParams.get("examName");
+  const { getGradingResults } = useResultsApi();
+  const navigate=useNavigate();
+  const [grades, setGrades] = useState<GradeDetails[]>([]);
+  const [examTypes, setExamTypes] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
-      let examData: ExaminationName[] = response.map((obj: any) => ({
-        key: obj.id,
-        name: `${obj.year}-${obj.degreeProgramName}-Level ${obj.level}-Semester ${obj.semester}`,
-      }));
-      setCreatedExamNames(examData);
-    });
+    if (examinationId && courseCode) {
+      getGradingResults(courseCode, examinationId)
+        .then((response) => {
+          if (response.code === 200) {
+            setGrades(response.data);
+          } else if (response.code === 404) {
+            setError("Results not found");
+            setGrades([]);
+          }
+        })
+        .catch((err) => {
+          console.error("Fetch error:", err);
+          setError("An error occurred while fetching data.");
+          setGrades([]);
+        });
+    }
   }, []);
 
   useEffect(() => {
-    if (examName) {
-      getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
-        setExaminationCourseCode(data);
-      });
+    if (grades.length > 0) {
+      setExamTypes(Object.keys(grades[0]?.examTypesName || {}));
     }
-  }, [examName]);
+  }, [grades]);
 
-  useEffect(() => {
-    if (examinationCourseCode.length > 0 && examOptionIdentifier) {
-      setCourseCode(examinationCourseCode[0].code);
-    }
-  }, [examinationCourseCode]);
+
+  const handleBack = () => {
+    navigate(-1);
+  }
 
   return (
-    <div className="flex flex-col items-center justify-start w-full min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 dark:from-gray-900 dark:to-gray-800">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-5xl dark:bg-gray-800 dark:shadow-gray-700/30">
-        <h2 className="text-2xl font-semibold text-black dark:text-white mb-6 text-center">Result Grading</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-black dark:text-gray-300 mb-2">Exam Name</label>
-            <select
-              value={examOptionIdentifier}
-              onChange={(e) => {
-                setExamOptionIdentifier(e.target.value);
-                const selectedIndex = parseInt(e.target.value, 10);
-                setExamName(createdExamNames[selectedIndex]?.name || "");
-                setSelectedExaminationKey(createdExamNames[selectedIndex]?.key);
-              }}
-              className="input-field"
-            >
-              <option value="" disabled>
-                -- Select the exam Name --
-              </option>
-              {createdExamNames.map((exam, index) => (
-                <option key={exam.key} value={index}>
-                  {exam.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-black dark:text-gray-300 mb-2">Course Code</label>
-            <select
-              value={courseCode}
-              onChange={(e) => setCourseCode(e.target.value)}
-              className="input-field"
-            >
-              {examinationCourseCode.map((course) => (
-                <option key={course.id} value={course.code}>
-                  {course.code}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-center">
-          <button
-            className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md flex items-center gap-2 hover:bg-blue-600 transition-all dark:bg-blue-700 dark:hover:bg-blue-800"
-            onClick={() => alert(`Fetching grading for ${examName} - ${courseCode}`)}
-          >
-            <img src={SearchIcon} alt="Search" className="w-5 h-5" /> View Grades Conditions
-          </button>
-        </div>
-      </div>
+    <div className="p-4 md:p-6">
+  {/* Header Section */}
+  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+    <div className="flex flex-col md:flex-row md:items-center gap-4 text-lg font-semibold">
+      <span className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
+        Examination: <span className="text-blue-600 dark:text-blue-400">{examName}</span>
+      </span>
+      <span className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
+        Course: <span className="text-green-600 dark:text-green-400">{courseCode}</span>
+      </span>
     </div>
+    
+    {/* Buttons Container - Changed to horizontal alignment */}
+    <div className="flex flex-row gap-3 w-full md:w-auto">
+      <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all 
+                        transform hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg
+                        flex items-center justify-center gap-2 whitespace-nowrap">
+        Publish
+      </button>
+      <button className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all
+                        transform hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg
+                        flex items-center justify-center gap-2 whitespace-nowrap"
+                        
+               onClick={handleBack}         >
+        Back
+      </button>
+    </div>
+  </div>
+  
+    {/* Table Container */}
+    <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
+      <table className="min-w-full bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 
+                          whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+              Student Name
+            </th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 
+                          whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+              Student Number
+            </th>
+            {examTypes.map((examType) => (
+              <th key={examType} className="px-4 py-3 text-center text-sm font-semibold text-gray-700 
+                            dark:text-gray-300 whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+                {examType}
+              </th>
+            ))}
+            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300
+                          bg-blue-50 dark:bg-blue-900/30">
+              Total Marks
+            </th>
+            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300
+                          bg-green-50 dark:bg-green-900/30">
+              Grade
+            </th>
+          </tr>
+        </thead>
+        
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          {Array.isArray(grades) && grades.map((data, index) => (
+            <tr key={index} className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 font-medium 
+                            whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+                {data.studentName}
+              </td>
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 
+                            whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+                {data.studentNumber}
+              </td>
+              {examTypes.map((examType) => (
+                <td key={examType} className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400
+                              whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
+                  {data.examTypesName[examType] || (
+                    <span className="text-red dark:text-red">failed</span>
+                  )}
+                </td>
+              ))}
+              <td className="px-4 py-3 text-center text-sm font-semibold text-blue-600 dark:text-blue-400
+                            bg-blue-50/50 dark:bg-blue-900/20">
+                {data.totalMarks}
+              </td>
+              <td className="px-4 py-3 text-center text-sm font-semibold text-green-600 dark:text-green-400
+                            bg-green-50/50 dark:bg-green-900/20">
+                {data.grade}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  
+    {/* Empty State */}
+    {!grades?.length && (
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        <div className="text-2xl mb-2">📭</div>
+        No grades available yet
+      </div>
+    )}
+  </div>
+
   );
 };
 

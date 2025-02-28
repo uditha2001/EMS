@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import SelectExaminationComponent from '../../components/resultComponent/SelectExaminationComponent';
-import useApi from '../../api/api';
+import useResultsApi from '../../api/ResultsApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -21,7 +21,7 @@ const SecondMarking = () => {
     examName: '',
     examType: '',
   });
-  const { getFirstMarkingResults, saveMarkingResults } = useApi();
+  const { getFirstMarkingResults, saveMarkingResults } = useResultsApi();
   const [studentsData, setStudentsData] = useState<RowData[]>([]);
   const [editable, setEditable] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,6 +67,7 @@ const SecondMarking = () => {
         },
       }).then((data) => {
         if (data.code === 201) {
+          setHighlightChanges(false);
           setAllowToSend(false);
           setSuccessMessage('result upload successfull');
           setShowProgressBar(false);
@@ -140,6 +141,7 @@ const SecondMarking = () => {
   };
 
   const handleSubmit = () => {
+    if(isSaved){
     if (
       examsData.courseCode != '' &&
       examsData.examName != '' &&
@@ -155,6 +157,9 @@ const SecondMarking = () => {
         }
       });
     }
+  }else{
+    setErrorMessage('please save before search');
+  }
   };
   const handleUpload = () => {
     if (isSaved) {
