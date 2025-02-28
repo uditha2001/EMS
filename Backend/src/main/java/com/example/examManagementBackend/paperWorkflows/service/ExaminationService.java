@@ -9,12 +9,12 @@ import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.DegreeProgramsEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
+import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
-import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
-import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
-import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
-import com.example.examManagementBackend.resultManagement.repo.ExaminationTimeTableRepository;
+import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.timetable.repository.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ExaminationService {
@@ -40,13 +41,15 @@ public class ExaminationService {
     private final UserRolesRepository userRolesRepository;
     private final DegreeProgramRepo degreeProgramsRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
+    private final CoursesRepository coursesRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
         this.degreeProgramsRepository = degreeProgramsRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
+        this.coursesRepository = coursesRepository;
     }
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
         DegreeProgramsEntity degreeProgram = degreeProgramsRepository.findById(examinationDTO.getDegreeProgramId())
@@ -333,5 +336,51 @@ public class ExaminationService {
         }
     }
 
+    //for Timetable Creation
+    public List<TimeTableCoursesDTO> getCoursesByExamination(Long examinationId) {
+        // Fetch the examination based on the provided ID
+        ExaminationEntity examination = examinationRepository.findById(examinationId)
+                .orElseThrow(() -> new IllegalArgumentException("Examination not found"));
+
+        String level = examination.getLevel();
+        String semester = examination.getSemester();
+        Long degreeProgramId = examination.getDegreeProgramsEntity().getId();
+
+        // Handle semester mapping (e.g., "b" maps to semester "2")
+        String mappedSemester = semester.equalsIgnoreCase("b") ? "2" : semester;
+
+        // Fetch courses based on level, semester, and degree program
+        List<CoursesEntity> courses = coursesRepository.findByLevelAndSemesterAndDegreeProgramId(level, mappedSemester, degreeProgramId);
+
+        // Convert to TimeTableCoursesDTO and duplicate courses of type BOTH (Theory and Practical)
+        return courses.stream()
+                .flatMap(course -> {
+                    if (course.getCourseType() == CoursesEntity.CourseType.BOTH) {
+                        // Create duplicates for both Theory and Practical
+                        TimeTableCoursesDTO theoryCourse = new TimeTableCoursesDTO();
+                        theoryCourse.setId(course.getId());
+                        theoryCourse.setName(course.getName());
+                        theoryCourse.setCode(course.getCode());
+                        theoryCourse.setCourseType("THEORY");
+
+                        TimeTableCoursesDTO practicalCourse = new TimeTableCoursesDTO();
+                        practicalCourse.setId(course.getId());
+                        practicalCourse.setName(course.getName());
+                        practicalCourse.setCode(course.getCode());
+                        practicalCourse.setCourseType("PRACTICAL");
+
+                        return Stream.of(theoryCourse, practicalCourse);  // Return both Theory and Practical
+                    } else {
+                        TimeTableCoursesDTO courseDTO = new TimeTableCoursesDTO();
+                        courseDTO.setId(course.getId());
+                        courseDTO.setName(course.getName());
+                        courseDTO.setCode(course.getCode());
+                        courseDTO.setCourseType(course.getCourseType().name());
+
+                        return Stream.of(courseDTO);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
 
 }

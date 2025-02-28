@@ -2,9 +2,10 @@ package com.example.examManagementBackend.paperWorkflows.controller;
 
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.service.ExaminationService;
+import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
 import com.example.examManagementBackend.utill.StandardResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -91,5 +92,14 @@ public class ExaminationController {
     }
 
 
+    @GetMapping("/{examinationId}/courses")
+    public ResponseEntity<List<TimeTableCoursesDTO>> getCoursesByExamination(@PathVariable Long examinationId) {
+        try {
+            List<TimeTableCoursesDTO> courseDTOs = examinationService.getCoursesByExamination(examinationId);
+            return ResponseEntity.ok(courseDTOs);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build(); // If the examination ID is not found
+        }
+    }
 
 }

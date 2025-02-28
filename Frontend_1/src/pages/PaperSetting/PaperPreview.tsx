@@ -125,7 +125,7 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
         currentY += (questionLines.length - 1) * 5;
       }
 
-      // Handle subquestions
+      // Handle Subquestions
       if (q.subquestions && q.subquestions.length > 0) {
         q.subquestions.forEach((sub: any, subIdx: number) => {
           if (currentY > pageHeight - 20) {
@@ -150,15 +150,18 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
             currentY += (subQuestionLines.length - 1) * 5;
           }
 
-          // Display marks only if they are greater than 0
-          if (sub.marks > 0) {
-            doc.text(`(${sub.marks} marks)`, pageWidth - margin, currentY, {
-              align: 'right',
-            });
-            currentY += 5;
+          // Answer Box for Subquestions
+          if (sub.answerBoxHeight) {
+            currentY += sub.answerBoxHeight;
+            doc.rect(
+              margin + 20,
+              currentY - sub.answerBoxHeight,
+              maxWidth - 40,
+              sub.answerBoxHeight,
+            );
           }
 
-          // Handle sub-subquestions
+          // Handle Sub-subquestions
           if (sub.subquestions && sub.subquestions.length > 0) {
             sub.subquestions.forEach((subSub: any, subSubIdx: number) => {
               if (currentY > pageHeight - 20) {
@@ -183,19 +186,30 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                 currentY += (subSubQuestionLines.length - 1) * 5;
               }
 
-              // Display marks only if they are greater than 0
-              if (subSub.marks > 0) {
-                doc.text(
-                  `(${subSub.marks} marks)`,
-                  pageWidth - margin,
-                  currentY,
-                  { align: 'right' },
+              // Answer Box for Sub-subquestions
+              if (subSub.answerBoxHeight) {
+                currentY += subSub.answerBoxHeight;
+                doc.rect(
+                  margin + 30,
+                  currentY - subSub.answerBoxHeight,
+                  maxWidth - 60,
+                  subSub.answerBoxHeight,
                 );
-                currentY += 5;
               }
             });
           }
         });
+      }
+
+      // Answer Box for Main Question
+      if (q.answerBoxHeight) {
+        currentY += q.answerBoxHeight;
+        doc.rect(
+          margin + 10,
+          currentY - q.answerBoxHeight,
+          maxWidth - 20,
+          q.answerBoxHeight,
+        );
       }
     });
 
@@ -260,6 +274,14 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                     )}
                   </div>
 
+                  {/* Subquestion Answer Box */}
+                  {sub.answerBoxHeight && (
+                    <div
+                      className="border-2 border-gray-600 my-2"
+                      style={{ height: `${sub.answerBoxHeight}px` }}
+                    />
+                  )}
+
                   {/* Sub-subquestions */}
                   {sub.subquestions && sub.subquestions.length > 0 && (
                     <div className="ml-8">
@@ -284,6 +306,16 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                                 </p>
                               )}
                             </div>
+
+                            {/* Sub-subquestion Answer Box */}
+                            {subSub.answerBoxHeight && (
+                              <div
+                                className="border-2 border-gray-600 my-2"
+                                style={{
+                                  height: `${subSub.answerBoxHeight}px`,
+                                }}
+                              />
+                            )}
                           </div>
                         ),
                       )}
@@ -292,6 +324,14 @@ const PaperPreview: React.FC<PaperPreviewProps> = ({
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Question Answer Box */}
+          {q.answerBoxHeight && (
+            <div
+              className="border-2 border-gray-600 my-2"
+              style={{ height: `${q.answerBoxHeight}px` }}
+            />
           )}
         </div>
       ))}

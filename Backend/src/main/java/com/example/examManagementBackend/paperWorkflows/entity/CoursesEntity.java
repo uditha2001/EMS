@@ -1,7 +1,7 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
-import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -70,7 +70,7 @@ public class CoursesEntity {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<RoleAssignmentEntity> roleAssignmentList;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
     private List<ExamTimeTablesEntity> examTimeTablesEntityList;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "courses")

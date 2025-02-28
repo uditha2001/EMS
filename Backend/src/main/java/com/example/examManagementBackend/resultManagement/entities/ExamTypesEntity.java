@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.resultManagement.entities;
 
 import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,11 +26,7 @@ public class ExamTypesEntity {
     private List<ExamTimeTablesEntity> examTimeTables;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examTypes")
     private Set<CourseEvaluationsEntity> courseEvaluations;
-
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private Set<ResultEntity> results;
-
-
-
 
 }
