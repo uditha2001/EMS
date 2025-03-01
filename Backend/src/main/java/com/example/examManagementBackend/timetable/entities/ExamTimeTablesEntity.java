@@ -63,6 +63,9 @@ public class ExamTimeTablesEntity {
     private LocalDateTime updatedAt;
     @OneToMany(cascade=CascadeType.ALL,mappedBy = "examTimeTables")
     private Set<ExamInvigilatorsEntity> examInvigilatorsEntities;
+    @Column
+    private String timetableGroup;
+
 
 
 }
