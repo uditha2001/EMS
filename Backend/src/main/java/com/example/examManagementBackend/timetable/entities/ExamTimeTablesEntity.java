@@ -1,8 +1,10 @@
-package com.example.examManagementBackend.resultManagement.entities;
+package com.example.examManagementBackend.timetable.entities;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
+import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -39,7 +41,7 @@ public class ExamTimeTablesEntity {
 
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
-            name = "center_name",
+            name = "timetable_center",
             joinColumns = @JoinColumn(name = "examTimeTableId"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
@@ -59,7 +61,6 @@ public class ExamTimeTablesEntity {
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
-
     @OneToMany(cascade=CascadeType.ALL,mappedBy = "examTimeTables")
     private Set<ExamInvigilatorsEntity> examInvigilatorsEntities;
 

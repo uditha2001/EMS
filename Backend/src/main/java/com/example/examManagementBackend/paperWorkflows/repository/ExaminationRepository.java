@@ -3,7 +3,7 @@ package com.example.examManagementBackend.paperWorkflows.repository;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
-import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

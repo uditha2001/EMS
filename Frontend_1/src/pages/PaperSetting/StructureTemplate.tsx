@@ -14,6 +14,7 @@ interface Question {
   type: QuestionType;
   marks: number;
   answer?: string;
+  answerBoxHeight?: number;
   subquestions: SubQuestion[];
 }
 
@@ -22,6 +23,7 @@ interface SubQuestion {
   type: QuestionType;
   marks: number;
   answer?: string;
+  answerBoxHeight?: number; // New field for STRUCTURE type
   subquestions: SubSubQuestion[];
 }
 
@@ -30,6 +32,7 @@ interface SubSubQuestion {
   type: QuestionType;
   marks: number;
   answer?: string;
+  answerBoxHeight?: number; // New field for STRUCTURE type
 }
 
 interface StructureTemplateProps {
@@ -145,6 +148,27 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
     newQuestions[questionIndex].subquestions[subIndex].subquestions[
       subSubIndex
     ].marks = marks;
+    setQuestions(newQuestions);
+  };
+
+  // Update answer box height for STRUCTURE type
+  const updateAnswerBoxHeight = (
+    questionIndex: number,
+    height: number,
+    subIndex?: number,
+    subSubIndex?: number,
+  ) => {
+    const newQuestions = [...questions];
+    if (subSubIndex !== undefined && subIndex !== undefined) {
+      newQuestions[questionIndex].subquestions[subIndex].subquestions[
+        subSubIndex
+      ].answerBoxHeight = height;
+    } else if (subIndex !== undefined) {
+      newQuestions[questionIndex].subquestions[subIndex].answerBoxHeight =
+        height;
+    } else {
+      newQuestions[questionIndex].answerBoxHeight = height;
+    }
     setQuestions(newQuestions);
   };
 
@@ -281,7 +305,44 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
           </select>
         );
       case 'STRUCTURE':
-        return null; // No answer box for STRUCTURE type
+        return (
+          <div>
+            <textarea
+              value={question.answer || ''}
+              onChange={(e) => {
+                const newQuestions = [...questions];
+                if (subSubIndex !== undefined && subIndex !== undefined) {
+                  newQuestions[index].subquestions[subIndex].subquestions[
+                    subSubIndex
+                  ].answer = e.target.value;
+                } else if (subIndex !== undefined) {
+                  newQuestions[index].subquestions[subIndex].answer =
+                    e.target.value;
+                } else {
+                  newQuestions[index].answer = e.target.value;
+                }
+                setQuestions(newQuestions);
+              }}
+              className="input-field w-full"
+              placeholder="Enter suggested answer..."
+              style={{ height: `${question.answerBoxHeight || 100}px` }}
+            />
+            <input
+              type="number"
+              value={question.answerBoxHeight || 100}
+              onChange={(e) =>
+                updateAnswerBoxHeight(
+                  index,
+                  Number(e.target.value),
+                  subIndex,
+                  subSubIndex,
+                )
+              }
+              className="input-field w-1/3 mt-2 text-xs"
+              placeholder="Set answer box height..."
+            />
+          </div>
+        );
       default:
         return null;
     }
@@ -410,8 +471,8 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                 {question.subquestions.map((sub, subIdx) => (
                   <>
                     <div key={subIdx} className="ml-4 mb-4">
-                    <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
-                    <label className="block text-black dark:text-white">
+                      <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
+                        <label className="block text-black dark:text-white">
                           Subquestion {subIdx + 1}
                         </label>
                         <div className="flex items-center gap-2">
@@ -487,7 +548,7 @@ const StructureTemplate: React.FC<StructureTemplateProps> = ({
                       {sub.subquestions.map((subSub, subSubIdx) => (
                         <div key={subSubIdx} className="ml-8 mb-4">
                           <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-sm">
-                          <label className="block text-black dark:text-white">
+                            <label className="block text-black dark:text-white">
                               Sub-Subquestion {subSubIdx + 1}
                             </label>
                             <button
