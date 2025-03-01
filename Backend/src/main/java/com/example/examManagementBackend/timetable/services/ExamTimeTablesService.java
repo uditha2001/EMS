@@ -152,6 +152,10 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setDate(examTimeTable.getDate());
         examTimeTableDTO.setStartTime(examTimeTable.getStartTime());
         examTimeTableDTO.setEndTime(examTimeTable.getEndTime());
+        examTimeTableDTO.setCourseCode(examTimeTable.getCourse().getCode());
+        examTimeTableDTO.setCourseName(examTimeTable.getCourse().getName());
+        examTimeTableDTO.setExamType(String.valueOf(examTimeTable.getExamType().getName()));
+        examTimeTableDTO.setUpdatedAt(examTimeTable.getUpdatedAt());
         return examTimeTableDTO;
     }
 }

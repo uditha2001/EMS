@@ -10,6 +10,7 @@ import {
 import Stepper from '../PaperTransfer/Stepper';
 import useExamTimeTableApi from '../../api/examTimeTableApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import PreviewTimetable from './PreviewTimetable';
 
 interface Course {
   id: number;
@@ -34,6 +35,9 @@ interface ExamTimeTable {
   date: string;
   startTime: string;
   endTime: string;
+  courseCode: string;
+  courseName: string;
+  examType: string;
 }
 
 const CreateTimetable: React.FC = () => {
@@ -423,45 +427,24 @@ const CreateTimetable: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Add Create/Update Button */}
+                <div className="flex justify-end mt-4">
+                  <button
+                    type="button"
+                    onClick={handleSubmitTimetable}
+                    className="btn-primary"
+                  >
+                    {examTimeTables.length > 0
+                      ? 'Update Timetable'
+                      : 'Create Timetable'}
+                  </button>
+                </div>
               </div>
             )}
 
             {currentStep === 3 && (
-              <div>
-                <h3 className="font-medium text-black dark:text-white mb-4">
-                  Preview Timetable
-                </h3>
-                <table className="min-w-full bg-white dark:bg-gray-800">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b">Course</th>
-                      <th className="py-2 px-4 border-b">Date</th>
-                      <th className="py-2 px-4 border-b">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {examTimeTables.map((timeTable) => (
-                      <tr key={timeTable.examTimeTableId}>
-                        <td className="py-2 px-4 border-b">
-                          {
-                            courses.find((c) => c.id === timeTable.courseId)
-                              ?.code
-                          }{' '}
-                          ({timeTable.examTypeId === 1 ? 'T' : 'P'}) -{' '}
-                          {
-                            courses.find((c) => c.id === timeTable.courseId)
-                              ?.name
-                          }
-                        </td>
-                        <td className="py-2 px-4 border-b">{timeTable.date}</td>
-                        <td className="py-2 px-4 border-b">
-                          {timeTable.startTime} - {timeTable.endTime}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <PreviewTimetable examinationId={selectedExamination} />
             )}
           </div>
 
@@ -474,19 +457,18 @@ const CreateTimetable: React.FC = () => {
             >
               Previous
             </button>
-            {currentStep < steps.length ? (
-              <button type="button" onClick={nextStep} className="btn-primary">
-                Next
-              </button>
-            ) : (
+
+            {currentStep < steps.length && (
               <button
                 type="button"
-                onClick={handleSubmitTimetable}
+                onClick={nextStep}
                 className="btn-primary"
+                disabled={
+                  !selectedExamination ||
+                  Object.keys(courseDetails).length === 0
+                }
               >
-                {examTimeTables.length > 0
-                  ? 'Update Timetable'
-                  : 'Create Timetable'}
+                Next
               </button>
             )}
           </div>
