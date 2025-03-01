@@ -2,8 +2,8 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
 import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
-import com.example.examManagementBackend.resultManagement.entities.ExamInvigilatorsEntity;
-import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.timetable.entities.ExamInvigilatorsEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;

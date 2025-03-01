@@ -24,4 +24,7 @@ public interface CoursesRepository extends JpaRepository<CoursesEntity, Long> {
     @Query("SELECT ce FROM CoursesEntity ce WHERE ce.code=:courseCode")
     CoursesEntity findByCourseCode(@Param("courseCode") String courseCode);
 
+    @Query("SELECT c FROM CoursesEntity c WHERE c.level = :level AND c.semester = :semester AND c.degreeProgramsEntity.id = :degreeProgramId")
+    List<CoursesEntity> findByLevelAndSemesterAndDegreeProgramId(String level, String semester, Long degreeProgramId);
+
 }
