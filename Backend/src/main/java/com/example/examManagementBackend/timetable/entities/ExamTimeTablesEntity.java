@@ -41,7 +41,7 @@ public class ExamTimeTablesEntity {
 
     @ManyToMany(cascade=CascadeType.ALL)
     @JoinTable(
-            name = "center_name",
+            name = "timetable_center",
             joinColumns = @JoinColumn(name = "examTimeTableId"),
             inverseJoinColumns = @JoinColumn(name = "id")
     )
