@@ -464,8 +464,8 @@ const CreateTimetable: React.FC = () => {
                 onClick={nextStep}
                 className="btn-primary"
                 disabled={
-                  !selectedExamination ||
-                  Object.keys(courseDetails).length === 0
+                  !selectedExamination
+                  //Object.keys(courseDetails).length === 0
                 }
               >
                 Next
