@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name="user_roles")
+@Table(name="user_roles",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"userId", "roleId"}))
 @EntityListeners(AuditingEntityListener.class)
 public class UserRoles {
     @Id

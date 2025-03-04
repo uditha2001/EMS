@@ -54,7 +54,6 @@ public class ResultService {
                 Object[] data= jwtService.getUserNameAndToken(request);
                 String username = data[0].toString();
                 UserEntity approvedBy=userManagementRepo.findByUsername(username);
-                String[] examDetails=results.getExamName().split("-");
                 Long courseId=getCourseCodeId(results.getCourseCode());
                 Long examinationId=results.getId();
                 Long examinationTypeId=getExaminationTypeId(results.getExamType());

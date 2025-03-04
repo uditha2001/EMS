@@ -12,23 +12,26 @@ import org.springframework.transaction.annotation.Transactional;
 @Configuration
 public class DatabaseSeeder {
 
-    @Autowired
-    private PermissionRepository permissionRepository;
+    private final PermissionRepository permissionRepository;
 
-    @Autowired
-    private RoleRepository rolesRepository;
+    private final RoleRepository rolesRepository;
 
-    @Autowired
-    private UserManagementRepo userRepository;
+    private final UserManagementRepo userRepository;
 
-    @Autowired
-    private UserRolesRepository userRolesRepository;
+    private final UserRolesRepository userRolesRepository;
 
-    @Autowired
-    private RolePermissionRepository rolePermissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Properly inject PasswordEncoder
+    private final PasswordEncoder passwordEncoder; // Properly inject PasswordEncoder
+
+    public DatabaseSeeder(PermissionRepository permissionRepository, RoleRepository rolesRepository, UserManagementRepo userRepository, UserRolesRepository userRolesRepository, RolePermissionRepository rolePermissionRepository, PasswordEncoder passwordEncoder) {
+        this.permissionRepository = permissionRepository;
+        this.rolesRepository = rolesRepository;
+        this.userRepository = userRepository;
+        this.userRolesRepository = userRolesRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostConstruct
     @Transactional
@@ -80,6 +83,7 @@ public class DatabaseSeeder {
 
             PermissionEntity p31 = createPermission("TIMETABLE", "Allows viewing of Time Table", "Scheduling");
             PermissionEntity p32 = createPermission("PAPER_EVALUATION", "Allows Add exam paper Evaluation", "Paper Workflow");
+            PermissionEntity p33 = createPermission("EXAM_CENTERS", "Allows Manage of Exam Centers", "Scheduling");
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -103,6 +107,7 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p30);
             assignPermissionToRole(adminRole, p31);
             assignPermissionToRole(adminRole, p32);
+            assignPermissionToRole(adminRole, p33);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(academyCoordinatorRole,p20);

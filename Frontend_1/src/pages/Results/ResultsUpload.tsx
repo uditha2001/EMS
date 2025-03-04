@@ -14,6 +14,7 @@ import {
   faTimesCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import useResultsApi from '../../api/ResultsApi';
 
 type RowData = {
   [key: string]: any;
@@ -52,9 +53,10 @@ const ResultsUpload = () => {
   const {
     getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
-    saveMarkingResults,
     getExamTypes,
   } = useApi();
+  const {saveMarkingResults}=useResultsApi();
+
   const [selectedExaminationKey, setSelectedExaminationKey] =
     useState<number>();
   const [examinationCourseCode, setExaminationCourseCode] = useState<
@@ -86,6 +88,7 @@ const ResultsUpload = () => {
     });
   }, []);
 
+ 
   useEffect(() => {
     if (examName != '' && examName != null) {
       getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
@@ -401,7 +404,7 @@ const ResultsUpload = () => {
                           Exam Type:
                         </span>
                         <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                          THEORY
+                          {examType || 'N/A'}
                         </span>
                       </div>
                     </div>

@@ -1,17 +1,22 @@
-package com.example.examManagementBackend.resultManagement.repo;
+package com.example.examManagementBackend.timetable.repository;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
-import com.example.examManagementBackend.resultManagement.entities.ExamTimeTablesEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.Set;
+
+import java.util.List;
 
 @Repository
 @EnableJpaRepositories
 public interface ExaminationTimeTableRepository extends JpaRepository<ExamTimeTablesEntity,Long> {
     @Query("SELECT ett.course FROM ExamTimeTablesEntity ett WHERE ett.examTimeTableId= :id")
     CoursesEntity getCourseEntities(@Param("id") Long id);
+
+    List<ExamTimeTablesEntity> findByExaminationId(Long examinationId);
+    @Query("SELECT DISTINCT ett.examType.id FROM ExamTimeTablesEntity ett WHERE ett.course.code=:courseCode AND ett.examination.id=:id")
+    List<Long> getExamTypesId(@Param("courseCode") String courseCode, @Param("id") Long id);
 }

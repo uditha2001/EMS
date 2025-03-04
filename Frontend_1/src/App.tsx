@@ -12,7 +12,6 @@ import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleA
 import GradeConditions from './pages/Results/GradeConditions';
 import LearnMore from './components/LearnMore';
 
-
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
 const Profile = React.lazy(() => import('./pages/Profile'));
@@ -100,6 +99,7 @@ const HistoricalData = React.lazy(
 const ArchivedPapers = React.lazy(
   () => import('./pages/HistoricalData/ArchivedPapers'),
 );
+const ExamCenters = React.lazy(() => import('./pages/ExamCenters/ExamCenters'));
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -149,7 +149,6 @@ function App() {
           element={renderPage('Reset Password | EMS', <ResetPassword />)}
         />
       </Route>
-
 
       {/* Authenticated Routes */}
       <Route element={<PersistLogin />}>
@@ -247,8 +246,6 @@ function App() {
                 )}
               />
             </Route>
-
-           
 
             {/* Courses Routes */}
             <Route
@@ -430,11 +427,19 @@ function App() {
             {/*Create Timetable */}
             <Route element={<RequireAuth allowedPermissions={['TIMETABLE']} />}>
               <Route
-                path="/timetable"
+                path="/scheduling/timetable"
                 element={renderPage(
                   'Create Timetable | EMS',
                   <CreateTimetable />,
                 )}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['EXAM_CENTERS']} />}
+            >
+              <Route
+                path="/scheduling/examcenters"
+                element={renderPage('Create Timetable | EMS', <ExamCenters />)}
               />
             </Route>
 
@@ -462,7 +467,10 @@ function App() {
             >
               <Route
                 path="/result/conditions"
-                element={renderPage('Results Grading | EMS', <GradeConditions />)}
+                element={renderPage(
+                  'Results Grading | EMS',
+                  <GradeConditions />,
+                )}
               />
 
               <Route
@@ -472,7 +480,7 @@ function App() {
 
               <Route
                 path="/result/dashboard"
-              //element={renderPage('Results Dashboard | EMS', )}
+                //element={renderPage('Results Dashboard | EMS', )}
               />
             </Route>
           </Route>
@@ -482,4 +490,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

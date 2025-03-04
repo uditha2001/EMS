@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.resultManagement.entities;
+package com.example.examManagementBackend.timetable.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +33,6 @@ public class ExamCentersEntity {
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
-
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;

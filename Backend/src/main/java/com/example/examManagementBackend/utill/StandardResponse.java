@@ -39,4 +39,12 @@ public class StandardResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public static StandardResponse success(Object data) {
+        return new StandardResponse(200, "Request was successful", data);
+    }
+
+    public static StandardResponse error(int code, String message) {
+        return new StandardResponse(code, message, null);
+    }
 }

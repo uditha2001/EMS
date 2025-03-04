@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -158,16 +159,10 @@ public class UserManagementServices {
     }
 
     public String updateUserWithRoles(Long userId, UserDTO userDTO) {
-        UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity userEntity = userManagementRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if the user has the ADMIN role
-//        boolean isAdmin = userEntity.getUserRoles().stream()
-//                .anyMatch(userRole -> "ADMIN".equals(userRole.getRole().getRoleName()));
-//
-//        if (isAdmin) {
-//            throw new RuntimeException("Cannot update a user with the ADMIN role.");
-//        }
-
+        // Update basic user details
         userEntity.setUsername(userDTO.getUsername());
         userEntity.setEmail(userDTO.getEmail());
         userEntity.setFirstName(userDTO.getFirstName());
@@ -179,18 +174,35 @@ public class UserManagementServices {
 
         userManagementRepo.save(userEntity);
 
-        userRolesRepo.deleteAll(userEntity.getUserRoles());
+        // Get current user roles
+        List<UserRoles> existingUserRoles = userRolesRepo.findByUser(userEntity);
+        Set<String> existingRoleNames = existingUserRoles.stream()
+                .map(userRole -> userRole.getRole().getRoleName())
+                .collect(Collectors.toSet());
 
+        // Find roles to remove (roles not present in updated list)
+        List<UserRoles> rolesToRemove = existingUserRoles.stream()
+                .filter(userRole -> !userDTO.getRoles().contains(userRole.getRole().getRoleName()))
+                .collect(Collectors.toList());
+
+        userRolesRepo.deleteAll(rolesToRemove); // Remove only necessary roles
+
+        // Add new roles that are not already assigned
         for (String roleName : userDTO.getRoles()) {
-            RolesEntity role = roleRepository.findByRoleName(roleName).orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
-            UserRoles userRole = new UserRoles();
-            userRole.setUser(userEntity);
-            userRole.setRole(role);
-            userRolesRepo.save(userRole);
+            if (!existingRoleNames.contains(roleName)) {  // Avoid duplicate insertion
+                RolesEntity role = roleRepository.findByRoleName(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+
+                UserRoles userRole = new UserRoles();
+                userRole.setUser(userEntity);
+                userRole.setRole(role);
+                userRolesRepo.save(userRole);
+            }
         }
 
         return "User with roles updated successfully";
     }
+
 
     public String updateUserStatus(Long userId, boolean isActive) {
         UserEntity userEntity = userManagementRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));

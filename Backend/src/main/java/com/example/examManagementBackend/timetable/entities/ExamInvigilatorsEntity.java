@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.resultManagement.entities;
+package com.example.examManagementBackend.timetable.entities;
 
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;

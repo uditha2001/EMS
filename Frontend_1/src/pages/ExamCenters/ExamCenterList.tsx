@@ -1,28 +1,30 @@
 import { useState } from 'react';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import { faBuilding } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../../common/Loader';
 
-interface DegreeProgram {
+interface ExamCenter {
   id: number;
   name: string;
-  description: string;
+  location: string;
+  capacity: number;
+  contactPerson: string;
 }
 
-interface DegreeProgramListProps {
-  degreePrograms: DegreeProgram[] | null | undefined;
+interface ExamCenterListProps {
+  examCenters: ExamCenter[] | null | undefined;
   loading: boolean;
   handleEdit: (id: number) => void;
   handleDelete: (id: number) => void;
 }
 
-export default function DegreeProgramList({
-  degreePrograms,
+export default function ExamCenterList({
+  examCenters = [],
   loading,
   handleEdit,
   handleDelete,
-}: DegreeProgramListProps) {
+}: ExamCenterListProps) {
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
@@ -41,34 +43,35 @@ export default function DegreeProgramList({
 
   return (
     <div>
-      {loading ? (
-          <Loader />
-      
-      ) : !degreePrograms || degreePrograms.length === 0 ? (
-        <p>No degree programs found.</p>
-      ) : (
+      {Array.isArray(examCenters) && examCenters.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {degreePrograms.map((program) => (
+          {examCenters.map((center) => (
             <div
-              key={program.id}
+              key={center.id}
               className="flex flex-col border p-4 rounded-sm border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark hover:shadow-xl transition-all duration-300"
             >
               <div className="text-primary dark:text-white font-medium">
-                <FontAwesomeIcon icon={faGraduationCap} className='mr-2' />
-                {program.name}
+                <FontAwesomeIcon icon={faBuilding} className="mr-2" />
+                {center.name}
               </div>
               <div className="text-black dark:text-white">
-                {program.description}
+                {center.location}
+              </div>
+              <div className="text-black dark:text-white">
+                Capacity: {center.capacity}
+              </div>
+              <div className="text-black dark:text-white">
+                Contact: {center.contactPerson}
               </div>
               <div className="mt-4 flex justify-start space-x-4">
                 <button
-                  onClick={() => handleEdit(program.id)}
+                  onClick={() => handleEdit(center.id)}
                   className="text-primary hover:underline"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => handleOpenModal(program.id)}
+                  onClick={() => handleOpenModal(center.id)}
                   className="text-red-600 hover:underline"
                 >
                   Delete
@@ -77,15 +80,21 @@ export default function DegreeProgramList({
             </div>
           ))}
         </div>
+      ) : loading ? (
+        <Loader />
+      ) : (
+        <div className="text-center text-black dark:text-white">
+          No exam centers found.
+        </div>
       )}
 
       {showModal && (
         <ConfirmationModal
-          message="Are you sure you want to delete this degree program?"
+          message="Are you sure you want to delete this exam center?"
           onConfirm={handleConfirmDelete}
           onCancel={() => setShowModal(false)}
         />
       )}
-    </div>
-  );
+    </div>
+  );
 }
