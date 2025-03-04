@@ -118,13 +118,7 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<!-- Enable filtering for application.properties -->
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering> <!-- This line activates replacement -->
-			</resource>
-		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
