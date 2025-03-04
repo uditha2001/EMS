@@ -21,7 +21,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
+                        .allowedOrigins("http://localhost:3000")
                         .allowedMethods(GET, POST, PUT, DELETE, OPTIONS,PATCH)
                         .allowedHeaders("*")
                         .allowCredentials(true); // Enable cookies and Authorization headers
