@@ -26,4 +26,6 @@ public class ExamTimeTableDTO {
     private String courseName;
     private String examType;
     private LocalDateTime updatedAt;
+    private String timetableGroup;
+
 }

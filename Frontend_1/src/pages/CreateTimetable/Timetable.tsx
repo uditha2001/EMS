@@ -6,11 +6,14 @@ import {
   faList,
   faCalendarAlt,
   faCheckCircle,
+  faMinus,
+  faPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import Stepper from '../PaperTransfer/Stepper';
 import useExamTimeTableApi from '../../api/examTimeTableApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import PreviewTimetable from './PreviewTimetable';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface Course {
   id: number;
@@ -38,6 +41,7 @@ interface ExamTimeTable {
   courseCode: string;
   courseName: string;
   examType: string;
+  timetableGroup: string;
 }
 
 const CreateTimetable: React.FC = () => {
@@ -55,7 +59,12 @@ const CreateTimetable: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [examTimeTables, setExamTimeTables] = useState<ExamTimeTable[]>([]);
   const [courseDetails, setCourseDetails] = useState<{
-    [key: string]: { examDate: string; examTime: string; duration: string };
+    [key: string]: {
+      examDate: string;
+      examTime: string;
+      duration: string;
+      timetableGroup: string;
+    }[];
   }>({});
 
   const steps = [
@@ -107,7 +116,8 @@ const CreateTimetable: React.FC = () => {
               examDate: string;
               examTime: string;
               duration: string;
-            };
+              timetableGroup: string;
+            }[];
           } = response.data.data.reduce(
             (
               acc: {
@@ -115,7 +125,8 @@ const CreateTimetable: React.FC = () => {
                   examDate: string;
                   examTime: string;
                   duration: string;
-                };
+                  timetableGroup: string;
+                }[];
               },
               timetable: ExamTimeTable,
             ) => {
@@ -126,12 +137,14 @@ const CreateTimetable: React.FC = () => {
                 timetable.endTime,
               );
 
-              // Use `courseId-examType` as the key (e.g., `1-THEORY`)
-              acc[`${timetable.courseId}-${examType}`] = {
+              const key = `${timetable.courseId}-${examType}`;
+              if (!acc[key]) acc[key] = [];
+              acc[key].push({
                 examDate: timetable.date,
                 examTime: timetable.startTime,
                 duration: duration.toString(),
-              };
+                timetableGroup: timetable.timetableGroup,
+              });
               return acc;
             },
             {} as {
@@ -139,7 +152,8 @@ const CreateTimetable: React.FC = () => {
                 examDate: string;
                 examTime: string;
                 duration: string;
-              };
+                timetableGroup: string;
+              }[];
             },
           );
           setCourseDetails(details);
@@ -189,42 +203,62 @@ const CreateTimetable: React.FC = () => {
     return `${formattedEndHour}:${formattedEndMinute}:00`;
   };
 
+  const addTimeSlot = (courseId: number, courseType: string) => {
+    const key = `${courseId}-${courseType}`;
+    setCourseDetails((prevState) => ({
+      ...prevState,
+      [key]: [
+        ...(prevState[key] || []),
+        { examDate: '', examTime: '', duration: '', timetableGroup: '' },
+      ],
+    }));
+  };
+
+  const removeTimeSlot = (
+    courseId: number,
+    courseType: string,
+    index: number,
+  ) => {
+    const key = `${courseId}-${courseType}`;
+    setCourseDetails((prevState) => ({
+      ...prevState,
+      [key]: prevState[key].filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSubmitTimetable = async () => {
-    if (
-      !selectedExamination ||
-      !Object.values(courseDetails).every(
-        (detail) => detail.examDate && detail.examTime && detail.duration,
-      )
-    ) {
-      setErrorMessage('All fields are required.');
+    if (!selectedExamination) {
+      setErrorMessage('Please select an examination.');
       return;
     }
 
     // Prepare request body
     const examTimeTableDataList = courses
-      .map((course) => {
-        const courseDetail = courseDetails[course.id + '-' + course.courseType];
-        if (!courseDetail) return null;
+      .flatMap((course) => {
+        const key = `${course.id}-${course.courseType}`;
+        return (courseDetails[key] || []).map((slot) => {
+          const { examDate, examTime, duration, timetableGroup } = slot;
+          const formattedStartTime =
+            examTime.length === 5 ? `${examTime}:00` : examTime;
+          const endTime = calculateEndTime(examTime, duration);
 
-        const { examDate, examTime, duration } = courseDetail;
-        const formattedStartTime =
-          examTime.length === 5 ? `${examTime}:00` : examTime;
-        const endTime = calculateEndTime(examTime, duration);
-
-        return {
-          examTimeTableId:
-            examTimeTables.find(
-              (t) =>
-                t.courseId === course.id &&
-                t.examTypeId === (course.courseType === 'THEORY' ? 1 : 2),
-            )?.examTimeTableId || 0,
-          examinationId: selectedExamination,
-          courseId: course.id,
-          examTypeId: course.courseType === 'THEORY' ? 1 : 2,
-          date: examDate,
-          startTime: formattedStartTime,
-          endTime: endTime,
-        };
+          return {
+            examTimeTableId:
+              examTimeTables.find(
+                (t) =>
+                  t.courseId === course.id &&
+                  t.examTypeId === (course.courseType === 'THEORY' ? 1 : 2) &&
+                  t.timetableGroup === timetableGroup,
+              )?.examTimeTableId || 0,
+            examinationId: selectedExamination,
+            courseId: course.id,
+            examTypeId: course.courseType === 'THEORY' ? 1 : 2,
+            date: examDate,
+            startTime: formattedStartTime,
+            endTime: endTime,
+            timetableGroup: timetableGroup || '',
+          };
+        });
       })
       .filter((data) => data !== null);
 
@@ -249,15 +283,7 @@ const CreateTimetable: React.FC = () => {
         error.response?.data?.message || 'Failed to save timetable.',
       );
     }
-
-    //resetForm();
   };
-
-  // const resetForm = () => {
-  //   setSelectedExamination(null);
-  //   setCourseDetails({});
-  //   setCurrentStep(1);
-  // };
 
   const nextStep = () => {
     if (currentStep === 1 && !selectedExamination) {
@@ -279,16 +305,21 @@ const CreateTimetable: React.FC = () => {
   const handleCourseDetailsChange = (
     courseId: number,
     courseType: string,
-    field: keyof { examDate: string; examTime: string; duration: string },
+    field: keyof {
+      examDate: string;
+      examTime: string;
+      duration: string;
+      timetableGroup: string;
+    },
     value: string,
+    index: number,
   ) => {
-    const key = `${courseId}-${courseType}`; // e.g., "1-THEORY", "2-PRACTICAL"
+    const key = `${courseId}-${courseType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
-      [key]: {
-        ...prevState[key],
-        [field]: value,
-      },
+      [key]: prevState[key].map((slot, i) =>
+        i === index ? { ...slot, [field]: value } : slot,
+      ),
     }));
   };
 
@@ -355,80 +386,139 @@ const CreateTimetable: React.FC = () => {
                       <th className="border border-gray-300 px-4 py-2 text-left">
                         Duration (hrs)
                       </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left">
+                        Group
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {courses.map((course) => (
-                      <tr
-                        key={course.id + course.courseType}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <td className="border px-4 py-2">
-                          {course.code} (
-                          {course.courseType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                          {course.name}
-                        </td>
-                        <td className="border px-4 py-2">
-                          <input
-                            type="date"
-                            value={
-                              courseDetails[`${course.id}-${course.courseType}`]
-                                ?.examDate || ''
-                            }
-                            onChange={(e) =>
-                              handleCourseDetailsChange(
-                                course.id,
-                                course.courseType,
-                                'examDate',
-                                e.target.value,
-                              )
-                            }
-                            className="input-field"
-                          />
-                        </td>
-                        <td className="border px-4 py-2">
-                          <input
-                            type="time"
-                            value={
-                              courseDetails[`${course.id}-${course.courseType}`]
-                                ?.examTime || ''
-                            }
-                            onChange={(e) =>
-                              handleCourseDetailsChange(
-                                course.id,
-                                course.courseType,
-                                'examTime',
-                                e.target.value,
-                              )
-                            }
-                            className="input-field"
-                          />
-                        </td>
-                        <td className="border px-4 py-2">
-                          <input
-                            type="number"
-                            value={
-                              courseDetails[`${course.id}-${course.courseType}`]
-                                ?.duration || ''
-                            }
-                            onChange={(e) =>
-                              handleCourseDetailsChange(
-                                course.id,
-                                course.courseType,
-                                'duration',
-                                e.target.value,
-                              )
-                            }
-                            className="input-field"
-                            placeholder="Duration (hrs)"
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {courses.map((course) => {
+                      const key = `${course.id}-${course.courseType}`;
+                      const timeSlots = courseDetails[key] || [];
+
+                      return (
+                        <>
+                          {timeSlots.map((slot, index) => (
+                            <tr
+                              key={`${course.id}-${course.courseType}-${index}`}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
+                              <td className="border px-4 py-2">
+                                {index === 0 && (
+                                  <>
+                                    {course.code} (
+                                    {course.courseType === 'THEORY' ? 'T' : 'P'}
+                                    ) - {course.name}
+                                  </>
+                                )}
+                              </td>
+                              <td className="border px-4 py-2">
+                                <input
+                                  type="date"
+                                  value={slot.examDate}
+                                  onChange={(e) =>
+                                    handleCourseDetailsChange(
+                                      course.id,
+                                      course.courseType,
+                                      'examDate',
+                                      e.target.value,
+                                      index,
+                                    )
+                                  }
+                                  className="input-field"
+                                />
+                              </td>
+                              <td className="border px-4 py-2">
+                                <input
+                                  type="time"
+                                  value={slot.examTime}
+                                  onChange={(e) =>
+                                    handleCourseDetailsChange(
+                                      course.id,
+                                      course.courseType,
+                                      'examTime',
+                                      e.target.value,
+                                      index,
+                                    )
+                                  }
+                                  className="input-field"
+                                />
+                              </td>
+                              <td className="border px-4 py-2">
+                                <input
+                                  type="number"
+                                  value={slot.duration}
+                                  onChange={(e) =>
+                                    handleCourseDetailsChange(
+                                      course.id,
+                                      course.courseType,
+                                      'duration',
+                                      e.target.value,
+                                      index,
+                                    )
+                                  }
+                                  className="input-field"
+                                  placeholder="Duration (hrs)"
+                                />
+                              </td>
+                              <td className="border px-4 py-2">
+                                <input
+                                  type="text"
+                                  value={slot.timetableGroup}
+                                  onChange={(e) =>
+                                    handleCourseDetailsChange(
+                                      course.id,
+                                      course.courseType,
+                                      'timetableGroup',
+                                      e.target.value,
+                                      index,
+                                    )
+                                  }
+                                  className="input-field"
+                                  placeholder="Group (optional)"
+                                />
+                              </td>
+                              <td className="border px-4 py-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeTimeSlot(
+                                      course.id,
+                                      course.courseType,
+                                      index,
+                                    )
+                                  }
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <FontAwesomeIcon icon={faMinus} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          <tr>
+                            <td colSpan={6} className="border px-4 py-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  addTimeSlot(course.id, course.courseType)
+                                }
+                                className="text-green-500 hover:text-green-700"
+                              >
+                                <FontAwesomeIcon icon={faPlus} /> {course.code}{' '}
+                                ({course.courseType === 'THEORY' ? 'T' : 'P'}) -{' '}
+                                {course.name}
+                              </button>
+                            </td>
+                          </tr>
+                        </>
+                      );
+                    })}
                   </tbody>
                 </table>
 
-                {/* Add Create/Update Button */}
                 <div className="flex justify-end mt-4">
                   <button
                     type="button"
@@ -463,10 +553,7 @@ const CreateTimetable: React.FC = () => {
                 type="button"
                 onClick={nextStep}
                 className="btn-primary"
-                disabled={
-                  !selectedExamination ||
-                  Object.keys(courseDetails).length === 0
-                }
+                disabled={!selectedExamination}
               >
                 Next
               </button>

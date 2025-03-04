@@ -12,23 +12,26 @@ import org.springframework.transaction.annotation.Transactional;
 @Configuration
 public class DatabaseSeeder {
 
-    @Autowired
-    private PermissionRepository permissionRepository;
+    private final PermissionRepository permissionRepository;
 
-    @Autowired
-    private RoleRepository rolesRepository;
+    private final RoleRepository rolesRepository;
 
-    @Autowired
-    private UserManagementRepo userRepository;
+    private final UserManagementRepo userRepository;
 
-    @Autowired
-    private UserRolesRepository userRolesRepository;
+    private final UserRolesRepository userRolesRepository;
 
-    @Autowired
-    private RolePermissionRepository rolePermissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Properly inject PasswordEncoder
+    private final PasswordEncoder passwordEncoder; // Properly inject PasswordEncoder
+
+    public DatabaseSeeder(PermissionRepository permissionRepository, RoleRepository rolesRepository, UserManagementRepo userRepository, UserRolesRepository userRolesRepository, RolePermissionRepository rolePermissionRepository, PasswordEncoder passwordEncoder) {
+        this.permissionRepository = permissionRepository;
+        this.rolesRepository = rolesRepository;
+        this.userRepository = userRepository;
+        this.userRolesRepository = userRolesRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostConstruct
     @Transactional
