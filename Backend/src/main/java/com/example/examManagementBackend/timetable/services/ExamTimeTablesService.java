@@ -81,6 +81,7 @@ public class ExamTimeTablesService {
             examTimeTable.setDate(examTimeTableDTO.getDate());
             examTimeTable.setStartTime(examTimeTableDTO.getStartTime());
             examTimeTable.setEndTime(examTimeTableDTO.getEndTime());
+            examTimeTable.setTimetableGroup(examTimeTableDTO.getTimetableGroup());
 
             // Save the entity
             examTimeTable = examTimeTableRepository.save(examTimeTable);
@@ -156,6 +157,7 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setCourseName(examTimeTable.getCourse().getName());
         examTimeTableDTO.setExamType(String.valueOf(examTimeTable.getExamType().getName()));
         examTimeTableDTO.setUpdatedAt(examTimeTable.getUpdatedAt());
+        examTimeTableDTO.setTimetableGroup(examTimeTable.getTimetableGroup());
         return examTimeTableDTO;
     }
 }

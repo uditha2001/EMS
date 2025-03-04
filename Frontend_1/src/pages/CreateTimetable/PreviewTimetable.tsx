@@ -22,6 +22,7 @@ interface ExamTimeTable {
   date: string;
   startTime: string;
   endTime: string;
+  timetableGroup: string;
 }
 
 interface PreviewTimetableProps {
@@ -116,9 +117,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
     const tableData = timetable.map((entry) => [
       { content: formatDateWithDay(entry.date) },
       `${entry.startTime} - ${entry.endTime}`,
-      `${entry.courseCode} (${entry.examType === 'THEORY' ? 'T' : 'P'}) - ${
-        entry.courseName
-      }`,
+      `${entry.courseCode} (${entry.examType === 'THEORY' ? 'T' : 'P'}) - ${entry.courseName}${entry.timetableGroup ? ' - (Group ' + entry.timetableGroup + ')' : ''}`,
     ]);
 
     autoTable(doc, {
@@ -211,6 +210,12 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
                       {entry.courseCode} (
                       {entry.examType === 'THEORY' ? 'T' : 'P'}) -{' '}
                       {entry.courseName}
+                      {entry.timetableGroup && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {' - '}
+                          (Group {entry.timetableGroup})
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
