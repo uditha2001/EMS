@@ -19,7 +19,6 @@ jobs:
   cd:
     name: Continuous Deployment
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Ensures CI was successful
 
     steps:
       - name: Checkout Code
