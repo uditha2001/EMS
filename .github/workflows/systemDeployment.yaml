@@ -7,6 +7,13 @@ on:
       - completed
     branches:
       - main
+      -
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  packages: write  
+
 
 jobs:
   cd:
