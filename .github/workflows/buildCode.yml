@@ -75,8 +75,11 @@ jobs:
           npm run build # Ensure this step produces JavaScript files in `dist`
   Docker:
     runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
@@ -97,3 +100,4 @@ jobs:
           context: .
           push: true
           tags: user/app:latest
+ 
