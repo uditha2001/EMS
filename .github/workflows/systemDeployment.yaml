@@ -7,12 +7,12 @@ on:
       - completed
     branches:
       - main
-      -
+      - development
 permissions:
   contents: read
   id-token: write
   actions: read
-  packages: write  
+  packages: write
 
 
 jobs:
