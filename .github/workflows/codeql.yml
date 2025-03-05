@@ -36,16 +36,6 @@ jobs:
             build-mode: none  # Analyzes Java. Set 'autobuild' or 'manual' for Kotlin.
           - language: javascript-typescript
             build-mode: none
-          - language: c-cpp
-            build-mode: none
-          - language: python
-            build-mode: none
-          - language: ruby
-            build-mode: none
-          - language: go
-            build-mode: none
-          - language: swift
-            build-mode: none
 
     steps:
       - name: Checkout repository
