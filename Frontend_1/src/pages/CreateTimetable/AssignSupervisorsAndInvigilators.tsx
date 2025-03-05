@@ -41,6 +41,7 @@ const AssignSupervisorsInvigilators: React.FC<{
     invigilatorId: string;
   } | null>(null);
 
+
   useEffect(() => {
     const fetchUsersData = async () => {
       try {
@@ -142,7 +143,7 @@ const AssignSupervisorsInvigilators: React.FC<{
         );
         return { ...prev, [key]: updatedInvigilators };
       });
-
+      
       setSuccessMessage('Invigilator removed successfully!');
     } catch (error) {
       setErrorMessage('Failed to remove Invigilator.');
@@ -277,6 +278,16 @@ const AssignSupervisorsInvigilators: React.FC<{
                                 `${exam.examTimeTableId}-${centerData.centerId}`
                               ]?.[idx] || false;
 
+                            const handleRemoveClick = () => {
+                              setInvigilators((prev) => {
+                              const key = `${exam.examTimeTableId}-${centerData.centerId}`;
+                              const updatedInvigilators = (prev[key] || []).filter(
+                                (_, i) => i !== idx
+                              );
+                              return { ...prev, [key]: updatedInvigilators };
+                              });
+                            };
+
                             return (
                               <div
                                 key={idx}
@@ -305,24 +316,33 @@ const AssignSupervisorsInvigilators: React.FC<{
                                   }
                                   placeholder="Search and select invigilators"
                                 />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleDeleteClick(
-                                      exam.invigilators[idx].assignedId,
-                                      exam.examTimeTableId,
-                                      centerData.centerId,
-                                      exam.invigilators[
-                                        idx
-                                      ].invigilatorId.toString(),
-                                    )
-                                  }
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FontAwesomeIcon
-                                    icon={isSaved ? faDeleteLeft : faMinus}
-                                  />
-                                </button>
+                                {isSaved ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleDeleteClick(
+                                        exam.examCenters[index].invigilators[
+                                          idx
+                                        ].assignedId,
+                                        exam.examTimeTableId,
+                                        centerData.centerId,
+                                        exam.examCenters[index].invigilators[
+                                          idx
+                                        ].invigilatorId.toString(),
+                                      )
+                                    }
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <FontAwesomeIcon icon={faDeleteLeft} />
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveClick()}
+                                  >
+                                    <FontAwesomeIcon icon={faMinus} />
+                                  </button>
+                                )}
                               </div>
                             );
                           })}
