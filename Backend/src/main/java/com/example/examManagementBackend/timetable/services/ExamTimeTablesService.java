@@ -6,19 +6,20 @@ import com.example.examManagementBackend.paperWorkflows.repository.CoursesReposi
 import com.example.examManagementBackend.paperWorkflows.repository.ExamTypesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
-import com.example.examManagementBackend.timetable.dto.ExamTimeTableDTO;
+import com.example.examManagementBackend.timetable.dto.*;
 import com.example.examManagementBackend.timetable.entities.ExamCentersEntity;
 import com.example.examManagementBackend.timetable.entities.ExamInvigilatorsEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTableCenter;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.timetable.repository.ExamCentersRepository;
 import com.example.examManagementBackend.timetable.repository.ExamInvigilatorsRepository;
+import com.example.examManagementBackend.timetable.repository.ExamTimeTableCenterRepository;
 import com.example.examManagementBackend.timetable.repository.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ public class ExamTimeTablesService {
     private final ExaminationRepository examinationRepository;
     private final CoursesRepository coursesRepository;
     private final ExamTypesRepository examTypesRepository;
+    private final ExamTimeTableCenterRepository examTimeTableCenterRepository;
 
 
 
@@ -40,7 +42,7 @@ public class ExamTimeTablesService {
     public ExamTimeTablesService(ExaminationTimeTableRepository examTimeTableRepository,
                                  ExamInvigilatorsRepository examInvigilatorsRepository,
                                  ExamCentersRepository examCentersRepository,
-                                 UserManagementRepo userRepository, ExaminationRepository examinationRepository, CoursesRepository coursesRepository, ExamTypesRepository examTypesRepository) {
+                                 UserManagementRepo userRepository, ExaminationRepository examinationRepository, CoursesRepository coursesRepository, ExamTypesRepository examTypesRepository, ExamTimeTableCenterRepository examTimeTableCenterRepository) {
         this.examTimeTableRepository = examTimeTableRepository;
         this.examInvigilatorsRepository = examInvigilatorsRepository;
         this.examCentersRepository = examCentersRepository;
@@ -48,6 +50,7 @@ public class ExamTimeTablesService {
         this.examinationRepository = examinationRepository;
         this.coursesRepository = coursesRepository;
         this.examTypesRepository = examTypesRepository;
+        this.examTimeTableCenterRepository = examTimeTableCenterRepository;
     }
 
     public List<ExamTimeTableDTO> saveOrUpdateExamTimeTable(List<ExamTimeTableDTO> examTimeTableDTOList) {
@@ -113,35 +116,87 @@ public class ExamTimeTablesService {
                 .collect(Collectors.toList());
     }
 
-    public ExamInvigilatorsEntity assignInvigilator(Long examTimeTableId, Long invigilatorId) {
-        ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(examTimeTableId)
-                .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
-        UserEntity invigilator = userRepository.findById(invigilatorId)
-                .orElseThrow(() -> new RuntimeException("Invigilator not found"));
-        ExamInvigilatorsEntity examInvigilator = new ExamInvigilatorsEntity();
-        examInvigilator.setExamTimeTables(examTimeTable);
-        examInvigilator.setInvigilators(invigilator);
-        return examInvigilatorsRepository.save(examInvigilator);
+    public String saveOrUpdateExamCenters(AllocateExamCentersDTO dto) {
+        for (ExamCenterAllocationDTO allocation : dto.getAllocations()) {
+            ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(allocation.getExamTimeTableId())
+                    .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
+
+            ExamCentersEntity examCenter = examCentersRepository.findById(allocation.getExamCenterId())
+                    .orElseThrow(() -> new RuntimeException("Exam Center not found"));
+
+            ExamTimeTableCenter existingEntry = examTimeTableCenterRepository
+                    .findByExamTimeTableExamTimeTableIdAndExamCenterId(allocation.getExamTimeTableId(), allocation.getExamCenterId())
+                    .orElse(null);
+
+            if (existingEntry == null) {
+                ExamTimeTableCenter newEntry = new ExamTimeTableCenter();
+                newEntry.setExamTimeTable(examTimeTable);
+                newEntry.setExamCenter(examCenter);
+                newEntry.setNumOfCandidates(allocation.getNumOfCandidates()); // Set number of candidates
+                examTimeTableCenterRepository.save(newEntry);
+            } else {
+                existingEntry.setNumOfCandidates(allocation.getNumOfCandidates()); // Update existing record
+                examTimeTableCenterRepository.save(existingEntry);
+            }
+        }
+        return "Exam Centers allocated/updated successfully.";
     }
 
-    public ExamTimeTablesEntity assignExamCenter(Long examTimeTableId, Long centerId) {
-        ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(examTimeTableId)
-                .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
-        ExamCentersEntity center = examCentersRepository.findById(centerId)
-                .orElseThrow(() -> new RuntimeException("Exam Center not found"));
-        examTimeTable.getCenters().add(center);
-        return examTimeTableRepository.save(examTimeTable);
+
+    public String saveOrUpdateSupervisors(AssignSupervisorsDTO dto) {
+        for (SupervisorAssignmentDTO assignment : dto.getAssignments()) {
+            ExamTimeTableCenter examTimeTableCenter = examTimeTableCenterRepository
+                    .findByExamTimeTableExamTimeTableIdAndExamCenterId(assignment.getExamTimeTableId(), assignment.getExamCenterId())
+                    .orElseThrow(() -> new RuntimeException("Exam Center allocation not found"));
+
+            UserEntity supervisor = userRepository.findById(assignment.getSupervisorId())
+                    .orElseThrow(() -> new RuntimeException("Supervisor not found"));
+
+            examTimeTableCenter.setSupervisor(supervisor);
+            examTimeTableCenterRepository.save(examTimeTableCenter);
+        }
+        return "Supervisors assigned/updated successfully.";
     }
 
-    public ExamTimeTablesEntity assignSupervisor(Long examTimeTableId, Long supervisorId) {
-        ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(examTimeTableId)
-                .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
-        UserEntity supervisor = userRepository.findById(supervisorId)
-                .orElseThrow(() -> new RuntimeException("Supervisor not found"));
+    public String saveOrUpdateInvigilators(AssignInvigilatorsDTO dto) {
+        for (InvigilatorAssignmentDTO assignment : dto.getAssignments()) {
+            ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(assignment.getExamTimeTableId())
+                    .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
 
-        examTimeTable.setSupervisor(supervisor);
-        return examTimeTableRepository.save(examTimeTable);
+            ExamCentersEntity examCenter = examCentersRepository.findById(assignment.getExamCenterId())
+                    .orElseThrow(() -> new RuntimeException("Exam Center not found"));
+
+            UserEntity invigilator = userRepository.findById(assignment.getInvigilatorId())
+                    .orElseThrow(() -> new RuntimeException("Invigilator not found"));
+
+            ExamInvigilatorsEntity existingEntry = examInvigilatorsRepository
+                    .findByExamTimeTablesExamTimeTableIdAndExamCenterIdAndInvigilatorsUserId(
+                            assignment.getExamTimeTableId(), assignment.getExamCenterId(), assignment.getInvigilatorId())
+                    .orElse(null);
+
+            if (existingEntry == null) {
+                ExamInvigilatorsEntity newEntry = new ExamInvigilatorsEntity();
+                newEntry.setExamTimeTables(examTimeTable);
+                newEntry.setExamCenter(examCenter);
+                newEntry.setInvigilators(invigilator);
+                examInvigilatorsRepository.save(newEntry);
+            }
+        }
+        return "Invigilators assigned/updated successfully.";
     }
+
+
+    @Transactional
+    public void removeInvigilator(Long invigilatorId) {
+        examInvigilatorsRepository.deleteById(invigilatorId);
+    }
+
+    @Transactional
+    public void removeCenter(Long examCenterId) {
+        examTimeTableCenterRepository.deleteById(examCenterId);
+    }
+
+
 
 
     private ExamTimeTableDTO mapToDTO(ExamTimeTablesEntity examTimeTable) {
@@ -160,4 +215,72 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setTimetableGroup(examTimeTable.getTimetableGroup());
         return examTimeTableDTO;
     }
+
+    public List<ExamTimeTableWithResourcesDTO> getExamTimeTablesWithResourcesByExamination(Long examinationId) {
+        return examTimeTableRepository.findByExaminationId(examinationId)
+                .stream()
+                .map(this::mapToExamTimeTableWithResourcesDTO)
+                .collect(Collectors.toList());
+    }
+
+    private ExamTimeTableWithResourcesDTO mapToExamTimeTableWithResourcesDTO(ExamTimeTablesEntity examTimeTable) {
+        ExamTimeTableWithResourcesDTO dto = new ExamTimeTableWithResourcesDTO();
+        dto.setExamTimeTableId(examTimeTable.getExamTimeTableId());
+        dto.setExaminationId(examTimeTable.getExamination().getId());
+        dto.setCourseId(examTimeTable.getCourse().getId());
+        dto.setExamTypeId(examTimeTable.getExamType().getId());
+        dto.setDate(examTimeTable.getDate());
+        dto.setStartTime(examTimeTable.getStartTime());
+        dto.setEndTime(examTimeTable.getEndTime());
+        dto.setCourseCode(examTimeTable.getCourse().getCode());
+        dto.setCourseName(examTimeTable.getCourse().getName());
+        dto.setExamType(String.valueOf(examTimeTable.getExamType().getName()));
+        dto.setUpdatedAt(examTimeTable.getUpdatedAt());
+        dto.setTimetableGroup(examTimeTable.getTimetableGroup());
+
+        // Set exam centers
+        List<ExamTimeTableWithResourcesDTO.ExamCenterDTO> centers = examTimeTable.getExamCenters().stream()
+                .map(center -> {
+                    ExamTimeTableWithResourcesDTO.ExamCenterDTO centerDTO = new ExamTimeTableWithResourcesDTO.ExamCenterDTO();
+                    centerDTO.setAllocationId(center.getId());
+                    centerDTO.setExamCenterId(center.getExamCenter().getId());
+                    centerDTO.setExamCenterName(center.getExamCenter().getExamCenterName());
+                    centerDTO.setLocation(center.getExamCenter().getExamCenterLocation());
+                    centerDTO.setCapacity(String.valueOf(center.getExamCenter().getExamCenterCapacity()));
+                    centerDTO.setNumOfCandidates(center.getNumOfCandidates());
+
+                    // Set supervisor (if exists) for this center
+                    if (center.getSupervisor() != null) {
+                        ExamTimeTableWithResourcesDTO.SupervisorDTO supervisorDTO = new ExamTimeTableWithResourcesDTO.SupervisorDTO();
+                        supervisorDTO.setSupervisorId(center.getSupervisor().getUserId());
+                        supervisorDTO.setSupervisorName(center.getSupervisor().getFirstName() + ' ' + center.getSupervisor().getLastName());
+                        supervisorDTO.setEmail(center.getSupervisor().getEmail());
+                        centerDTO.setSupervisor(supervisorDTO);
+                    }
+
+                    // Set invigilators for this center
+                    List<ExamTimeTableWithResourcesDTO.InvigilatorDTO> centerInvigilators = center.getExamCenter().getExamInvigilatorsEntities().stream()
+                            .filter(invigilator -> invigilator.getExamTimeTables().getExamTimeTableId().equals(examTimeTable.getExamTimeTableId()) && // Match timetableId
+                                    invigilator.getExamCenter().getId().equals(center.getExamCenter().getId())) // Match centerId
+                            .map(invigilator -> {
+                                ExamTimeTableWithResourcesDTO.InvigilatorDTO invigilatorDTO = new ExamTimeTableWithResourcesDTO.InvigilatorDTO();
+                                invigilatorDTO.setAssignedId(invigilator.getId());
+                                invigilatorDTO.setInvigilatorId(invigilator.getInvigilators().getUserId());
+                                invigilatorDTO.setInvigilatorName(invigilator.getInvigilators().getFirstName() + ' ' + invigilator.getInvigilators().getLastName());
+                                invigilatorDTO.setEmail(invigilator.getInvigilators().getEmail());
+                                return invigilatorDTO;
+                            }).collect(Collectors.toList());
+                    centerDTO.setInvigilators(centerInvigilators);
+
+                    return centerDTO;
+                }).collect(Collectors.toList());
+
+        dto.setExamCenters(centers);
+
+        return dto;
+    }
+
+
+
+
 }
