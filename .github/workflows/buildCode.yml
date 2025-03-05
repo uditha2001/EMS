@@ -98,9 +98,5 @@ jobs:
         run: |
             docker compose build
             docker compose push
-        with:
-          image: udithaimesh/ems
-          context: .
-          push: true
-          tags: user/app:latest
+      
  
