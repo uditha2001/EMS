@@ -6,21 +6,23 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Stepper from '../PaperTransfer/Stepper';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import {
-  faBuilding,
-  faList,
-  faUsers,
-  faMinus,
-  faPlus,
-  faDeleteLeft,
-} from '@fortawesome/free-solid-svg-icons';
-import SearchableSelectBox from '../../components/SearchableSelectBox';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBuilding, faList, faUsers } from '@fortawesome/free-solid-svg-icons';
+
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import AssignSupervisorsInvigilators from './AssignSupervisorsAndInvigilators';
+import AllocateExamCenters from './AllocateExamCenters';
+import GenerateTimetablePDF from './GenerateTimetablePDF';
+
+interface Examination {
+  id: number;
+  year: string;
+  level: number;
+  semester: number;
+  degreeProgramName: string;
+}
 
 const AllocateExamResources: React.FC = () => {
-  const { getExaminations } = useApi();
+  const { getExaminations, getExaminationById } = useApi();
   const { getAllExamCenters } = useExamCenterApi();
   const {
     getExamTimeTableByExaminationWithResources,
@@ -45,6 +47,7 @@ const AllocateExamResources: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [examCenterToRemove, setExamCenterToRemove] = useState<any>(null);
+  const [examination, setExamination] = useState<Examination | null>(null);
 
   const steps = [
     { id: 1, name: 'Select Examination', icon: faList },
@@ -90,6 +93,11 @@ const AllocateExamResources: React.FC = () => {
         setErrorMessage('Failed to fetch timetable.');
       }
     };
+
+    if (!selectedExamination) return;
+    getExaminationById(selectedExamination).then((response) => {
+      setExamination(response);
+    });
 
     fetchTimetable();
   }, [selectedExamination]);
@@ -287,7 +295,7 @@ const AllocateExamResources: React.FC = () => {
                   onChange={(e) =>
                     setSelectedExamination(Number(e.target.value))
                   }
-                  className="input-field appearance-none"
+                  className="input-field appearance-none cursor-pointer"
                 >
                   <option value="">Select Examination</option>
                   {examinations.map((exam) => (
@@ -301,169 +309,18 @@ const AllocateExamResources: React.FC = () => {
             )}
 
             {currentStep === 2 && examTimetable.length > 0 && (
-              <div>
-                <h3 className="font-medium text-black dark:text-white mb-4">
-                  Allocate Exam Centers
-                </h3>
-
-                <div className="overflow-x-auto">
-                  <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
-                    <thead>
-                      <tr className="bg-gray-100 dark:bg-form-input">
-                        <th className="border border-gray-300 px-4 py-2 text-left">
-                          Course
-                        </th>
-                        <th className="border border-gray-300 px-3 md:px-4 py-2 text-left">
-                          Date
-                        </th>
-                        <th className="border border-gray-300 px-3 md:px-4 py-2 text-left">
-                          Time
-                        </th>
-                        <th className="border border-gray-300 px-3 md:px-4 py-2 text-left">
-                          Exam Centers
-                        </th>
-                        <th className="border border-gray-300 px-3 md:px-4 py-2 text-left">
-                          Total Candidates
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {examTimetable.map((exam) => (
-                        <tr
-                          key={exam.examTimeTableId}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                        >
-                          <td className="border px-4 py-2">
-                            {exam.courseCode} (
-                            {exam.examType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                            {exam.courseName}
-                            {exam.timetableGroup && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {' - '}
-                                (Group {exam.timetableGroup})
-                              </span>
-                            )}
-                          </td>
-                          <td className="border px-4 py-2">{exam.date}</td>
-                          <td className="border px-4 py-2">
-                            {exam.startTime} - {exam.endTime}
-                          </td>
-                          <td className="border px-4 py-2">
-                            {(allocations[exam.examTimeTableId] || []).map(
-                              (centerData, index) => (
-                                <div
-                                  key={index}
-                                  className="relative mb-2 flex flex-col md:flex-row md:items-center gap-2"
-                                >
-                                  <SearchableSelectBox
-                                    options={examCenters.map((center) => ({
-                                      id: center.id.toString(),
-                                      name: center.name,
-                                    }))}
-                                    value={centerData.centerId}
-                                    onChange={(newValue) =>
-                                      handleChangeExamCenter(
-                                        exam.examTimeTableId,
-                                        newValue,
-                                        index,
-                                        'centerId',
-                                      )
-                                    }
-                                    label={`Select Exam Center ${index + 1}`}
-                                    placeholder="Search and select an exam center"
-                                  />
-
-                                  <input
-                                    type="number"
-                                    value={centerData.numOfCandidates}
-                                    onChange={(e) =>
-                                      handleChangeExamCenter(
-                                        exam.examTimeTableId,
-                                        e.target.value,
-                                        index,
-                                        'numOfCandidates',
-                                      )
-                                    }
-                                    className="input-field mt-2 md:mt-0 px-2 py-1 md:w-28"
-                                    placeholder="No of Candidates"
-                                    min={0}
-                                    max={getAvailableCapacity(
-                                      centerData.centerId,
-                                      exam.examTimeTableId,
-                                    )}
-                                  />
-                                  <span className="text-xs md:text-sm text-gray-500">
-                                    Available:{' '}
-                                    {getAvailableCapacity(
-                                      centerData.centerId,
-                                      exam.examTimeTableId,
-                                    )}{' '}
-                                    candidates
-                                  </span>
-
-                                  {centerData.isSaved ? (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleDeleteExamCenter(
-                                          exam.examCenters[index].allocationId,
-                                          exam.examTimeTableId,
-                                          index,
-                                        )
-                                      }
-                                      className="text-red-500 hover:text-red-700 md:ml-2"
-                                    >
-                                      <FontAwesomeIcon icon={faDeleteLeft} />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleRemoveExamCenter(
-                                          exam.examTimeTableId,
-                                          index,
-                                        )
-                                      }
-                                      className="text-red-500 hover:text-red-700 md:ml-2"
-                                    >
-                                      <FontAwesomeIcon icon={faMinus} />
-                                    </button>
-                                  )}
-                                </div>
-                              ),
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleAddExamCenter(exam.examTimeTableId)
-                              }
-                              className="text-green-500 hover:text-green-700 mt-2"
-                            >
-                              <FontAwesomeIcon icon={faPlus} /> Add exam center
-                            </button>
-                            <div className="text-gray-500 text-xs mt-2">
-                              {exam.examCenters.length === 0 ? (
-                                <span>
-                                  No centers allocated for this course
-                                </span>
-                              ) : (
-                                <span>
-                                  Exam centers are already allocated for this
-                                  course
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="border px-4 py-2">
-                            {calculateTotalCandidates(exam.examTimeTableId)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
+              <>
+                <AllocateExamCenters
+                  examTimetable={examTimetable}
+                  allocations={allocations}
+                  examCenters={examCenters}
+                  handleChangeExamCenter={handleChangeExamCenter}
+                  handleAddExamCenter={handleAddExamCenter}
+                  handleRemoveExamCenter={handleRemoveExamCenter}
+                  handleDeleteExamCenter={handleDeleteExamCenter}
+                  calculateTotalCandidates={calculateTotalCandidates}
+                  getAvailableCapacity={getAvailableCapacity}
+                />
                 <div className="flex justify-end mt-4">
                   <button
                     onClick={handleAllocateCenters}
@@ -473,15 +330,25 @@ const AllocateExamResources: React.FC = () => {
                     Save Changes
                   </button>
                 </div>
-              </div>
+              </>
             )}
 
             {currentStep === 3 && (
-              <AssignSupervisorsInvigilators
-                examTimetable={examTimetable}
-                allocations={allocations}
-                examCenters={examCenters}
-              />
+              <>
+                <AssignSupervisorsInvigilators
+                  examTimetable={examTimetable}
+                  allocations={allocations}
+                  examCenters={examCenters}
+                  setExamTimetable={setExamTimetable}
+                  setAllocations={setAllocations}
+                  selectedExamination={selectedExamination}
+                />
+
+                <GenerateTimetablePDF
+                  examTimetable={examTimetable}
+                  examination={examination}
+                />
+              </>
             )}
           </div>
 
