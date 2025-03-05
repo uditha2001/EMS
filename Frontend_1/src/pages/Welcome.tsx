@@ -8,8 +8,8 @@ import { faArrowRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons'; 
 const WelcomePage: React.FC = () => {
   // Background images array
   const bgImages = [
-    'src/images/welcome1.jpg', // Replace with your first image path
-    'src/images/welcome2.jpg', // Replace with your second image path
+    '/images/welcome1.jpg', // Replace with your first image path
+    '/images/welcome2.jpg', // Replace with your second image path
   ];
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
