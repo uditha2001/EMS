@@ -97,6 +97,6 @@ jobs:
       - name: Build and push using Docker Compose
         run: |
             docker compose build
-            docker compose push udithaimesh/ems
+            docker compose push udithaimesh/ems:latest
       
  
