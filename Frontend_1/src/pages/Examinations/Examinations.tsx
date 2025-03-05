@@ -133,6 +133,7 @@ export default function Examinations() {
       });
       setSelectedDegreeProgram(examToEdit.degreeProgramId);
       setEditId(id);
+      console.log(examToEdit);
     }
   };
 

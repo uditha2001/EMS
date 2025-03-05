@@ -18,11 +18,8 @@ public class ExaminationDTO {
     private String semester;
     private Long degreeProgramId;
     private String degreeProgramName;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime examProcessStartDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime paperSettingCompleteDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime markingCompleteDate;
     private ExamStatus status;
 }
