@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name="exam_invigilators ")
+@Table(name="exam_invigilators")
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -16,11 +16,15 @@ public class ExamInvigilatorsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="time_table_id",referencedColumnName = "examTimeTableId")
+    @ManyToOne
+    @JoinColumn(name="time_table_id", referencedColumnName = "examTimeTableId")
     private ExamTimeTablesEntity examTimeTables;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="invigilator_id",referencedColumnName = "userId")
+    @ManyToOne
+    @JoinColumn(name="invigilator_id", referencedColumnName = "userId")
     private UserEntity invigilators;
+
+    @ManyToOne
+    @JoinColumn(name="exam_center_id", referencedColumnName = "id")
+    private ExamCentersEntity examCenter;
 }

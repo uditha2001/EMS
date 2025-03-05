@@ -2,12 +2,13 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
 import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
+import com.example.examManagementBackend.timetable.entities.ExamCentersEntity;
 import com.example.examManagementBackend.timetable.entities.ExamInvigilatorsEntity;
-import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.ExamPaperEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTableCenter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -87,8 +88,8 @@ public class UserEntity {
     @Column(name = "private_key",columnDefinition = "LONGTEXT")
     private String privateKey;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "supervisor")
-    private Set<ExamTimeTablesEntity> examTimeTables;
+    @OneToMany(mappedBy = "supervisor")
+    private Set<ExamTimeTableCenter> examCenters;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
     private Set<ResultEntity> resultEntitySet;

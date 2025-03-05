@@ -1,5 +1,8 @@
 package com.example.examManagementBackend.timetable.controllers;
 
+import com.example.examManagementBackend.timetable.dto.AllocateExamCentersDTO;
+import com.example.examManagementBackend.timetable.dto.AssignInvigilatorsDTO;
+import com.example.examManagementBackend.timetable.dto.AssignSupervisorsDTO;
 import com.example.examManagementBackend.timetable.dto.ExamTimeTableDTO;
 import com.example.examManagementBackend.timetable.services.ExamTimeTablesService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -39,19 +42,38 @@ public class ExamTimeTablesController {
         return StandardResponse.success(examTimeTableService.getExamTimeTablesByExamination(examinationId));
     }
 
-    @PostMapping("/assign-center/{examTimeTableId}/{centerId}")
-    public StandardResponse assignExamCenter(@PathVariable Long examTimeTableId, @PathVariable Long centerId) {
-        return StandardResponse.success(examTimeTableService.assignExamCenter(examTimeTableId, centerId));
+    @PostMapping("/allocate-exam-centers")
+    public StandardResponse allocateExamCenters(@RequestBody AllocateExamCentersDTO dto) {
+        return StandardResponse.success(examTimeTableService.saveOrUpdateExamCenters(dto));
     }
 
-    @PostMapping("/assign-invigilator/{examTimeTableId}/{invigilatorId}")
-    public StandardResponse assignInvigilator(@PathVariable Long examTimeTableId, @PathVariable Long invigilatorId) {
-        return StandardResponse.success(examTimeTableService.assignInvigilator(examTimeTableId, invigilatorId));
+    @PostMapping("/assign-supervisors")
+    public StandardResponse assignSupervisors(@RequestBody AssignSupervisorsDTO dto) {
+        return StandardResponse.success(examTimeTableService.saveOrUpdateSupervisors(dto));
     }
 
-    @PostMapping("/assign-supervisor/{examTimeTableId}/{supervisorId}")
-    public StandardResponse assignSupervisor(@PathVariable Long examTimeTableId, @PathVariable Long supervisorId) {
-        return StandardResponse.success(examTimeTableService.assignSupervisor(examTimeTableId, supervisorId));
+    @PostMapping("/assign-invigilators")
+    public StandardResponse assignInvigilators(@RequestBody AssignInvigilatorsDTO dto) {
+        return StandardResponse.success(examTimeTableService.saveOrUpdateInvigilators(dto));
     }
+
+    @GetMapping("/exam/{examinationId}/with-resources")
+    public StandardResponse getExamTimeTablesWithResourcesByExamination(@PathVariable Long examinationId) {
+        return StandardResponse.success(examTimeTableService.getExamTimeTablesWithResourcesByExamination(examinationId));
+    }
+
+    @DeleteMapping("/invigilator/{invigilatorId}")
+    public StandardResponse removeInvigilator(@PathVariable Long invigilatorId) {
+        examTimeTableService.removeInvigilator(invigilatorId);
+        return StandardResponse.success("Invigilator removed successfully.");
+    }
+
+    @DeleteMapping("/center/{examCenterId}")
+    public StandardResponse removeCenter(@PathVariable Long examCenterId) {
+        examTimeTableService.removeCenter(examCenterId);
+        return StandardResponse.success("Exam center removed successfully.");
+    }
+
+
 
 }
