@@ -58,4 +58,6 @@ public class ExamCentersController {
                 .map(deleted -> ResponseEntity.status(HttpStatus.NO_CONTENT).body(StandardResponse.success("Exam Center deleted successfully")))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error(404, "Exam Center not found")));
     }
+
+
 }

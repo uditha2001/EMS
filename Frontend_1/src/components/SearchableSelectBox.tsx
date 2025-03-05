@@ -9,7 +9,7 @@ interface Option {
 
 interface SearchableSelectBoxProps {
   options: Option[];
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
