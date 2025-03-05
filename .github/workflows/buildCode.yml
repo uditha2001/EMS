@@ -5,11 +5,19 @@ on:
     branches:
       - "development"
       - "main"
+    paths:
+      - Backend/**
+      - Frontend_1/**
+      - .github/workflows/**
 
   pull_request:
     branches:
       - "development"
       - "main"
+    paths:
+      - Backend/**
+      - Frontend_1/**
+      - .github/workflows/**
 
   schedule:
     - cron: "0 0 * * 0"
