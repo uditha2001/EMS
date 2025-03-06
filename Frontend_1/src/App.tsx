@@ -12,6 +12,7 @@ import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleA
 import GradeConditions from './pages/Results/GradeConditions';
 import LearnMore from './components/LearnMore';
 import AllocateExamResources from './pages/CreateTimetable/AllocateExamResources';
+import ResultDashboard from './pages/Results/ResultDashboard';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -489,7 +490,7 @@ function App() {
 
               <Route
                 path="/result/dashboard"
-                //element={renderPage('Results Dashboard | EMS', )}
+                element={renderPage('Results Dashboard | EMS', <ResultDashboard />)}
               />
             </Route>
           </Route>
