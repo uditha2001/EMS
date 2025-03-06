@@ -7,5 +7,5 @@ public class TimeTableCoursesDTO {
     private Long id;
     private String name;
     private String code;
-    private String courseType;  // Theory, Practical, Both
+    private String courseType;
 }

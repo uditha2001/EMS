@@ -251,6 +251,8 @@ public class ExaminationService {
         } else if (course.getCourseType() == CoursesEntity.CourseType.PRACTICAL && isPracticalAssigned) {
             // If it's a PRACTICAL course and already assigned, don't display it
             return Collections.emptyList();
+        } else if (course.getCourseType() == CoursesEntity.CourseType.NO_PAPER ) {
+            return Collections.emptyList();
         } else {
             // Otherwise, include the course
             return Collections.singletonList(new ExaminationCoursesDTO.ActiveCourseDTO(
