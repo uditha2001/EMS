@@ -19,7 +19,8 @@ interface Course {
   id: number;
   name: string;
   code: string;
-  courseType: string;
+  evaluationType: string;
+  evaluationTypeId: number;
 }
 
 interface Examination {
@@ -130,8 +131,7 @@ const CreateTimetable: React.FC = () => {
               },
               timetable: ExamTimeTable,
             ) => {
-              const examType =
-                timetable.examTypeId === 1 ? 'THEORY' : 'PRACTICAL';
+              const examType = timetable.examType;
               const duration = calculateDuration(
                 timetable.startTime,
                 timetable.endTime,
@@ -203,8 +203,8 @@ const CreateTimetable: React.FC = () => {
     return `${formattedEndHour}:${formattedEndMinute}:00`;
   };
 
-  const addTimeSlot = (courseId: number, courseType: string) => {
-    const key = `${courseId}-${courseType}`;
+  const addTimeSlot = (courseId: number, evaluationType: string) => {
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: [
@@ -216,10 +216,10 @@ const CreateTimetable: React.FC = () => {
 
   const removeTimeSlot = (
     courseId: number,
-    courseType: string,
+    evaluationType: string,
     index: number,
   ) => {
-    const key = `${courseId}-${courseType}`;
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: prevState[key].filter((_, i) => i !== index),
@@ -235,7 +235,7 @@ const CreateTimetable: React.FC = () => {
     // Prepare request body
     const examTimeTableDataList = courses
       .flatMap((course) => {
-        const key = `${course.id}-${course.courseType}`;
+        const key = `${course.id}-${course.evaluationType}`;
         return (courseDetails[key] || []).map((slot) => {
           const { examDate, examTime, duration, timetableGroup } = slot;
           const formattedStartTime =
@@ -247,12 +247,12 @@ const CreateTimetable: React.FC = () => {
               examTimeTables.find(
                 (t) =>
                   t.courseId === course.id &&
-                  t.examTypeId === (course.courseType === 'THEORY' ? 1 : 2) &&
+                  t.examTypeId === course.evaluationTypeId &&
                   t.timetableGroup === timetableGroup,
               )?.examTimeTableId || 0,
             examinationId: selectedExamination,
             courseId: course.id,
-            examTypeId: course.courseType === 'THEORY' ? 1 : 2,
+            examTypeId: course.evaluationTypeId,
             date: examDate,
             startTime: formattedStartTime,
             endTime: endTime,
@@ -304,7 +304,7 @@ const CreateTimetable: React.FC = () => {
 
   const handleCourseDetailsChange = (
     courseId: number,
-    courseType: string,
+    evaluationType: string,
     field: keyof {
       examDate: string;
       examTime: string;
@@ -314,7 +314,7 @@ const CreateTimetable: React.FC = () => {
     value: string,
     index: number,
   ) => {
-    const key = `${courseId}-${courseType}`;
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: prevState[key].map((slot, i) =>
@@ -396,21 +396,25 @@ const CreateTimetable: React.FC = () => {
                   </thead>
                   <tbody>
                     {courses.map((course) => {
-                      const key = `${course.id}-${course.courseType}`;
+                      const key = `${course.id}-${course.evaluationType}`;
                       const timeSlots = courseDetails[key] || [];
 
                       return (
                         <>
                           {timeSlots.map((slot, index) => (
                             <tr
-                              key={`${course.id}-${course.courseType}-${index}`}
+                              key={`${course.id}-${course.evaluationType}-${index}`}
                               className="hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
                               <td className="border px-4 py-2">
                                 {index === 0 && (
                                   <>
                                     {course.code} (
-                                    {course.courseType === 'THEORY' ? 'T' : 'P'}
+                                    {course.evaluationType === 'THEORY'
+                                      ? 'T'
+                                      : course.evaluationType === 'PRACTICAL'
+                                      ? 'P'
+                                      : course.evaluationType}
                                     ) - {course.name}
                                   </>
                                 )}
@@ -422,7 +426,7 @@ const CreateTimetable: React.FC = () => {
                                   onChange={(e) =>
                                     handleCourseDetailsChange(
                                       course.id,
-                                      course.courseType,
+                                      course.evaluationType,
                                       'examDate',
                                       e.target.value,
                                       index,
@@ -438,7 +442,7 @@ const CreateTimetable: React.FC = () => {
                                   onChange={(e) =>
                                     handleCourseDetailsChange(
                                       course.id,
-                                      course.courseType,
+                                      course.evaluationType,
                                       'examTime',
                                       e.target.value,
                                       index,
@@ -454,7 +458,7 @@ const CreateTimetable: React.FC = () => {
                                   onChange={(e) =>
                                     handleCourseDetailsChange(
                                       course.id,
-                                      course.courseType,
+                                      course.evaluationType,
                                       'duration',
                                       e.target.value,
                                       index,
@@ -471,7 +475,7 @@ const CreateTimetable: React.FC = () => {
                                   onChange={(e) =>
                                     handleCourseDetailsChange(
                                       course.id,
-                                      course.courseType,
+                                      course.evaluationType,
                                       'timetableGroup',
                                       e.target.value,
                                       index,
@@ -487,7 +491,7 @@ const CreateTimetable: React.FC = () => {
                                   onClick={() =>
                                     removeTimeSlot(
                                       course.id,
-                                      course.courseType,
+                                      course.evaluationType,
                                       index,
                                     )
                                   }
@@ -503,13 +507,18 @@ const CreateTimetable: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  addTimeSlot(course.id, course.courseType)
+                                  addTimeSlot(course.id, course.evaluationType)
                                 }
                                 className="text-green-500 hover:text-green-700"
                               >
                                 <FontAwesomeIcon icon={faPlus} /> {course.code}{' '}
-                                ({course.courseType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                                {course.name}
+                                (
+                                {course.evaluationType === 'THEORY'
+                                  ? 'T'
+                                  : course.evaluationType === 'PRACTICAL'
+                                  ? 'P'
+                                  : course.evaluationType}
+                                ) - {course.name}
                               </button>
                             </td>
                           </tr>

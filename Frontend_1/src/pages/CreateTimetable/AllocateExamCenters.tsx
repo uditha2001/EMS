@@ -75,8 +75,13 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
                 className="hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <td className="border px-4 py-2">
-                  {exam.courseCode} ({exam.examType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                  {exam.courseName}
+                  {exam.courseCode} (
+                  {exam.examType === 'THEORY'
+                    ? 'T'
+                    : exam.examType === 'PRACTICAL'
+                    ? 'P'
+                    : exam.examType}
+                  ) - {exam.courseName}
                   {exam.timetableGroup && (
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {' '}

@@ -80,7 +80,11 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
       const examDate = formatDateWithDay(entry.date);
       const time = `${entry.startTime} - ${entry.endTime}`;
       const course = `${entry.courseCode} (${
-        entry.examType === 'THEORY' ? 'T' : 'P'
+        entry.examType === 'THEORY'
+          ? 'T'
+          : entry.examType === 'PRACTICAL'
+          ? 'P'
+          : entry.examType
       }) - ${entry.courseName}${
         entry.timetableGroup ? ' - (Group ' + entry.timetableGroup + ')' : ''
       }`;
