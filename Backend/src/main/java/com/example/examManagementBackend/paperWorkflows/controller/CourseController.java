@@ -71,4 +71,24 @@ public class CourseController {
                 HttpStatus.OK
         );
     }
+
+    /**
+     * Delete a course evaluation by ID.
+     */
+    @DeleteMapping("/course-evaluations/{courseEvaluationId}")
+    public ResponseEntity<StandardResponse> deleteCourseEvaluation(@PathVariable Long courseEvaluationId) {
+        try {
+            // Call the service method to delete the course evaluation
+            coursesService.deleteCourseEvaluation(courseEvaluationId);
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Course Evaluation deleted successfully", null),
+                    HttpStatus.OK
+            );
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(
+                    new StandardResponse(404, e.getMessage(), null),
+                    HttpStatus.NOT_FOUND
+            );
+        }
+    }
 }
