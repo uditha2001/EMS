@@ -8,12 +8,14 @@ import {
   faCheckCircle,
   faMinus,
   faPlus,
+  faDeleteLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import Stepper from '../PaperTransfer/Stepper';
 import useExamTimeTableApi from '../../api/examTimeTableApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import PreviewTimetable from './PreviewTimetable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 interface Course {
   id: number;
@@ -47,8 +49,12 @@ interface ExamTimeTable {
 
 const CreateTimetable: React.FC = () => {
   const { getExaminations } = useApi();
-  const { getCourses, saveExamTimeTable, getExamTimeTableByExamination } =
-    useExamTimeTableApi();
+  const {
+    getCourses,
+    saveExamTimeTable,
+    getExamTimeTableByExamination,
+    deleteExamTimeTable,
+  } = useExamTimeTableApi();
 
   const [examinations, setExaminations] = useState<Examination[]>([]);
   const [selectedExamination, setSelectedExamination] = useState<number | null>(
@@ -67,6 +73,13 @@ const CreateTimetable: React.FC = () => {
       timetableGroup: string;
     }[];
   }>({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedTimetableSlot, setSelectedTimetableSlot] = useState<{
+    courseId: number;
+    evaluationType: string;
+    index: number;
+    examTimeTableId?: number;
+  } | null>(null);
 
   const steps = [
     { id: 1, name: 'Examination', icon: faList },
@@ -101,53 +114,24 @@ const CreateTimetable: React.FC = () => {
     fetchCourses();
   }, [selectedExamination]);
 
-  useEffect(() => {
-    const fetchExamTimeTables = async () => {
-      if (!selectedExamination) return;
-      try {
-        const response = await getExamTimeTableByExamination(
-          selectedExamination,
-        );
-        setExamTimeTables(response.data.data);
+  const fetchExamTimeTables = async () => {
+    if (!selectedExamination) return;
+    try {
+      const response = await getExamTimeTableByExamination(selectedExamination);
+      setExamTimeTables(response.data.data);
 
-        // Ensure existing time slots are pre-filled correctly
-        if (response.data.data.length > 0) {
-          const details: {
-            [key: string]: {
-              examDate: string;
-              examTime: string;
-              duration: string;
-              timetableGroup: string;
-            }[];
-          } = response.data.data.reduce(
-            (
-              acc: {
-                [key: string]: {
-                  examDate: string;
-                  examTime: string;
-                  duration: string;
-                  timetableGroup: string;
-                }[];
-              },
-              timetable: ExamTimeTable,
-            ) => {
-              const examType = timetable.examType;
-              const duration = calculateDuration(
-                timetable.startTime,
-                timetable.endTime,
-              );
-
-              const key = `${timetable.courseId}-${examType}`;
-              if (!acc[key]) acc[key] = [];
-              acc[key].push({
-                examDate: timetable.date,
-                examTime: timetable.startTime,
-                duration: duration.toString(),
-                timetableGroup: timetable.timetableGroup,
-              });
-              return acc;
-            },
-            {} as {
+      // Ensure existing time slots are pre-filled correctly
+      if (response.data.data.length > 0) {
+        const details: {
+          [key: string]: {
+            examDate: string;
+            examTime: string;
+            duration: string;
+            timetableGroup: string;
+          }[];
+        } = response.data.data.reduce(
+          (
+            acc: {
               [key: string]: {
                 examDate: string;
                 examTime: string;
@@ -155,14 +139,42 @@ const CreateTimetable: React.FC = () => {
                 timetableGroup: string;
               }[];
             },
-          );
-          setCourseDetails(details);
-        }
-      } catch (error) {
-        setErrorMessage('Failed to fetch exam timetables.');
-        console.error('Error fetching exam timetables:', error);
+            timetable: ExamTimeTable,
+          ) => {
+            const examType = timetable.examType;
+            const duration = calculateDuration(
+              timetable.startTime,
+              timetable.endTime,
+            );
+
+            const key = `${timetable.courseId}-${examType}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push({
+              examDate: timetable.date,
+              examTime: timetable.startTime,
+              duration: duration.toString(),
+              timetableGroup: timetable.timetableGroup,
+            });
+            return acc;
+          },
+          {} as {
+            [key: string]: {
+              examDate: string;
+              examTime: string;
+              duration: string;
+              timetableGroup: string;
+            }[];
+          },
+        );
+        setCourseDetails(details);
       }
-    };
+    } catch (error) {
+      setErrorMessage('Failed to fetch exam timetables.');
+      console.error('Error fetching exam timetables:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchExamTimeTables();
   }, [selectedExamination]);
 
@@ -212,6 +224,66 @@ const CreateTimetable: React.FC = () => {
         { examDate: '', examTime: '', duration: '', timetableGroup: '' },
       ],
     }));
+  };
+
+  // Function to handle deletion of a timetable slot
+  const handleDeleteTimetableSlot = async (examTimeTableId: number) => {
+    try {
+      const response = await deleteExamTimeTable(examTimeTableId);
+      if (response.data) {
+        setSuccessMessage('Timetable slot deleted successfully!');
+        setExamTimeTables((prev) =>
+          prev.filter((t) => t.examTimeTableId !== examTimeTableId),
+        );
+        fetchExamTimeTables();
+      } else {
+        setErrorMessage('Failed to delete timetable slot.');
+      }
+    } catch (error) {
+      setErrorMessage('Failed to delete timetable slot.');
+      console.error('Error deleting timetable slot:', error);
+    }
+  };
+
+  // Function to handle confirmation of deletion
+  const handleConfirmDelete = () => {
+    if (selectedTimetableSlot) {
+      const { courseId, evaluationType, index, examTimeTableId } =
+        selectedTimetableSlot;
+      if (examTimeTableId) {
+        handleDeleteTimetableSlot(examTimeTableId);
+      } else {
+        const key = `${courseId}-${evaluationType}`;
+        setCourseDetails((prevState) => ({
+          ...prevState,
+          [key]: prevState[key].filter((_, i) => i !== index),
+        }));
+      }
+      setIsDeleteModalOpen(false);
+      setSelectedTimetableSlot(null);
+    }
+  };
+
+  // Function to open the confirmation modal
+  const deleteTimeSlot = (
+    courseId: number,
+    evaluationType: string,
+    index: number,
+    examTimeTableId?: number,
+  ) => {
+    setSelectedTimetableSlot({
+      courseId,
+      evaluationType,
+      index,
+      examTimeTableId,
+    });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Function to cancel deletion
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedTimetableSlot(null);
   };
 
   const removeTimeSlot = (
@@ -274,6 +346,7 @@ const CreateTimetable: React.FC = () => {
             ? 'Timetable updated successfully!'
             : 'Timetable created successfully!',
         );
+        fetchExamTimeTables();
       } else {
         setErrorMessage('Failed to save timetable.');
       }
@@ -401,107 +474,139 @@ const CreateTimetable: React.FC = () => {
 
                       return (
                         <>
-                          {timeSlots.map((slot, index) => (
-                            <tr
-                              key={`${course.id}-${course.evaluationType}-${index}`}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                            >
-                              <td className="border px-4 py-2">
-                                {index === 0 && (
-                                  <>
-                                    {course.code} (
-                                    {course.evaluationType === 'THEORY'
-                                      ? 'T'
-                                      : course.evaluationType === 'PRACTICAL'
-                                      ? 'P'
-                                      : course.evaluationType}
-                                    ) - {course.name}
-                                  </>
-                                )}
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="date"
-                                  value={slot.examDate}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.evaluationType,
-                                      'examDate',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="time"
-                                  value={slot.examTime}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.evaluationType,
-                                      'examTime',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="number"
-                                  value={slot.duration}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.evaluationType,
-                                      'duration',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                  placeholder="Duration (hrs)"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="text"
-                                  value={slot.timetableGroup}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.evaluationType,
-                                      'timetableGroup',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                  placeholder="Group (optional)"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeTimeSlot(
-                                      course.id,
-                                      course.evaluationType,
-                                      index,
-                                    )
-                                  }
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FontAwesomeIcon icon={faMinus} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                          {timeSlots.map((slot, index) => {
+                            const isSaved = examTimeTables.some(
+                              (t) =>
+                                t.courseId === course.id &&
+                                t.examTypeId === course.evaluationTypeId &&
+                                t.timetableGroup === slot.timetableGroup,
+                            );
+                            const examTimeTableId = examTimeTables.find(
+                              (t) =>
+                                t.courseId === course.id &&
+                                t.examTypeId === course.evaluationTypeId &&
+                                t.timetableGroup === slot.timetableGroup,
+                            )?.examTimeTableId;
+
+                            return (
+                              <tr
+                                key={`${course.id}-${course.evaluationType}-${index}`}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                              >
+                                <td className="border px-4 py-2">
+                                  {index === 0 && (
+                                    <>
+                                      {course.code} (
+                                      {course.evaluationType === 'THEORY'
+                                        ? 'T'
+                                        : course.evaluationType === 'PRACTICAL'
+                                        ? 'P'
+                                        : course.evaluationType}
+                                      ) - {course.name}
+                                    </>
+                                  )}
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="date"
+                                    value={slot.examDate}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'examDate',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="time"
+                                    value={slot.examTime}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'examTime',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="number"
+                                    value={slot.duration}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'duration',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                    placeholder="Duration (hrs)"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="text"
+                                    value={slot.timetableGroup}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'timetableGroup',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                    placeholder="Group (optional)"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  {isSaved ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteTimeSlot(
+                                          course.id,
+                                          course.evaluationType,
+                                          index,
+                                          examTimeTableId,
+                                        )
+                                      }
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <FontAwesomeIcon icon={faDeleteLeft} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeTimeSlot(
+                                          course.id,
+                                          course.evaluationType,
+                                          index,
+                                        )
+                                      }
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <FontAwesomeIcon icon={faMinus} />
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                           <tr>
                             <td colSpan={6} className="border px-4 py-2">
                               <button
@@ -570,6 +675,14 @@ const CreateTimetable: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this timetable slot? This action cannot be undone."
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 };

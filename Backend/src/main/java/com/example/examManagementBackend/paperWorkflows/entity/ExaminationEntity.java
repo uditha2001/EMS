@@ -55,6 +55,7 @@ public class ExaminationEntity {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
     private DegreeProgramsEntity degreeProgramsEntity;
+
     @OneToMany(mappedBy = "examination",cascade = CascadeType.ALL)
     private List<ExamTimeTablesEntity> examTimeTables;
 
