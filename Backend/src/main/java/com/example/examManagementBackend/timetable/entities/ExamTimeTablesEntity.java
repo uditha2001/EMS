@@ -30,15 +30,15 @@ public class ExamTimeTablesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long examTimeTableId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="examinationId", referencedColumnName = "id")
     private ExaminationEntity examination;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="course_id", referencedColumnName = "id")
     private CoursesEntity course;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="exam_type", referencedColumnName = "id")
     private ExamTypesEntity examType;
 
