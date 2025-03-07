@@ -7,7 +7,6 @@ import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRe
 import com.example.examManagementBackend.resultManagement.dto.ExamTypesDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;

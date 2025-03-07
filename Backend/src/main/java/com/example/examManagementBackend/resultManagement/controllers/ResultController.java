@@ -1,7 +1,6 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;

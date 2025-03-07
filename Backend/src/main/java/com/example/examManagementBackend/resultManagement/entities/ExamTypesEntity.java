@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import jakarta.persistence.*;
 import lombok.*;

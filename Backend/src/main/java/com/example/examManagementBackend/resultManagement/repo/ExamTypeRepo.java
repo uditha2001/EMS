@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.repo;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

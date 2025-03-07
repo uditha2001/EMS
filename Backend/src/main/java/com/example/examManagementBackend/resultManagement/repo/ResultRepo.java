@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.repo;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
