@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,9 +18,8 @@ public class ExamTypesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Enumerated(EnumType.STRING)
     @Column(unique = true, nullable = false)
-    private ExamTypesName name;
+    private String examType;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private List<ExamTimeTablesEntity> examTimeTables;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examTypes")

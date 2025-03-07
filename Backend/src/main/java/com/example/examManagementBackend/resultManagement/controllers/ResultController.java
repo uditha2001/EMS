@@ -1,7 +1,6 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +22,7 @@ public class ResultController {
     }
 
     @GetMapping("/getFirstMarking")
-    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  Long id,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
+    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  Long id,@RequestParam String courseCode,@RequestParam String examType){
         return resultService.getFirstMarking(courseCode,id,examType);
     }
     @PostMapping("/secondMarking")
