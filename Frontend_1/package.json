@@ -20,6 +20,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@heroicons/react": "^2.2.0",
     "@react-pdf-viewer/core": "^3.12.0",
+    "antd": "^5.24.2",
     "aos": "^2.3.4",
     "apexcharts": "^3.41.0",
     "axios": "^1.7.9",

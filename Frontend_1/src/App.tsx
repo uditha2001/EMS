@@ -103,6 +103,10 @@ const ArchivedPapers = React.lazy(
 );
 const ExamCenters = React.lazy(() => import('./pages/ExamCenters/ExamCenters'));
 
+const ResultDashboard = React.lazy(
+  () => import('./pages/Results/ResultDashboard')
+);
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
