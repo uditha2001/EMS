@@ -12,7 +12,7 @@ import java.util.Map;
 public class GradeDetailsDTO {
     String studentName;
     String studentNumber;
-    Map<ExamTypesName,Float> examTypesName;
+    Map<String,Float> examTypesName;
     float TotalMarks;
     String grade;
 

@@ -13,13 +13,13 @@ import java.util.List;
 @Repository
 @EnableJpaRepositories
 public interface ExamTypeRepo extends JpaRepository<ExamTypesEntity,Long> {
-    @Query("SELECT et.id FROM ExamTypesEntity et WHERE et.name= :name")
-    Long getExamTypeIdByExamTypeName(@Param("name") ExamTypesName examTypeName);
+    @Query("SELECT et.id FROM ExamTypesEntity et WHERE et.examType= :name")
+    Long getExamTypeIdByExamTypeName(@Param("name") String examTypeName);
 
     @Query("SELECT et FROM ExamTypesEntity et where et.id = :id")
     ExamTypesEntity getUsingId( @Param("id") long id);
     @Query("SELECT et FROM ExamTypesEntity  et")
     List<ExamTypesEntity> getAllExamTypes();
-    @Query("SELECT et FROM ExamTypesEntity et WHERE et.name=:examType")
-    ExamTypesEntity getExamTypeByName(@Param("examType") ExamTypesName examTypeName);
+    @Query("SELECT et FROM ExamTypesEntity et WHERE et.examType=:examType")
+    ExamTypesEntity getExamTypeByName(@Param("examType") String examTypeName);
 }

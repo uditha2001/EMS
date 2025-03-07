@@ -8,7 +8,7 @@ import lombok.*;
 @Data
 public class ExamTypesDTO {
     private Long id;
-    private ExamTypesName name;
+    private String name;
 
 
 }

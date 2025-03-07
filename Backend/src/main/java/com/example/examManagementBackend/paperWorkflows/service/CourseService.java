@@ -210,7 +210,7 @@ public class CourseService {
         return new CourseEvaluationsDTO(
                 evaluation.getCourseEvaluationId(),
                 evaluation.getExamTypes().getId(),
-                evaluation.getExamTypes().getName().toString(),
+                evaluation.getExamTypes().getExamType(),
                 evaluation.getPassMark(),
                 evaluation.getWeightage()
         );

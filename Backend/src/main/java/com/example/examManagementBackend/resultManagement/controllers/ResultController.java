@@ -23,7 +23,7 @@ public class ResultController {
     }
 
     @GetMapping("/getFirstMarking")
-    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  Long id,@RequestParam String courseCode,@RequestParam ExamTypesName examType){
+    public ResponseEntity<StandardResponse> getFirstMarkings(@RequestParam  Long id,@RequestParam String courseCode,@RequestParam String examType){
         return resultService.getFirstMarking(courseCode,id,examType);
     }
     @PostMapping("/secondMarking")

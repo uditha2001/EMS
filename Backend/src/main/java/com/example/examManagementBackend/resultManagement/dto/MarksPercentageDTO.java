@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MarksPercentageDTO{
-    private ExamTypesName examType;
+    private String examType;
     private float passMark;
     private float weightage;
     private String courseCode;

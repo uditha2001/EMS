@@ -14,6 +14,6 @@ public class ResultDTO {
    private Long id;
    private String examName;
    private String courseCode;
-   private ExamTypesName examType;
+   private String examType;
    private List<StudentDTO> studentsData;
 }

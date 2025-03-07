@@ -114,7 +114,7 @@ public class ResultService {
         return studentRepo.getIdBystudentNumber(studentNumber);
     }
 
-    private Long getExaminationTypeId(ExamTypesName examinationType){
+    private Long getExaminationTypeId(String examinationType){
             return examTypeRepo.getExamTypeIdByExamTypeName(examinationType);
     }
 
@@ -130,7 +130,7 @@ public class ResultService {
         }
     }
 
-    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,long id,ExamTypesName examType) {
+    public ResponseEntity<StandardResponse> getFirstMarking(String courseCode,long id,String examType) {
         try{
 
             Long courseId=getCourseCodeId(courseCode);
@@ -177,7 +177,7 @@ public class ResultService {
             for(ExamTypesEntity examTypesEntity:examTypesEntities){
                 ExamTypesDTO examTypesDTO=new ExamTypesDTO();
                 examTypesDTO.setId(examTypesEntity.getId());
-                examTypesDTO.setName(examTypesEntity.getName());
+                examTypesDTO.setName(examTypesEntity.getExamType());
                 examTypesDTOS.add(examTypesDTO);
             }
             return new ResponseEntity<StandardResponse>(
