@@ -372,7 +372,7 @@ public class ExaminationService {
                                     courseDTO.setName(course.getName());
                                     courseDTO.setCode(course.getCode());
                                     // Set examType from evaluation
-                                    courseDTO.setEvaluationType(evaluation.getExamTypes().getName().toString());
+                                    courseDTO.setEvaluationType(evaluation.getExamTypes().getExamType());
                                     courseDTO.setEvaluationTypeId(evaluation.getExamTypes().getId());
                                     return courseDTO;
                                 });

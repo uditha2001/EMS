@@ -210,7 +210,7 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setEndTime(examTimeTable.getEndTime());
         examTimeTableDTO.setCourseCode(examTimeTable.getCourse().getCode());
         examTimeTableDTO.setCourseName(examTimeTable.getCourse().getName());
-        examTimeTableDTO.setExamType(String.valueOf(examTimeTable.getExamType().getName()));
+        examTimeTableDTO.setExamType(String.valueOf(examTimeTable.getExamType().getExamType()));
         examTimeTableDTO.setUpdatedAt(examTimeTable.getUpdatedAt());
         examTimeTableDTO.setTimetableGroup(examTimeTable.getTimetableGroup());
         return examTimeTableDTO;
@@ -234,7 +234,7 @@ public class ExamTimeTablesService {
         dto.setEndTime(examTimeTable.getEndTime());
         dto.setCourseCode(examTimeTable.getCourse().getCode());
         dto.setCourseName(examTimeTable.getCourse().getName());
-        dto.setExamType(String.valueOf(examTimeTable.getExamType().getName()));
+        dto.setExamType(String.valueOf(examTimeTable.getExamType().getExamType()));
         dto.setUpdatedAt(examTimeTable.getUpdatedAt());
         dto.setTimetableGroup(examTimeTable.getTimetableGroup());
 

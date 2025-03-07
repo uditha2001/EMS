@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.dto;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MarksPercentageDTO{
-    private ExamTypesName examType;
+    private String examType;
     private float passMark;
     private float weightage;
     private String courseCode;
