@@ -80,9 +80,10 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
     const doc = new jsPDF();
     const margin = 15;
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
     let currentY = 40;
 
-    // Header
+    // Header on the first page
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('University of Ruhuna', pageWidth / 2, 15, { align: 'center' });
@@ -112,7 +113,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
     doc.line(margin, currentY + 15, pageWidth - margin, currentY + 15);
     currentY += 25;
 
-    // Table Headers
+    // Table Headers and Data
     const tableHeaders = ['Date', 'Time', 'Course'];
     const tableData = timetable.map((entry) => [
       { content: formatDateWithDay(entry.date) },
@@ -128,6 +129,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
       }`,
     ]);
 
+    // Create the table and add page numbers on every page
     autoTable(doc, {
       startY: currentY,
       head: [tableHeaders],
@@ -136,14 +138,22 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
       styles: { fontSize: 10, cellPadding: 3 },
       headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255] },
       margin: { top: 10 },
+      didDrawPage: function () {
+        // Add page number at the bottom right on every page
+        const pageCurrent = doc.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.text(`Page ${pageCurrent}`, pageWidth - margin, pageHeight - 10, {
+          align: 'right',
+        });
+      },
     });
 
-    // Footer
+    // Footer on final page
     doc.setFontSize(10);
     doc.text(
       `Generated on: ${new Date().toLocaleString()}`,
       margin,
-      doc.internal.pageSize.height - 15,
+      doc.internal.pageSize.height - 10,
     );
 
     doc.save(`exam-timetable-${examination?.year}.pdf`);

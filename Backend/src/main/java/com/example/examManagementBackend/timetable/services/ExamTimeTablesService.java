@@ -21,7 +21,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,8 +104,8 @@ public class ExamTimeTablesService {
         examTimeTableRepository.deleteById(examTimeTableId);
     }
 
-    public List<ExamTimeTableDTO> getAllExamTimeTables() {
-        return examTimeTableRepository.findAll()
+    public List<ExamTimeTableDTO> getSynchronizeTimetables(List<Long> examinationIds) {
+        return examTimeTableRepository.findByExaminationIdIn(examinationIds)
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -213,6 +215,11 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setExamType(String.valueOf(examTimeTable.getExamType().getExamType()));
         examTimeTableDTO.setUpdatedAt(examTimeTable.getUpdatedAt());
         examTimeTableDTO.setTimetableGroup(examTimeTable.getTimetableGroup());
+        examTimeTableDTO.setDegree(examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName());
+        examTimeTableDTO.setYear(examTimeTable.getExamination().getYear());
+        examTimeTableDTO.setLevel(examTimeTable.getExamination().getLevel());
+        examTimeTableDTO.setSemester(examTimeTable.getExamination().getSemester());
+
         return examTimeTableDTO;
     }
 
@@ -223,10 +230,21 @@ public class ExamTimeTablesService {
                 .collect(Collectors.toList());
     }
 
+    public List<ExamTimeTableWithResourcesDTO> getExamTimeTablesWithResourcesByExamination(List<Long> examinationIds) {
+        return examTimeTableRepository.findByExaminationIdIn(examinationIds)
+                .stream()
+                .map(this::mapToExamTimeTableWithResourcesDTO)
+                .collect(Collectors.toList());
+    }
+
     private ExamTimeTableWithResourcesDTO mapToExamTimeTableWithResourcesDTO(ExamTimeTablesEntity examTimeTable) {
         ExamTimeTableWithResourcesDTO dto = new ExamTimeTableWithResourcesDTO();
         dto.setExamTimeTableId(examTimeTable.getExamTimeTableId());
         dto.setExaminationId(examTimeTable.getExamination().getId());
+        dto.setDegree(examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName());
+        dto.setYear(examTimeTable.getExamination().getYear());
+        dto.setLevel(examTimeTable.getExamination().getLevel());
+        dto.setSemester(examTimeTable.getExamination().getSemester());
         dto.setCourseId(examTimeTable.getCourse().getId());
         dto.setExamTypeId(examTimeTable.getExamType().getId());
         dto.setDate(examTimeTable.getDate());
@@ -279,6 +297,82 @@ public class ExamTimeTablesService {
 
         return dto;
     }
+
+    public List<ExamTimeTableWithResourcesDTO> checkConflicts(List<Long> examinationIds) {
+        List<ExamTimeTablesEntity> examTimeTables = examTimeTableRepository.findByExaminationIdIn(examinationIds);
+
+        // A map to store conflicts grouped by examTimeTableId
+        Map<Long, ExamTimeTableWithResourcesDTO> conflictsMap = new HashMap<>();
+
+        for (int i = 0; i < examTimeTables.size(); i++) {
+            ExamTimeTablesEntity examTimeTable = examTimeTables.get(i);
+
+            // Check for conflicts with the same degree, year, and time slot
+            for (int j = i + 1; j < examTimeTables.size(); j++) {
+                ExamTimeTablesEntity otherExamTimeTable = examTimeTables.get(j);
+
+                // Check degree, year, and time slot conflict
+                if (examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName().equals(otherExamTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName()) &&
+                        examTimeTable.getExamination().getYear().equals(otherExamTimeTable.getExamination().getYear()) &&
+                        examTimeTable.getDate().equals(otherExamTimeTable.getDate()) &&
+                        examTimeTable.getStartTime().equals(otherExamTimeTable.getStartTime())) {
+
+                    String conflictMessage = "Conflict between exams for Degree: " + examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName() +
+                            " - Year: " + examTimeTable.getExamination().getYear() +
+                            " at " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+
+                    // Create or update the conflict DTO for this examTimeTableId
+                    conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                            .addConflictMessage(conflictMessage);
+                }
+            }
+
+            // Check for conflicts in the same time slot for the exam centers, invigilators, and supervisors
+            List<ExamTimeTableCenter> centers = examTimeTableCenterRepository.findByExamTimeTableExamTimeTableId(examTimeTable.getExamTimeTableId());
+            for (ExamTimeTableCenter center : centers) {
+                if (examTimeTable.getDate().equals(center.getExamTimeTable().getDate()) &&
+                        examTimeTable.getStartTime().equals(center.getExamTimeTable().getStartTime())) {
+
+                    String conflictMessage = "Conflict in Exam Center: " + center.getExamCenter().getExamCenterName() +
+                            " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+
+                    conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                            .addConflictMessage(conflictMessage);
+                }
+
+                // Check for invigilator conflicts
+                List<ExamInvigilatorsEntity> invigilators = examInvigilatorsRepository.findByExamTimeTablesExamTimeTableIdAndExamCenterId(examTimeTable.getExamTimeTableId(), center.getExamCenter().getId());
+                for (ExamInvigilatorsEntity invigilator : invigilators) {
+                    if (examTimeTable.getDate().equals(invigilator.getExamTimeTables().getDate()) &&
+                            examTimeTable.getStartTime().equals(invigilator.getExamTimeTables().getStartTime())) {
+
+                        String conflictMessage = "Conflict with Invigilator: " + invigilator.getInvigilators().getFirstName() +
+                                " " + invigilator.getInvigilators().getLastName() +
+                                " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+
+                        conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                                .addConflictMessage(conflictMessage);
+                    }
+                }
+
+                // Check for supervisor conflicts
+                if (center.getSupervisor() != null && examTimeTable.getDate().equals(center.getExamTimeTable().getDate()) &&
+                        examTimeTable.getStartTime().equals(center.getExamTimeTable().getStartTime())) {
+
+                    String conflictMessage = "Conflict with Supervisor: " + center.getSupervisor().getFirstName() +
+                            " " + center.getSupervisor().getLastName() +
+                            " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+
+                    conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                            .addConflictMessage(conflictMessage);
+                }
+            }
+        }
+
+        // Return the conflicts as a list of DTOs
+        return new ArrayList<>(conflictsMap.values());
+    }
+
 
 
 

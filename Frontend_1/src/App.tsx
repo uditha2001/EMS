@@ -101,6 +101,7 @@ const ArchivedPapers = React.lazy(
   () => import('./pages/HistoricalData/ArchivedPapers'),
 );
 const ExamCenters = React.lazy(() => import('./pages/ExamCenters/ExamCenters'));
+const SynchronizeTimetables = React.lazy(() => import('./pages/CreateTimetable/SynchronizeTimetables'));
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -440,6 +441,14 @@ function App() {
                 element={renderPage(
                   'Allocate Exam Resources | EMS',
                   <AllocateExamResources />,
+                )}
+              />
+
+              <Route
+                path="/scheduling/synchronizeTimetables"
+                element={renderPage(
+                  'Synchronize Timetables | EMS',
+                  <SynchronizeTimetables />,
                 )}
               />
             </Route>

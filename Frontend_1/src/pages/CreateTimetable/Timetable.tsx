@@ -212,7 +212,7 @@ const CreateTimetable: React.FC = () => {
     const formattedEndHour = String(endHour).padStart(2, '0');
     const formattedEndMinute = String(endMinute).padStart(2, '0');
 
-    return `${formattedEndHour}:${formattedEndMinute}:00`;
+    return `${formattedEndHour}:${formattedEndMinute}`;
   };
 
   const addTimeSlot = (courseId: number, evaluationType: string) => {
@@ -311,7 +311,7 @@ const CreateTimetable: React.FC = () => {
         return (courseDetails[key] || []).map((slot) => {
           const { examDate, examTime, duration, timetableGroup } = slot;
           const formattedStartTime =
-            examTime.length === 5 ? `${examTime}:00` : examTime;
+            examTime.length === 5 ? `${examTime}` : examTime;
           const endTime = calculateEndTime(examTime, duration);
 
           return {

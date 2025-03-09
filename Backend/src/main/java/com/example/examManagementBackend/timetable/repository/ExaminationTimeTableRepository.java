@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.timetable.repository;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.timetable.entities.ExamTimeTableCenter;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,8 @@ public interface ExaminationTimeTableRepository extends JpaRepository<ExamTimeTa
     List<ExamTimeTablesEntity> findByExaminationId(Long examinationId);
     @Query("SELECT DISTINCT ett.examType.id FROM ExamTimeTablesEntity ett WHERE ett.course.code=:courseCode AND ett.examination.id=:id")
     List<Long> getExamTypesId(@Param("courseCode") String courseCode, @Param("id") Long id);
+
+    List<ExamTimeTablesEntity> findByExaminationIdIn(List<Long> examinationIds);
+
+
 }

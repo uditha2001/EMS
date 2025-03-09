@@ -15,6 +15,15 @@ const useExamTimeTableApi = () => {
     );
   };
 
+  const getExamTimeTableByExaminationsWithResources = async (
+    examinationIds: any,
+  ) => {
+    return axiosPrivate.post(
+      `/exam-time-table/exam/with-resources`,
+      examinationIds,
+    );
+  };
+
   const saveExamTimeTable = async (examTimeTableData: any) => {
     console.log(examTimeTableData);
     return axiosPrivate.post('/exam-time-table/create', examTimeTableData);
@@ -62,6 +71,17 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.delete(`/exam-time-table/center/${examCenterId}`);
   };
 
+  const checkConflicts = async (examinationIds: any) => {
+    return axiosPrivate.post(
+      '/exam-time-table/check-conflicts',
+      examinationIds,
+    );
+  };
+
+  const getSynchronizedTimetable = async (examinationIds: any) => {
+    return axiosPrivate.post('/exam-time-table/synchronize', examinationIds);
+  };
+
   return {
     getExamTimeTableByExamination,
     saveExamTimeTable,
@@ -73,6 +93,9 @@ const useExamTimeTableApi = () => {
     getExamTimeTableByExaminationWithResources,
     removeInvigilator,
     removeExamCenter,
+    checkConflicts,
+    getSynchronizedTimetable,
+    getExamTimeTableByExaminationsWithResources,
   };
 };
 
