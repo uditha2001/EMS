@@ -66,15 +66,6 @@ The department faces challenges in managing various examination activities manua
 - **Testing & Debugging**
   - Conduct unit testing, integration testing, and user acceptance testing.
 
-### Timeline
-
-| Task                   | Duration  |
-|------------------------|-----------|
-| Setup & Initialization | Week 1    |
-| Feature Development    | Weeks 2-4 |
-| Integration & Testing  | Weeks 5-6 |
-| Final Review & Launch | Week 7    |
-
 ## 🧩 Installation & Setup
 
 To run this project locally:
