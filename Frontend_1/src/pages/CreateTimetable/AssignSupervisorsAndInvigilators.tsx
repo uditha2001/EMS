@@ -18,10 +18,24 @@ const AssignSupervisorsInvigilators: React.FC<{
     [key: number]: { centerId: string; numOfCandidates: string }[];
   };
   examCenters: any[];
-}> = ({ examTimetable, allocations, examCenters }) => {
+  setExamTimetable: any;
+  setAllocations: any;
+  selectedExamination: number | null;
+}> = ({
+  examTimetable,
+  allocations,
+  examCenters,
+  setExamTimetable,
+  setAllocations,
+  selectedExamination,
+}) => {
   const { fetchUsers } = useApi();
-  const { assignSupervisors, assignInvigilators, removeInvigilator } =
-    useExamTimeTableApi();
+  const {
+    assignSupervisors,
+    assignInvigilators,
+    removeInvigilator,
+    getExamTimeTableByExaminationWithResources,
+  } = useExamTimeTableApi();
 
   const [users, setUsers] = useState<any[]>([]);
   const [supervisors, setSupervisors] = useState<{ [key: string]: string }>({});
@@ -41,6 +55,34 @@ const AssignSupervisorsInvigilators: React.FC<{
     invigilatorId: string;
   } | null>(null);
 
+  const fetchTimetable = async () => {
+    try {
+      const response = await getExamTimeTableByExaminationWithResources(
+        selectedExamination as number,
+      );
+      setExamTimetable(response.data.data);
+      // Prepopulate allocations for each exam timetable
+      const initialAllocations = response.data.data.reduce(
+        (acc: any, exam: any) => {
+          acc[exam.examTimeTableId] = exam.examCenters.map((center: any) => ({
+            centerId: center.examCenterId.toString(),
+            numOfCandidates: center.numOfCandidates.toString(),
+            isSaved: true, // Mark as saved initially
+          }));
+          return acc;
+        },
+        {},
+      );
+      setAllocations(initialAllocations);
+    } catch (error) {
+      setErrorMessage('Failed to fetch timetable.');
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedExamination) return;
+    fetchTimetable();
+  }, [selectedExamination]);
 
   useEffect(() => {
     const fetchUsersData = async () => {
@@ -143,8 +185,9 @@ const AssignSupervisorsInvigilators: React.FC<{
         );
         return { ...prev, [key]: updatedInvigilators };
       });
-      
+
       setSuccessMessage('Invigilator removed successfully!');
+      fetchTimetable();
     } catch (error) {
       setErrorMessage('Failed to remove Invigilator.');
     }
@@ -246,8 +289,18 @@ const AssignSupervisorsInvigilators: React.FC<{
                     >
                       <td className="border px-4 py-2">
                         {exam.courseCode} (
-                        {exam.examType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                        {exam.courseName}
+                        {exam.examType === 'THEORY'
+                          ? 'T'
+                          : exam.examType === 'PRACTICAL'
+                          ? 'P'
+                          : exam.examType}
+                        ) - {exam.courseName}
+                        {exam.timetableGroup && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {' - '}
+                            (Group {exam.timetableGroup})
+                          </span>
+                        )}
                       </td>
                       <td className="border px-4 py-2">{center?.name}</td>
                       <td className="border px-4 py-2">
@@ -280,11 +333,11 @@ const AssignSupervisorsInvigilators: React.FC<{
 
                             const handleRemoveClick = () => {
                               setInvigilators((prev) => {
-                              const key = `${exam.examTimeTableId}-${centerData.centerId}`;
-                              const updatedInvigilators = (prev[key] || []).filter(
-                                (_, i) => i !== idx
-                              );
-                              return { ...prev, [key]: updatedInvigilators };
+                                const key = `${exam.examTimeTableId}-${centerData.centerId}`;
+                                const updatedInvigilators = (
+                                  prev[key] || []
+                                ).filter((_, i) => i !== idx);
+                                return { ...prev, [key]: updatedInvigilators };
                               });
                             };
 
@@ -293,29 +346,36 @@ const AssignSupervisorsInvigilators: React.FC<{
                                 key={idx}
                                 className="flex items-center gap-2"
                               >
-                                <SearchableSelectBox
-                                  options={users.map((user) => ({
-                                    id: user.id.toString(),
-                                    name: `${user.firstName} ${user.lastName}`,
-                                  }))}
-                                  value={invigilatorId}
-                                  onChange={(newValue) =>
-                                    setInvigilators((prev) => {
-                                      const key = `${exam.examTimeTableId}-${centerData.centerId}`;
-                                      const currentInvigilators =
-                                        prev[key] || [];
-                                      const updatedInvigilators = [
-                                        ...currentInvigilators,
-                                      ];
-                                      updatedInvigilators[idx] = newValue;
-                                      return {
-                                        ...prev,
-                                        [key]: updatedInvigilators,
-                                      };
-                                    })
-                                  }
-                                  placeholder="Search and select invigilators"
-                                />
+                                {/* Only allow invigilator selection if the supervisor is assigned */}
+                                {supervisors[
+                                  `${exam.examTimeTableId}-${centerData.centerId}`
+                                ] ? (
+                                  <SearchableSelectBox
+                                    options={users.map((user) => ({
+                                      id: user.id.toString(),
+                                      name: `${user.firstName} ${user.lastName}`,
+                                    }))}
+                                    value={invigilatorId}
+                                    onChange={(newValue) => {
+                                      setInvigilators((prev) => {
+                                        const key = `${exam.examTimeTableId}-${centerData.centerId}`;
+                                        const currentInvigilators =
+                                          prev[key] || [];
+                                        const updatedInvigilators = [
+                                          ...currentInvigilators,
+                                        ];
+                                        updatedInvigilators[idx] = newValue;
+                                        return {
+                                          ...prev,
+                                          [key]: updatedInvigilators,
+                                        };
+                                      });
+                                    }}
+                                    placeholder="Search and select invigilators"
+                                  />
+                                ) : (
+                                  <span>No supervisor assigned</span>
+                                )}
                                 {isSaved ? (
                                   <button
                                     type="button"
@@ -348,22 +408,40 @@ const AssignSupervisorsInvigilators: React.FC<{
                           })}
                           <button
                             type="button"
-                            onClick={() =>
-                              setInvigilators((prev) => {
-                                const key = `${exam.examTimeTableId}-${centerData.centerId}`;
-                                const currentInvigilators = prev[key] || [];
-                                return {
-                                  ...prev,
-                                  [key]: [...currentInvigilators, ''],
-                                };
-                              })
+                            onClick={() => {
+                              if (
+                                supervisors[
+                                  `${exam.examTimeTableId}-${centerData.centerId}`
+                                ]
+                              ) {
+                                setInvigilators((prev) => {
+                                  const key = `${exam.examTimeTableId}-${centerData.centerId}`;
+                                  const currentInvigilators = prev[key] || [];
+                                  return {
+                                    ...prev,
+                                    [key]: [...currentInvigilators, ''],
+                                  };
+                                });
+                              }
+                            }}
+                            className={`${
+                              !supervisors[
+                                `${exam.examTimeTableId}-${centerData.centerId}`
+                              ]
+                                ? 'disabled:opacity-50 cursor-not-allowed'
+                                : 'text-green-500 hover:underline'
+                            }`}
+                            disabled={
+                              !supervisors[
+                                `${exam.examTimeTableId}-${centerData.centerId}`
+                              ]
                             }
-                            className="text-green-500 hover:text-green-700"
                           >
                             <FontAwesomeIcon icon={faPlus} /> Add
                           </button>
                         </div>
                       </td>
+
                       <td className="border px-4 py-2">
                         {selectedInvigilators.length}
                       </td>
@@ -385,20 +463,16 @@ const AssignSupervisorsInvigilators: React.FC<{
                               exam.examTimeTableId,
                               centerData.centerId,
                             )
-                              ? 'text-yellow-500 hover:text-yellow-700'
-                              : 'text-blue-500 hover:text-blue-700'
+                              ? 'text-primary hover:underline'
+                              : 'disabled:opacity-50 cursor-not-allowed'
                           }`}
+                          disabled={
+                            !supervisors[
+                              `${exam.examTimeTableId}-${centerData.centerId}`
+                            ]
+                          }
                         >
-                          {isSupervisorAssigned(
-                            exam.examTimeTableId,
-                            centerData.centerId,
-                          ) ||
-                          isInvigilatorsAssigned(
-                            exam.examTimeTableId,
-                            centerData.centerId,
-                          )
-                            ? 'Update'
-                            : 'Assign'}
+                          Assign
                         </button>
                       </td>
                     </tr>

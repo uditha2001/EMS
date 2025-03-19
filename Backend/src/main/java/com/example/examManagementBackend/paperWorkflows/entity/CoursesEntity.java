@@ -83,6 +83,7 @@ public class CoursesEntity {
     public enum CourseType {
         THEORY,
         PRACTICAL,
-        BOTH
+        BOTH,
+        NO_PAPER
     }
 }

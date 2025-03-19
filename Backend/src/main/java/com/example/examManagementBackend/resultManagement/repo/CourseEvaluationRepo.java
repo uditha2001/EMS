@@ -1,5 +1,6 @@
 package com.example.examManagementBackend.resultManagement.repo;
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,5 +40,12 @@ public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEnt
     float getPassMarkByCourseCodeAndCourseEvaluationId(String courseCode, ExamTypesName name);
     @Query("SELECT ce.weightage FROM CourseEvaluationsEntity ce WHERE ce.courses.code=:courseCode AND ce.examTypes.name=:name ")
     float getWeightageByCourseCodeAndCourseEvaluationId(String courseCode, ExamTypesName name);
+
+    @Query("SELECT ce FROM CourseEvaluationsEntity ce WHERE ce.courses = :course AND ce.examTypes.id = :examTypeId")
+    CourseEvaluationsEntity findByCoursesAndExamTypes(@Param("course") CoursesEntity course, @Param("examTypeId") Long examTypeId);
+
+    @Query("SELECT ce FROM CourseEvaluationsEntity ce WHERE ce.courses.id = :courseId")
+    List<CourseEvaluationsEntity> findByCourseId(@Param("courseId") Long courseId);
+
 
 }

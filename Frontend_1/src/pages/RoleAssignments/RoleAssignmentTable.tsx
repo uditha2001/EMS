@@ -64,9 +64,9 @@ const RoleAssignmentTable: React.FC<RoleAssignmentTableProps> = ({
             <th className="border border-gray-300 px-4 py-2 text-left">
               Course Name
             </th>
-            <th className="border border-gray-300 px-4 py-2 text-left">
+            {/* <th className="border border-gray-300 px-4 py-2 text-left">
               Course Type
-            </th>
+            </th> */}
             <th className="border border-gray-300 px-4 py-2 text-left">
               Paper Type
             </th>
@@ -94,7 +94,7 @@ const RoleAssignmentTable: React.FC<RoleAssignmentTableProps> = ({
               >
                 <td className="border px-4 py-2">{course.code}</td>
                 <td className="border px-4 py-2">{course.name}</td>
-                <td className="border px-4 py-2">{course.courseType}</td>
+                {/* <td className="border px-4 py-2">{course.courseType}</td> */}
                 <td className="border px-4 py-2">{paperType}</td>
                 <td className="border px-4 py-2">
                   {[
