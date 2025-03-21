@@ -59,7 +59,7 @@ public class CoursesEntity {
 
     @ManyToOne
     @JoinColumn(name = "degree_program_id", referencedColumnName = "id", nullable = false)
-    private DegreeProgramsEntity degreeProgramsEntity; // Removed cascade
+    private DegreeProgramsEntity degreeProgramsEntity;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
     private List<ExamPaperEntity> examPaperEntityList;

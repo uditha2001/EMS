@@ -153,6 +153,7 @@ const EditCourse: React.FC = () => {
         })),
       });
       setSuccessMessage('Course updated successfully!');
+      setCurrentStep(1);
     } catch (err) {
       setErrorMessage('Failed to update course. Please try again.');
     }
