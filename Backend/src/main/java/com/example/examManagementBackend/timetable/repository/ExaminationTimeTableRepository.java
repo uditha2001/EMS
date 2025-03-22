@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -23,5 +25,28 @@ public interface ExaminationTimeTableRepository extends JpaRepository<ExamTimeTa
 
     List<ExamTimeTablesEntity> findByExaminationIdIn(List<Long> examinationIds);
 
+    // Find exams using the same exam center at the same time slot
+    @Query("SELECT e FROM ExamTimeTablesEntity e JOIN e.examCenters c WHERE c.examCenter.id = :examCenterId AND e.date = :date AND ((e.startTime < :endTime) AND (e.endTime > :startTime))")
+    List<ExamTimeTablesEntity> findByExamTimeTableCenterAndOverlappingTimeSlot(
+            @Param("examCenterId") Long examCenterId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime);
+
+    // Find exams using the same invigilator at the same time slot
+    @Query("SELECT e FROM ExamTimeTablesEntity e JOIN ExamInvigilatorsEntity ei ON e.examTimeTableId = ei.examTimeTables.examTimeTableId WHERE ei.invigilators.userId = :invigilatorId AND e.date = :date AND ((e.startTime < :endTime) AND (e.endTime > :startTime))")
+    List<ExamTimeTablesEntity> findByInvigilatorAndOverlappingTimeSlot(
+            @Param("invigilatorId") Long invigilatorId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime);
+
+    // Find exams using the same supervisor at the same time slot
+    @Query("SELECT e FROM ExamTimeTablesEntity e JOIN e.examCenters c WHERE c.supervisor.userId = :supervisorId AND e.date = :date AND ((e.startTime < :endTime) AND (e.endTime > :startTime))")
+    List<ExamTimeTablesEntity> findBySupervisorAndOverlappingTimeSlot(
+            @Param("supervisorId") Long supervisorId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime);
 
 }

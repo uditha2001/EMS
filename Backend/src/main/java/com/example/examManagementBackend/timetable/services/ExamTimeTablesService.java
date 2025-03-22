@@ -307,19 +307,20 @@ public class ExamTimeTablesService {
         for (int i = 0; i < examTimeTables.size(); i++) {
             ExamTimeTablesEntity examTimeTable = examTimeTables.get(i);
 
-            // Check for conflicts with the same degree, year, and time slot
+            // Check for conflicts with the same degree, year, and overlapping time slot
             for (int j = i + 1; j < examTimeTables.size(); j++) {
                 ExamTimeTablesEntity otherExamTimeTable = examTimeTables.get(j);
 
-                // Check degree, year, and time slot conflict
+                // Check degree, year, and overlapping time slot conflict
                 if (examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName().equals(otherExamTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName()) &&
                         examTimeTable.getExamination().getYear().equals(otherExamTimeTable.getExamination().getYear()) &&
                         examTimeTable.getDate().equals(otherExamTimeTable.getDate()) &&
-                        examTimeTable.getStartTime().equals(otherExamTimeTable.getStartTime())) {
+                        examTimeTable.getStartTime().isBefore(otherExamTimeTable.getEndTime()) &&
+                        examTimeTable.getEndTime().isAfter(otherExamTimeTable.getStartTime())) {
 
                     String conflictMessage = "Conflict between exams for Degree: " + examTimeTable.getExamination().getDegreeProgramsEntity().getDegreeName() +
                             " - Year: " + examTimeTable.getExamination().getYear() +
-                            " at " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+                            " at " + examTimeTable.getDate() + " " + examTimeTable.getStartTime() + " - " + examTimeTable.getEndTime();
 
                     // Create or update the conflict DTO for this examTimeTableId
                     conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
@@ -327,44 +328,58 @@ public class ExamTimeTablesService {
                 }
             }
 
-            // Check for conflicts in the same time slot for the exam centers, invigilators, and supervisors
+            // Check for conflicts in overlapping time slots for the exam centers, invigilators, and supervisors
             List<ExamTimeTableCenter> centers = examTimeTableCenterRepository.findByExamTimeTableExamTimeTableId(examTimeTable.getExamTimeTableId());
             for (ExamTimeTableCenter center : centers) {
-                if (examTimeTable.getDate().equals(center.getExamTimeTable().getDate()) &&
-                        examTimeTable.getStartTime().equals(center.getExamTimeTable().getStartTime())) {
+                // Check for exam center conflicts in overlapping time slots
+                List<ExamTimeTablesEntity> conflictingExamsForCenter = examTimeTableRepository.findByExamTimeTableCenterAndOverlappingTimeSlot(
+                        center.getExamCenter().getId(), examTimeTable.getDate(), examTimeTable.getStartTime(), examTimeTable.getEndTime());
 
-                    String conflictMessage = "Conflict in Exam Center: " + center.getExamCenter().getExamCenterName() +
-                            " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
-
-                    conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
-                            .addConflictMessage(conflictMessage);
-                }
-
-                // Check for invigilator conflicts
-                List<ExamInvigilatorsEntity> invigilators = examInvigilatorsRepository.findByExamTimeTablesExamTimeTableIdAndExamCenterId(examTimeTable.getExamTimeTableId(), center.getExamCenter().getId());
-                for (ExamInvigilatorsEntity invigilator : invigilators) {
-                    if (examTimeTable.getDate().equals(invigilator.getExamTimeTables().getDate()) &&
-                            examTimeTable.getStartTime().equals(invigilator.getExamTimeTables().getStartTime())) {
-
-                        String conflictMessage = "Conflict with Invigilator: " + invigilator.getInvigilators().getFirstName() +
-                                " " + invigilator.getInvigilators().getLastName() +
-                                " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+                for (ExamTimeTablesEntity conflictingExam : conflictingExamsForCenter) {
+                    if (!conflictingExam.getExamTimeTableId().equals(examTimeTable.getExamTimeTableId())) {
+                        String conflictMessage = "Conflict in Exam Center: " + center.getExamCenter().getExamCenterName() +
+                                " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime() + " - " + examTimeTable.getEndTime();
 
                         conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
                                 .addConflictMessage(conflictMessage);
                     }
                 }
 
-                // Check for supervisor conflicts
-                if (center.getSupervisor() != null && examTimeTable.getDate().equals(center.getExamTimeTable().getDate()) &&
-                        examTimeTable.getStartTime().equals(center.getExamTimeTable().getStartTime())) {
+                // Check for invigilator conflicts in overlapping time slots
+                List<ExamInvigilatorsEntity> invigilators = examInvigilatorsRepository.findByExamTimeTablesExamTimeTableIdAndExamCenterId(
+                        examTimeTable.getExamTimeTableId(), center.getExamCenter().getId());
 
-                    String conflictMessage = "Conflict with Supervisor: " + center.getSupervisor().getFirstName() +
-                            " " + center.getSupervisor().getLastName() +
-                            " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime();
+                for (ExamInvigilatorsEntity invigilator : invigilators) {
+                    List<ExamTimeTablesEntity> conflictingExamsForInvigilator = examTimeTableRepository.findByInvigilatorAndOverlappingTimeSlot(
+                            invigilator.getInvigilators().getUserId(), examTimeTable.getDate(), examTimeTable.getStartTime(), examTimeTable.getEndTime());
 
-                    conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
-                            .addConflictMessage(conflictMessage);
+                    for (ExamTimeTablesEntity conflictingExam : conflictingExamsForInvigilator) {
+                        if (!conflictingExam.getExamTimeTableId().equals(examTimeTable.getExamTimeTableId())) {
+                            String conflictMessage = "Conflict with Invigilator: " + invigilator.getInvigilators().getFirstName() +
+                                    " " + invigilator.getInvigilators().getLastName() +
+                                    " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime() + " - " + examTimeTable.getEndTime();
+
+                            conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                                    .addConflictMessage(conflictMessage);
+                        }
+                    }
+                }
+
+                // Check for supervisor conflicts in overlapping time slots
+                if (center.getSupervisor() != null) {
+                    List<ExamTimeTablesEntity> conflictingExamsForSupervisor = examTimeTableRepository.findBySupervisorAndOverlappingTimeSlot(
+                            center.getSupervisor().getUserId(), examTimeTable.getDate(), examTimeTable.getStartTime(), examTimeTable.getEndTime());
+
+                    for (ExamTimeTablesEntity conflictingExam : conflictingExamsForSupervisor) {
+                        if (!conflictingExam.getExamTimeTableId().equals(examTimeTable.getExamTimeTableId())) {
+                            String conflictMessage = "Conflict with Supervisor: " + center.getSupervisor().getFirstName() +
+                                    " " + center.getSupervisor().getLastName() +
+                                    " for time slot " + examTimeTable.getDate() + " " + examTimeTable.getStartTime() + " - " + examTimeTable.getEndTime();
+
+                            conflictsMap.computeIfAbsent(examTimeTable.getExamTimeTableId(), id -> mapToExamTimeTableWithResourcesDTO(examTimeTable))
+                                    .addConflictMessage(conflictMessage);
+                        }
+                    }
                 }
             }
         }
