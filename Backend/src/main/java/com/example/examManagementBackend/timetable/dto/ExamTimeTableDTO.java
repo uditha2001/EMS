@@ -16,10 +16,10 @@ public class ExamTimeTableDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime startTime;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime endTime;
 
     private String courseCode;
@@ -27,5 +27,10 @@ public class ExamTimeTableDTO {
     private String examType;
     private LocalDateTime updatedAt;
     private String timetableGroup;
+
+    private String degree;
+    private String year;
+    private String level;
+    private String semester;
 
 }

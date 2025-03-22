@@ -212,7 +212,7 @@ const CreateTimetable: React.FC = () => {
     const formattedEndHour = String(endHour).padStart(2, '0');
     const formattedEndMinute = String(endMinute).padStart(2, '0');
 
-    return `${formattedEndHour}:${formattedEndMinute}:00`;
+    return `${formattedEndHour}:${formattedEndMinute}`;
   };
 
   const addTimeSlot = (courseId: number, evaluationType: string) => {
@@ -304,6 +304,15 @@ const CreateTimetable: React.FC = () => {
       return;
     }
 
+    // Validate the time slots for conflicts
+    const conflicts = checkForConflicts();
+    if (conflicts.length > 0) {
+      setErrorMessage(
+        `There are conflicts with the following slots: ${conflicts.join(', ')}`,
+      );
+      return;
+    }
+
     // Prepare request body
     const examTimeTableDataList = courses
       .flatMap((course) => {
@@ -311,7 +320,7 @@ const CreateTimetable: React.FC = () => {
         return (courseDetails[key] || []).map((slot) => {
           const { examDate, examTime, duration, timetableGroup } = slot;
           const formattedStartTime =
-            examTime.length === 5 ? `${examTime}:00` : examTime;
+            examTime.length === 5 ? `${examTime}` : examTime;
           const endTime = calculateEndTime(examTime, duration);
 
           return {
@@ -356,6 +365,50 @@ const CreateTimetable: React.FC = () => {
         error.response?.data?.message || 'Failed to save timetable.',
       );
     }
+  };
+
+  // Check for timetable conflicts
+  const checkForConflicts = () => {
+    const conflicts: string[] = [];
+    const allSlots = Object.values(courseDetails).flat();
+
+    // Check for overlapping time slots for each course
+    allSlots.forEach((slot, index) => {
+      allSlots.forEach((comparedSlot, comparedIndex) => {
+        if (
+          index !== comparedIndex &&
+          slot.examDate === comparedSlot.examDate
+        ) {
+          // Check for time overlap
+          const startTime1 = slot.examTime;
+          const endTime1 = calculateEndTime(slot.examTime, slot.duration);
+
+          const startTime2 = comparedSlot.examTime;
+          const endTime2 = calculateEndTime(
+            comparedSlot.examTime,
+            comparedSlot.duration,
+          );
+
+          if (isTimeOverlapping(startTime1, endTime1, startTime2, endTime2)) {
+            conflicts.push(`${slot.examDate} (${slot.examTime} - ${endTime1})`);
+          }
+        }
+      });
+    });
+
+    return conflicts;
+  };
+
+  const isTimeOverlapping = (
+    startTime1: string,
+    endTime1: string,
+    startTime2: string,
+    endTime2: string,
+  ) => {
+    return (
+      (startTime1 < endTime2 && startTime1 >= startTime2) ||
+      (startTime2 < endTime1 && startTime2 >= startTime1)
+    );
   };
 
   const nextStep = () => {
