@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.repo;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -57,7 +56,7 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
 
     @Query("SELECT r FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examID AND r.status=:status")
     List<ResultEntity> getStudentResultsByCourseCodeAndExamId (@Param("courseCode") String courseCode, @Param("examID") Long examID, @Param("status") ResultStatus status);
-    @Query("SELECT DISTINCT r.examType.name FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examId AND r.status=:status")
-    List<ExamTypesName> getExamTypeName(@Param("courseCode") String courseCode, @Param("examId") Long examID, @Param("status") ResultStatus status);
+    @Query("SELECT DISTINCT r.examType.examType FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examId AND r.status=:status")
+    List<String> getExamTypeName(@Param("courseCode") String courseCode, @Param("examId") Long examID, @Param("status") ResultStatus status);
 
 }

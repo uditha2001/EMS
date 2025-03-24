@@ -1,12 +1,12 @@
 package com.example.examManagementBackend.paperWorkflows.dto;
 
-import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -22,10 +22,11 @@ public class CourseDTO {
         private String semester;
         private Boolean isActive;
         @NotEmpty(message = "Course type cannot be empty")
-        private String courseType; // Added courseType field as String for flexibility
+        private String courseType;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         private Long degreeProgramId;
         private String degreeName;
+        private List<CourseEvaluationsDTO> courseEvaluations;
 
 }

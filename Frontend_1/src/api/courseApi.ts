@@ -23,12 +23,19 @@ const useCourseApi = () => {
     return axiosPrivate.delete(`/courses/${id}`);
   };
 
+  const deleteCourseEvaluation = async (courseEvaluationId: number) => {
+    return axiosPrivate.delete(
+      `/courses/course-evaluations/${courseEvaluationId}`,
+    );
+  };
+
   return {
     getAllCourses,
     getCourseById,
     saveCourse,
     updateCourse,
     deleteCourse,
+    deleteCourseEvaluation,
   };
 };
 export default useCourseApi;

@@ -21,14 +21,12 @@ public class CourseEvaluationsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseEvaluationId;
     private float passMark=40;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="course_id", nullable=false,referencedColumnName = "id")
     private CoursesEntity courses;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="exam_type",referencedColumnName = "id")
     private ExamTypesEntity examTypes;
     private float weightage=40;
-
-
 
 }

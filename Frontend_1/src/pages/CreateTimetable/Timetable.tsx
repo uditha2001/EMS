@@ -8,18 +8,21 @@ import {
   faCheckCircle,
   faMinus,
   faPlus,
+  faDeleteLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import Stepper from '../PaperTransfer/Stepper';
 import useExamTimeTableApi from '../../api/examTimeTableApi';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import PreviewTimetable from './PreviewTimetable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 interface Course {
   id: number;
   name: string;
   code: string;
-  courseType: string;
+  evaluationType: string;
+  evaluationTypeId: number;
 }
 
 interface Examination {
@@ -46,8 +49,12 @@ interface ExamTimeTable {
 
 const CreateTimetable: React.FC = () => {
   const { getExaminations } = useApi();
-  const { getCourses, saveExamTimeTable, getExamTimeTableByExamination } =
-    useExamTimeTableApi();
+  const {
+    getCourses,
+    saveExamTimeTable,
+    getExamTimeTableByExamination,
+    deleteExamTimeTable,
+  } = useExamTimeTableApi();
 
   const [examinations, setExaminations] = useState<Examination[]>([]);
   const [selectedExamination, setSelectedExamination] = useState<number | null>(
@@ -66,6 +73,13 @@ const CreateTimetable: React.FC = () => {
       timetableGroup: string;
     }[];
   }>({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedTimetableSlot, setSelectedTimetableSlot] = useState<{
+    courseId: number;
+    evaluationType: string;
+    index: number;
+    examTimeTableId?: number;
+  } | null>(null);
 
   const steps = [
     { id: 1, name: 'Examination', icon: faList },
@@ -100,54 +114,24 @@ const CreateTimetable: React.FC = () => {
     fetchCourses();
   }, [selectedExamination]);
 
-  useEffect(() => {
-    const fetchExamTimeTables = async () => {
-      if (!selectedExamination) return;
-      try {
-        const response = await getExamTimeTableByExamination(
-          selectedExamination,
-        );
-        setExamTimeTables(response.data.data);
+  const fetchExamTimeTables = async () => {
+    if (!selectedExamination) return;
+    try {
+      const response = await getExamTimeTableByExamination(selectedExamination);
+      setExamTimeTables(response.data.data);
 
-        // Ensure existing time slots are pre-filled correctly
-        if (response.data.data.length > 0) {
-          const details: {
-            [key: string]: {
-              examDate: string;
-              examTime: string;
-              duration: string;
-              timetableGroup: string;
-            }[];
-          } = response.data.data.reduce(
-            (
-              acc: {
-                [key: string]: {
-                  examDate: string;
-                  examTime: string;
-                  duration: string;
-                  timetableGroup: string;
-                }[];
-              },
-              timetable: ExamTimeTable,
-            ) => {
-              const examType =
-                timetable.examTypeId === 1 ? 'THEORY' : 'PRACTICAL';
-              const duration = calculateDuration(
-                timetable.startTime,
-                timetable.endTime,
-              );
-
-              const key = `${timetable.courseId}-${examType}`;
-              if (!acc[key]) acc[key] = [];
-              acc[key].push({
-                examDate: timetable.date,
-                examTime: timetable.startTime,
-                duration: duration.toString(),
-                timetableGroup: timetable.timetableGroup,
-              });
-              return acc;
-            },
-            {} as {
+      // Ensure existing time slots are pre-filled correctly
+      if (response.data.data.length > 0) {
+        const details: {
+          [key: string]: {
+            examDate: string;
+            examTime: string;
+            duration: string;
+            timetableGroup: string;
+          }[];
+        } = response.data.data.reduce(
+          (
+            acc: {
               [key: string]: {
                 examDate: string;
                 examTime: string;
@@ -155,14 +139,42 @@ const CreateTimetable: React.FC = () => {
                 timetableGroup: string;
               }[];
             },
-          );
-          setCourseDetails(details);
-        }
-      } catch (error) {
-        setErrorMessage('Failed to fetch exam timetables.');
-        console.error('Error fetching exam timetables:', error);
+            timetable: ExamTimeTable,
+          ) => {
+            const examType = timetable.examType;
+            const duration = calculateDuration(
+              timetable.startTime,
+              timetable.endTime,
+            );
+
+            const key = `${timetable.courseId}-${examType}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push({
+              examDate: timetable.date,
+              examTime: timetable.startTime,
+              duration: duration.toString(),
+              timetableGroup: timetable.timetableGroup,
+            });
+            return acc;
+          },
+          {} as {
+            [key: string]: {
+              examDate: string;
+              examTime: string;
+              duration: string;
+              timetableGroup: string;
+            }[];
+          },
+        );
+        setCourseDetails(details);
       }
-    };
+    } catch (error) {
+      setErrorMessage('Failed to fetch exam timetables.');
+      console.error('Error fetching exam timetables:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchExamTimeTables();
   }, [selectedExamination]);
 
@@ -200,11 +212,11 @@ const CreateTimetable: React.FC = () => {
     const formattedEndHour = String(endHour).padStart(2, '0');
     const formattedEndMinute = String(endMinute).padStart(2, '0');
 
-    return `${formattedEndHour}:${formattedEndMinute}:00`;
+    return `${formattedEndHour}:${formattedEndMinute}`;
   };
 
-  const addTimeSlot = (courseId: number, courseType: string) => {
-    const key = `${courseId}-${courseType}`;
+  const addTimeSlot = (courseId: number, evaluationType: string) => {
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: [
@@ -214,12 +226,72 @@ const CreateTimetable: React.FC = () => {
     }));
   };
 
+  // Function to handle deletion of a timetable slot
+  const handleDeleteTimetableSlot = async (examTimeTableId: number) => {
+    try {
+      const response = await deleteExamTimeTable(examTimeTableId);
+      if (response.data) {
+        setSuccessMessage('Timetable slot deleted successfully!');
+        setExamTimeTables((prev) =>
+          prev.filter((t) => t.examTimeTableId !== examTimeTableId),
+        );
+        fetchExamTimeTables();
+      } else {
+        setErrorMessage('Failed to delete timetable slot.');
+      }
+    } catch (error) {
+      setErrorMessage('Failed to delete timetable slot.');
+      console.error('Error deleting timetable slot:', error);
+    }
+  };
+
+  // Function to handle confirmation of deletion
+  const handleConfirmDelete = () => {
+    if (selectedTimetableSlot) {
+      const { courseId, evaluationType, index, examTimeTableId } =
+        selectedTimetableSlot;
+      if (examTimeTableId) {
+        handleDeleteTimetableSlot(examTimeTableId);
+      } else {
+        const key = `${courseId}-${evaluationType}`;
+        setCourseDetails((prevState) => ({
+          ...prevState,
+          [key]: prevState[key].filter((_, i) => i !== index),
+        }));
+      }
+      setIsDeleteModalOpen(false);
+      setSelectedTimetableSlot(null);
+    }
+  };
+
+  // Function to open the confirmation modal
+  const deleteTimeSlot = (
+    courseId: number,
+    evaluationType: string,
+    index: number,
+    examTimeTableId?: number,
+  ) => {
+    setSelectedTimetableSlot({
+      courseId,
+      evaluationType,
+      index,
+      examTimeTableId,
+    });
+    setIsDeleteModalOpen(true);
+  };
+
+  // Function to cancel deletion
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setSelectedTimetableSlot(null);
+  };
+
   const removeTimeSlot = (
     courseId: number,
-    courseType: string,
+    evaluationType: string,
     index: number,
   ) => {
-    const key = `${courseId}-${courseType}`;
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: prevState[key].filter((_, i) => i !== index),
@@ -232,14 +304,23 @@ const CreateTimetable: React.FC = () => {
       return;
     }
 
+    // Validate the time slots for conflicts
+    const conflicts = checkForConflicts();
+    if (conflicts.length > 0) {
+      setErrorMessage(
+        `There are conflicts with the following slots: ${conflicts.join(', ')}`,
+      );
+      return;
+    }
+
     // Prepare request body
     const examTimeTableDataList = courses
       .flatMap((course) => {
-        const key = `${course.id}-${course.courseType}`;
+        const key = `${course.id}-${course.evaluationType}`;
         return (courseDetails[key] || []).map((slot) => {
           const { examDate, examTime, duration, timetableGroup } = slot;
           const formattedStartTime =
-            examTime.length === 5 ? `${examTime}:00` : examTime;
+            examTime.length === 5 ? `${examTime}` : examTime;
           const endTime = calculateEndTime(examTime, duration);
 
           return {
@@ -247,12 +328,12 @@ const CreateTimetable: React.FC = () => {
               examTimeTables.find(
                 (t) =>
                   t.courseId === course.id &&
-                  t.examTypeId === (course.courseType === 'THEORY' ? 1 : 2) &&
+                  t.examTypeId === course.evaluationTypeId &&
                   t.timetableGroup === timetableGroup,
               )?.examTimeTableId || 0,
             examinationId: selectedExamination,
             courseId: course.id,
-            examTypeId: course.courseType === 'THEORY' ? 1 : 2,
+            examTypeId: course.evaluationTypeId,
             date: examDate,
             startTime: formattedStartTime,
             endTime: endTime,
@@ -274,6 +355,7 @@ const CreateTimetable: React.FC = () => {
             ? 'Timetable updated successfully!'
             : 'Timetable created successfully!',
         );
+        fetchExamTimeTables();
       } else {
         setErrorMessage('Failed to save timetable.');
       }
@@ -283,6 +365,50 @@ const CreateTimetable: React.FC = () => {
         error.response?.data?.message || 'Failed to save timetable.',
       );
     }
+  };
+
+  // Check for timetable conflicts
+  const checkForConflicts = () => {
+    const conflicts: string[] = [];
+    const allSlots = Object.values(courseDetails).flat();
+
+    // Check for overlapping time slots for each course
+    allSlots.forEach((slot, index) => {
+      allSlots.forEach((comparedSlot, comparedIndex) => {
+        if (
+          index !== comparedIndex &&
+          slot.examDate === comparedSlot.examDate
+        ) {
+          // Check for time overlap
+          const startTime1 = slot.examTime;
+          const endTime1 = calculateEndTime(slot.examTime, slot.duration);
+
+          const startTime2 = comparedSlot.examTime;
+          const endTime2 = calculateEndTime(
+            comparedSlot.examTime,
+            comparedSlot.duration,
+          );
+
+          if (isTimeOverlapping(startTime1, endTime1, startTime2, endTime2)) {
+            conflicts.push(`${slot.examDate} (${slot.examTime} - ${endTime1})`);
+          }
+        }
+      });
+    });
+
+    return conflicts;
+  };
+
+  const isTimeOverlapping = (
+    startTime1: string,
+    endTime1: string,
+    startTime2: string,
+    endTime2: string,
+  ) => {
+    return (
+      (startTime1 < endTime2 && startTime1 >= startTime2) ||
+      (startTime2 < endTime1 && startTime2 >= startTime1)
+    );
   };
 
   const nextStep = () => {
@@ -304,7 +430,7 @@ const CreateTimetable: React.FC = () => {
 
   const handleCourseDetailsChange = (
     courseId: number,
-    courseType: string,
+    evaluationType: string,
     field: keyof {
       examDate: string;
       examTime: string;
@@ -314,7 +440,7 @@ const CreateTimetable: React.FC = () => {
     value: string,
     index: number,
   ) => {
-    const key = `${courseId}-${courseType}`;
+    const key = `${courseId}-${evaluationType}`;
     setCourseDetails((prevState) => ({
       ...prevState,
       [key]: prevState[key].map((slot, i) =>
@@ -396,120 +522,161 @@ const CreateTimetable: React.FC = () => {
                   </thead>
                   <tbody>
                     {courses.map((course) => {
-                      const key = `${course.id}-${course.courseType}`;
+                      const key = `${course.id}-${course.evaluationType}`;
                       const timeSlots = courseDetails[key] || [];
 
                       return (
                         <>
-                          {timeSlots.map((slot, index) => (
-                            <tr
-                              key={`${course.id}-${course.courseType}-${index}`}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                            >
-                              <td className="border px-4 py-2">
-                                {index === 0 && (
-                                  <>
-                                    {course.code} (
-                                    {course.courseType === 'THEORY' ? 'T' : 'P'}
-                                    ) - {course.name}
-                                  </>
-                                )}
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="date"
-                                  value={slot.examDate}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.courseType,
-                                      'examDate',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="time"
-                                  value={slot.examTime}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.courseType,
-                                      'examTime',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="number"
-                                  value={slot.duration}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.courseType,
-                                      'duration',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                  placeholder="Duration (hrs)"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <input
-                                  type="text"
-                                  value={slot.timetableGroup}
-                                  onChange={(e) =>
-                                    handleCourseDetailsChange(
-                                      course.id,
-                                      course.courseType,
-                                      'timetableGroup',
-                                      e.target.value,
-                                      index,
-                                    )
-                                  }
-                                  className="input-field"
-                                  placeholder="Group (optional)"
-                                />
-                              </td>
-                              <td className="border px-4 py-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    removeTimeSlot(
-                                      course.id,
-                                      course.courseType,
-                                      index,
-                                    )
-                                  }
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <FontAwesomeIcon icon={faMinus} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                          {timeSlots.map((slot, index) => {
+                            const isSaved = examTimeTables.some(
+                              (t) =>
+                                t.courseId === course.id &&
+                                t.examTypeId === course.evaluationTypeId &&
+                                t.timetableGroup === slot.timetableGroup,
+                            );
+                            const examTimeTableId = examTimeTables.find(
+                              (t) =>
+                                t.courseId === course.id &&
+                                t.examTypeId === course.evaluationTypeId &&
+                                t.timetableGroup === slot.timetableGroup,
+                            )?.examTimeTableId;
+
+                            return (
+                              <tr
+                                key={`${course.id}-${course.evaluationType}-${index}`}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                              >
+                                <td className="border px-4 py-2">
+                                  {index === 0 && (
+                                    <>
+                                      {course.code} (
+                                      {course.evaluationType === 'THEORY'
+                                        ? 'T'
+                                        : course.evaluationType === 'PRACTICAL'
+                                        ? 'P'
+                                        : course.evaluationType}
+                                      ) - {course.name}
+                                    </>
+                                  )}
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="date"
+                                    value={slot.examDate}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'examDate',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="time"
+                                    value={slot.examTime}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'examTime',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="number"
+                                    value={slot.duration}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'duration',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                    placeholder="Duration (hrs)"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  <input
+                                    type="text"
+                                    value={slot.timetableGroup}
+                                    onChange={(e) =>
+                                      handleCourseDetailsChange(
+                                        course.id,
+                                        course.evaluationType,
+                                        'timetableGroup',
+                                        e.target.value,
+                                        index,
+                                      )
+                                    }
+                                    className="input-field"
+                                    placeholder="Group (optional)"
+                                  />
+                                </td>
+                                <td className="border px-4 py-2">
+                                  {isSaved ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteTimeSlot(
+                                          course.id,
+                                          course.evaluationType,
+                                          index,
+                                          examTimeTableId,
+                                        )
+                                      }
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <FontAwesomeIcon icon={faDeleteLeft} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        removeTimeSlot(
+                                          course.id,
+                                          course.evaluationType,
+                                          index,
+                                        )
+                                      }
+                                      className="text-red-500 hover:text-red-700"
+                                    >
+                                      <FontAwesomeIcon icon={faMinus} />
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                           <tr>
                             <td colSpan={6} className="border px-4 py-2">
                               <button
                                 type="button"
                                 onClick={() =>
-                                  addTimeSlot(course.id, course.courseType)
+                                  addTimeSlot(course.id, course.evaluationType)
                                 }
                                 className="text-green-500 hover:text-green-700"
                               >
                                 <FontAwesomeIcon icon={faPlus} /> {course.code}{' '}
-                                ({course.courseType === 'THEORY' ? 'T' : 'P'}) -{' '}
-                                {course.name}
+                                (
+                                {course.evaluationType === 'THEORY'
+                                  ? 'T'
+                                  : course.evaluationType === 'PRACTICAL'
+                                  ? 'P'
+                                  : course.evaluationType}
+                                ) - {course.name}
                               </button>
                             </td>
                           </tr>
@@ -561,6 +728,14 @@ const CreateTimetable: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this timetable slot? This action cannot be undone."
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 };

@@ -5,7 +5,6 @@ import com.example.examManagementBackend.paperWorkflows.repository.CoursesReposi
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.MarksPercentageDTO;
 import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
@@ -43,7 +42,7 @@ public class GradingService {
         List<MarksPercentageDTO> marksPercentageDTOS=new ArrayList<>();
         for(CourseEvaluationsEntity courseEvaluationsEntity:courseEvaluationsEntities){
             MarksPercentageDTO marksPercentageDTO=new MarksPercentageDTO();
-            marksPercentageDTO.setExamType(courseEvaluationsEntity.getExamTypes().getName());
+            marksPercentageDTO.setExamType(courseEvaluationsEntity.getExamTypes().getExamType());
             marksPercentageDTO.setPassMark(courseEvaluationsEntity.getPassMark());
             marksPercentageDTO.setWeightage(courseEvaluationsEntity.getWeightage());
             marksPercentageDTOS.add(marksPercentageDTO);
@@ -111,21 +110,21 @@ public class GradingService {
     public ResponseEntity<StandardResponse> getGradingsMark(String courseCode,Long examinationId){
         try{
 
-            LinkedHashMap<ExamTypesName,float[]> examtypesMarks=new LinkedHashMap<>();
+            LinkedHashMap<String,float[]> examtypesMarks=new LinkedHashMap<>();
             List<ResultEntity> StudentResults=resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode,examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             Set<GradeDetailsDTO> gradeDetailsDTOS=new LinkedHashSet<>();
-            List<ExamTypesName> examTypeNames=resultRepo.getExamTypeName(courseCode,examinationId,ResultStatus.SECOND_MARKING_COMPLETE);
-            for(ExamTypesName name:examTypeNames){
+            List<String> examTypeNames=resultRepo.getExamTypeName(courseCode,examinationId,ResultStatus.SECOND_MARKING_COMPLETE);
+            for(String name:examTypeNames){
                 float[] marksConditions=getExamTypesMarksConditions(courseCode,name);
                 examtypesMarks.put(name,marksConditions);
             }
-            Map<String, Map<ExamTypesName, Float>> marksData=storeStudentDataWithexamTypeIdAndStudentNumber(StudentResults);
+            Map<String, Map<String, Float>> marksData=storeStudentDataWithexamTypeIdAndStudentNumber(StudentResults);
             saveCalculatedMarksValues(marksData,examtypesMarks);
             for(ResultEntity resultEntity:StudentResults){
                 GradeDetailsDTO gradeDetailsDTO=new GradeDetailsDTO();
                 float totalMarks=calculateTotalMarks(marksData,resultEntity);
                 String Grade=gradeTheMarks(totalMarks);
-                Map<ExamTypesName,Float> examTypesName=marksData.get(resultEntity.getStudent().getStudentNumber());
+                Map<String,Float> examTypesName=marksData.get(resultEntity.getStudent().getStudentNumber());
                 gradeDetailsDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
                 gradeDetailsDTO.setStudentName(resultEntity.getStudent().getStudentName());
                 gradeDetailsDTO.setTotalMarks(totalMarks);
@@ -146,17 +145,17 @@ public class GradingService {
     }
 
     //used to store students marks with their scNumber and examTypeId
-    private  Map<String, Map<ExamTypesName, Float>>  storeStudentDataWithexamTypeIdAndStudentNumber(List<ResultEntity> results){
-        Map<String, Map<ExamTypesName, Float>> marksData = new HashMap<>();
+    private  Map<String, Map<String, Float>>  storeStudentDataWithexamTypeIdAndStudentNumber(List<ResultEntity> results){
+        Map<String, Map<String, Float>> marksData = new HashMap<>();
         for(ResultEntity resultEntity:results){
             marksData.putIfAbsent(resultEntity.getStudent().getStudentNumber(), new HashMap<>());
-            marksData.get(resultEntity.getStudent().getStudentNumber()).put(resultEntity.getExamType().getName(),resultEntity.getSecondMarking());
+            marksData.get(resultEntity.getStudent().getStudentNumber()).put(resultEntity.getExamType().getExamType(), resultEntity.getSecondMarking());
         }
         return marksData;
     }
 
     //used to calculate the marks values for each exam type using stored map
-    private void saveCalculatedMarksValues(Map<String, Map<ExamTypesName, Float>> marksData,LinkedHashMap<ExamTypesName,float[]> examtypesMarks){
+    private void saveCalculatedMarksValues(Map<String, Map<String, Float>> marksData,LinkedHashMap<String,float[]> examtypesMarks){
         examtypesMarks.forEach((examTypeID, examMarks) -> {
             marksData.forEach((studentNumber, studentMarks) -> {
                 if (studentMarks.containsKey(examTypeID)) {
@@ -174,12 +173,12 @@ public class GradingService {
     }
 
     //calculate total marks
-    private float calculateTotalMarks(Map<String, Map<ExamTypesName, Float>> marksData,ResultEntity resultEntity){
+    private float calculateTotalMarks(Map<String, Map<String, Float>> marksData,ResultEntity resultEntity){
         float totalMarks = 0;
         if (marksData.containsKey(resultEntity.getStudent().getStudentNumber())) {
-            Map<ExamTypesName, Float> studentMarks = marksData.get(resultEntity.getStudent().getStudentNumber());
+            Map<String, Float> studentMarks = marksData.get(resultEntity.getStudent().getStudentNumber());
 
-            for (Map.Entry<ExamTypesName, Float> entry : studentMarks.entrySet()) {
+            for (Map.Entry<String, Float> entry : studentMarks.entrySet()) {
 
                 Float marks = entry.getValue();
                     totalMarks += marks;
@@ -222,7 +221,7 @@ public class GradingService {
     }
 
     //used to get students calculated marks from each type
-    private float[] getExamTypesMarksConditions(String courseCode,ExamTypesName examTypeName){
+    private float[] getExamTypesMarksConditions(String courseCode,String examTypeName){
             if(courseEvaluationRepo.countByCourseCodeAndExamType(courseCode,examTypeName)>0){
                 final float passMarks=courseEvaluationRepo.getPassMarkByCourseCodeAndCourseEvaluationId(courseCode,examTypeName);
                 final float weightage=courseEvaluationRepo.getWeightageByCourseCodeAndCourseEvaluationId(courseCode,examTypeName);
@@ -230,7 +229,7 @@ public class GradingService {
             }
            return new float[]{0,0};
         }
-    private LinkedHashMap<ExamTypesName,Float> getTakenMarksFromEachExamTypes(LinkedHashMap<Long,float[]> examtypesMarks,ResultEntity resultEntity){
+    private LinkedHashMap<String,Float> getTakenMarksFromEachExamTypes(LinkedHashMap<Long,float[]> examtypesMarks,ResultEntity resultEntity){
         return null;
     }
 }

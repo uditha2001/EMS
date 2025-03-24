@@ -1,6 +1,5 @@
 package com.example.examManagementBackend.resultManagement.dto;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ExamTypesName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +13,6 @@ public class ResultDTO {
    private Long id;
    private String examName;
    private String courseCode;
-   private ExamTypesName examType;
+   private String examType;
    private List<StudentDTO> studentsData;
 }

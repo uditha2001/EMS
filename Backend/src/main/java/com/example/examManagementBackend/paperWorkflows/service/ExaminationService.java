@@ -12,6 +12,8 @@ import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEnt
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.DegreeProgramRepo;
+import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
+import com.example.examManagementBackend.resultManagement.repo.CourseEvaluationRepo;
 import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.timetable.repository.ExaminationTimeTableRepository;
@@ -42,15 +44,18 @@ public class ExaminationService {
     private final DegreeProgramRepo degreeProgramsRepository;
     private final RoleAssignmentRepository roleAssignmentRepository;
     private final CoursesRepository coursesRepository;
+    private final CourseEvaluationRepo courseEvaluationsRepository;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository) {
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, CourseEvaluationRepo courseEvaluationsRepository) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
         this.degreeProgramsRepository = degreeProgramsRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
+        this.courseEvaluationsRepository = courseEvaluationsRepository;
     }
+
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
         DegreeProgramsEntity degreeProgram = degreeProgramsRepository.findById(examinationDTO.getDegreeProgramId())
                 .orElseThrow(() -> new RuntimeException("Degree Program not found"));
@@ -82,8 +87,6 @@ public class ExaminationService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-
-
 
 
     public ExaminationDTO updateExamination(Long id, ExaminationDTO examinationDTO) {
@@ -186,27 +189,26 @@ public class ExaminationService {
 
     //get examination data related to selected degree program
     public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
-        List<String> degreeNames=new ArrayList<>();
-        List<ExaminationDTO> examinationDTOS=new ArrayList<>();
+        List<ExaminationDTO> examinationDTOS = new ArrayList<>();
         List<ExaminationEntity> examinationEntities = examinationRepository.findAllOngoingExams(ExamStatus.ONGOING);
-        for(ExaminationEntity examinationEntity : examinationEntities) {
-            ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
+        for (ExaminationEntity examinationEntity : examinationEntities) {
+            ExaminationDTO examinationDTO = mapToDTO(examinationEntity);
             examinationDTOS.add(examinationDTO);
         }
 
-       return new ResponseEntity<>(
-               new StandardResponse(200,"sucess",examinationDTOS), HttpStatus.OK
-       );
+        return new ResponseEntity<>(
+                new StandardResponse(200, "sucess", examinationDTOS), HttpStatus.OK
+        );
     }
 
     //create a methode to get course data which ara belongs to particular exam
     public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
-        try{
-            Set<CourseDTO> courseDTOS=new HashSet<>();
-            List<ExamTimeTablesEntity> examTimeTablesEntities=examinationRepository.getCoursesUsingExaminationId(examinationId);
-            for(ExamTimeTablesEntity examinationEntity:examTimeTablesEntities){
-                CourseDTO courseDTO=new CourseDTO();
-                CoursesEntity coursesEntity=examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
+        try {
+            Set<CourseDTO> courseDTOS = new HashSet<>();
+            List<ExamTimeTablesEntity> examTimeTablesEntities = examinationRepository.getCoursesUsingExaminationId(examinationId);
+            for (ExamTimeTablesEntity examinationEntity : examTimeTablesEntities) {
+                CourseDTO courseDTO = new CourseDTO();
+                CoursesEntity coursesEntity = examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
                 courseDTO.setId(coursesEntity.getId());
                 courseDTO.setCode(coursesEntity.getCode());
                 courseDTO.setName(coursesEntity.getName());
@@ -218,16 +220,16 @@ public class ExaminationService {
                 courseDTO.setDegreeProgramId(coursesEntity.getDegreeProgramsEntity().getId());
                 courseDTOS.add(courseDTO);
             }
-            return new ResponseEntity<StandardResponse>(
-                    new StandardResponse(200,"sucess",courseDTOS), HttpStatus.OK
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "sucess", courseDTOS), HttpStatus.OK
             );
-        }
-        catch(Exception e){
-            return new ResponseEntity<StandardResponse>(
-                   new StandardResponse(500,"error",null), HttpStatus.INTERNAL_SERVER_ERROR
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
     }
+
     private boolean isCourseActiveAndMatchesExamination(CoursesEntity course, ExaminationEntity examination) {
         return course.getLevel().equals(Integer.parseInt(examination.getLevel())) &&
                 course.getSemester().equals(examination.getSemester()) &&
@@ -250,6 +252,8 @@ public class ExaminationService {
             return Collections.emptyList();
         } else if (course.getCourseType() == CoursesEntity.CourseType.PRACTICAL && isPracticalAssigned) {
             // If it's a PRACTICAL course and already assigned, don't display it
+            return Collections.emptyList();
+        } else if (course.getCourseType() == CoursesEntity.CourseType.NO_PAPER) {
             return Collections.emptyList();
         } else {
             // Otherwise, include the course
@@ -352,35 +356,31 @@ public class ExaminationService {
         // Fetch courses based on level, semester, and degree program
         List<CoursesEntity> courses = coursesRepository.findByLevelAndSemesterAndDegreeProgramId(level, mappedSemester, degreeProgramId);
 
-        // Convert to TimeTableCoursesDTO and duplicate courses of type BOTH (Theory and Practical)
+        // Convert to TimeTableCoursesDTO and duplicate courses for each course evaluation
         return courses.stream()
                 .flatMap(course -> {
-                    if (course.getCourseType() == CoursesEntity.CourseType.BOTH) {
-                        // Create duplicates for both Theory and Practical
-                        TimeTableCoursesDTO theoryCourse = new TimeTableCoursesDTO();
-                        theoryCourse.setId(course.getId());
-                        theoryCourse.setName(course.getName());
-                        theoryCourse.setCode(course.getCode());
-                        theoryCourse.setCourseType("THEORY");
+                    // Get evaluations for the course
+                    List<CourseEvaluationsEntity> evaluations = courseEvaluationsRepository.findByCourseId(course.getId());
 
-                        TimeTableCoursesDTO practicalCourse = new TimeTableCoursesDTO();
-                        practicalCourse.setId(course.getId());
-                        practicalCourse.setName(course.getName());
-                        practicalCourse.setCode(course.getCode());
-                        practicalCourse.setCourseType("PRACTICAL");
-
-                        return Stream.of(theoryCourse, practicalCourse);  // Return both Theory and Practical
-                    } else {
-                        TimeTableCoursesDTO courseDTO = new TimeTableCoursesDTO();
-                        courseDTO.setId(course.getId());
-                        courseDTO.setName(course.getName());
-                        courseDTO.setCode(course.getCode());
-                        courseDTO.setCourseType(course.getCourseType().name());
-
-                        return Stream.of(courseDTO);
+                    // Only proceed if evaluations are available
+                    if (!evaluations.isEmpty()) {
+                        // Duplicate the course for each available evaluation
+                        return evaluations.stream()
+                                .map(evaluation -> {
+                                    TimeTableCoursesDTO courseDTO = new TimeTableCoursesDTO();
+                                    courseDTO.setId(course.getId());
+                                    courseDTO.setName(course.getName());
+                                    courseDTO.setCode(course.getCode());
+                                    // Set examType from evaluation
+                                    courseDTO.setEvaluationType(evaluation.getExamTypes().getExamType());
+                                    courseDTO.setEvaluationTypeId(evaluation.getExamTypes().getId());
+                                    return courseDTO;
+                                });
                     }
+                    // If no evaluations, we don't include the course in the result
+                    return Stream.empty();
                 })
                 .collect(Collectors.toList());
     }
-
 }
+
