@@ -33,6 +33,7 @@ public class ExamTimeTableWithResourcesDTO {
     private String examType;
     private LocalDateTime updatedAt;
     private String timetableGroup;
+    private boolean approve;
     private List<ExamCenterDTO> examCenters;
 
     @Data

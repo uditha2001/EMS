@@ -65,6 +65,11 @@ public class ExamTimeTablesService {
                 // Update existing record
                 examTimeTable = examTimeTableRepository.findById(examTimeTableDTO.getExamTimeTableId())
                         .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
+
+                // Check if the timetable is already approved
+                if (examTimeTable.isApproved()) {
+                    throw new RuntimeException("Cannot update an approved timetable.");
+                }
             } else {
                 // Create new record
                 examTimeTable = new ExamTimeTablesEntity();
@@ -123,6 +128,11 @@ public class ExamTimeTablesService {
             ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(allocation.getExamTimeTableId())
                     .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
 
+            // Check if the timetable is already approved
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Cannot update an approved timetable.");
+            }
+
             ExamCentersEntity examCenter = examCentersRepository.findById(allocation.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center not found"));
 
@@ -164,6 +174,11 @@ public class ExamTimeTablesService {
         for (InvigilatorAssignmentDTO assignment : dto.getAssignments()) {
             ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(assignment.getExamTimeTableId())
                     .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
+
+            // Check if the timetable is already approved
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Cannot update an approved timetable.");
+            }
 
             ExamCentersEntity examCenter = examCentersRepository.findById(assignment.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center not found"));
@@ -219,6 +234,7 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setYear(examTimeTable.getExamination().getYear());
         examTimeTableDTO.setLevel(examTimeTable.getExamination().getLevel());
         examTimeTableDTO.setSemester(examTimeTable.getExamination().getSemester());
+        examTimeTableDTO.setApprove(examTimeTable.isApproved());
 
         return examTimeTableDTO;
     }
@@ -255,6 +271,7 @@ public class ExamTimeTablesService {
         dto.setExamType(String.valueOf(examTimeTable.getExamType().getExamType()));
         dto.setUpdatedAt(examTimeTable.getUpdatedAt());
         dto.setTimetableGroup(examTimeTable.getTimetableGroup());
+        dto.setApprove(examTimeTable.isApproved());
 
         // Set exam centers
         List<ExamTimeTableWithResourcesDTO.ExamCenterDTO> centers = examTimeTable.getExamCenters().stream()
@@ -388,7 +405,24 @@ public class ExamTimeTablesService {
         return new ArrayList<>(conflictsMap.values());
     }
 
+    @Transactional
+    public String approveExamTimeTable(Long examinationId) {
+        List<ExamTimeTablesEntity> examTimeTables = examTimeTableRepository.findByExaminationId(examinationId);
 
+        if (examTimeTables.isEmpty()) {
+            throw new RuntimeException("No exam timetables found for the given examination ID.");
+        }
+
+        for (ExamTimeTablesEntity examTimeTable : examTimeTables) {
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Timetable for examination ID " + examinationId + " is already approved.");
+            }
+            examTimeTable.setApproved(true);
+            examTimeTableRepository.save(examTimeTable);
+        }
+
+        return "Timetable for examination ID " + examinationId + " has been approved successfully.";
+    }
 
 
 

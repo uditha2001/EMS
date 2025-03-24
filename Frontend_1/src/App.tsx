@@ -12,6 +12,7 @@ import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleA
 import GradeConditions from './pages/Results/GradeConditions';
 import LearnMore from './components/LearnMore';
 import AllocateExamResources from './pages/CreateTimetable/AllocateExamResources';
+import PreviewTimetable from './pages/CreateTimetable/PreviewTimetable';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -101,7 +102,9 @@ const ArchivedPapers = React.lazy(
   () => import('./pages/HistoricalData/ArchivedPapers'),
 );
 const ExamCenters = React.lazy(() => import('./pages/ExamCenters/ExamCenters'));
-const SynchronizeTimetables = React.lazy(() => import('./pages/CreateTimetable/SynchronizeTimetables'));
+const SynchronizeTimetables = React.lazy(
+  () => import('./pages/CreateTimetable/SynchronizeTimetables'),
+);
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -433,6 +436,14 @@ function App() {
                 element={renderPage(
                   'Create Timetable | EMS',
                   <CreateTimetable />,
+                )}
+              />
+
+              <Route
+                path="/scheduling/preview-timetable/:examinationId"
+                element={renderPage(
+                  'Preview Timetable | EMS',
+                  <PreviewTimetable examinationId={null} />,
                 )}
               />
 

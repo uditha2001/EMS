@@ -37,6 +37,10 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.get(`/academic-years/${examinationId}/courses`);
   };
 
+  const approveTimetable = async (examinationId: number) => {
+    return axiosPrivate.get(`/exam-time-table/approve/${examinationId}`);
+  };
+
   // Allocate or update exam centers
   const allocateExamCenters = async (allocationData: any) => {
     return axiosPrivate.post(
@@ -96,6 +100,7 @@ const useExamTimeTableApi = () => {
     checkConflicts,
     getSynchronizedTimetable,
     getExamTimeTableByExaminationsWithResources,
+    approveTimetable,
   };
 };
 

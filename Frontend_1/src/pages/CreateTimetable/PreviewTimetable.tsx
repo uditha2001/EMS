@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import useExamTimeTableApi from '../../api/examTimeTableApi';
 import Loader from '../../common/Loader';
 import ErrorMessage from '../../components/ErrorMessage';
+import SuccessMessage from '../../components/SuccessMessage';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import useApi from '../../api/api';
+import { useParams } from 'react-router-dom';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import useHasPermission from '../../hooks/useHasPermission';
+import { FaCheckCircle, FaClock } from 'react-icons/fa';
 
 interface Examination {
   id: number;
@@ -23,6 +28,7 @@ interface ExamTimeTable {
   startTime: string;
   endTime: string;
   timetableGroup: string;
+  approve: boolean;
 }
 
 interface PreviewTimetableProps {
@@ -30,22 +36,36 @@ interface PreviewTimetableProps {
 }
 
 const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
-  examinationId,
+  examinationId: propExaminationId,
 }) => {
+  const { examinationId: paramExaminationId } = useParams<{
+    examinationId: string;
+  }>();
+
+  // Use prop if available, otherwise fallback to URL param
+  const examinationId = propExaminationId ?? paramExaminationId;
   const [timetable, setTimetable] = useState<ExamTimeTable[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [examination, setExamination] = useState<Examination | null>(null);
-  const { getExamTimeTableByExamination } = useExamTimeTableApi();
+  const [isTimetableApproved, setIsTimetableApproved] =
+    useState<boolean>(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
+
+  const { getExamTimeTableByExamination, approveTimetable } =
+    useExamTimeTableApi();
   const { getExaminationById } = useApi();
+  const hasApprovePermission = useHasPermission('APPROVE_TIMETABLE');
 
   useEffect(() => {
     if (!examinationId) return;
     setIsLoading(true);
 
     Promise.all([
-      getExaminationById(examinationId),
-      getExamTimeTableByExamination(examinationId),
+      getExaminationById(Number(examinationId)),
+      getExamTimeTableByExamination(Number(examinationId)),
     ])
       .then(([exam, response]) => {
         setExamination(exam);
@@ -56,6 +76,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
               new Date(b.date + ' ' + b.startTime).getTime(),
           );
           setTimetable(sortedData);
+          setIsTimetableApproved(response.data.data[0].approve);
         } else {
           setErrorMessage('Failed to fetch timetable.');
         }
@@ -63,6 +84,20 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
       .catch(() => setErrorMessage('Error fetching timetable.'))
       .finally(() => setIsLoading(false));
   }, [examinationId]);
+
+  const confirmAction = (action: () => void) => {
+    setActionToConfirm(() => action);
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleApproveTimetable = () => {
+    approveTimetable(Number(examinationId))
+      .then(() => {
+        setIsTimetableApproved(true);
+        setSuccessMessage('Timetable approved successfully.');
+      })
+      .catch(() => setErrorMessage('Failed to approve timetable.'));
+  };
 
   // Extract Examination Start and End Date
   const examStartDate = timetable.length > 0 ? timetable[0].date : '';
@@ -114,7 +149,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
     currentY += 25;
 
     // Table Headers and Data
-    const tableHeaders = ['Date', 'Time', 'Course'];
+    const tableHeaders = ['Date', 'Time', 'Paper'];
     const tableData = timetable.map((entry) => [
       { content: formatDateWithDay(entry.date) },
       `${entry.startTime} - ${entry.endTime}`,
@@ -165,6 +200,10 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
         message={errorMessage}
         onClose={() => setErrorMessage('')}
       />
+      <SuccessMessage
+        message={successMessage}
+        onClose={() => setSuccessMessage('')}
+      />
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke dark:border-strokedark py-6 px-8">
           <header className="text-center mb-6">
@@ -174,8 +213,22 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
             <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
               Department of Computer Science
             </h3>
-            <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300">
-              Examination Timetable
+            <h2
+              className={`text-xl font-bold flex justify-center items-center gap-2 ${
+                isTimetableApproved ? 'text-green-500' : 'text-yellow-500'
+              }`}
+            >
+              {isTimetableApproved ? (
+                <>
+                  <FaCheckCircle className="text-green-500" />
+                  Examination Timetable (Approved)
+                </>
+              ) : (
+                <>
+                  <FaClock className="text-yellow-500" />
+                  Examination Timetable (Pending Approval)
+                </>
+              )}
             </h2>
             {examStartDate && examEndDate && (
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -183,6 +236,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
               </p>
             )}
           </header>
+
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <h3 className="font-semibold text-lg text-gray-700 dark:text-gray-300">
               Examination: {examination?.degreeProgramName} - Level{' '}
@@ -190,6 +244,14 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
               {examination?.year}
             </h3>
 
+            {!isTimetableApproved && hasApprovePermission && (
+              <button
+                className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition duration-200 whitespace-nowrap"
+                onClick={() => confirmAction(handleApproveTimetable)}
+              >
+                Approve Timetable
+              </button>
+            )}
             <button className="btn-primary" onClick={generatePDF}>
               Download PDF
             </button>
@@ -210,7 +272,7 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
                     Time
                   </th>
                   <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                    Course
+                    Paper
                   </th>
                 </tr>
               </thead>
@@ -246,6 +308,18 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
           </div>
         )}
       </div>
+
+      {/* Render the ConfirmationModal */}
+      {isConfirmationModalOpen && (
+        <ConfirmationModal
+          message="Are you sure you want to approve this timetable? Once approved, you won't be able to edit it."
+          onConfirm={() => {
+            actionToConfirm();
+            setIsConfirmationModalOpen(false);
+          }}
+          onCancel={() => setIsConfirmationModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
