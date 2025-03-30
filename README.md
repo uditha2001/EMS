@@ -26,9 +26,9 @@ The department faces challenges in managing various examination activities manua
 | Component         | Technology |
 |------------------|------------|
 | Frontend        | React.js, TypeScript, Tailwind CSS |
-| Backend         | Spring Boot (Java), Axios |
+| Backend         | Spring Boot (Java)|
 | Database        | MySQL |
-| Authentication  | JWT, RSA, AES |
+| Authentication  | JWT |
 | Version Control | GitHub |
 | CI/CD           | GitHub Actions |
 | Project Management | Agile, Trello |
@@ -65,31 +65,6 @@ The department faces challenges in managing various examination activities manua
 
 - **Testing & Debugging**
   - Conduct unit testing, integration testing, and user acceptance testing.
-
-## 🧩 Installation & Setup
-
-To run this project locally:
-
-### Clone the Repository:
-```bash
-git clone https://github.com/git@github.com:uditha2001/EMS.git
-```
-### Install Frontend Dependencies:
-```bash
-cd frontend
-npm install
-```
-
-### Start the Frontend:
-```bash
-npm run dev
-```
-
-### Run the Backend:
-- Open the Spring Boot backend project in an IDE (e.g., IntelliJ/Eclipse).
-- Run the project.
-
-### Access the App:
 Open `http://localhost:3000` in your browser.
 ### EMS - Enhancing Examination Management for Efficiency and Accuracy. 🚀
 

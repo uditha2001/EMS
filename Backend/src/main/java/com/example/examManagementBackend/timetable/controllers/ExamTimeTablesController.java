@@ -1,9 +1,6 @@
 package com.example.examManagementBackend.timetable.controllers;
 
-import com.example.examManagementBackend.timetable.dto.AllocateExamCentersDTO;
-import com.example.examManagementBackend.timetable.dto.AssignInvigilatorsDTO;
-import com.example.examManagementBackend.timetable.dto.AssignSupervisorsDTO;
-import com.example.examManagementBackend.timetable.dto.ExamTimeTableDTO;
+import com.example.examManagementBackend.timetable.dto.*;
 import com.example.examManagementBackend.timetable.services.ExamTimeTablesService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +29,9 @@ public class ExamTimeTablesController {
         return StandardResponse.success("Exam Time Table deleted successfully");
     }
 
-    @GetMapping("/all")
-    public StandardResponse getAllExamTimeTables() {
-        return StandardResponse.success(examTimeTableService.getAllExamTimeTables());
+    @PostMapping("/synchronize")
+    public StandardResponse getAllExamTimeTables(@RequestBody List<Long> examinationIds) {
+        return StandardResponse.success(examTimeTableService.getSynchronizeTimetables(examinationIds));
     }
 
     @GetMapping("/exam/{examinationId}")
@@ -62,6 +59,11 @@ public class ExamTimeTablesController {
         return StandardResponse.success(examTimeTableService.getExamTimeTablesWithResourcesByExamination(examinationId));
     }
 
+    @PostMapping("/exam/with-resources")
+    public StandardResponse getExamTimeTablesWithResourcesByExamination(@RequestBody List<Long> examinationIds) {
+        return StandardResponse.success(examTimeTableService.getExamTimeTablesWithResourcesByExamination(examinationIds));
+    }
+
     @DeleteMapping("/invigilator/{invigilatorId}")
     public StandardResponse removeInvigilator(@PathVariable Long invigilatorId) {
         examTimeTableService.removeInvigilator(invigilatorId);
@@ -74,6 +76,14 @@ public class ExamTimeTablesController {
         return StandardResponse.success("Exam center removed successfully.");
     }
 
-
+    @PostMapping("/check-conflicts")
+    public StandardResponse checkConflicts(@RequestBody List<Long> examinationIds) {
+        List<ExamTimeTableWithResourcesDTO> conflicts = examTimeTableService.checkConflicts(examinationIds);
+        if (conflicts == null || conflicts.isEmpty()) {
+            return StandardResponse.success("No conflicts found.");
+        } else {
+            return StandardResponse.success(conflicts);
+        }
+    }
 
 }
