@@ -9,10 +9,8 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.time.LocalDateTime;
-
-import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.FIRST_MARKING_COMPLETE;
+import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.PUBLISHED;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -38,13 +36,10 @@ public class PublishedAndReCorrectedResultsEntity {
     @JoinColumn(name="student_id",referencedColumnName = "studentId")
     private StudentsEntity student;
 
-    @Column(nullable = false)
-    private float firstMarking;
-    private float secondMarking;
     private float finalMarks;
 
     @Enumerated(EnumType.STRING)
-    private ResultStatus status=FIRST_MARKING_COMPLETE;
+    private ResultStatus status=PUBLISHED;
 
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="approved_by",referencedColumnName = "userId")

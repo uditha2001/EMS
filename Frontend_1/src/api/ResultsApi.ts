@@ -90,6 +90,11 @@ const useResultsApi = () => {
           }
         }
       }
+
+      const saveFinalResults=(gradeDetails:any)=>{
+            const response=axiosPrivate.post('grading/saveFinalResults',gradeDetails);
+            return response;
+      }
         
 
   return {
