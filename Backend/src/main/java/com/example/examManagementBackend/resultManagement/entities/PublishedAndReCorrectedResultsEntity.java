@@ -1,8 +1,8 @@
 package com.example.examManagementBackend.resultManagement.entities;
 
-import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,16 +16,16 @@ import static com.example.examManagementBackend.resultManagement.entities.Enums.
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name="result")
+@Table(name="published_Results")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class ResultEntity {
+public class PublishedAndReCorrectedResultsEntity {
     @Setter(AccessLevel.NONE)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long resultId;
+    private Long publishedResultsId;
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="examination_id",referencedColumnName = "id")
     private ExaminationEntity examination;
@@ -33,10 +33,6 @@ public class ResultEntity {
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="course_id",referencedColumnName = "id")
     private CoursesEntity course;
-
-    @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="exam_type",referencedColumnName = "id")
-    private ExamTypesEntity examType;
 
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="student_id",referencedColumnName = "studentId")

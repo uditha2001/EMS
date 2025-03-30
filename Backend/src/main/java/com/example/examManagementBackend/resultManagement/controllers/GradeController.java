@@ -1,7 +1,9 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
+import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.MarksPercentageDTO;
 import com.example.examManagementBackend.resultManagement.services.GradingService;
+import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/v1/grading")
 public class GradeController {
     private final GradingService gradingService;
-    public GradeController(GradingService gradingService) {
+    public GradeController(GradingService gradingService, ResultService resultService) {
         this.gradingService = gradingService;
     }
 

@@ -5,6 +5,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.resultManagement.dto.ExamTypesDTO;
+import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.dto.StudentDTO;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
@@ -190,4 +191,9 @@ public class ResultService {
             );
         }
     }
+    //used to publish the final results
+    public ResponseEntity<StandardResponse> publishResults(List<GradeDetailsDTO> gradeDetailsDTOS){
+        return null;
+    }
+
 }
