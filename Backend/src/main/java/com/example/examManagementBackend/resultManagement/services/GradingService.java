@@ -229,7 +229,10 @@ public class GradingService {
             }
            return new float[]{0,0};
         }
-    private LinkedHashMap<String,Float> getTakenMarksFromEachExamTypes(LinkedHashMap<Long,float[]> examtypesMarks,ResultEntity resultEntity){
+    //save published results in database
+    private ResponseEntity<StandardResponse> savePublishedResults(List<GradeDetailsDTO> gradeDetailsDTOS){
+
         return null;
     }
+
 }
