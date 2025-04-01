@@ -66,22 +66,22 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          # SSH into the EC2 instance using the private key stored in the secret
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           sudo systemctl start docker
           sudo usermod -aG docker ec2-user
           sudo chmod 666 /var/run/docker.sock 
-          # Pull the latest Docker images from your registry
+
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker pull udithaimesh/ems:backend-latest # Pull the frontend image
-          docker pull udithaimesh/ems:frontend-latest  # Pull the backend image
-          cd .
-          # Stop and remove any existing containers (if needed)
+          docker pull udithaimesh/ems:backend-latest
+          docker pull udithaimesh/ems:frontend-latest
+
+          # Debugging: Check if images exist before running docker-compose
+          docker images | grep udithaimesh/ems
+
+          cd /home/ec2-user/EMS
+
           docker-compose down
-            
-          # Rebuild and start the containers using the new images
-          docker-compose up -d --build
-          docker image prune -f
-          # Optionally: Restart any services or apps if necessary
+          docker-compose up -d
           exit
           EOF
+      
