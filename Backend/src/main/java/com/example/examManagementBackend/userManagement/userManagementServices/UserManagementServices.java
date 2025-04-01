@@ -10,6 +10,7 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,13 +29,15 @@ public class UserManagementServices {
     private final UserRolesRepository userRolesRepo;
     private final RoleRepository roleRepository;
     private final MailService mailService;
+    private final JwtServiceIMPL jwtServiceIMPL;
 
-    public UserManagementServices(UserManagementRepo userManagementRepo, PasswordEncoder passwordEncoder,UserRolesRepository userRolesRepo, RoleRepository roleRepository, MailService mailService) {
+    public UserManagementServices(UserManagementRepo userManagementRepo, PasswordEncoder passwordEncoder, UserRolesRepository userRolesRepo, RoleRepository roleRepository, MailService mailService, JwtServiceIMPL jwtServiceIMPL) {
         this.userManagementRepo = userManagementRepo;
         this.passwordEncoder = passwordEncoder;
         this.userRolesRepo = userRolesRepo;
         this.roleRepository = roleRepository;
         this.mailService = mailService;
+        this.jwtServiceIMPL = jwtServiceIMPL;
     }
 
 
@@ -340,6 +343,41 @@ public class UserManagementServices {
             if (userRole.isRoleExpired()) {
                 userRolesRepo.delete(userRole); // Remove the expired role
             }
+        }
+    }
+
+    //used to validate the user
+    public ResponseEntity<StandardResponse> isUserValid(String password, HttpServletRequest request){
+        try{
+            Object[] details=jwtServiceIMPL.getUserNameAndToken(request);
+            if(details!=null){
+                String user=details[0].toString();
+                UserEntity userEntity=userManagementRepo.findByUsername(user);
+                String hashedPassword=userEntity.getPassword();
+                boolean isMatch = passwordEncoder.matches(password, hashedPassword);
+                if(isMatch){
+                    return ResponseEntity.ok(new StandardResponse(200,"sucess",null));
+                }
+                else{
+                    return new ResponseEntity<>(
+                            new StandardResponse(
+                                    400,"not Allowed!",null
+                            ), HttpStatus.BAD_REQUEST
+                    );
+                }
+            }
+            else{
+                return new ResponseEntity<>(
+                        new StandardResponse(404,"user not found",null), HttpStatus.NOT_FOUND
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(
+                            500,"not Allowed!",null
+                    ), HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 }
