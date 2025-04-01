@@ -69,8 +69,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
           sudo systemctl start docker
           sudo usermod -aG docker ec2-user
-          sudo chmod 666 /var/run/docker.sock 
-          
+          sudo chmod 666 /var/run/docker.sock           
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker pull udithaimesh/ems:backend-latest
           docker pull udithaimesh/ems:frontend-latest
@@ -78,8 +77,10 @@ jobs:
           # Navigate to /home/ec2-user where docker-compose.yml exists
           cd /home/ec2-user || exit 1
           
+
           docker-compose down
           docker-compose up -d
+          
           exit
           EOF
      
