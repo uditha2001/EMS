@@ -84,6 +84,7 @@ public class ExaminationService {
 
     public List<ExaminationDTO> getAllExaminations() {
         return examinationRepository.findAll().stream()
+                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING)
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -380,6 +381,14 @@ public class ExaminationService {
                     // If no evaluations, we don't include the course in the result
                     return Stream.empty();
                 })
+                .collect(Collectors.toList());
+    }
+
+    public List<ExaminationDTO> getExaminationsWithTimetable() {
+        return examinationRepository.findExaminationsWithTimetable()
+                .stream()
+                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING)  // Filter only ONGOING exams
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 }

@@ -86,6 +86,10 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.post('/exam-time-table/synchronize', examinationIds);
   };
 
+  const getOnGoingExaminations = async () => {
+    return axiosPrivate.get('/academic-years/with-timetable');
+  };
+
   return {
     getExamTimeTableByExamination,
     saveExamTimeTable,
@@ -101,6 +105,7 @@ const useExamTimeTableApi = () => {
     getSynchronizedTimetable,
     getExamTimeTableByExaminationsWithResources,
     approveTimetable,
+    getOnGoingExaminations,
   };
 };
 
