@@ -21,7 +21,7 @@ const ResultGrading = () => {
   const examinationId = queryParams.get("examinationId");
   const courseCode = queryParams.get("courseCode");
   const examName = queryParams.get("examName");
-  const { getGradingResults } = useResultsApi();
+  const { getGradingResults,saveFinalResults } = useResultsApi();
   const navigate = useNavigate();
   const [grades, setGrades] = useState<GradeDetails[]>([]);
   const [examTypes, setExamTypes] = useState<string[]>([]);
@@ -58,6 +58,7 @@ const ResultGrading = () => {
   const handleBack = () => {
     navigate(-1);
   }
+  //handle data publishing
   const handlePublish = () => {
     setShowPasswordConfirm(true);
   }
@@ -65,9 +66,23 @@ const ResultGrading = () => {
     try {
       const response = await confirmUser(enteredPassword);
       if (response?.data?.code === 200) {
-        
-        setSuccessMessage("Results published successfully");
-        setErrorMessage('');
+        try{
+          const saveResponse = await saveFinalResults({
+            grades
+          });
+          if (saveResponse?.data?.code === 200) {
+            setSuccessMessage("Results published successfully");
+            setErrorMessage('');
+          }
+          else if (saveResponse?.status === 500) {
+            setErrorMessage("An error occurred while saving the results.");
+          }
+          
+        }
+        catch (error) {
+          setErrorMessage("An error occurred while saving the results.");
+        }
+      
       }
       else if (response?.error) {
         setSuccessMessage('');

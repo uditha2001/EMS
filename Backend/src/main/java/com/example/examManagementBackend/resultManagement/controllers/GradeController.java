@@ -33,5 +33,10 @@ public class GradeController {
         return  gradingService.getGradingsMark(courseCode, ExaminationId);
     }
 
+    @PostMapping("/saveFinalResults")
+    public ResponseEntity<StandardResponse> saveFinalResults(@RequestBody List<GradeDetailsDTO> grades) {
+        return null;
+    }
+
 
 }

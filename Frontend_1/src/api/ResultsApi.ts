@@ -91,9 +91,29 @@ const useResultsApi = () => {
         }
       }
 
-      const saveFinalResults=(gradeDetails:any)=>{
-            const response=axiosPrivate.post('grading/saveFinalResults',gradeDetails);
-            return response;
+      const saveFinalResults=async (grades:any)=>{
+        try{
+          const response=await axiosPrivate.post('grading/saveFinalResults',grades.grades);
+          return response;
+        }
+        catch(error: any) {
+          if (error.response) {
+            return {
+                error: true,
+                status: error.response.status,
+                message: error.response.data?.message || "Request failed",
+            };
+        } else if (error.request) {
+            return {
+              error: true,
+              status: 500,
+              message: 'No response received from the server',
+            };
+          } else {
+            return { error: true, status: 500, message: error.message };
+          }
+        }
+            
       }
         
 
@@ -101,7 +121,8 @@ const useResultsApi = () => {
     saveMarkingResults,
     getFirstMarkingResults,
     saveChangeMarksConditions,
-    getGradingResults
+    getGradingResults,
+    saveFinalResults
     }
 }
 

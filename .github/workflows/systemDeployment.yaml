@@ -57,3 +57,21 @@ jobs:
         run: |
           docker compose build frontend
           docker push udithaimesh/ems:frontend-latest
+
+      - name: Set up SSH Key
+        run: |
+          # Save the private key stored in GitHub Secrets as a file
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem  # Secure the key file with the correct permissions
+
+      - name: Deploy to EC2
+        run: |
+          # SSH into the EC2 instance using the private key stored in the secret
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Commands to run on the EC2 instance for deployment
+            cd /home/ec2-user/app  # Change to your app directory
+            git pull origin main  # Pull the latest changes from GitHub
+            docker-compose down  # Stop the running containers
+            docker-compose up -d --build  # Rebuild and restart containers
+            exit
+          EOF

@@ -229,4 +229,10 @@ public class GradingService {
             }
            return new float[]{0,0};
         }
+    //save published results in database
+    private ResponseEntity<StandardResponse> savePublishedResults(List<GradeDetailsDTO> gradeDetailsDTOS){
+
+        return null;
+    }
+
 }
