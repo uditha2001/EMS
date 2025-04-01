@@ -38,7 +38,7 @@ const useExamTimeTableApi = () => {
   };
 
   const approveTimetable = async (examinationId: number) => {
-    return axiosPrivate.get(`/exam-time-table/approve/${examinationId}`);
+    return axiosPrivate.post(`/exam-time-table/approve/${examinationId}`);
   };
 
   // Allocate or update exam centers
