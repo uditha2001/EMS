@@ -78,7 +78,7 @@ jobs:
           # Debugging: Check if images exist before running docker-compose
           docker images | grep udithaimesh/ems
 
-          cd /home/ec2-user/EMS
+          cd .
 
           docker-compose down
           docker-compose up -d
