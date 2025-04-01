@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: examPapperManagement
+      MYSQL_DATABASE: examPaperManagement
       MYSQL_USER: uditha
       MYSQL_PASSWORD: SPAxim1@
       MYSQL_ROOT_HOST: '%'
@@ -34,7 +34,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPapperManagement?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=uditha
       - SPRING_DATASOURCE_PASSWORD=SPAxim1@
       - SPRING_PROFILES_ACTIVE=prod
