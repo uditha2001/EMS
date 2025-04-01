@@ -75,7 +75,7 @@ jobs:
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker pull udithaimesh/ems:backend-latest # Pull the frontend image
           docker pull udithaimesh/ems:frontend-latest  # Pull the backend image
-          cd EMS
+          cd .
           # Stop and remove any existing containers (if needed)
           docker-compose down
             
