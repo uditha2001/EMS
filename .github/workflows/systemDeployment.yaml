@@ -78,10 +78,11 @@ jobs:
           # Debugging: Check if images exist before running docker-compose
           docker images | grep udithaimesh/ems
           pwd
-          cd .
+          cd ec2-user
 
           docker-compose down
           docker-compose up -d
+          
           exit
           EOF
       
