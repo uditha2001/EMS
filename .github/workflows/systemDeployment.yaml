@@ -77,7 +77,7 @@ jobs:
 
           # Debugging: Check if images exist before running docker-compose
           docker images | grep udithaimesh/ems
-
+          pwd
           cd .
 
           docker-compose down
