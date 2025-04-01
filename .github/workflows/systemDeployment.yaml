@@ -68,10 +68,16 @@ jobs:
         run: |
           # SSH into the EC2 instance using the private key stored in the secret
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Commands to run on the EC2 instance for deployment
-            cd /home/ec2-user/app  # Change to your app directory
-            git pull origin main  # Pull the latest changes from GitHub
-            docker-compose down  # Stop the running containers
-            docker-compose up -d --build  # Rebuild and restart containers
-            exit
+          # Pull the latest Docker images from your registry
+          docker pull ${{ secrets.FRONTEND_IMAGE }}  # Pull the frontend image
+          docker pull ${{ secrets.BACKEND_IMAGE }}   # Pull the backend image
+            
+          # Stop and remove any existing containers (if needed)
+          docker-compose down
+            
+          # Rebuild and start the containers using the new images
+          docker-compose up -d --build
+            
+          # Optionally: Restart any services or apps if necessary
+          exit
           EOF
