@@ -72,8 +72,9 @@ jobs:
           sudo usermod -aG docker ec2-user
           sudo chmod 666 /var/run/docker.sock 
           # Pull the latest Docker images from your registry
-          docker pull ${{ secrets.FRONTEND_IMAGE }}  # Pull the frontend image
-          docker pull ${{ secrets.BACKEND_IMAGE }}   # Pull the backend image
+          
+          docker pull udithaimesh/ems:backend-latest # Pull the frontend image
+          docker pull udithaimesh/ems:frontend-latest  # Pull the backend image
           cd EMS
           # Stop and remove any existing containers (if needed)
           docker-compose down
