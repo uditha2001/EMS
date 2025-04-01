@@ -21,7 +21,7 @@ services:
       timeout: 10s
       retries: 10
     security_opt:
-      - seccomp:unconfined
+      - "seccomp:unconfined"
 
   backend:
     image: udithaimesh/ems:backend-latest
