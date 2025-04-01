@@ -1,11 +1,14 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
+import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/result")
@@ -33,6 +36,11 @@ public class ResultController {
     @GetMapping("/examType")
     public ResponseEntity<StandardResponse> getExamTypes(){
         return resultService.getAllExamsTypes();
+    }
+
+    @PostMapping("/finalMarks")
+    public ResponseEntity<StandardResponse> publisheGrades(@RequestBody List<GradeDetailsDTO> gradeDetailsDTOS){
+        return resultService.publishResults(gradeDetailsDTOS);
     }
 
 }
