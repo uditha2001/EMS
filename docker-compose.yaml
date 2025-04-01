@@ -61,6 +61,8 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    networks:
+      - webnet
     environment:
       - VITE_API_URL=http://backend:8080  # Vite uses VITE_ prefix
 
