@@ -68,10 +68,13 @@ jobs:
         run: |
           # SSH into the EC2 instance using the private key stored in the secret
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          sudo systemctl start docker
+          sudo usermod -aG docker ec2-user
+          sudo chmod 666 /var/run/docker.sock 
           # Pull the latest Docker images from your registry
           docker pull ${{ secrets.FRONTEND_IMAGE }}  # Pull the frontend image
           docker pull ${{ secrets.BACKEND_IMAGE }}   # Pull the backend image
-            
+          cd EMS
           # Stop and remove any existing containers (if needed)
           docker-compose down
             
