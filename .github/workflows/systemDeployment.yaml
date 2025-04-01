@@ -81,7 +81,7 @@ jobs:
             
           # Rebuild and start the containers using the new images
           docker-compose up -d --build
-            
+          docker image prune -f
           # Optionally: Restart any services or apps if necessary
           exit
           EOF
