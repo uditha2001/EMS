@@ -70,18 +70,17 @@ jobs:
           sudo systemctl start docker
           sudo usermod -aG docker ec2-user
           sudo chmod 666 /var/run/docker.sock 
-
+          
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker pull udithaimesh/ems:backend-latest
           docker pull udithaimesh/ems:frontend-latest
-
-          # Debugging: Check if images exist before running docker-compose
-          docker images | grep udithaimesh/ems
-
-          cd .
-
+          
+          # Navigate to /home/ec2-user where docker-compose.yml exists
+          cd /home/ec2-user || exit 1
+          
           docker-compose down
           docker-compose up -d
           exit
           EOF
+     
       
