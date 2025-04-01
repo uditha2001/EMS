@@ -26,9 +26,9 @@ The department faces challenges in managing various examination activities manua
 | Component         | Technology |
 |------------------|------------|
 | Frontend        | React.js, TypeScript, Tailwind CSS |
-| Backend         | Spring Boot (Java), Axios |
+| Backend         | Spring Boot (Java)|
 | Database        | MySQL |
-| Authentication  | JWT, RSA, AES |
+| Authentication  | JWT |
 | Version Control | GitHub |
 | CI/CD           | GitHub Actions |
 | Project Management | Agile, Trello |
