@@ -35,6 +35,7 @@ public class WebSecuirityConfiguration{
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
                         .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(
                                  "/api/v1/login/authentication",
                                 "/api/v1/login/refresh-token",
