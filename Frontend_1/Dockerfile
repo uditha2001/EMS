@@ -20,7 +20,7 @@ COPY src ./src
 
 # Build the app
 RUN npm run build
-
+RUN rm /etc/nginx/conf.d/default.conf
 # Production stage
 FROM nginx:1.25-alpine
 COPY --from=builder /app/build /usr/share/nginx/html
