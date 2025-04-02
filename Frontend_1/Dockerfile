@@ -2,10 +2,6 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-ARG VITE_API_URL=http://backend:8080/api/v1
-
-ENV VITE_API_URL=$VITE_API_URL
-
 # Copy package files first for caching
 COPY package.json .
 COPY package-lock.json* ./
