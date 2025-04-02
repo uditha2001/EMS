@@ -3,7 +3,7 @@ import { Axios } from "../common/Axios";
 class AuthService {
   static login(username: string, password: string) {
     try{
-      const response= Axios.post(`api/v1/login/authentication`, {
+      const response= Axios.post(`login/authentication`, {
         username,
         password,
       })
