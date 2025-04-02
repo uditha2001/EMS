@@ -65,6 +65,7 @@ services:
       - webnet
     environment:
       - VITE_API_URL=http://backend:8080  # Vite uses VITE_ prefix
+    command: ["nginx", "-g", "daemon off;"]
 
 volumes:
   db-data:
