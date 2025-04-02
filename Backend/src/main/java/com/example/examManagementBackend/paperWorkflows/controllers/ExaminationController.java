@@ -1,9 +1,7 @@
-package com.example.examManagementBackend.paperWorkflows.controller;
+package com.example.examManagementBackend.paperWorkflows.controllers;
 
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationCoursesDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
-import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.service.ExaminationService;
 import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -113,6 +111,12 @@ public class ExaminationController {
         }
 
         return ResponseEntity.ok(new StandardResponse(200, "Examinations with timetables retrieved successfully", examinations));
+    }
+
+    @GetMapping("/ongoing/count")
+    public ResponseEntity<Long> getOngoingExaminationsCount() {
+        Long count = examinationService.getOngoingExaminationsCount();
+        return ResponseEntity.ok(count);
     }
 
 }

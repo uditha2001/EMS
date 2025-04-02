@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.paperWorkflows.controller;
+package com.example.examManagementBackend.paperWorkflows.controllers;
 
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionStructureDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.QuestionTemplateDTO;
@@ -7,7 +7,6 @@ import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
 import com.example.examManagementBackend.paperWorkflows.service.QuestionService;
 import com.example.examManagementBackend.utill.StandardResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

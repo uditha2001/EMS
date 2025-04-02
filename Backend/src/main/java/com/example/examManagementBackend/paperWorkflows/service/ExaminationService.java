@@ -391,5 +391,10 @@ public class ExaminationService {
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
+
+
+    public Long getOngoingExaminationsCount() {
+        return examinationRepository.countByStatus(ExamStatus.ONGOING);
+    }
 }
 
