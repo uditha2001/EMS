@@ -18,7 +18,7 @@ COPY index.html .
 COPY public ./public
 COPY src ./src
 
-# Build the app
+# Build the application
 RUN npm run build
 
 # Production stage

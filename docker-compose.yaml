@@ -63,8 +63,7 @@ services:
       - backend
     networks:
       - webnet
-    environment:
-      - VITE_API_URL=http://backend:8080  # Vite uses VITE_ prefix
+
 
 volumes:
   db-data:
