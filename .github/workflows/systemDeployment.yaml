@@ -50,12 +50,12 @@ jobs:
 
       - name: Build and push backend
         run: |
-          docker compose build backend
+          docker-compose build --no-cache backend
           docker push udithaimesh/ems:backend-latest
 
       - name: Build and push frontend
         run: |
-          docker compose build frontend
+          docker compose build --no-cache frontend
           docker push udithaimesh/ems:frontend-latest
 
       - name: Set up SSH Key
