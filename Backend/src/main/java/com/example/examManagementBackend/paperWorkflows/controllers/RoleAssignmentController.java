@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.paperWorkflows.controller;
+package com.example.examManagementBackend.paperWorkflows.controllers;
 
 import com.example.examManagementBackend.paperWorkflows.dto.*;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;

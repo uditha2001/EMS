@@ -69,7 +69,7 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
     const tableHeaders = [
       'Date',
       'Time',
-      'Course',
+      'Paper',
       'Exam Center',
       'No of Candidates',
       ...(includeHallStaff ? ['Supervisor', 'Invigilators'] : []),

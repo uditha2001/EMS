@@ -1,8 +1,11 @@
 package com.example.examManagementBackend.timetable.services;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExamTypesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
@@ -20,6 +23,7 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.UserM
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +41,7 @@ public class ExamTimeTablesService {
     private final CoursesRepository coursesRepository;
     private final ExamTypesRepository examTypesRepository;
     private final ExamTimeTableCenterRepository examTimeTableCenterRepository;
+    private final EncryptedPaperRepository encryptedPaperRepository;
 
 
 
@@ -44,7 +49,7 @@ public class ExamTimeTablesService {
     public ExamTimeTablesService(ExaminationTimeTableRepository examTimeTableRepository,
                                  ExamInvigilatorsRepository examInvigilatorsRepository,
                                  ExamCentersRepository examCentersRepository,
-                                 UserManagementRepo userRepository, ExaminationRepository examinationRepository, CoursesRepository coursesRepository, ExamTypesRepository examTypesRepository, ExamTimeTableCenterRepository examTimeTableCenterRepository) {
+                                 UserManagementRepo userRepository, ExaminationRepository examinationRepository, CoursesRepository coursesRepository, ExamTypesRepository examTypesRepository, ExamTimeTableCenterRepository examTimeTableCenterRepository, EncryptedPaperRepository encryptedPaperRepository) {
         this.examTimeTableRepository = examTimeTableRepository;
         this.examInvigilatorsRepository = examInvigilatorsRepository;
         this.examCentersRepository = examCentersRepository;
@@ -53,6 +58,7 @@ public class ExamTimeTablesService {
         this.coursesRepository = coursesRepository;
         this.examTypesRepository = examTypesRepository;
         this.examTimeTableCenterRepository = examTimeTableCenterRepository;
+        this.encryptedPaperRepository = encryptedPaperRepository;
     }
 
     public List<ExamTimeTableDTO> saveOrUpdateExamTimeTable(List<ExamTimeTableDTO> examTimeTableDTOList) {
@@ -65,6 +71,11 @@ public class ExamTimeTablesService {
                 // Update existing record
                 examTimeTable = examTimeTableRepository.findById(examTimeTableDTO.getExamTimeTableId())
                         .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
+
+                // Check if the timetable is already approved
+                if (examTimeTable.isApproved()) {
+                    throw new RuntimeException("Cannot update an approved timetable.");
+                }
             } else {
                 // Create new record
                 examTimeTable = new ExamTimeTablesEntity();
@@ -123,6 +134,11 @@ public class ExamTimeTablesService {
             ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(allocation.getExamTimeTableId())
                     .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
 
+            // Check if the timetable is already approved
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Cannot update an approved timetable.");
+            }
+
             ExamCentersEntity examCenter = examCentersRepository.findById(allocation.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center not found"));
 
@@ -164,6 +180,11 @@ public class ExamTimeTablesService {
         for (InvigilatorAssignmentDTO assignment : dto.getAssignments()) {
             ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(assignment.getExamTimeTableId())
                     .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
+
+            // Check if the timetable is already approved
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Cannot update an approved timetable.");
+            }
 
             ExamCentersEntity examCenter = examCentersRepository.findById(assignment.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center not found"));
@@ -219,6 +240,7 @@ public class ExamTimeTablesService {
         examTimeTableDTO.setYear(examTimeTable.getExamination().getYear());
         examTimeTableDTO.setLevel(examTimeTable.getExamination().getLevel());
         examTimeTableDTO.setSemester(examTimeTable.getExamination().getSemester());
+        examTimeTableDTO.setApprove(examTimeTable.isApproved());
 
         return examTimeTableDTO;
     }
@@ -255,6 +277,7 @@ public class ExamTimeTablesService {
         dto.setExamType(String.valueOf(examTimeTable.getExamType().getExamType()));
         dto.setUpdatedAt(examTimeTable.getUpdatedAt());
         dto.setTimetableGroup(examTimeTable.getTimetableGroup());
+        dto.setApprove(examTimeTable.isApproved());
 
         // Set exam centers
         List<ExamTimeTableWithResourcesDTO.ExamCenterDTO> centers = examTimeTable.getExamCenters().stream()
@@ -388,7 +411,48 @@ public class ExamTimeTablesService {
         return new ArrayList<>(conflictsMap.values());
     }
 
+    @Transactional
+    public String approveExamTimeTable(Long examinationId) {
+        List<ExamTimeTablesEntity> examTimeTables = examTimeTableRepository.findByExaminationId(examinationId);
 
+        if (examTimeTables.isEmpty()) {
+            throw new RuntimeException("No exam timetables found for the given examination ID.");
+        }
+
+        for (ExamTimeTablesEntity examTimeTable : examTimeTables) {
+            if (examTimeTable.isApproved()) {
+                throw new RuntimeException("Timetable for examination ID " + examinationId + " is already approved.");
+            }
+
+            // Approve the timetable
+            examTimeTable.setApproved(true);
+            examTimeTableRepository.save(examTimeTable);
+        }
+
+        // Find all encrypted papers linked to this examination
+        List<EncryptedPaper> encryptedPapers = encryptedPaperRepository.findByExaminationId(examinationId);
+
+        // Group timetables by course ID and get the earliest exam start date for each course
+        Map<Long, LocalDateTime> earliestExamDates = examTimeTables.stream()
+                .collect(Collectors.toMap(
+                        t -> t.getCourse().getId(), // Key: Course ID
+                        t -> t.getStartTime().atDate(t.getDate()), // Value: Exam Start DateTime
+                        (d1, d2) -> d1.isBefore(d2) ? d1 : d2
+                ));
+
+        for (EncryptedPaper paper : encryptedPapers) {
+            if (paper.getPaperType() == PaperType.THEORY || paper.getPaperType() == PaperType.PRACTICAL) {
+                LocalDateTime earliestDate = earliestExamDates.get(paper.getCourse().getId());
+
+                if (earliestDate != null) {
+                    paper.setSharedAt(earliestDate);
+                    encryptedPaperRepository.save(paper);
+                }
+            }
+        }
+
+        return "Timetable for examination ID " + examinationId + " has been approved successfully, and relevant encrypted papers' sharedAt dates have been set to the earliest exam start date.";
+    }
 
 
 

@@ -45,6 +45,7 @@ interface ExamTimeTable {
   courseName: string;
   examType: string;
   timetableGroup: string;
+  approve: boolean;
 }
 
 const CreateTimetable: React.FC = () => {
@@ -65,6 +66,8 @@ const CreateTimetable: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [examTimeTables, setExamTimeTables] = useState<ExamTimeTable[]>([]);
+  const [isTimetableApproved, setIsTimetableApproved] =
+    useState<boolean>(false);
   const [courseDetails, setCourseDetails] = useState<{
     [key: string]: {
       examDate: string;
@@ -120,6 +123,12 @@ const CreateTimetable: React.FC = () => {
       const response = await getExamTimeTableByExamination(selectedExamination);
       setExamTimeTables(response.data.data);
 
+      // Check if all time slots are approved
+      const allApproved = response.data.data.every(
+        (timetable: ExamTimeTable) => timetable.approve,
+      );
+      setIsTimetableApproved(allApproved);
+
       // Ensure existing time slots are pre-filled correctly
       if (response.data.data.length > 0) {
         const details: {
@@ -173,7 +182,6 @@ const CreateTimetable: React.FC = () => {
       console.error('Error fetching exam timetables:', error);
     }
   };
-
   useEffect(() => {
     fetchExamTimeTables();
   }, [selectedExamination]);
@@ -232,6 +240,12 @@ const CreateTimetable: React.FC = () => {
       const response = await deleteExamTimeTable(examTimeTableId);
       if (response.data) {
         setSuccessMessage('Timetable slot deleted successfully!');
+        removeTimeSlot(
+          selectedTimetableSlot!.courseId,
+          selectedTimetableSlot!.evaluationType,
+          selectedTimetableSlot!.index,
+        );
+        // Remove the deleted slot from the examTimeTables state
         setExamTimeTables((prev) =>
           prev.filter((t) => t.examTimeTableId !== examTimeTableId),
         );
@@ -479,7 +493,7 @@ const CreateTimetable: React.FC = () => {
                   onChange={(e) =>
                     setSelectedExamination(Number(e.target.value))
                   }
-                  className="input-field appearance-none"
+                  className="input-field appearance-none cursor-pointer"
                 >
                   <option value="">Select Examination</option>
                   {examinations.map((exam) => (
@@ -501,7 +515,7 @@ const CreateTimetable: React.FC = () => {
                   <thead>
                     <tr className="bg-gray-100 dark:bg-form-input">
                       <th className="border border-gray-300 px-4 py-2 text-left">
-                        Course
+                        Paper
                       </th>
                       <th className="border border-gray-300 px-4 py-2 text-left">
                         Date
@@ -573,6 +587,7 @@ const CreateTimetable: React.FC = () => {
                                       )
                                     }
                                     className="input-field"
+                                    disabled={isTimetableApproved && isSaved}
                                   />
                                 </td>
                                 <td className="border px-4 py-2">
@@ -589,6 +604,7 @@ const CreateTimetable: React.FC = () => {
                                       )
                                     }
                                     className="input-field"
+                                    disabled={isTimetableApproved && isSaved}
                                   />
                                 </td>
                                 <td className="border px-4 py-2">
@@ -606,6 +622,7 @@ const CreateTimetable: React.FC = () => {
                                     }
                                     className="input-field"
                                     placeholder="Duration (hrs)"
+                                    disabled={isTimetableApproved && isSaved}
                                   />
                                 </td>
                                 <td className="border px-4 py-2">
@@ -623,63 +640,78 @@ const CreateTimetable: React.FC = () => {
                                     }
                                     className="input-field"
                                     placeholder="Group (optional)"
+                                    disabled={isTimetableApproved && isSaved}
                                   />
                                 </td>
-                                <td className="border px-4 py-2">
-                                  {isSaved ? (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        deleteTimeSlot(
-                                          course.id,
-                                          course.evaluationType,
-                                          index,
-                                          examTimeTableId,
-                                        )
-                                      }
-                                      className="text-red-500 hover:text-red-700"
-                                    >
-                                      <FontAwesomeIcon icon={faDeleteLeft} />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        removeTimeSlot(
-                                          course.id,
-                                          course.evaluationType,
-                                          index,
-                                        )
-                                      }
-                                      className="text-red-500 hover:text-red-700"
-                                    >
-                                      <FontAwesomeIcon icon={faMinus} />
-                                    </button>
-                                  )}
-                                </td>
+                                {isSaved && isTimetableApproved && (
+                                  <td className="border px-4 py-2">
+                                    <span className="text-green-500">
+                                      Approved
+                                    </span>
+                                  </td>
+                                )}
+                                {(!isTimetableApproved || !isSaved) && (
+                                  <td className="border px-4 py-2">
+                                    {isSaved ? (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          deleteTimeSlot(
+                                            course.id,
+                                            course.evaluationType,
+                                            index,
+                                            examTimeTableId,
+                                          )
+                                        }
+                                        className="text-red-500 hover:text-red-700"
+                                      >
+                                        <FontAwesomeIcon icon={faDeleteLeft} />
+                                      </button>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          removeTimeSlot(
+                                            course.id,
+                                            course.evaluationType,
+                                            index,
+                                          )
+                                        }
+                                        className="text-red-500 hover:text-red-700"
+                                      >
+                                        <FontAwesomeIcon icon={faMinus} />
+                                      </button>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             );
                           })}
-                          <tr>
-                            <td colSpan={6} className="border px-4 py-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  addTimeSlot(course.id, course.evaluationType)
-                                }
-                                className="text-green-500 hover:text-green-700"
-                              >
-                                <FontAwesomeIcon icon={faPlus} /> {course.code}{' '}
-                                (
-                                {course.evaluationType === 'THEORY'
-                                  ? 'T'
-                                  : course.evaluationType === 'PRACTICAL'
-                                  ? 'P'
-                                  : course.evaluationType}
-                                ) - {course.name}
-                              </button>
-                            </td>
-                          </tr>
+                          {(!isTimetableApproved || examTimeTables.length === 0) && (
+                            <tr>
+                              <td colSpan={6} className="border px-4 py-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    addTimeSlot(
+                                      course.id,
+                                      course.evaluationType,
+                                    )
+                                  }
+                                  className="text-green-500 hover:text-green-700"
+                                >
+                                  <FontAwesomeIcon icon={faPlus} />{' '}
+                                  {course.code} (
+                                  {course.evaluationType === 'THEORY'
+                                    ? 'T'
+                                    : course.evaluationType === 'PRACTICAL'
+                                    ? 'P'
+                                    : course.evaluationType}
+                                  ) - {course.name}
+                                </button>
+                              </td>
+                            </tr>
+                          )}
                         </>
                       );
                     })}
@@ -687,15 +719,17 @@ const CreateTimetable: React.FC = () => {
                 </table>
 
                 <div className="flex justify-end mt-4">
-                  <button
-                    type="button"
-                    onClick={handleSubmitTimetable}
-                    className="btn-primary"
-                  >
-                    {examTimeTables.length > 0
-                      ? 'Update Timetable'
-                      : 'Create Timetable'}
-                  </button>
+                  {(!isTimetableApproved || examTimeTables.length === 0) && (
+                    <button
+                      type="button"
+                      onClick={handleSubmitTimetable}
+                      className="btn-primary"
+                    >
+                      {examTimeTables.length > 0
+                        ? 'Update Timetable'
+                        : 'Create Timetable'}
+                    </button>
+                  )}
                 </div>
               </div>
             )}

@@ -136,7 +136,7 @@ export default function ExaminationList({
                   </Link>
 
                   <Link
-                    to={`/paper/preview-assigned-roles/${year.id}`}
+                    to={`/scheduling/preview-timetable/${year.id}`}
                     className="text-primary hover:underline"
                   >
                     Time Table
