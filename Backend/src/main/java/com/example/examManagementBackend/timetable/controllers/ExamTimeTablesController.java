@@ -86,4 +86,14 @@ public class ExamTimeTablesController {
         }
     }
 
+    @PostMapping("/approve/{examinationId}")
+    public StandardResponse approveExamTimeTable(@PathVariable Long examinationId) {
+        try {
+            String result = examTimeTableService.approveExamTimeTable(examinationId);
+            return StandardResponse.success(result);
+        } catch (RuntimeException e) {
+            return StandardResponse.error(e.getMessage());
+        }
+    }
+
 }

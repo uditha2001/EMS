@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import useApi from '../../api/api';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Stepper from '../PaperTransfer/Stepper';
@@ -24,8 +23,7 @@ interface Examination {
 }
 
 const SynchronizeTimetables: React.FC = () => {
-  const { getExaminations } = useApi();
-  const { checkConflicts } = useExamTimeTableApi();
+  const { checkConflicts,getOnGoingExaminations } = useExamTimeTableApi();
   const [examinations, setExaminations] = useState<any[]>([]);
   const [selectedExaminations, setSelectedExaminations] = useState<
     Examination[]
@@ -44,7 +42,7 @@ const SynchronizeTimetables: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const examRes = await getExaminations();
+        const examRes = await getOnGoingExaminations();
         setExaminations(examRes.data.data);
       } catch (error) {
         setErrorMessage('Failed to fetch examinations.');

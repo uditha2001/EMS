@@ -52,7 +52,7 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
           <thead>
             <tr className="bg-gray-100 dark:bg-form-input">
               <th className="border border-gray-300 px-4 py-2 text-left">
-                Course
+                Paper
               </th>
               <th className="border border-gray-300 px-3 md:px-4 py-2 text-left">
                 Date

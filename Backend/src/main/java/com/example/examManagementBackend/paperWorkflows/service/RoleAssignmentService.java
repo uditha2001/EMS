@@ -102,7 +102,8 @@ public class RoleAssignmentService {
                 roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName(),
                 roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized(),
-                roleAssignment.getPaperType()
+                roleAssignment.getPaperType(),
+                roleAssignment.getGrantAt()
         );
     }
 
@@ -156,7 +157,8 @@ public class RoleAssignmentService {
                     roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName(),
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
-                    roleAssignment.getPaperType()
+                    roleAssignment.getPaperType(),
+                    roleAssignment.getGrantAt()
             ));
         }
 
@@ -234,7 +236,8 @@ public class RoleAssignmentService {
                 roleAssignment.getUserId().getFirstName() + " " + roleAssignment.getUserId().getLastName(),
                 roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized(),
-                roleAssignment.getPaperType()
+                roleAssignment.getPaperType(),
+                roleAssignment.getGrantAt()
         );
     }
 

@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.userManagement.userManagementController;
+package com.example.examManagementBackend.userManagement.controllers;
 
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserDTO;
 import com.example.examManagementBackend.userManagement.userManagementDTO.UserProfileDTO;

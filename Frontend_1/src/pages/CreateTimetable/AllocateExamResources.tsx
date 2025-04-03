@@ -22,12 +22,13 @@ interface Examination {
 }
 
 const AllocateExamResources: React.FC = () => {
-  const { getExaminations, getExaminationById } = useApi();
+  const { getExaminationById } = useApi();
   const { getAllExamCenters } = useExamCenterApi();
   const {
     getExamTimeTableByExaminationWithResources,
     allocateExamCenters,
     removeExamCenter,
+    getOnGoingExaminations,
   } = useExamTimeTableApi();
 
   const [examinations, setExaminations] = useState<any[]>([]);
@@ -58,7 +59,7 @@ const AllocateExamResources: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const examRes = await getExaminations();
+        const examRes = await getOnGoingExaminations();
         setExaminations(examRes.data.data);
       } catch (error) {
         setErrorMessage('Failed to fetch examinations.');

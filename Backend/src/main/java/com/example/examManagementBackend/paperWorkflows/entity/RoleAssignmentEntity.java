@@ -61,4 +61,9 @@ public class RoleAssignmentEntity {
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime grantAt;
 
+    private boolean isCompleted;
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime completeDate;
+
 }
