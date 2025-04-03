@@ -12,7 +12,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      - ec2-user_webnet
+      - webnet
     ports:
       - "3307:3306"
     deploy:
@@ -46,7 +46,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=prod
     networks:
-      - ec2-user_webnet
+      - webnet
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -65,7 +65,7 @@ services:
     environment:
       - VITE_API_URL=http://backend:8080/api/v1/
     networks:
-      - ec2-user_webnet
+      - webnet
 
 
 volumes:
@@ -73,5 +73,5 @@ volumes:
     driver: local
 
 networks:
-  ec2-user_webnet:
+  webnet:
     driver: bridge
