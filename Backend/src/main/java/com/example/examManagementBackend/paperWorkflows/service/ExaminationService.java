@@ -84,6 +84,7 @@ public class ExaminationService {
 
     public List<ExaminationDTO> getAllExaminations() {
         return examinationRepository.findAll().stream()
+                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING)
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -381,6 +382,19 @@ public class ExaminationService {
                     return Stream.empty();
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<ExaminationDTO> getExaminationsWithTimetable() {
+        return examinationRepository.findExaminationsWithTimetable()
+                .stream()
+                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING)  // Filter only ONGOING exams
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    public Long getOngoingExaminationsCount() {
+        return examinationRepository.countByStatus(ExamStatus.ONGOING);
     }
 }
 

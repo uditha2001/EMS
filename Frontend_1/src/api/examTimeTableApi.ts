@@ -37,6 +37,10 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.get(`/academic-years/${examinationId}/courses`);
   };
 
+  const approveTimetable = async (examinationId: number) => {
+    return axiosPrivate.post(`/exam-time-table/approve/${examinationId}`);
+  };
+
   // Allocate or update exam centers
   const allocateExamCenters = async (allocationData: any) => {
     return axiosPrivate.post(
@@ -82,6 +86,10 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.post('/exam-time-table/synchronize', examinationIds);
   };
 
+  const getOnGoingExaminations = async () => {
+    return axiosPrivate.get('/academic-years/with-timetable');
+  };
+
   return {
     getExamTimeTableByExamination,
     saveExamTimeTable,
@@ -96,6 +104,8 @@ const useExamTimeTableApi = () => {
     checkConflicts,
     getSynchronizedTimetable,
     getExamTimeTableByExaminationsWithResources,
+    approveTimetable,
+    getOnGoingExaminations,
   };
 };
 

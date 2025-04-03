@@ -32,5 +32,6 @@ public class ExamTimeTableDTO {
     private String year;
     private String level;
     private String semester;
+    private boolean approve;
 
 }
