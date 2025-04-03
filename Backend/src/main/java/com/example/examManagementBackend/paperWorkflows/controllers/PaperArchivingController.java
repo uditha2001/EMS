@@ -1,4 +1,4 @@
-package com.example.examManagementBackend.paperWorkflows.controller;
+package com.example.examManagementBackend.paperWorkflows.controllers;
 import com.example.examManagementBackend.utill.StandardResponse;
 import com.example.examManagementBackend.paperWorkflows.dto.ArchivedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.UploadPaperRequestDTO;

@@ -64,4 +64,7 @@ public class ExamTimeTablesEntity {
 
     @Column
     private String timetableGroup;
+
+    @Column
+    private boolean approved = false;
 }

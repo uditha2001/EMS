@@ -36,7 +36,6 @@ const useApi = () => {
         },
       });
       return res.data.data;
-     
     } catch (error: any) {
       if (error.response) {
         console.error('Error uploading file:', error.response.data?.message);
@@ -234,7 +233,10 @@ const useApi = () => {
     return axiosPrivate.post('/roles/create', newRole);
   };
 
-  const createDegreeProgram = async (degreeProgram: {name: string, description: string}) => {
+  const createDegreeProgram = async (degreeProgram: {
+    name: string;
+    description: string;
+  }) => {
     return axiosPrivate.post('/degreePrograms', degreeProgram);
   };
 
@@ -603,8 +605,6 @@ const useApi = () => {
     }
   };
 
-  
-
   const searchArchivedPapers = async (searchParams: {
     fileName?: string;
     creatorName?: string;
@@ -727,7 +727,7 @@ const useApi = () => {
         { id, moderatorId }, // Send data in the request body
         { responseType: 'blob' },
       );
-  
+
       // Extract filename from the Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'marking.pdf';
@@ -737,16 +737,16 @@ const useApi = () => {
           filename = decodeURIComponent(matches[1]);
         }
       }
-  
+
       // Create a Blob from the response data
       const blob = new Blob([response.data], {
         type: response.headers['content-type'],
       });
-  
+
       if (!blob || blob.size === 0) {
         throw new Error('No data returned from the server.');
       }
-  
+
       // Create a temporary URL for the Blob and trigger the download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -757,21 +757,26 @@ const useApi = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Failed to download marking file');
+      setError(
+        error?.response?.data?.message || 'Failed to download marking file',
+      );
       throw new Error(
         error?.response?.data?.message || 'Failed to download marking file',
       );
     }
   };
 
-  const fetchEncryptedMarking = async (paperId: number, moderatorId: number): Promise<{ data: Blob }> => {
+  const fetchEncryptedMarking = async (
+    paperId: number,
+    moderatorId: number,
+  ): Promise<{ data: Blob }> => {
     try {
       const response = await axiosPrivate.post(
         '/papers/view-marking',
         { id: paperId, moderatorId }, // Send data in the request body
         { responseType: 'blob' },
       );
-  
+
       // Extract filename from the Content-Disposition header
       const contentDisposition = response.headers['content-disposition'];
       if (contentDisposition) {
@@ -779,16 +784,16 @@ const useApi = () => {
         if (matches && matches[1]) {
         }
       }
-  
+
       // Create a Blob from the response data
       const blob = new Blob([response.data], {
         type: response.headers['content-type'],
       });
-  
+
       if (!blob || blob.size === 0) {
         throw new Error('No data returned from the server.');
       }
-  
+
       // // Create a temporary URL for the Blob and open it in a new tab
       // const url = window.URL.createObjectURL(blob);
       // window.open(url, '_blank');
@@ -796,29 +801,41 @@ const useApi = () => {
 
       return { data: blob };
     } catch (error: any) {
-      setError(error?.response?.data?.message || 'Failed to fetch marking file');
+      setError(
+        error?.response?.data?.message || 'Failed to fetch marking file',
+      );
       throw new Error(
         error?.response?.data?.message || 'Failed to fetch marking file',
       );
     }
   };
 
-  const getGradesConditionsValues=async (courseCode:string)=>{
-    try{
-        const response=await axiosPrivate.get('grading/marksPercentage',
-          {
-            params: {courseCode}
-          }
-        );
-        return response.data;
-    }
-    catch(error:any){
-      setError(error?.response?.data?.message || 'Failed to fetch grades conditions values');
+  const getGradesConditionsValues = async (courseCode: string) => {
+    try {
+      const response = await axiosPrivate.get('grading/marksPercentage', {
+        params: { courseCode },
+      });
+      return response.data;
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.message ||
+          'Failed to fetch grades conditions values',
+      );
       throw new Error(
-        error?.response?.data?.message || 'Failed to fetch grades conditions values',
+        error?.response?.data?.message ||
+          'Failed to fetch grades conditions values',
       );
     }
-  }
+  };
+
+  const getOngoingexaminationCount = async () => {
+    try {
+      const response = await axiosPrivate.get('/academic-years/ongoing/count');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   return {
     uploadFile,
@@ -901,7 +918,8 @@ const useApi = () => {
     getPaperById,
     downloadMarkingFile,
     fetchEncryptedMarking,
-    getGradesConditionsValues
+    getGradesConditionsValues,
+    getOngoingexaminationCount,
   };
 };
 
