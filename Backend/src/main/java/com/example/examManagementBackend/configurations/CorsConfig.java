@@ -22,7 +22,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
 
-                        .allowedOrigins("http://localhost:3000","http://13.53.133.27:3000","http://frontend:80")
+                        .allowedOrigins("http://13.53.133.27:80","http://frontend:80")
                         .allowedMethods(GET, POST, PUT, DELETE, OPTIONS,PATCH)
                         .allowedHeaders("*")
                         .allowCredentials(true); // Enable cookies and Authorization headers
