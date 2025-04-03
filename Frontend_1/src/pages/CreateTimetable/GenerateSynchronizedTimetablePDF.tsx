@@ -7,13 +7,29 @@ import { faDownload } from '@fortawesome/free-solid-svg-icons';
 interface GenerateSynchronizedTimetablePDFProps {
   examTimetable: any[];
   conflicts: any[];
-  examination: any;
+  revisions: any[];
+  examination: {
+    year: string;
+    level: number;
+    semester: string;
+    degreeProgramName: string;
+  }[];
   examinationPeriod: string;
 }
 
 const GenerateSynchronizedTimetablePDF: React.FC<
   GenerateSynchronizedTimetablePDFProps
-> = ({ examTimetable, conflicts, examination, examinationPeriod }) => {
+> = ({
+  examTimetable,
+  conflicts,
+  revisions,
+  examination,
+  examinationPeriod,
+}) => {
+  const hasRevision = (examTimeTableId: number) => {
+    return revisions.some((rev) => rev.examTimeTableId === examTimeTableId);
+  };
+
   const generatePDF = () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
     const margin = 15;
@@ -37,6 +53,22 @@ const GenerateSynchronizedTimetablePDF: React.FC<
     doc.text('Synchronized Examination Timetable', pageWidth / 2, 27, {
       align: 'center',
     });
+
+    // Examination info
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Examination Information:', margin, currentY);
+    currentY += 10;
+
+    // Create a string that contains all exam info separated by '|'
+    const examInfoString = examination
+      .map((exam) => {
+        return `${exam.degreeProgramName} - Level ${exam.level} - Semester ${exam.semester} - ${exam.year}`;
+      })
+      .join(' | '); // Join all the examination info with ' | '
+
+    // Print the combined string
+    doc.text(examInfoString, margin, currentY);
 
     if (examinationPeriod) {
       doc.setFont('helvetica', 'italic');
@@ -72,25 +104,14 @@ const GenerateSynchronizedTimetablePDF: React.FC<
         const date = item.date;
         const time = item.startTime + ' - ' + item.endTime;
 
-        if (!grouped[degree]) {
-          grouped[degree] = {};
-        }
-
-        if (!grouped[degree][level]) {
-          grouped[degree][level] = {};
-        }
-
-        if (!grouped[degree][level][semester]) {
+        if (!grouped[degree]) grouped[degree] = {};
+        if (!grouped[degree][level]) grouped[degree][level] = {};
+        if (!grouped[degree][level][semester])
           grouped[degree][level][semester] = {};
-        }
-
-        if (!grouped[degree][level][semester][date]) {
+        if (!grouped[degree][level][semester][date])
           grouped[degree][level][semester][date] = {};
-        }
-
-        if (!grouped[degree][level][semester][date][time]) {
+        if (!grouped[degree][level][semester][date][time])
           grouped[degree][level][semester][date][time] = [];
-        }
 
         grouped[degree][level][semester][date][time].push(item);
       });
@@ -103,20 +124,12 @@ const GenerateSynchronizedTimetablePDF: React.FC<
     // Table Headers with colSpan and rowSpan
     const tableHeaders = [
       [
-        {
-          content: 'Date',
-          rowSpan: 3,
-          styles: { halign: 'center' as 'center' },
-        },
-        {
-          content: 'Time',
-          rowSpan: 3,
-          styles: { halign: 'center' as 'center' },
-        },
+        { content: 'Date', rowSpan: 3, styles: { halign: 'center' as const } },
+        { content: 'Time', rowSpan: 3, styles: { halign: 'center' as const } },
         ...Object.keys(groupedTimetable).map((degree) => ({
           content: degree,
           colSpan: Object.keys(groupedTimetable[degree]).length,
-          styles: { halign: 'center' as 'center' },
+          styles: { halign: 'center' as const },
         })),
       ],
       [
@@ -124,7 +137,7 @@ const GenerateSynchronizedTimetablePDF: React.FC<
           Object.keys(groupedTimetable[degree]).map((level) => ({
             content: `Level ${level}`,
             colSpan: Object.keys(groupedTimetable[degree][level]).length,
-            styles: { halign: 'center' as 'center' },
+            styles: { halign: 'center' as const },
           })),
         ),
       ],
@@ -133,7 +146,7 @@ const GenerateSynchronizedTimetablePDF: React.FC<
           Object.keys(groupedTimetable[degree]).flatMap((level) =>
             Object.keys(groupedTimetable[degree][level]).map((semester) => ({
               content: `Semester ${semester}`,
-              styles: { halign: 'center' as 'center' },
+              styles: { halign: 'center' as const },
             })),
           ),
         ),
@@ -142,7 +155,6 @@ const GenerateSynchronizedTimetablePDF: React.FC<
 
     // Table Data
     const tableData: any[] = [];
-
     const sortedDates = Array.from(
       new Set(examTimetable.map((item) => item.date)),
     ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
@@ -164,7 +176,6 @@ const GenerateSynchronizedTimetablePDF: React.FC<
         });
 
       timeSlots.forEach((timeSlot, timeIndex) => {
-        // Check if we need to add a new page
         if (currentY > pageHeight - 20) {
           addNewPage();
         }
@@ -207,16 +218,23 @@ const GenerateSynchronizedTimetablePDF: React.FC<
                     timeSlot.time,
               );
 
+              const isRevised = matchingExams.some((exam) =>
+                hasRevision(exam.examTimeTableId),
+              );
+
               row.push({
                 content: matchingExams
                   .map((exam) => {
+                    const revisedText = hasRevision(exam.examTimeTableId)
+                      ? ' (Revised)'
+                      : '';
                     return `${exam.courseCode} (${
                       exam.examType === 'THEORY'
                         ? 'T'
                         : exam.examType === 'PRACTICAL'
                         ? 'P'
                         : exam.examType
-                    }) - ${exam.courseName}${
+                    }) - ${exam.courseName}${revisedText}${
                       exam.timetableGroup
                         ? ` (Group ${exam.timetableGroup})`
                         : ''
@@ -224,8 +242,17 @@ const GenerateSynchronizedTimetablePDF: React.FC<
                   })
                   .join('\n'),
                 styles: {
-                  fillColor: isConflict ? [255, 182, 193] : undefined, // Light red for conflicts
-                  textColor: isConflict ? [0, 0, 0] : undefined, // Black text for conflicts
+                  fillColor: isConflict
+                    ? [255, 182, 193] // Light red for conflicts
+                    : isRevised
+                    ? [230, 230, 255] // Light purple for revisions
+                    : undefined,
+                  textColor: isConflict
+                    ? [0, 0, 0] // Black text for conflicts
+                    : isRevised
+                    ? [128, 0, 128] // Purple text for revisions
+                    : undefined,
+                  fontStyle: isRevised ? 'bolditalic' : undefined,
                 },
               });
             }),
@@ -237,6 +264,8 @@ const GenerateSynchronizedTimetablePDF: React.FC<
     });
 
     // Generate the table
+    let finalY = currentY;
+
     autoTable(doc, {
       startY: currentY,
       head: tableHeaders,
@@ -245,6 +274,27 @@ const GenerateSynchronizedTimetablePDF: React.FC<
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255] },
       margin: { top: 10 },
+      didDrawCell: (data) => {
+        // Add left border for revised entries
+        if (data.column.index > 1) {
+          // Skip date and time columns
+          const exam = examTimetable.find(
+            (e) =>
+              e.date === sortedDates[data.row.index] &&
+              e.startTime + ' - ' + e.endTime === data.cell.raw,
+          );
+          if (exam && hasRevision(exam.examTimeTableId)) {
+            doc.setDrawColor(128, 0, 128); // Purple border
+            doc.setLineWidth(0.5);
+            doc.line(
+              data.cell.x,
+              data.cell.y,
+              data.cell.x,
+              data.cell.y + data.cell.height,
+            );
+          }
+        }
+      },
       didDrawPage: (data) => {
         // Add page numbers
         const pageCount = doc.getNumberOfPages();
@@ -255,8 +305,22 @@ const GenerateSynchronizedTimetablePDF: React.FC<
           doc.internal.pageSize.height - 10,
           { align: 'right' },
         );
+
+        // Track the final Y position
+        if (data.cursor) {
+          finalY = data.cursor.y;
+        }
       },
     });
+
+    // Add legend
+    currentY = finalY + 10;
+    doc.setFontSize(8);
+    doc.setTextColor(255, 0, 0);
+    doc.text('* Conflicts are shown in red', margin, currentY);
+    doc.setTextColor(128, 0, 128);
+    doc.text('* Revised slots are shown in purple', margin, currentY + 5);
+    doc.setTextColor(0, 0, 0);
 
     // Footer
     doc.setFontSize(10);
@@ -266,7 +330,8 @@ const GenerateSynchronizedTimetablePDF: React.FC<
       doc.internal.pageSize.height - 10,
     );
 
-    doc.save(`synchronized-timetable-${examination?.year}.pdf`);
+    const year = examination.length > 0 ? examination[0].year : 'unknown';
+    doc.save(`synchronized-timetable-${year}.pdf`);
   };
 
   return (
