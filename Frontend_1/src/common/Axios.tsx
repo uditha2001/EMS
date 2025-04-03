@@ -1,5 +1,7 @@
 import axios from 'axios'
-const baseURL = 'http://localhost:8080/api/v1/';
+console.log("VITE_API_URL: ", import.meta.env.VITE_API_URL);
+console.log("VITE_MODE: ", import.meta.env.MODE);  // Check the current mode
+const baseURL = import.meta.env.VITE_API_URL ;
 export const Axios= axios.create({
     baseURL: baseURL,
     });

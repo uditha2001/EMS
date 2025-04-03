@@ -58,6 +58,11 @@ jobs:
           docker compose build --no-cache frontend
           docker push udithaimesh/ems:frontend-latest
 
+      - name: Build and push database
+        run: |
+         docker compose build --no-cache db
+         docker push udithaimesh/ems:db-latest
+
       - name: Set up SSH Key
         run: |
           # Save the private key stored in GitHub Secrets as a file
@@ -71,10 +76,9 @@ jobs:
             sudo usermod -aG docker ec2-user
             sudo chmod 666 /var/run/docker.sock           
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-            docker pull udithaimesh/ems:backend-latest
-            docker pull udithaimesh/ems:frontend-latest
-            
-            # Navigate to /home/ec2-user where docker-compose.yml exists
+  
+          
+          # Navigate to /home/ec2-user where docker-compose.yml exists
             cd /home/ec2-user || exit 1
             
             

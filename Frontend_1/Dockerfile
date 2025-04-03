@@ -1,29 +1,37 @@
-# Frontend/Dockerfile
-FROM node:18-alpine AS builder
+# Stage 1: Build the React app
+FROM node:18-alpine AS build
 WORKDIR /app
 
-# Copy package files first for caching
-COPY package.json .
-COPY package-lock.json* ./
-COPY postcss.config.cjs ./
-COPY tailwind.config.cjs ./
-COPY tsconfig*.json ./
-COPY vite.config.js .
+# Leverage caching by installing dependencies first
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
 
-# Install dependencies
-RUN npm ci
-
-# Copy source files
-COPY index.html .
-COPY public ./public
-COPY src ./src
-
-# Build the application
+# Copy the rest of the application code and build for production
+COPY . ./
 RUN npm run build
 
-# Production stage
-FROM nginx:1.25-alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Stage 2: Development environment
+FROM node:18-alpine AS development
+WORKDIR /app
+
+# Install dependencies again for development
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
+
+# Copy the full source code
+COPY . ./
+
+# Expose port for the development server
+EXPOSE 3000
+CMD ["npm", "start"]
+
+# Stage 3: Production environment
+FROM nginx:alpine AS production
+
+# Copy the production build artifacts from the build stage
+COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose the default NGINX port
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
