@@ -60,8 +60,8 @@ jobs:
 
       - name: Build and push database
         run: |
-         docker compose build --no-cache db
-         docker push udithaimesh/ems:db-latest
+          docker compose build --no-cache db
+          docker push udithaimesh/ems:db-latest
 
       - name: Set up SSH Key
         run: |
@@ -71,22 +71,22 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-            ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            sudo systemctl start docker
-            sudo usermod -aG docker ec2-user
-            sudo chmod 666 /var/run/docker.sock           
-            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-  
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          sudo systemctl start docker
+          sudo usermod -aG docker ec2-user
+          sudo chmod 666 /var/run/docker.sock           
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker pull udithaimesh/ems:backend-latest
+          docker pull udithaimesh/ems:frontend-latest
+          docker pull udithaimesh/ems:db-latest
+
           
           # Navigate to /home/ec2-user where docker-compose.yml exists
-            cd /home/ec2-user || exit 1
+          cd /home/ec2-user || exit 1
             
-            
-            docker-compose down
-            docker-compose up -d
-            docker image prune
-          
-          
-            exit
-            EOF
+          docker-compose down
+          docker-compose up -d
+          docker image prune
+          exit
+          EOF
 
