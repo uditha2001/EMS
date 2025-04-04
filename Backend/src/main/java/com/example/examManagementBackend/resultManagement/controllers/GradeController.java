@@ -5,6 +5,7 @@ import com.example.examManagementBackend.resultManagement.dto.MarksPercentageDTO
 import com.example.examManagementBackend.resultManagement.services.GradingService;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,10 +34,7 @@ public class GradeController {
         return  gradingService.getGradingsMark(courseCode, ExaminationId);
     }
 
-    @PostMapping("/saveFinalResults")
-    public ResponseEntity<StandardResponse> saveFinalResults(@RequestBody List<GradeDetailsDTO> grades) {
-        return null;
-    }
+
 
 
 }

@@ -6,7 +6,6 @@ const useResultsApi = () => {
           const response = await axiosPrivate.post('result/firstMarking', result, {
             ...config,
           });
-          console.log(response.data);
           return response.data;
         } catch (error: any) {
           if (error.response) {
@@ -91,9 +90,10 @@ const useResultsApi = () => {
         }
       }
 
-      const saveFinalResults=async (grades:any)=>{
+      const saveFinalResults=async (publishedData:any)=>{
         try{
-          const response=await axiosPrivate.post('grading/saveFinalResults',grades.grades);
+          console.log("Publish Data:", publishedData);
+          const response=await axiosPrivate.post('result/saveFinalResults',publishedData);
           return response;
         }
         catch(error: any) {
