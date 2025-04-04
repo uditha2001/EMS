@@ -167,17 +167,25 @@ public class ExamTimeTablesService {
                     .findByExamTimeTableExamTimeTableIdAndExamCenterId(assignment.getExamTimeTableId(), assignment.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center allocation not found"));
 
-            UserEntity supervisor = userRepository.findById(assignment.getSupervisorId())
+            // Delete the existing event for the old supervisor (if exists)
+            UserEntity oldSupervisor = examTimeTableCenter.getSupervisor();
+            if (oldSupervisor != null) {
+                deleteSupervisorEvent(examTimeTableCenter, oldSupervisor);
+            }
+
+            // Assign new supervisor
+            UserEntity newSupervisor = userRepository.findById(assignment.getSupervisorId())
                     .orElseThrow(() -> new RuntimeException("Supervisor not found"));
 
-            examTimeTableCenter.setSupervisor(supervisor);
+            examTimeTableCenter.setSupervisor(newSupervisor);
             examTimeTableCenterRepository.save(examTimeTableCenter);
 
-            // Create event for supervisor
-            createSupervisorEvent(examTimeTableCenter, supervisor);
+            // Create event for new supervisor
+            createSupervisorEvent(examTimeTableCenter, newSupervisor);
         }
         return "Supervisors assigned/updated successfully.";
     }
+
 
     private void createSupervisorEvent(ExamTimeTableCenter examTimeTableCenter, UserEntity supervisor) {
         ExamTimeTablesEntity examTimeTable = examTimeTableCenter.getExamTimeTable();
@@ -188,12 +196,24 @@ public class ExamTimeTablesService {
                 " at " + examTimeTableCenter.getExamCenter().getExamCenterName());
         event.setStartDate(LocalDateTime.of(examTimeTable.getDate(), examTimeTable.getStartTime()));
         event.setEndDate(LocalDateTime.of(examTimeTable.getDate(), examTimeTable.getEndTime()));
-        event.setLocation(examTimeTableCenter.getExamCenter().getExamCenterLocation());
+        event.setLocation(examTimeTableCenter.getExamCenter().getExamCenterName());
         event.setVisibility(Event.Visibility.PRIVATE);
         event.setUserId(supervisor.getUserId());
 
         eventRepository.save(event);
     }
+
+    private void deleteSupervisorEvent(ExamTimeTableCenter center, UserEntity supervisor) {
+        ExamTimeTablesEntity exam = center.getExamTimeTable();
+
+        // Adjust this depending on your Event entity and repository method
+        eventRepository.deleteByUserIdAndTitleAndStartDate(
+                supervisor.getUserId(),
+                "Exam Supervision - " + exam.getCourse().getCode(),
+                LocalDateTime.of(exam.getDate(), exam.getStartTime())
+        );
+    }
+
 
     @Transactional
     public String saveOrUpdateInvigilators(AssignInvigilatorsDTO dto) {
@@ -238,7 +258,7 @@ public class ExamTimeTablesService {
                 " at " + examCenter.getExamCenterName());
         event.setStartDate(LocalDateTime.of(examTimeTable.getDate(), examTimeTable.getStartTime()));
         event.setEndDate(LocalDateTime.of(examTimeTable.getDate(), examTimeTable.getEndTime()));
-        event.setLocation(examCenter.getExamCenterLocation());
+        event.setLocation(examCenter.getExamCenterName());
         event.setVisibility(Event.Visibility.PRIVATE);
         event.setUserId(invigilator.getUserId());
 

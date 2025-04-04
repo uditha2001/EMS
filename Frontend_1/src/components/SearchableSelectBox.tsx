@@ -13,6 +13,7 @@ interface SearchableSelectBoxProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  disabled?: boolean;
 }
 
 const SearchableSelectBox = ({
@@ -21,33 +22,35 @@ const SearchableSelectBox = ({
   label,
   onChange,
   placeholder,
+  disabled = false,
 }: SearchableSelectBoxProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Find the selected option
   const selectedOption = options.find((option) => option.id === value);
 
-  // Filter options based on search query
   const filteredOptions = options.filter((option) =>
     option.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleChange = (option: Option) => {
-    onChange(option.id); // Send the selected option's id
-    setSearchQuery(option.name); // Display the selected option's name in the input field
-    setIsOpen(false); // Close the dropdown after selection
+    if (disabled) return;
+    onChange(option.id);
+    setSearchQuery(option.name);
+    setIsOpen(false);
   };
 
-  // Function to clear selection
   const clearSelection = () => {
-    onChange(''); // Reset the selected value
-    setSearchQuery(''); // Clear the input field
+    if (disabled) return;
+    onChange('');
+    setSearchQuery('');
   };
 
   return (
     <div className="relative mb-4">
-      <label className="mb-2 block text-black dark:text-white">{label}</label>
+      {label && (
+        <label className="mb-2 block text-black dark:text-white">{label}</label>
+      )}
 
       {/* Search Input */}
       <div className="relative w-full">
@@ -55,14 +58,17 @@ const SearchableSelectBox = ({
           type="text"
           value={searchQuery || selectedOption?.name || ''}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => setIsOpen(true)} // Open dropdown when focused
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)} // Delay closing dropdown
+          onFocus={() => !disabled && setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
           placeholder={placeholder}
-          className="w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
+          disabled={disabled}
+          className={`w-full rounded border-[1.5px] border-stroke bg-gray py-3 px-5 text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white ${
+            disabled ? 'bg-gray-200 cursor-not-allowed dark:bg-gray-700' : ''
+          }`}
         />
 
-        {/* Clear Button (FontAwesome) */}
-        {value && (
+        {/* Clear Button */}
+        {value && !disabled && (
           <button
             type="button"
             onClick={clearSelection}
@@ -74,7 +80,7 @@ const SearchableSelectBox = ({
       </div>
 
       {/* Dropdown */}
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute left-0 w-full mt-1 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-500 z-10 rounded shadow-md">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => (

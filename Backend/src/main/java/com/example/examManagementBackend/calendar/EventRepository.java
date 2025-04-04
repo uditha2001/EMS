@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.calendar;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,5 +23,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     // Find events by title containing and user ID
     List<Event> findByTitleContainingAndUserId(String titlePart, Long userId);
+    void deleteByUserIdAndTitleAndStartDate(Long userId, String title, LocalDateTime startDate);
+
 }
 

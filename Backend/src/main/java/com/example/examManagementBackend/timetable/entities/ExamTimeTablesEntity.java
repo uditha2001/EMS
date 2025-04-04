@@ -42,7 +42,7 @@ public class ExamTimeTablesEntity {
     @JoinColumn(name="exam_type", referencedColumnName = "id")
     private ExamTypesEntity examType;
 
-    @OneToMany(mappedBy = "examTimeTable", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "examTimeTable", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ExamTimeTableCenter> examCenters = new HashSet<>();
 
     @Column(columnDefinition = "DATE")

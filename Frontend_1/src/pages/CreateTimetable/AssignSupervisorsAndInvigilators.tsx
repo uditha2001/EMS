@@ -372,6 +372,8 @@ const AssignSupervisorsInvigilators: React.FC<{
                                       });
                                     }}
                                     placeholder="Search and select invigilators"
+                                    disabled={isSaved}
+                              
                                   />
                                 ) : (
                                   <span>No supervisor assigned</span>

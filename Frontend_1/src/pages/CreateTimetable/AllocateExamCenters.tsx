@@ -116,6 +116,7 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
                           }
                           label={`Select Exam Center ${index + 1}`}
                           placeholder="Search and select an exam center"
+                          disabled={centerData.isSaved}
                         />
 
                         <input
@@ -131,6 +132,7 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
                           }
                           className="input-field mt-2 md:mt-0 px-2 py-1 md:w-28"
                           placeholder="No of Candidates"
+                          disabled={centerData.isSaved}
                           min={0}
                           max={getAvailableCapacity(
                             centerData.centerId,

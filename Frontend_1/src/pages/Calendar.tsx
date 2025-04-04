@@ -30,7 +30,6 @@ const Calendar = () => {
           getPublicEvents(),
           getEventByUserId(Number(auth.id)),
         ]);
-
         // Merge both event lists (adjust as needed)
         setEvents([...publicEvents.data, ...userEvents.data]);
       } catch (error) {
@@ -123,7 +122,7 @@ const Calendar = () => {
               key={event.id}
               className="group h-16 w-full flex-grow cursor-pointer py-1"
             >
-              <span className="group-hover:text-primary">More</span>
+              {/* <span className="group-hover:text-primary">More</span> */}
               <div className="event invisible absolute left-2 z-99 mb-1 flex w-[200%] flex-col rounded-sm border-l-[3px] border-primary bg-gray px-3 py-1 text-left opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-meta-4 md:visible md:w-[190%] md:opacity-100">
                 <span className="event-name text-sm font-semibold text-black dark:text-white">
                   {event.title}
