@@ -30,4 +30,6 @@ public class ExamTimeTableCenter {
     private UserEntity supervisor;
 
     private Integer numOfCandidates;
+
+    private String remarks;
 }

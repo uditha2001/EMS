@@ -5,6 +5,7 @@ import {
   faDeleteLeft,
   faMinus,
   faPlus,
+  faUserPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -15,7 +16,11 @@ import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 const AssignSupervisorsInvigilators: React.FC<{
   examTimetable: any[];
   allocations: {
-    [key: number]: { centerId: string; numOfCandidates: string }[];
+    [key: number]: {
+      centerId: string;
+      numOfCandidates: string;
+      remarks: string;
+    }[];
   };
   examCenters: any[];
   setExamTimetable: any;
@@ -67,6 +72,7 @@ const AssignSupervisorsInvigilators: React.FC<{
           acc[exam.examTimeTableId] = exam.examCenters.map((center: any) => ({
             centerId: center.examCenterId.toString(),
             numOfCandidates: center.numOfCandidates.toString(),
+            remarks: center.remarks,
             isSaved: true, // Mark as saved initially
           }));
           return acc;
@@ -373,7 +379,6 @@ const AssignSupervisorsInvigilators: React.FC<{
                                     }}
                                     placeholder="Search and select invigilators"
                                     disabled={isSaved}
-                              
                                   />
                                 ) : (
                                   <span>No supervisor assigned</span>
@@ -474,6 +479,7 @@ const AssignSupervisorsInvigilators: React.FC<{
                             ]
                           }
                         >
+                          <FontAwesomeIcon icon={faUserPlus} />
                           Assign
                         </button>
                       </td>

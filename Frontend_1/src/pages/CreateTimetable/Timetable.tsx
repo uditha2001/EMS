@@ -78,8 +78,7 @@ const CreateTimetable: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [, setExamTimeTables] = useState<ExamTimeTable[]>([]);
-  const [, setIsTimetableApproved] =
-    useState<boolean>(false);
+  const [, setIsTimetableApproved] = useState<boolean>(false);
   const [courseDetails, setCourseDetails] = useState<{
     [key: string]: TimeSlot[];
   }>({});
@@ -333,7 +332,7 @@ const CreateTimetable: React.FC = () => {
       ...prevState,
       [key]: prevState[key].filter((_, i) => i !== index),
     }));
-  }
+  };
 
   // Cancel deletion
   const handleCancelDelete = () => {
@@ -538,7 +537,7 @@ const CreateTimetable: React.FC = () => {
                 </h3>
                 <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
                   <thead>
-                  <tr className="bg-gray-100 dark:bg-form-input">
+                    <tr className="bg-gray-100 dark:bg-form-input">
                       <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                         Paper
                       </th>
@@ -700,29 +699,29 @@ const CreateTimetable: React.FC = () => {
                                       ) : (
                                         <>
                                           {/* Show save button for unsaved or modified slots */}
-                                         
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleSaveTimeSlot(
-                                                  course.id,
-                                                  course.evaluationType,
-                                                  course.evaluationTypeId,
-                                                  index,
-                                                )
-                                              }
-                                              className="text-blue-500 hover:text-blue-700 disabled:text-gray-400"
-                                              disabled={
-                                                !slot.examDate ||
-                                                !slot.examTime ||
-                                                !slot.duration ||
-                                                hasConflict
-                                              }
-                                              title="Save this time slot"
-                                            >
-                                              <FontAwesomeIcon icon={faSave} />
-                                            </button>
-                                        
+
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleSaveTimeSlot(
+                                                course.id,
+                                                course.evaluationType,
+                                                course.evaluationTypeId,
+                                                index,
+                                              )
+                                            }
+                                            className="text-blue-500 hover:text-blue-700 disabled:text-gray-400"
+                                            disabled={
+                                              !slot.examDate ||
+                                              !slot.examTime ||
+                                              !slot.duration ||
+                                              hasConflict
+                                            }
+                                            title="Save this time slot"
+                                          >
+                                            <FontAwesomeIcon icon={faSave} />
+                                          </button>
+
                                           {!isNew ? (
                                             <button
                                               type="button"
@@ -776,34 +775,33 @@ const CreateTimetable: React.FC = () => {
                               </React.Fragment>
                             );
                           })}
-                         
-                            <tr>
-                              <td colSpan={6} className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    addTimeSlot(
-                                      course.id,
-                                      course.evaluationType,
-                                    )
-                                  }
-                                  className="text-green-500 hover:text-green-700 flex items-center"
-                                >
-                                  <FontAwesomeIcon
-                                    icon={faPlus}
-                                    className="mr-1"
-                                  />
-                                  Add time slot for {course.code} (
-                                  {course.evaluationType === 'THEORY'
-                                    ? 'T'
-                                    : course.evaluationType === 'PRACTICAL'
-                                    ? 'P'
-                                    : course.evaluationType}
-                                  )
-                                </button>
-                              </td>
-                            </tr>
-                     
+
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="border border-gray-300 dark:border-strokedark px-4 py-2"
+                            >
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  addTimeSlot(course.id, course.evaluationType)
+                                }
+                                className="text-green-500 hover:text-green-700 flex items-center"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faPlus}
+                                  className="mr-1"
+                                />
+                                Add time slot for {course.code} (
+                                {course.evaluationType === 'THEORY'
+                                  ? 'T'
+                                  : course.evaluationType === 'PRACTICAL'
+                                  ? 'P'
+                                  : course.evaluationType}
+                                )
+                              </button>
+                            </td>
+                          </tr>
                         </React.Fragment>
                       );
                     })}

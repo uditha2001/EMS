@@ -133,10 +133,6 @@ public class ExamTimeTablesService {
             ExamTimeTablesEntity examTimeTable = examTimeTableRepository.findById(allocation.getExamTimeTableId())
                     .orElseThrow(() -> new RuntimeException("Exam Time Table not found"));
 
-//            // Check if the timetable is already approved
-//            if (examTimeTable.isApproved()) {
-//                throw new RuntimeException("Cannot update an approved timetable.");
-//            }
 
             ExamCentersEntity examCenter = examCentersRepository.findById(allocation.getExamCenterId())
                     .orElseThrow(() -> new RuntimeException("Exam Center not found"));
@@ -149,7 +145,8 @@ public class ExamTimeTablesService {
                 ExamTimeTableCenter newEntry = new ExamTimeTableCenter();
                 newEntry.setExamTimeTable(examTimeTable);
                 newEntry.setExamCenter(examCenter);
-                newEntry.setNumOfCandidates(allocation.getNumOfCandidates()); // Set number of candidates
+                newEntry.setNumOfCandidates(allocation.getNumOfCandidates());
+                newEntry.setRemarks(allocation.getRemarks());
                 examTimeTableCenterRepository.save(newEntry);
             } else {
                 existingEntry.setNumOfCandidates(allocation.getNumOfCandidates()); // Update existing record
@@ -374,6 +371,7 @@ public class ExamTimeTablesService {
                     centerDTO.setLocation(center.getExamCenter().getExamCenterLocation());
                     centerDTO.setCapacity(String.valueOf(center.getExamCenter().getExamCenterCapacity()));
                     centerDTO.setNumOfCandidates(center.getNumOfCandidates());
+                    centerDTO.setRemarks(center.getRemarks());
 
                     // Set supervisor (if exists) for this center
                     if (center.getSupervisor() != null) {
