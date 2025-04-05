@@ -30,6 +30,8 @@ public interface ExaminationRepository extends JpaRepository<ExaminationEntity, 
 
     @Query("SELECT COUNT(e) FROM ExaminationEntity e WHERE e.status = :status")
     Long countByStatus(ExamStatus status);
+    @Query("SELECT e FROM ExaminationEntity e WHERE e.id=:id")
+    ExaminationEntity findExaminationById(@Param("id") Long id);
 
 
 
