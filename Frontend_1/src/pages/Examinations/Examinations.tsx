@@ -72,7 +72,6 @@ export default function Examinations() {
       const response = await getExaminations();
       if (response.data.code === 200) {
         setExaminations(response.data.data);
-        console.log(response.data.data);
       } else {
         setErrorMessage('Unexpected response from the server.');
       }

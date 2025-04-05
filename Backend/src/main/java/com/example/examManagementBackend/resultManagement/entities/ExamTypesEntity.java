@@ -27,4 +27,9 @@ public class ExamTypesEntity {
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examType")
     private Set<ResultEntity> results;
 
+    public ExamTypesEntity(String examType) {
+        this.examType = examType;
+    }
+
+
 }

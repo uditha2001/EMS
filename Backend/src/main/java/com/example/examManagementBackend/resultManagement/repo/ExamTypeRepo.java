@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @EnableJpaRepositories
@@ -21,4 +22,6 @@ public interface ExamTypeRepo extends JpaRepository<ExamTypesEntity,Long> {
     List<ExamTypesEntity> getAllExamTypes();
     @Query("SELECT et FROM ExamTypesEntity et WHERE et.examType=:examType")
     ExamTypesEntity getExamTypeByName(@Param("examType") String examTypeName);
+
+    Optional<ExamTypesEntity> findByExamType(String examType);
 }
