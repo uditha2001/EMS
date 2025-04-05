@@ -30,6 +30,8 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
 
     List<RoleAssignmentEntity> findByUserId_UserIdAndRole_RoleId(Long userId, Long roleId);
 
+    List<RoleAssignmentEntity> findByUserId_UserIdAndIsAuthorizedTrue(Long userId);
+
 
 }
 

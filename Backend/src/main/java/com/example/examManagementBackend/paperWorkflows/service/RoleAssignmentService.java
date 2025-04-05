@@ -138,7 +138,7 @@ public class RoleAssignmentService {
     }
 
     public List<RoleAssignmentDTO> getRoleAssignmentsByUser(Long userId) {
-        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserId(userId);
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserIdAndIsAuthorizedTrue(userId);
         return getRoleAssignmentDTOS(roleAssignments);
     }
 
