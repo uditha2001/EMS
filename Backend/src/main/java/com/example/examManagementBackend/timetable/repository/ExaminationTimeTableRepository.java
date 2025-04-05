@@ -49,4 +49,57 @@ public interface ExaminationTimeTableRepository extends JpaRepository<ExamTimeTa
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
 
+    // Add to ExaminationTimeTableRepository
+    @Query("SELECT e FROM ExamTimeTablesEntity e " +
+            "WHERE e.examination.degreeProgramsEntity.degreeName = :degreeName " +
+            "AND e.examination.year = :year " +
+            "AND e.date = :date " +
+            "AND ((e.startTime < :endTime AND e.endTime > :startTime)) " +
+            "AND e.examTimeTableId != :excludeId")
+    List<ExamTimeTablesEntity> findByExaminationDegreeAndYearAndOverlappingTime(
+            @Param("degreeName") String degreeName,
+            @Param("year") String year,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId);
+
+    @Query("SELECT DISTINCT e FROM ExamTimeTablesEntity e " +
+            "JOIN e.examCenters c " +
+            "WHERE c.examCenter.id = :centerId " +
+            "AND e.date = :date " +
+            "AND ((e.startTime < :endTime AND e.endTime > :startTime)) " +
+            "AND e.examTimeTableId != :excludeId")
+    List<ExamTimeTablesEntity> findByExamCenterAndOverlappingTime(
+            @Param("centerId") Long centerId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId);
+
+    @Query("SELECT e FROM ExamTimeTablesEntity e " +
+            "WHERE EXISTS (SELECT 1 FROM ExamInvigilatorsEntity i " +
+            "WHERE i.examTimeTables.examTimeTableId = e.examTimeTableId " +
+            "AND i.invigilators.userId = :invigilatorId) " +
+            "AND e.date = :date " +
+            "AND ((e.startTime < :endTime AND e.endTime > :startTime)) " +
+            "AND e.examTimeTableId != :excludeId")
+    List<ExamTimeTablesEntity> findByInvigilatorAndOverlappingTime(
+            @Param("invigilatorId") Long invigilatorId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId);
+
+    List<ExamTimeTablesEntity> findByCourseIdAndExaminationIdAndApprovedTrue(Long courseId, Long examinationId);
+
+    // Find distinct course IDs for a given examination and exam types
+    @Query("SELECT DISTINCT e.course.id FROM ExamTimeTablesEntity e " +
+            "WHERE e.examination.id = :examinationId " +
+            "AND e.examType.examType IN :examTypes")
+    List<Long> findDistinctCourseIdsByExaminationIdAndExamTypeIn(
+            @Param("examinationId") Long examinationId,
+            @Param("examTypes") List<String> examTypes);
+
+
 }

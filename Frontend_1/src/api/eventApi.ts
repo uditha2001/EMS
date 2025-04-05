@@ -11,6 +11,14 @@ const useEventApi = () => {
     return axiosPrivate.get(`/events/user/${userId}`);
   };
 
+  const getUpcomingPublicEvents = async () => {
+    return axiosPrivate.get('/events/public/upcoming');
+  };
+
+  const getUpcomingEventByUserId = async (userId: number) => {
+    return axiosPrivate.get(`/events/user/${userId}/upcoming`);
+  };
+
   const saveEvent = async (eventData: any) => {
     return axiosPrivate.post('/events', eventData);
   };
@@ -29,6 +37,8 @@ const useEventApi = () => {
     saveEvent,
     updateEvent,
     deleteEvent,
+    getUpcomingPublicEvents,
+    getUpcomingEventByUserId,
   };
 };
 export default useEventApi;

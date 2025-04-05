@@ -1,11 +1,17 @@
 package com.example.examManagementBackend.timetable.controllers;
 
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
+import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
 import com.example.examManagementBackend.timetable.dto.*;
 import com.example.examManagementBackend.timetable.services.ExamTimeTablesService;
+import com.example.examManagementBackend.timetable.services.TimeSlotChangeLogService;
 import com.example.examManagementBackend.utill.StandardResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/exam-time-table")
@@ -13,9 +19,15 @@ public class ExamTimeTablesController {
 
     private final ExamTimeTablesService examTimeTableService;
 
+    private final EncryptedPaperRepository encryptedPaperRepository;
 
-    public ExamTimeTablesController(ExamTimeTablesService examTimeTableService) {
+
+    private final TimeSlotChangeLogService timeSlotChangeLogService;
+
+    public ExamTimeTablesController(ExamTimeTablesService examTimeTableService, EncryptedPaperRepository encryptedPaperRepository, TimeSlotChangeLogService timeSlotChangeLogService) {
         this.examTimeTableService = examTimeTableService;
+        this.encryptedPaperRepository = encryptedPaperRepository;
+        this.timeSlotChangeLogService = timeSlotChangeLogService;
     }
 
     @PostMapping("/create")
@@ -96,4 +108,47 @@ public class ExamTimeTablesController {
         }
     }
 
+    @PutMapping("/change-time-slot")
+    public ExamTimeTableDTO changeTimeSlotAfterApproval(@RequestBody TimeSlotChangeRequestDTO requestDTO) {
+        return examTimeTableService.changeTimeSlotAfterApproval(requestDTO);
+    }
+
+    @PostMapping("/slot/approve/{examTimeTableId}")
+    public StandardResponse  approveExamTimeTableById(@PathVariable Long examTimeTableId) {
+        try {
+            String result = examTimeTableService.approveExamTimeTableById(examTimeTableId);
+            return StandardResponse.success(result);
+        } catch (RuntimeException e) {
+            return StandardResponse.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/paper/exists")
+    public ResponseEntity<Map<String, Boolean>> checkPaperExists(
+            @RequestParam Long courseId,
+            @RequestParam Long examinationId,
+            @RequestParam String paperType) {
+
+        PaperType type;
+        try {
+            type = PaperType.valueOf(paperType);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        boolean exists = encryptedPaperRepository.existsByCourseIdAndExaminationIdAndPaperType(
+                courseId, examinationId, type);
+
+        return ResponseEntity.ok(Collections.singletonMap("exists", exists));
+    }
+
+    @GetMapping("/revisions/{examinationId}")
+    public List<TimeSlotChangeLogDTO> getChangeLogs(@PathVariable Long examinationId) {
+        return timeSlotChangeLogService.getChangeLogsByExaminationId(examinationId);
+    }
+
+    @PostMapping("/revisions/all")
+    public List<TimeSlotChangeLogDTO> getChangeLogsByExaminationIds(@RequestBody List<Long> examinationIds) {
+        return timeSlotChangeLogService.getChangeLogsByExaminationIds(examinationIds);
+    }
 }

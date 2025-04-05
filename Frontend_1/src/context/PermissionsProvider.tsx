@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import useAuth from '../hooks/useAuth';
-import axios from 'axios';
 import useRefreshToken from '../hooks/useRefreshToken';
+import { Axios } from '../common/Axios';
 
 type PermissionsState = {
   permissions: string[];
@@ -42,8 +42,8 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
 
     try {
       // Updated request to send an array of roles
-      const { data: permissions } = await axios.post(
-        `http://localhost:8080/api/v1/roles/permissions`,
+      const { data: permissions } = await Axios.post(
+        `/roles/permissions`,
         roles, // Directly pass the roles array
         {
           headers: {
@@ -51,7 +51,6 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
           },
         },
       );
-
 
       setPermissionsState({
         permissions, // Store the array of permissions

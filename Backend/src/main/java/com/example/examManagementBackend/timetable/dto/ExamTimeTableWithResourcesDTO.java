@@ -44,6 +44,7 @@ public class ExamTimeTableWithResourcesDTO {
         private String location;
         private String capacity;
         private Integer numOfCandidates;
+        private String remarks;
         private SupervisorDTO supervisor;
         private List<InvigilatorDTO> invigilators;
     }

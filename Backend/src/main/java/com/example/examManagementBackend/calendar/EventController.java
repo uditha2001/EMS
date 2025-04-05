@@ -23,6 +23,17 @@ public class EventController {
         return eventService.getUserEvents(userId);
     }
 
+    @GetMapping("/public/upcoming")
+    public List<EventDTO> getUpcomingPublicEvents() {
+        return eventService.getUpcomingPublicEvents();
+    }
+
+    @GetMapping("/user/{userId}/upcoming")
+    public List<EventDTO> getUpcomingUserEvents(@PathVariable Long userId) {
+        return eventService.getUpcomingUserEvents(userId);
+    }
+
+
     @PostMapping
     public EventDTO createEvent(@RequestBody Event event) {
         return eventService.createEvent(event);
