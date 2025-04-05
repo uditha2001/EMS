@@ -13,6 +13,11 @@ type GradeDetails = {
   totalMarks: number;
   grade: string;
 };
+type publishedData={
+  courseCode: string;
+  examinationId: number;
+  grades: GradeDetails[];
+}
 
 const ResultGrading = () => {
   const location = useLocation();
@@ -28,6 +33,11 @@ const ResultGrading = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+  const [publishedData, setPublishData] = useState<publishedData>({
+    courseCode: '',
+    examinationId: 0,
+    grades: []
+  });
 
   useEffect(() => {
     if (examinationId && courseCode) {
@@ -47,6 +57,24 @@ const ResultGrading = () => {
         });
     }
   }, []);
+  useEffect(() => {
+    if (grades.length > 0) {
+      saveFinalResults(publishedData)
+        .then((response) => {
+          if (response.code === 200) {
+            setSuccessMessage("Results published successfully");
+            setGrades([]);
+          } else if (response.code === 404) {
+            setErrorMessage("Results not found");
+          }
+        })
+        .catch((err) => {
+          console.error("Fetch error:", err);
+          setErrorMessage("An error occurred while publishing data.");
+        });
+    }
+  }
+  , [publishedData]);
 
   useEffect(() => {
     if (grades.length > 0) {
@@ -66,23 +94,11 @@ const ResultGrading = () => {
     try {
       const response = await confirmUser(enteredPassword);
       if (response?.data?.code === 200) {
-        try{
-          const saveResponse = await saveFinalResults({
-            grades
-          });
-          if (saveResponse?.data?.code === 200) {
-            setSuccessMessage("Results published successfully");
-            setErrorMessage('');
-          }
-          else if (saveResponse?.status === 500) {
-            setErrorMessage("An error occurred while saving the results.");
-          }
-          
-        }
-        catch (error) {
-          setErrorMessage("An error occurred while saving the results.");
-        }
-      
+        setPublishData({
+          courseCode: courseCode || '',
+          examinationId: Number(examinationId),
+          grades: grades,
+        });
       }
       else if (response?.error) {
         setSuccessMessage('');

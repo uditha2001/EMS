@@ -40,7 +40,6 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SERVER_SERVLET_CONTEXT_PATH=/api/v1
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
@@ -63,7 +62,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://13.53.133.27/api/v1
+      - VITE_API_URL=http://backend:8080
     networks:
       - webnet
 

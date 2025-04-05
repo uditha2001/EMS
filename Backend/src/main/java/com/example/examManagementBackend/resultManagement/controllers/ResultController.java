@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
+import com.example.examManagementBackend.resultManagement.dto.PublishedDataDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
@@ -38,9 +39,9 @@ public class ResultController {
         return resultService.getAllExamsTypes();
     }
 
-    @PostMapping("/finalMarks")
-    public ResponseEntity<StandardResponse> publisheGrades(@RequestBody List<GradeDetailsDTO> gradeDetailsDTOS){
-        return resultService.publishResults(gradeDetailsDTOS);
+    @PostMapping("/saveFinalResults")
+    public ResponseEntity<StandardResponse> saveFinalResults(@RequestBody PublishedDataDTO publishedData, HttpServletRequest request) {
+        return resultService.savePublishedResults(publishedData,request);
     }
 
 }

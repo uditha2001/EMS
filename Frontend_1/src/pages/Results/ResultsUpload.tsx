@@ -119,7 +119,6 @@ const ResultsUpload = () => {
           }
         },
       }).then((data) => {
-        console.log(data.code);
 
         if (data.code === 201) {
           setAllowToSend(false);
