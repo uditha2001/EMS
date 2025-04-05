@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -66,9 +66,8 @@ export default function Examinations() {
   }, []);
 
   // Fetch examinations
-  const fetchExaminations = useCallback(async () => {
+  const fetchExaminations = async () => {
     try {
-      setLoading(true);
       const response = await getExaminations();
       if (response.data.code === 200) {
         setExaminations(response.data.data);
@@ -81,7 +80,7 @@ export default function Examinations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchExaminations();
