@@ -5,6 +5,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -30,7 +31,25 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
 
     List<RoleAssignmentEntity> findByUserId_UserIdAndRole_RoleId(Long userId, Long roleId);
 
-    List<RoleAssignmentEntity> findByUserId_UserIdAndIsAuthorizedTrue(Long userId);
+    @Query("SELECT ra FROM RoleAssignmentEntity ra " +
+            "WHERE ra.userId.id = :userId " +
+            "AND ra.isAuthorized = true " +
+            "AND (ra.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.SCHEDULED " +
+            "OR ra.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.ONGOING)")
+    List<RoleAssignmentEntity> findOngoingAndScheduledByUserId(@Param("userId") Long userId);
+
+    Optional<RoleAssignmentEntity> findByUserIdAndCourseAndExaminationIdAndRoleAndPaperType(
+            UserEntity user,
+            CoursesEntity course,
+            ExaminationEntity examination,
+            RolesEntity role,
+            PaperType paperType
+    );
+
+    @Query("SELECT r FROM RoleAssignmentEntity r WHERE r.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.ONGOING" + " AND r.isAuthorized = true ")
+    List<RoleAssignmentEntity> findAllByOngoingExaminations();
+
+
 
 
 }

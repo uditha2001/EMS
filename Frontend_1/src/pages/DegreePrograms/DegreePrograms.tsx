@@ -46,7 +46,7 @@ export default function DegreePrograms() {
 
   useEffect(() => {
     fetchDegreePrograms();
-  }, [fetchDegreePrograms]);
+  }, []);
 
   // Save or update degree program
   const handleSave = async () => {

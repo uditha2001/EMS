@@ -836,6 +836,14 @@ const useApi = () => {
       throw error;
     }
   };
+  const getRoleAssignments = async () => {
+    try {
+      const response = await axiosPrivate.get('/role-assignments');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   return {
     uploadFile,
@@ -920,6 +928,7 @@ const useApi = () => {
     fetchEncryptedMarking,
     getGradesConditionsValues,
     getOngoingexaminationCount,
+    getRoleAssignments,
   };
 };
 

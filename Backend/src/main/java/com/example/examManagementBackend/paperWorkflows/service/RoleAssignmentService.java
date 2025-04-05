@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,6 +49,7 @@ public class RoleAssignmentService {
         this.roleAssignmentRevisionRepository = roleAssignmentRevisionRepository;
     }
 
+    @Transactional
     public RoleAssignmentDTO assignRole(CreateRoleAssignmentDTO createRoleAssignmentDTO) {
         // Fetch required entities from the database
         CoursesEntity course = coursesRepository.findById(createRoleAssignmentDTO.getCourseId())
@@ -103,10 +103,13 @@ public class RoleAssignmentService {
                 roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized(),
                 roleAssignment.getPaperType(),
-                roleAssignment.getGrantAt()
+                roleAssignment.getGrantAt(),
+                roleAssignment.isCompleted(),
+                roleAssignment.getCompleteDate()
         );
     }
 
+    @Transactional
     public String authorizeRole(Long id) {
         // Fetch the role assignment by ID
         RoleAssignmentEntity roleAssignment = roleAssignmentRepository.findById(id)
@@ -133,12 +136,12 @@ public class RoleAssignmentService {
     }
 
     public List<RoleAssignmentDTO> getAllRoleAssignments() {
-        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findAll();
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findAllByOngoingExaminations();
         return getRoleAssignmentDTOS(roleAssignments);
     }
 
     public List<RoleAssignmentDTO> getRoleAssignmentsByUser(Long userId) {
-        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByUserId_UserIdAndIsAuthorizedTrue(userId);
+        List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findOngoingAndScheduledByUserId(userId);
         return getRoleAssignmentDTOS(roleAssignments);
     }
 
@@ -158,7 +161,9 @@ public class RoleAssignmentService {
                     roleAssignment.getExaminationId().getId(),
                     roleAssignment.getIsAuthorized(),
                     roleAssignment.getPaperType(),
-                    roleAssignment.getGrantAt()
+                    roleAssignment.getGrantAt(),
+                    roleAssignment.isCompleted(),
+                    roleAssignment.getCompleteDate()
             ));
         }
 
@@ -183,7 +188,7 @@ public class RoleAssignmentService {
         return "User updated successfully in role assignment";
     }
 
-
+    @Transactional
     // Authorize roles for a given examination
     public String authorizeRolesByExamination(Long examinationId) {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByExaminationId_Id(examinationId);
@@ -204,6 +209,7 @@ public class RoleAssignmentService {
 
 
     // Authorize roles for a given course and paper type
+    @Transactional
     public String authorizeRolesByCourseAndPaperType(Long courseId, PaperType paperType) {
         List<RoleAssignmentEntity> roleAssignments = roleAssignmentRepository.findByCourseIdAndPaperType(courseId, paperType);
         if (roleAssignments.isEmpty()) {
@@ -237,7 +243,9 @@ public class RoleAssignmentService {
                 roleAssignment.getExaminationId().getId(),
                 roleAssignment.getIsAuthorized(),
                 roleAssignment.getPaperType(),
-                roleAssignment.getGrantAt()
+                roleAssignment.getGrantAt(),
+                roleAssignment.isCompleted(),
+                roleAssignment.getCompleteDate()
         );
     }
 

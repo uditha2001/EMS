@@ -15,6 +15,7 @@ import AllocateExamResources from './pages/CreateTimetable/AllocateExamResources
 import PreviewTimetable from './pages/CreateTimetable/PreviewTimetable';
 import TimeTableRevision from './pages/CreateTimetable/TimeTableRevision';
 import PreviewTimetableRevisions from './pages/CreateTimetable/PreviewTimetableRevisions';
+import PaperTracking from './pages/PaperTracking/PaperTracking';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -428,6 +429,10 @@ function App() {
                   'Role Assignments | EMS',
                   <PreviewRoleAssignmentRevisions />,
                 )}
+              />
+              <Route
+                path="/paper/tracking"
+                element={renderPage('Paper Tracking | EMS', <PaperTracking />)}
               />
             </Route>
 
