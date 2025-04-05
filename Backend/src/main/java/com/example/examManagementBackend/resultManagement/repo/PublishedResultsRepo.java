@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @EnableJpaRepositories
-public interface PublishedResults extends JpaRepository<PublishedAndReCorrectedResultsEntity, Long> {
+public interface PublishedResultsRepo extends JpaRepository<PublishedAndReCorrectedResultsEntity, Long> {
 
 }

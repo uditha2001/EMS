@@ -50,12 +50,12 @@ jobs:
 
       - name: Build and push backend
         run: |
-          docker compose build backend
+          docker compose build --no-cache backend
           docker push udithaimesh/ems:backend-latest
 
       - name: Build and push frontend
         run: |
-          docker compose build frontend
+          docker compose build --no-cache frontend
           docker push udithaimesh/ems:frontend-latest
 
       - name: Set up SSH Key
@@ -75,13 +75,11 @@ jobs:
           docker pull udithaimesh/ems:frontend-latest
           
           # Navigate to /home/ec2-user where docker-compose.yml exists
-          cd /home/ec2-user || exit 1
-          
-
+            cd /home/ec2-user || exit 1
+            
           docker-compose down
           docker-compose up -d
-          
+          docker image prune
           exit
           EOF
-     
-      
+

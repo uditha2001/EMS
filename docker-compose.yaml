@@ -15,6 +15,12 @@ services:
       - webnet
     ports:
       - "3307:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "db"]
       interval: 5s
@@ -34,14 +40,14 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=uditha
-      - SPRING_DATASOURCE_PASSWORD=SPAxim1@
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=prod
     networks:
       - webnet
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "--fail", "http://13.53.133.27/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -51,12 +57,17 @@ services:
     build:
       context: ./Frontend_1
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://13.53.133.27/api/v1
     ports:
       - "3000:80"
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://backend:8080  # Vite uses VITE_ prefix
+      - VITE_API_URL=http://13.53.133.27/api/v1
+    networks:
+      - webnet
+
 
 volumes:
   db-data:
