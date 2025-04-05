@@ -73,12 +73,15 @@ const AdminDashboard = () => {
 
     const fetchEvents = async () => {
       try {
-        const [publicEvents, userEvents] = await Promise.all([
+        const [publicRes, userRes] = await Promise.all([
           getUpcomingPublicEvents(),
           getUpcomingEventByUserId(Number(auth.id)),
         ]);
-        // Merge both event lists (adjust as needed)
-        setEvents([...publicEvents.data, ...userEvents.data]);
+
+        const publicEvents = publicRes?.data ?? [];
+        const userEvents = userRes?.data ?? [];
+
+        setEvents([...publicEvents, ...userEvents]);
       } catch (error) {
         console.error('Error fetching events:', error);
       } finally {

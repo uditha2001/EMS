@@ -127,7 +127,7 @@ const UserTasksDashboard = () => {
   return (
     <div>
       {assignments.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow p-6">
           <p className="text-gray-500 dark:text-gray-400">
             No tasks assigned to you at the moment.
           </p>

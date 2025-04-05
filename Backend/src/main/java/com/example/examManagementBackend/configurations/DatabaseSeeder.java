@@ -90,6 +90,11 @@ public class DatabaseSeeder {
             PermissionEntity p33 = createPermission("EXAM_CENTERS", "Allows Manage of Exam Centers", "Scheduling");
             PermissionEntity p34 = createPermission("APPROVE_TIMETABLE", "Allows approving timetables", "Scheduling");
 
+            PermissionEntity p35 = createPermission("COUNT_CARDS", "Allows Dashboard Cards", "Dashboard");
+            PermissionEntity p36 = createPermission("PERFORMANCE", "Allows System Performances", "Dashboard");
+            PermissionEntity p37 = createPermission("DISTRIBUTION_GRAPH", "Allows User Distribution Graph", "Dashboard");
+            PermissionEntity p38 = createPermission("USER_ACTIVITY", "Allows User Activity", "Dashboard");
+
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -117,6 +122,10 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p32);
             assignPermissionToRole(adminRole, p33);
             assignPermissionToRole(adminRole, p34);
+            assignPermissionToRole(adminRole, p35);
+            assignPermissionToRole(adminRole, p36);
+            assignPermissionToRole(adminRole, p37);
+            assignPermissionToRole(adminRole, p38);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(academyCoordinatorRole,p20);

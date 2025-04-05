@@ -56,10 +56,13 @@ const isToday = (dateString: string) => {
 };
 
 const Schedule: React.FC<ScheduleProps> = ({ events }) => {
-  const todayEvents = events.filter(event => isToday(event.startDate));
+  const todayEvents = events.filter((event) => isToday(event.startDate));
   const upcomingEvents = events
-    .filter(event => !isToday(event.startDate))
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+    .filter((event) => !isToday(event.startDate))
+    .sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    )
     .slice(0, 3);
 
   return (
@@ -71,6 +74,14 @@ const Schedule: React.FC<ScheduleProps> = ({ events }) => {
           </h2>
           <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
         </div>
+
+        {events.length === 0 && (
+          <div className="text-center py-8 bg-white dark:bg-gray-800 rounded shadow p-6">
+            <p className="text-gray-500 dark:text-gray-400">
+              No events scheduled at the moment.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {todayEvents.map((event, index) => (

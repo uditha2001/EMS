@@ -461,7 +461,7 @@ const useApi = () => {
     try {
       const response = await axiosPrivate.get('/user/count');
       if (response?.data?.code === 200) {
-        return response.data.data;
+        return response?.data?.data;
       }
     } catch (error: any) {
       throw new Error(
