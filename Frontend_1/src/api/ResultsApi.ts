@@ -92,7 +92,6 @@ const useResultsApi = () => {
 
       const saveFinalResults=async (publishedData:any)=>{
         try{
-          console.log("Publish Data:", publishedData);
           const response=await axiosPrivate.post('result/saveFinalResults',publishedData);
           return response;
         }
