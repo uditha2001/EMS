@@ -1,6 +1,7 @@
 import useApi from '../../api/api';
 import { useEffect, useState } from 'react';
 import UserRolesDistribution from '../../components/adminDashboardsComponents/UserRolesDistribution';
+import useEventApi from '../../api/eventApi';
 
 import {
   UsersIcon,
@@ -8,13 +9,24 @@ import {
   AcademicCapIcon,
   ChartBarIcon,
   BellAlertIcon,
-  ArrowTrendingUpIcon,
-  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import UserTasksDashboard from './UserTasksDashboard';
 import DataCard from './DataCard';
 import useDashboardApi from '../../api/dashboardApi';
 import useAuth from '../../hooks/useAuth';
+import SystemPerformance from './SystemPerformance';
+import Schedule from './Schedule';
+
+interface Event {
+  id: number;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  visibility: string;
+  userId: string | null;
+}
 
 const AdminDashboard = () => {
   const [activeUsers, setActiveUsers] = useState<number>(0);
@@ -32,6 +44,9 @@ const AdminDashboard = () => {
   const [examinationsCount, setExaminationsCount] = useState<number>(0);
   const [systemPerformance, setSystemPerformance] = useState<any>({});
   const { auth } = useAuth();
+  const [events, setEvents] = useState<Event[]>([]);
+  const { getUpcomingPublicEvents, getUpcomingEventByUserId } = useEventApi();
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     getUsersCounts().then((users) => {
@@ -55,6 +70,23 @@ const AdminDashboard = () => {
     getSystemPerformance().then((performance) => {
       setSystemPerformance(performance.data);
     });
+
+    const fetchEvents = async () => {
+      try {
+        const [publicEvents, userEvents] = await Promise.all([
+          getUpcomingPublicEvents(),
+          getUpcomingEventByUserId(Number(auth.id)),
+        ]);
+        // Merge both event lists (adjust as needed)
+        setEvents([...publicEvents.data, ...userEvents.data]);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
   }, []);
 
   return (
@@ -166,221 +198,11 @@ const AdminDashboard = () => {
             </button>
           </div>
           {/* System Performance */}
-          <div className="col-span-1 bg-white dark:bg-gray-800 rounded shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                System Performance
-              </h2>
-              <ArrowTrendingUpIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="space-y-4">
-              {/* Server Uptime */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Server Uptime
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.serverUptime}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        (parseFloat(systemPerformance.serverUptime) / 10) * 100,
-                        100,
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Database Load */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Database Load
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.databaseLoad}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full"
-                    style={{
-                      width: `${parseFloat(systemPerformance.databaseLoad)}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* API Response Time */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    API Response Time
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.apiResponseTime}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-amber-500 h-2 rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        parseInt(systemPerformance.apiResponseTime) / 10,
-                        100,
-                      )}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Disk Usage */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Disk Usage
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.diskUsage}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-purple-500 h-2 rounded-full"
-                    style={{
-                      width: `${parseFloat(systemPerformance.diskUsage)}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* CPU Usage */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    CPU Usage
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.cpuUsage}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-red-500 h-2 rounded-full"
-                    style={{
-                      width: `${parseFloat(systemPerformance.cpuUsage)}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Memory Usage */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Memory Usage
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.memoryUsage}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className="bg-teal-500 h-2 rounded-full"
-                    style={{
-                      width: `${parseFloat(systemPerformance.memoryUsage)}%`,
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Thread Count */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Thread Count
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.threadCount}
-                  </span>
-                </div>
-              </div>
-
-              {/* Network Latency */}
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    Network Latency
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-white">
-                    {systemPerformance.networkLatency}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <SystemPerformance systemPerformance={systemPerformance} />
         </div>
 
         {/* Calendar / Schedule Section */}
-        <div className="bg-white dark:bg-gray-800 rounded shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Upcoming Schedule
-            </h2>
-            <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                title: 'Paper Submission Deadline',
-                course: 'CSC2233',
-                date: 'April 5, 2025',
-                type: 'deadline',
-                color: 'border-red-500',
-              },
-              {
-                title: 'Final Exam',
-                course: 'MAT1001',
-                date: 'April 12, 2025',
-                type: 'exam',
-                color: 'border-blue-500',
-              },
-              {
-                title: 'Department Meeting',
-                course: '',
-                date: 'April 8, 2025',
-                type: 'meeting',
-                color: 'border-green-500',
-              },
-            ].map((event, index) => (
-              <div
-                key={index}
-                className={`border-l-4 ${event.color} pl-4 py-2`}
-              >
-                <h3 className="font-medium text-gray-800 dark:text-white">
-                  {event.title}
-                </h3>
-                {event.course && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {event.course}
-                  </p>
-                )}
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {event.date}
-                </p>
-              </div>
-            ))}
-          </div>
-          <button className="mt-4 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline w-full text-center">
-            View full calendar
-          </button>
-        </div>
+        <Schedule events={events} />
       </div>
 
       {/* Task Sidebar */}

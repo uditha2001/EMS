@@ -5,6 +5,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ExamTimeTableDTO {
@@ -33,5 +35,11 @@ public class ExamTimeTableDTO {
     private String level;
     private String semester;
     private boolean approve;
+
+    private List<String> conflictMessages = new ArrayList<>();
+
+    public void addConflictMessage(String conflictMessage) {
+        conflictMessages.add(conflictMessage);
+    }
 
 }

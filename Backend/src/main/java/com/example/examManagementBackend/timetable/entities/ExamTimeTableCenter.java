@@ -25,9 +25,11 @@ public class ExamTimeTableCenter {
     @JoinColumn(name = "examCenterId")
     private ExamCentersEntity examCenter;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name="supervisor", referencedColumnName = "userId")
     private UserEntity supervisor;
 
     private Integer numOfCandidates;
+
+    private String remarks;
 }
