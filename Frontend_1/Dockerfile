@@ -8,6 +8,12 @@ RUN npm install --frozen-lockfile
 
 # Copy the rest of the application code and build for production
 COPY . ./
+
+# Add build-time argument for the API URL
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+# Build the React app with the environment variable injected
 RUN npm run build
 
 # Stage 2: Development environment
