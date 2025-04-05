@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.calendar;
 
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,20 @@ public class EventService {
     public List<EventDTO> getUserEvents(Long userId) {
         List<Event> events = eventRepository.findByVisibilityAndUserId(Event.Visibility.PRIVATE, userId);
         return events.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public List<EventDTO> getUpcomingPublicEvents() {
+        LocalDateTime now = LocalDateTime.now();
+        return eventRepository.findByVisibility(Event.Visibility.PUBLIC).stream()
+                .filter(event -> event.getStartDate().isAfter(now) || event.getStartDate().isEqual(now))
+                .map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    public List<EventDTO> getUpcomingUserEvents(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        return eventRepository.findByVisibilityAndUserId(Event.Visibility.PRIVATE, userId).stream()
+                .filter(event -> event.getStartDate().isAfter(now) || event.getStartDate().isEqual(now))
+                .map(this::convertToDTO).collect(Collectors.toList());
     }
 
     public EventDTO createEvent(Event event) {

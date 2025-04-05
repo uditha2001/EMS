@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.calendar;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,15 +16,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     void deleteByTitleContainingAndUserId(String titlePart, Long userId);
 
-    // Find a single event by user ID and title prefix
-    Optional<Event> findByUserIdAndTitleStartingWith(Long userId, String titlePrefix);
+    @Query("SELECT e FROM Event e WHERE e.visibility = 'public' AND e.startDate >= :now")
+    List<Event> findUpcomingPublicEvents(@Param("now") LocalDateTime now);
 
-    // Find all events by user ID and title prefix
-    List<Event> findAllByUserIdAndTitleStartingWith(Long userId, String titlePrefix);
+    @Query("SELECT e FROM Event e WHERE e.userId = :userId AND e.startDate >= :now")
+    List<Event> findUpcomingUserEvents(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
-
-    // Find events by title containing and user ID
-    List<Event> findByTitleContainingAndUserId(String titlePart, Long userId);
     void deleteByUserIdAndTitleAndStartDate(Long userId, String title, LocalDateTime startDate);
 
 }
