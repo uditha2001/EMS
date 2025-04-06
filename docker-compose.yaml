@@ -45,9 +45,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=prod
     volumes:
-      - /home/ec2-user/Profile_Images:/app/uploads/profile_images
-      - /home/ec2-user/Archived_Papers:/app/uploads/archived-papers
-      - /home/ec2-user/Encrypted_Papers:/app/uploads/encrypted-papers
+      - /home/ec2-user/uploads/profile_images:/app/uploads/profile_images
+      - /home/ec2-user/uploads/archived-papers:/app/uploads/archived-papers
+      - /home/ec2-user/uploads/encrypted-papers:/app/uploads/encrypted-papers
     networks:
       - webnet
 
