@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 public class UserProfileServices {
 
     private final UserManagementRepo userManagementRepo;
+    private final String uploadDir;
 
-    public UserProfileServices(UserManagementRepo userManagementRepo) {
+    public UserProfileServices(UserManagementRepo userManagementRepo,
+                               @Value("${file.upload.profile-dir}") String uploadDir) {
         this.userManagementRepo = userManagementRepo;
+        this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize().toString();
     }
-    // Inject your storage path for profile images (can be a directory or cloud service)
-    @Value("${profile.image.upload-dir}")
-    private String uploadDir;
 
     // Existing method to update user profile info (name, email, contact, bio)
     public String updateUserProfile(Long userId, UserProfileDTO updatedProfile) {
