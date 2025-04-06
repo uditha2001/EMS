@@ -44,22 +44,26 @@ const FileUpload: React.FC = () => {
   const userId = Number(auth.id);
 
   const [file, setFile] = useState<File | null>(null);
-  const [markingFile, setMarkingFile] = useState<File | null>(null); 
+  const [markingFile, setMarkingFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState('');
   const [paperType, setPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [moderators, setModerators] = useState<Moderator[]>([]);
-  const [selectedModerator, setSelectedModerator] = useState<number | null>(null);
+  const [selectedModerator, setSelectedModerator] = useState<number | null>(
+    null,
+  );
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
   const [examinations, setExaminations] = useState<Examination[]>([]);
-  const [selectedExamination, setSelectedExamination] = useState<number | null>(null);
+  const [selectedExamination, setSelectedExamination] = useState<number | null>(
+    null,
+  );
   const [availablePaperTypes, setAvailablePaperTypes] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
-  const [isMarkingDragging, setIsMarkingDragging] = useState(false); 
+  const [isMarkingDragging, setIsMarkingDragging] = useState(false);
 
   const steps = [
     { id: 1, name: 'Examination', icon: faList },
@@ -71,47 +75,64 @@ const FileUpload: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const roleAssignmentsResponse = await getRoleAssignmentByUserId(Number(auth.id));
+        const roleAssignmentsResponse = await getRoleAssignmentByUserId(
+          Number(auth.id),
+        );
         const roleAssignments = roleAssignmentsResponse.data.filter(
           (assignment: any) => assignment.isAuthorized,
         );
+
         const examinationIds: number[] = Array.from(
-          new Set(roleAssignments.map((assignment: any) => assignment.examinationId)),
+          new Set(
+            roleAssignments.map((assignment: any) => assignment.examinationId),
+          ),
         );
+
         const examData = await Promise.all(
           examinationIds.map((examId: number) => getExaminationById(examId)),
         );
+
         const ongoingExams = examData
           .flat()
           .filter((exam: Examination) => exam.status === 'ONGOING');
         setExaminations(ongoingExams);
 
-        const filteredCourses = roleAssignments.filter((assignment: any) =>
-          examinationIds.includes(Number(assignment.examinationId)),
-        );
-        const uniqueCourses: Course[] = Array.from(
-          new Map(
-            filteredCourses.map((assignment: any) => [
-              assignment.courseId,
-              {
-                courseId: assignment.courseId,
-                courseCode: assignment.courseCode,
-                courseName: assignment.courseName,
-                paperType: assignment.paperType,
-                roleId: assignment.roleId,
-              } as Course,
-            ]),
-          ).values(),
-        ) as Course[];
+        // If an examination is selected, filter courses for that examination only
+        if (selectedExamination) {
+          const filteredCourses = roleAssignments.filter(
+            (assignment: any) =>
+              Number(assignment.examinationId) === selectedExamination,
+          );
 
-        setCourses(uniqueCourses);
+          const uniqueCourses: Course[] = Array.from(
+            new Map(
+              filteredCourses.map((assignment: any) => [
+                assignment.courseId,
+                {
+                  courseId: assignment.courseId,
+                  courseCode: assignment.courseCode,
+                  courseName: assignment.courseName,
+                  paperType: assignment.paperType,
+                  roleId: assignment.roleId,
+                } as Course,
+              ]),
+            ).values(),
+          ) as Course[];
+
+          setCourses(uniqueCourses);
+        } else {
+          // If no examination is selected, show all courses (or none)
+          setCourses([]);
+        }
 
         if (selectedCourse !== null) {
           const courseAssignments = roleAssignments.filter(
             (assignment: any) => assignment.courseId === selectedCourse,
           );
           const paperTypes: string[] = Array.from(
-            new Set(courseAssignments.map((assignment: any) => assignment.paperType)),
+            new Set(
+              courseAssignments.map((assignment: any) => assignment.paperType),
+            ),
           );
           setAvailablePaperTypes(paperTypes);
         }
@@ -122,7 +143,7 @@ const FileUpload: React.FC = () => {
     };
 
     fetchData();
-  }, [auth.id, selectedCourse]);
+  }, [auth.id, selectedExamination, selectedCourse]); // Add selectedExamination to dependencies
 
   useEffect(() => {
     const fetchModerators = async () => {
@@ -138,7 +159,10 @@ const FileUpload: React.FC = () => {
     fetchModerators();
   }, [selectedCourse, paperType]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isMarkingFile = false) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isMarkingFile = false,
+  ) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
@@ -147,7 +171,9 @@ const FileUpload: React.FC = () => {
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setErrorMessage('File size exceeds limit. Maximum allowed size is 10 MB.');
+      setErrorMessage(
+        'File size exceeds limit. Maximum allowed size is 10 MB.',
+      );
       return;
     }
 
@@ -159,7 +185,10 @@ const FileUpload: React.FC = () => {
     setErrorMessage('');
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, isMarkingFile = false) => {
+  const handleDragOver = (
+    e: React.DragEvent<HTMLDivElement>,
+    isMarkingFile = false,
+  ) => {
     e.preventDefault();
     if (isMarkingFile) {
       setIsMarkingDragging(true);
@@ -176,7 +205,10 @@ const FileUpload: React.FC = () => {
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, isMarkingFile = false) => {
+  const handleDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    isMarkingFile = false,
+  ) => {
     e.preventDefault();
     const selectedFile = e.dataTransfer.files?.[0];
     if (!selectedFile) return;
@@ -186,7 +218,9 @@ const FileUpload: React.FC = () => {
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
-      setErrorMessage('File size exceeds limit. Maximum allowed size is 10 MB.');
+      setErrorMessage(
+        'File size exceeds limit. Maximum allowed size is 10 MB.',
+      );
       return;
     }
 
@@ -203,7 +237,7 @@ const FileUpload: React.FC = () => {
   const handleUpload = async () => {
     if (
       !file ||
-      !markingFile || 
+      !markingFile ||
       !selectedModerator ||
       !selectedCourse ||
       !paperType ||
@@ -213,8 +247,12 @@ const FileUpload: React.FC = () => {
       return;
     }
 
-    const selectedExam = examinations.find((exam) => exam.id === selectedExamination)?.year;
-    const selectedCourseCode = courses.find((course) => course.courseId === selectedCourse)?.courseCode;
+    const selectedExam = examinations.find(
+      (exam) => exam.id === selectedExamination,
+    )?.year;
+    const selectedCourseCode = courses.find(
+      (course) => course.courseId === selectedCourse,
+    )?.courseCode;
     if (!selectedExam || !selectedCourseCode) {
       setErrorMessage('Invalid selection!');
       return;
@@ -222,13 +260,19 @@ const FileUpload: React.FC = () => {
 
     const renamedFile = new File(
       [file],
-      `${selectedCourseCode}_${paperType}_${selectedExam.replace('/', '_')}.pdf`,
+      `${selectedCourseCode}_${paperType}_${selectedExam.replace(
+        '/',
+        '_',
+      )}.pdf`,
       { type: file.type },
     );
 
     const renamedMarkingFile = new File(
       [markingFile],
-      `MARKING_${selectedCourseCode}_${paperType}_${selectedExam.replace('/', '_')}.pdf`,
+      `MARKING_${selectedCourseCode}_${paperType}_${selectedExam.replace(
+        '/',
+        '_',
+      )}.pdf`,
       { type: markingFile.type },
     );
 
@@ -237,7 +281,7 @@ const FileUpload: React.FC = () => {
     try {
       const response = await uploadFile(
         renamedFile,
-        renamedMarkingFile, 
+        renamedMarkingFile,
         userId,
         selectedCourse,
         remarks,
@@ -269,6 +313,13 @@ const FileUpload: React.FC = () => {
     setCurrentStep(1);
   };
 
+  const handleExaminationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const examId = Number(e.target.value);
+    setSelectedExamination(examId);
+    setSelectedCourse(null); // Reset course selection
+    setPaperType(''); // Reset paper type
+  };
+
   const nextStep = () => {
     if (currentStep === 1 && !selectedExamination) {
       setErrorMessage('Please select an examination.');
@@ -282,7 +333,8 @@ const FileUpload: React.FC = () => {
       setErrorMessage('Please select a moderator.');
       return;
     }
-    if (currentStep === 4 && (!file || !markingFile)) { // Ensure both files are provided
+    if (currentStep === 4 && (!file || !markingFile)) {
+      // Ensure both files are provided
       setErrorMessage('Please upload both paper and marking files.');
       return;
     }
@@ -300,8 +352,14 @@ const FileUpload: React.FC = () => {
 
   return (
     <div className="p-4">
-      <SuccessMessage message={successMessage} onClose={() => setSuccessMessage('')} />
-      <ErrorMessage message={errorMessage} onClose={() => setErrorMessage('')} />
+      <SuccessMessage
+        message={successMessage}
+        onClose={() => setSuccessMessage('')}
+      />
+      <ErrorMessage
+        message={errorMessage}
+        onClose={() => setErrorMessage('')}
+      />
 
       <Stepper currentStep={currentStep} steps={steps} />
 
@@ -313,8 +371,8 @@ const FileUpload: React.FC = () => {
             </label>
             <select
               value={selectedExamination || 0}
-              onChange={(e) => setSelectedExamination(Number(e.target.value))}
-              className="input-field appearance-none"
+              onChange={handleExaminationChange}
+              className="input-field appearance-none cursor-pointer"
             >
               <option value={0}>Select Examination</option>
               {examinations.map((examination) => (
@@ -357,7 +415,7 @@ const FileUpload: React.FC = () => {
               <select
                 value={paperType}
                 onChange={(e) => setPaperType(e.target.value)}
-                className="input-field appearance-none"
+                className="input-field appearance-none cursor-pointer"
                 required
               >
                 <option value="">Select Paper Type</option>
@@ -383,7 +441,7 @@ const FileUpload: React.FC = () => {
             <select
               value={selectedModerator || ''}
               onChange={(e) => setSelectedModerator(Number(e.target.value))}
-              className="input-field appearance-none"
+              className="input-field appearance-none cursor-pointer"
             >
               <option value={''}>Select Moderator</option>
               {moderators.map((moderator) => (
@@ -415,10 +473,16 @@ const FileUpload: React.FC = () => {
                 className="hidden"
                 id="file-upload"
               />
-              <label htmlFor="file-upload" className="cursor-pointer block text-center">
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer block text-center"
+              >
                 <div className="text-gray-600 dark:text-gray-400">
                   Drag and drop a PDF file here, or{' '}
-                  <span className="text-primary underline">click to browse</span>.
+                  <span className="text-primary underline">
+                    click to browse
+                  </span>
+                  .
                 </div>
               </label>
               {file && (
@@ -434,7 +498,9 @@ const FileUpload: React.FC = () => {
               onDragLeave={() => handleDragLeave(true)}
               onDrop={(e) => handleDrop(e, true)}
               className={`border-2 border-dashed rounded-lg p-6 ${
-                isMarkingDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
+                isMarkingDragging
+                  ? 'border-primary bg-primary/10'
+                  : 'border-gray-300'
               }`}
             >
               <label className="mb-2.5 block text-black dark:text-white">
@@ -446,10 +512,16 @@ const FileUpload: React.FC = () => {
                 className="hidden"
                 id="marking-file-upload"
               />
-              <label htmlFor="marking-file-upload" className="cursor-pointer block text-center">
+              <label
+                htmlFor="marking-file-upload"
+                className="cursor-pointer block text-center"
+              >
                 <div className="text-gray-600 dark:text-gray-400">
                   Drag and drop a PDF file here, or{' '}
-                  <span className="text-primary underline">click to browse</span>.
+                  <span className="text-primary underline">
+                    click to browse
+                  </span>
+                  .
                 </div>
               </label>
               {markingFile && (
