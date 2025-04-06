@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import useApi from '../../api/api';
+import useExaminationApi from '../../api/examinationApi';
 
 type examinationName = {
   key: number;
@@ -37,6 +38,8 @@ const SelectExaminationComponent = ({
   const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>(
     [],
   );
+  const { getSecondMarkerAssignedExaminations} = useExaminationApi();
+
   const [selectedExaminationKey, setSelectedExaminationKey] =
     useState<number>();
   const [courseCode, setCourseCode] = useState<string>('');
@@ -46,7 +49,6 @@ const SelectExaminationComponent = ({
   const [examType, setExamType] = useState<string>('THEORY');
   const [examTypes, setExamTypes] = useState<examTypeData[]>([]);
   const {
-    getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     getExamTypes,
   } = useApi();
@@ -61,7 +63,7 @@ const SelectExaminationComponent = ({
   }, [courseCode, examType, examName, selectedExaminationKey]);
 
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
+     getSecondMarkerAssignedExaminations().then((response) => {
       let examData: examinationName[] = [];
       let i = 0;
       for (const obj of response) {

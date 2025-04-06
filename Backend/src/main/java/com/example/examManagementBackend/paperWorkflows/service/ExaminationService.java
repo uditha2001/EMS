@@ -188,21 +188,6 @@ public class ExaminationService {
                 .build();
     }
 
-
-    //get examination data related to selected degree program
-    public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
-        List<ExaminationDTO> examinationDTOS = new ArrayList<>();
-        List<ExaminationEntity> examinationEntities = examinationRepository.findAllOngoingExams(ExamStatus.ONGOING);
-        for (ExaminationEntity examinationEntity : examinationEntities) {
-            ExaminationDTO examinationDTO = mapToDTO(examinationEntity);
-            examinationDTOS.add(examinationDTO);
-        }
-
-        return new ResponseEntity<>(
-                new StandardResponse(200, "sucess", examinationDTOS), HttpStatus.OK
-        );
-    }
-
     //create a methode to get course data which ara belongs to particular exam
     public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
         try {

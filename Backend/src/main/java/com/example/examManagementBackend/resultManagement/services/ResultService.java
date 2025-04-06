@@ -24,10 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ResultService {
@@ -143,7 +140,7 @@ public class ResultService {
             Long examinationId=id;
             Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS= new HashSet<>();
-            List<ResultEntity> resultEntities=resultRepo.getResults(courseId,examinationId,examinationTypeId);
+            List<ResultEntity> resultEntities=resultRepo.getFirstMarkingResults(courseId,examinationId,examinationTypeId,ResultStatus.FIRST_MARKING_COMPLETE);
             if(resultEntities!=null){
                 for(ResultEntity resultEntity:resultEntities){
                     StudentDTO studentDTO=new StudentDTO();
@@ -218,6 +215,13 @@ public class ResultService {
                     publishedAndReCorrectedResultsEntity.setCourse(coursesEntity);
                     publishedAndReCorrectedResultsEntity.setPublishAt(currentDateTime);
                     publishedResultsRepo.save(publishedAndReCorrectedResultsEntity);
+                    Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
+                    String examTypeName = examType.keySet().iterator().next();
+                    Long examTypeId=examTypeRepo.getExamTypeIdByExamTypeName(examTypeName);
+                    Long ResultId= resultRepo.getResultIdIfExists(publishedDataDTO.getExaminationId(),studentsEntity.getStudentId(),examTypeId,coursesEntity.getId());
+                    resultRepo.updatePublishedResults(ResultStatus.PUBLISHED,finalMark,publisher,ResultId);
+
+
                 }
                 return ResponseEntity.ok(new StandardResponse(200, "success", null));
 

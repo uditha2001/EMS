@@ -505,19 +505,6 @@ const useApi = () => {
       throw new Error('failed to get degree names');
     }
   };
-  const getAllExaminationDetailsWithDegreeName = async () => {
-    try {
-      const response = await axiosPrivate.get(
-        'academic-years/getExaminationWithDegreeName',
-      );
-      if (response.data.code === 200) {
-        return response.data.data;
-      }
-    } catch (error: any) {
-      throw new Error('failed to fetch examinations name');
-    }
-  };
-
   const getCoursesUsingExaminationId = async (
     examinationId: number | undefined,
   ) => {
@@ -902,7 +889,6 @@ const useApi = () => {
     getRoleAssignmentById,
     getExaminationById,
     getDegreeProgramById,
-    getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     getArchivedPapers,
     getArchivedPaperById,

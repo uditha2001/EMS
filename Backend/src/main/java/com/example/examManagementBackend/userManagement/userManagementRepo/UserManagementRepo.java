@@ -34,4 +34,6 @@ public interface UserManagementRepo extends JpaRepository<UserEntity,Long> {
 
     @Query("SELECT COUNT(ue) FROM UserEntity ue WHERE ue.isActive = true")
     int getAllActiveUsers();
+    @Query("SELECT ur.userId FROM UserEntity ur WHERE ur.username=:usrName")
+    Long getUserIdByUsername(@Param("usrName") String usrName);
 }

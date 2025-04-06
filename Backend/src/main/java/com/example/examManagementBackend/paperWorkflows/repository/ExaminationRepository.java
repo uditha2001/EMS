@@ -22,8 +22,8 @@ public interface ExaminationRepository extends JpaRepository<ExaminationEntity, 
     @Query("SELECT e.examTimeTables FROM ExaminationEntity e WHERE e.id= :examinationId")
     List<ExamTimeTablesEntity> getCoursesUsingExaminationId(@Param("examinationId") Long examinationId);
 
-    @Query("SELECT e FROM ExaminationEntity e WHERE e.status=:status")
-    List<ExaminationEntity> findAllOngoingExams(@Param("status") ExamStatus status);
+    @Query("SELECT e FROM ExaminationEntity e WHERE e.status=:status AND e.id=:id")
+    ExaminationEntity findAllOngoingExamsWithId(@Param("status") ExamStatus status, @Param("id") Long id);
 
     @Query("SELECT e FROM ExaminationEntity e WHERE SIZE(e.examTimeTables) > 0")
     List<ExaminationEntity> findExaminationsWithTimetable();

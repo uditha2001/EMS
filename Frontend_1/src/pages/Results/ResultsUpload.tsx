@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import useResultsApi from '../../api/ResultsApi';
+import useExaminationApi from '../../api/examinationApi';
 
 type RowData = {
   [key: string]: any;
@@ -51,10 +52,10 @@ const ResultsUpload = () => {
   const [courseCode, setCourseCode] = useState<string>('');
   const [examType, setExamType] = useState<string>('THEORY');
   const {
-    getAllExaminationDetailsWithDegreeName,
     getCoursesUsingExaminationId,
     getExamTypes,
   } = useApi();
+  const { getFirstMarkerAssignedExaminations} = useExaminationApi();
   const {saveMarkingResults}=useResultsApi();
 
   const [selectedExaminationKey, setSelectedExaminationKey] =
@@ -72,7 +73,7 @@ const ResultsUpload = () => {
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [examTypes, setExamTypes] = useState<examTypeData[]>([]);
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
+    getFirstMarkerAssignedExaminations().then((response) => {
       let examData: examinationName[] = [];
       let i = 0;
       for (const obj of response) {

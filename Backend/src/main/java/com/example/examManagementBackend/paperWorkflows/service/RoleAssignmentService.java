@@ -2,6 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.*;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
@@ -16,7 +17,12 @@ import com.example.examManagementBackend.userManagement.userManagementEntity.Use
 import com.example.examManagementBackend.userManagement.userManagementRepo.RoleRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
+import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,10 +41,11 @@ public class RoleAssignmentService {
     private final UserManagementRepo userRepository;
     private final ExaminationRepository examinationRepository;
     private final UserRolesRepository userRolesRepo;
+    private final JwtService jwtService;
 
     private final RoleAssignmentRevisionRepository roleAssignmentRevisionRepository;
 
-    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository)
+    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository, JwtService jwtService)
     {
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
@@ -47,6 +54,7 @@ public class RoleAssignmentService {
         this.examinationRepository = examinationRepository;
         this.userRolesRepo = userRolesRepository;
         this.roleAssignmentRevisionRepository = roleAssignmentRevisionRepository;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -405,6 +413,47 @@ public class RoleAssignmentService {
                 revision.getRevisedBy().getFirstName()+" "+revision.getRevisedBy().getLastName(),
                 revision.getRevisedAt().format(formatter)
         )).collect(Collectors.toList());
+    }
+    //get exmination by userId
+    public ResponseEntity<StandardResponse> getAllExaminations(HttpServletRequest httpServletRequest,String roleName) {
+              try{
+                  Object[] loginDetails=jwtService.getUserNameAndToken(httpServletRequest);
+                  String userName=loginDetails[0].toString();
+                  Long UserID=userRepository.getUserIdByUsername(userName);
+                  List<Long> examinationEntities=roleAssignmentRepository.getExamIdByRoleNameAndUserID(roleName,UserID);
+                  List<ExaminationDTO> examinationDTOS=new ArrayList<>();
+                  for(Long examinationId:examinationEntities){
+                      ExaminationEntity examinationEntity=examinationRepository.findAllOngoingExamsWithId(ExamStatus.ONGOING,examinationId);
+                      ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
+                      examinationDTOS.add(examinationDTO);
+                  }
+                  return new ResponseEntity<>(
+                          new StandardResponse(200, "sucess", examinationDTOS), HttpStatus.OK
+                  );
+              }
+              catch(Exception e){
+                  e.printStackTrace();
+                  return new ResponseEntity<>(
+                          new StandardResponse(400,"failed fetch examinations",null), HttpStatus.BAD_REQUEST
+                  );
+              }
+
+
+
+    }
+    private ExaminationDTO mapToDTO(ExaminationEntity entity) {
+        ExaminationDTO dto = new ExaminationDTO();
+        dto.setId(entity.getId());
+        dto.setYear(entity.getYear());
+        dto.setLevel(entity.getLevel());
+        dto.setSemester(entity.getSemester());
+        dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
+        dto.setDegreeProgramName(entity.getDegreeProgramsEntity().getDegreeName());
+        dto.setExamProcessStartDate(entity.getExamProcessStartDate());
+        dto.setPaperSettingCompleteDate(entity.getPaperSettingCompleteDate());
+        dto.setMarkingCompleteDate(entity.getMarkingCompleteDate());
+        dto.setStatus(entity.getStatus());
+        return dto;
     }
 
 }

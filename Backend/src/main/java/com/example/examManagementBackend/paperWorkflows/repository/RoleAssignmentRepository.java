@@ -32,7 +32,7 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
     List<RoleAssignmentEntity> findByUserId_UserIdAndRole_RoleId(Long userId, Long roleId);
 
     @Query("SELECT ra FROM RoleAssignmentEntity ra " +
-            "WHERE ra.userId.id = :userId " +
+            "WHERE ra.userId.userId= :userId " +
             "AND ra.isAuthorized = true " +
             "AND (ra.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.SCHEDULED " +
             "OR ra.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.ONGOING)")
@@ -48,6 +48,11 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
 
     @Query("SELECT r FROM RoleAssignmentEntity r WHERE r.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.ONGOING" + " AND r.isAuthorized = true ")
     List<RoleAssignmentEntity> findAllByOngoingExaminations();
+
+    @Query("SELECT r.examinationId.id FROM RoleAssignmentEntity r WHERE r.role.roleName=:roleName AND r.userId.userId=:userId")
+    List<Long> getExamIdByRoleNameAndUserID(@Param("roleName") String roleName, @Param("userId") Long userId);
+
+
 
 
 
