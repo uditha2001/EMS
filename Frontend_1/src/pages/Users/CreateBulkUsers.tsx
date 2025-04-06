@@ -163,7 +163,7 @@ const CreateBulkUsers: React.FC = () => {
             <li>password: Password for the user</li>
             <li>
               roles: A JSON array of roles (e.g., ["PAPER_CREATOR",
-              "FIRST_MAKER"]) - can be empty
+              "FIRST_MARKER"]) - can be empty
             </li>
           </ul>
           <span className="mt-3 inline-block text-sm text-black dark:text-white">

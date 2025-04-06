@@ -17,8 +17,8 @@ interface User {
 interface RoleAssignments {
   PAPER_CREATOR: string;
   PAPER_MODERATOR: string;
-  FIRST_MAKER: string;
-  SECOND_MAKER: string;
+  FIRST_MARKER: string;
+  SECOND_MARKER: string;
   [key: string]: string;
 }
 
@@ -100,8 +100,8 @@ const RoleAssignmentTable: React.FC<RoleAssignmentTableProps> = ({
                   {[
                     'PAPER_CREATOR',
                     'PAPER_MODERATOR',
-                    'FIRST_MAKER',
-                    'SECOND_MAKER',
+                    'FIRST_MARKER',
+                    'SECOND_MARKER',
                   ].map((role) => (
                     <SearchableSelectBox
                       key={role}
