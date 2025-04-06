@@ -159,7 +159,7 @@ public class RoleService {
     // Method to get roles with specific names
     public List<RoleDTO> getSpecificRoles() {
         // List of specific role names you want to fetch
-        List<String> roleNames = Arrays.asList("PAPER_CREATOR", "PAPER_MODERATOR", "FIRST_MAKER", "SECOND_MAKER");
+        List<String> roleNames = Arrays.asList("PAPER_CREATOR", "PAPER_MODERATOR", "FIRST_MARKER", "SECOND_MARKER");
 
         // Fetch roles by name
         List<RolesEntity> roles = rolesRepository.findByRoleNameIn(roleNames);

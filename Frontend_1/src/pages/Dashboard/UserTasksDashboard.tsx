@@ -130,9 +130,9 @@ const UserTasksDashboard = ({ showAll = false }) => {
         return assignment.completed
           ? `/paper/moderate/dashboard`
           : `/paper/transfer`;
-      case 'FIRST_MAKER':
+      case 'FIRST_MARKER':
         return `/result/firstmarking`;
-      case 'SECOND_MAKER':
+      case 'SECOND_MARKER':
         return `/result/secondmarking`;
       case 'PAPER_MODERATOR':
         return assignment.completed
@@ -305,7 +305,7 @@ const UserTasksDashboard = ({ showAll = false }) => {
                         </p>
                       )}
 
-                    {assignment.roleName === 'FIRST_MAKER' &&
+                    {assignment.roleName === 'FIRST_MARKER' &&
                       !assignment.completed && (
                         <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
                           You have to mark the paper. Please complete it before
@@ -321,7 +321,7 @@ const UserTasksDashboard = ({ showAll = false }) => {
                         </p>
                       )}
 
-                    {assignment.roleName === 'SECOND_MAKER' &&
+                    {assignment.roleName === 'SECOND_MARKER' &&
                       !assignment.completed && (
                         <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
                           You have to mark the paper. Please complete it before
