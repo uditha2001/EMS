@@ -16,6 +16,7 @@ import com.example.examManagementBackend.userManagement.userManagementRepo.RoleR
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,8 @@ import java.util.List;
 @Service
 public class FileService {
 
+    @Value("${file.upload.encrypted-dir}")
+    private String encryptedPaperStoragePath;
     private final EncryptionService encryptionService;
 
     private final EncryptedPaperRepository encryptedPaperRepository;
@@ -176,18 +179,18 @@ public class FileService {
     }
 
 
+
     private String saveFileToStorage(String encryptedFile, String fileName) {
         // Validate the file name to prevent path traversal
         if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
             throw new IllegalArgumentException("Invalid file name");
         }
 
-        // Store the encrypted file to a location and return the file path
+        // Store the encrypted file to the configured location and return the file path
         try {
-            String UPLOAD_DIR = "src/main/resources/Encrypted_Papers/";
-            Path path1 = Paths.get(UPLOAD_DIR);
-            Path path = path1.resolve(fileName).normalize();
-            if (!path.startsWith(path1.normalize())) {
+            Path storageDir = Paths.get(encryptedPaperStoragePath); // Use the injected path
+            Path path = storageDir.resolve(fileName).normalize();
+            if (!path.startsWith(storageDir.normalize())) {
                 throw new IllegalArgumentException("Invalid file name");
             }
             Files.write(path, encryptedFile.getBytes()); // Save file bytes
