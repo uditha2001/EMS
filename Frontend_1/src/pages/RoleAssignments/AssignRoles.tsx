@@ -30,8 +30,8 @@ interface User {
 interface RoleAssignments {
   PAPER_CREATOR: string;
   PAPER_MODERATOR: string;
-  FIRST_MAKER: string;
-  SECOND_MAKER: string;
+  FIRST_MARKER: string;
+  SECOND_MARKER: string;
   [key: string]: string;
 }
 
@@ -103,15 +103,15 @@ const AssignRoles: React.FC = () => {
                 THEORY: roleAssignmentResponse.data[course.id]?.THEORY || {
                   PAPER_CREATOR: '',
                   PAPER_MODERATOR: '',
-                  FIRST_MAKER: '',
-                  SECOND_MAKER: '',
+                  FIRST_MARKER: '',
+                  SECOND_MARKER: '',
                 },
                 PRACTICAL: roleAssignmentResponse.data[course.id]
                   ?.PRACTICAL || {
                   PAPER_CREATOR: '',
                   PAPER_MODERATOR: '',
-                  FIRST_MAKER: '',
-                  SECOND_MAKER: '',
+                  FIRST_MARKER: '',
+                  SECOND_MARKER: '',
                 },
               },
             }),
@@ -159,8 +159,8 @@ const AssignRoles: React.FC = () => {
     if (
       !assignments.PAPER_CREATOR ||
       !assignments.PAPER_MODERATOR ||
-      !assignments.FIRST_MAKER ||
-      !assignments.SECOND_MAKER
+      !assignments.FIRST_MARKER ||
+      !assignments.SECOND_MARKER
     ) {
       setErrorMessage('Please assign all roles before submitting.');
       return;
@@ -199,8 +199,8 @@ const AssignRoles: React.FC = () => {
     const roleMap: Record<string, number> = {
       PAPER_CREATOR: 2,
       PAPER_MODERATOR: 3,
-      FIRST_MAKER: 4,
-      SECOND_MAKER: 5,
+      FIRST_MARKER: 4,
+      SECOND_MARKER: 5,
     };
     return roleMap[roleName] || 0;
   };

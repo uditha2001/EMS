@@ -27,11 +27,15 @@ public class ModerationService {
 
     private final EncryptedPaperRepository encryptedPaperRepository;
 
-    public ModerationService(QuestionStructureRepository questionRepository, SubQuestionRepository subQuestionRepository, SubSubQuestionRepository subSubQuestionRepository, EncryptedPaperRepository encryptedPaperRepository) {
+    private final RoleAssignmentService roleAssignmentService;
+
+
+    public ModerationService(QuestionStructureRepository questionRepository, SubQuestionRepository subQuestionRepository, SubSubQuestionRepository subSubQuestionRepository, EncryptedPaperRepository encryptedPaperRepository, RoleAssignmentService roleAssignmentService) {
         this.questionRepository = questionRepository;
         this.subQuestionRepository = subQuestionRepository;
         this.subSubQuestionRepository = subSubQuestionRepository;
         this.encryptedPaperRepository = encryptedPaperRepository;
+        this.roleAssignmentService = roleAssignmentService;
     }
 
     public void moderateQuestionWithHierarchy(QuestionModerationDTO dto) {
@@ -78,6 +82,7 @@ public class ModerationService {
         if (allQuestionsApproved) {
             paper.setStatus(ExamPaperStatus.APPROVED);
             encryptedPaperRepository.save(paper);
+            roleAssignmentService.updateRoleAssignmentCompletionStatus();
         }
     }
 
@@ -99,6 +104,7 @@ public class ModerationService {
         }
 
         encryptedPaperRepository.save(paper);
+        roleAssignmentService.updateRoleAssignmentCompletionStatus();
 
         if (statusUpdated && feedbackUpdated) {
             return "Status and feedback updated successfully.";
