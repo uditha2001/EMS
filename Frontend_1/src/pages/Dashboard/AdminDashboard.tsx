@@ -16,6 +16,7 @@ import useAuth from '../../hooks/useAuth';
 import SystemPerformance from './SystemPerformance';
 import Schedule from './Schedule';
 import RecentActivity from './RecentActivity';
+import useHasPermission from '../../hooks/useHasPermission';
 
 interface Event {
   id: number;
@@ -47,6 +48,11 @@ const AdminDashboard = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const { getUpcomingPublicEvents, getUpcomingEventByUserId } = useEventApi();
   const [, setLoading] = useState(true);
+
+  const hasCountCardPermission = useHasPermission('COUNT_CARDS');
+  const hasPerformancePermission = useHasPermission('PERFORMANCE');
+  const hasGraphPermission = useHasPermission('DISTRIBUTION_GRAPH');
+  const hasActivityPermission = useHasPermission('USER_ACTIVITY');
 
   useEffect(() => {
     getUsersCounts().then((users) => {
@@ -106,54 +112,62 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <DataCard
-            color="blue"
-            count={userCount['TOTAL'] || 0}
-            title="Total Users"
-            icon={UsersIcon}
-          />
-          <DataCard
-            color="green"
-            count={activeUsers}
-            title="Active Users"
-            icon={UsersIcon}
-          />
-          <DataCard
-            color="amber"
-            count={examinationsCount}
-            title="Ongoing Exams"
-            icon={BookOpenIcon}
-          />
-          <DataCard
-            color="purple"
-            count={degreeProgramsCount}
-            title="Degree Programs"
-            icon={AcademicCapIcon}
-          />
-        </div>
+        {hasCountCardPermission && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <DataCard
+              color="blue"
+              count={userCount['TOTAL'] || 0}
+              title="Total Users"
+              icon={UsersIcon}
+            />
+            <DataCard
+              color="green"
+              count={activeUsers}
+              title="Active Users"
+              icon={UsersIcon}
+            />
+            <DataCard
+              color="amber"
+              count={examinationsCount}
+              title="Ongoing Exams"
+              icon={BookOpenIcon}
+            />
+            <DataCard
+              color="purple"
+              count={degreeProgramsCount}
+              title="Degree Programs"
+              icon={AcademicCapIcon}
+            />
+          </div>
+        )}
 
         {/* Middle section with charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* User Role Distribution */}
-          <div className="col-span-1 bg-white dark:bg-gray-800 rounded shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-                User Distribution
-              </h2>
-              <ChartBarIcon className="h-5 w-5 text-gray-400" />
+          {hasGraphPermission && (
+            <div className="col-span-1 bg-white dark:bg-gray-800 rounded shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                  User Distribution
+                </h2>
+                <ChartBarIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <UserRolesDistribution />
             </div>
-            <UserRolesDistribution />
-          </div>
+          )}
 
           {/* Recent Activity */}
-          <RecentActivity />
+
+          {hasActivityPermission && <RecentActivity />}
 
           {/* System Performance */}
-          <SystemPerformance systemPerformance={systemPerformance} />
+          {hasPerformancePermission && (
+            <SystemPerformance systemPerformance={systemPerformance} />
+          )}
         </div>
 
         {/* Calendar / Schedule Section */}
+
         <Schedule events={events} />
       </div>
 

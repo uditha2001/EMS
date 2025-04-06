@@ -4,7 +4,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCheckCircle,
-  faHourglassHalf,
+  faClock,
   faChartBar,
 } from '@fortawesome/free-solid-svg-icons';
 import Loader from '../../common/Loader';
@@ -164,7 +164,7 @@ const PaperTracking: React.FC = () => {
       <div className="flex flex-col gap-1">
         <div className="flex items-center">
           <FontAwesomeIcon
-            icon={assignment.completed ? faCheckCircle : faHourglassHalf}
+            icon={assignment.completed ? faCheckCircle : faClock}
             className={
               assignment.completed
                 ? 'text-green-500 dark:text-green-400 mr-2'
@@ -178,11 +178,11 @@ const PaperTracking: React.FC = () => {
                 : 'text-yellow-600 dark:text-yellow-400 font-semibold'
             }
           >
-            {assignment.completed ? 'Completed' : 'Pending'}
+            {/* {assignment.completed ? 'Completed' : 'Pending'} */}
           </span>
         </div>
         <div className="text-sm text-gray-600 dark:text-gray-300">
-          <strong>Assigned to:</strong> {assignment.user}
+         {assignment.user}
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <div>
@@ -311,7 +311,7 @@ const PaperTracking: React.FC = () => {
             Filter by Examination
           </label>
           <select
-            className="input-field "
+            className="input-field cursor-pointer "
             value={filterExamination}
             onChange={(e) => setFilterExamination(e.target.value)}
           >
@@ -330,7 +330,7 @@ const PaperTracking: React.FC = () => {
             Filter by Course
           </label>
           <select
-            className="input-field w-48 "
+            className="input-field w-48 cursor-pointer"
             value={filterCourse}
             onChange={(e) => setFilterCourse(e.target.value)}
           >
@@ -348,7 +348,7 @@ const PaperTracking: React.FC = () => {
             Status
           </label>
           <select
-            className="input-field w-48 "
+            className="input-field w-48 cursor-pointer"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -422,28 +422,28 @@ const PaperTracking: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-sm shadow">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-sm ">
+      <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
           <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+          <tr className="bg-gray-100 dark:bg-form-input">
+               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper Setting
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper Moderation
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 First Marking
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Second Marking
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody >
             {groupedData.length === 0 ? (
               <tr>
                 <td
@@ -460,7 +460,7 @@ const PaperTracking: React.FC = () => {
                     key={`${paper.examinationId}_${paper.courseCode}_${paper.paperType}`}
                     className="hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {paper.courseCode}
                       </div>
@@ -471,16 +471,16 @@ const PaperTracking: React.FC = () => {
                         {paper.paperType}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <StatusCell assignment={paper.paperSetting} />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <StatusCell assignment={paper.paperModeration} />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <StatusCell assignment={paper.firstMarking} />
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                       <StatusCell assignment={paper.secondMarking} />
                     </td>
                   </tr>

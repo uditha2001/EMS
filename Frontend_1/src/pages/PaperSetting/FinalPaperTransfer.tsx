@@ -37,6 +37,13 @@ const FinalPaperTransfer: React.FC<FinalPaperTransferProps> = ({
   setSelectedModerator,
   setPaperType,
 }) => {
+  const handleExaminationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const examId = Number(e.target.value);
+    setSelectedExamination(examId);
+    setSelectedCourse(null); // Reset course selection
+    setPaperType(''); // Reset paper type
+  };
+
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -46,8 +53,8 @@ const FinalPaperTransfer: React.FC<FinalPaperTransferProps> = ({
           </label>
           <select
             value={selectedExamination || 0}
-            onChange={(e) => setSelectedExamination(Number(e.target.value))}
-            className="input-field appearance-none"
+            onChange={handleExaminationChange}
+            className="input-field appearance-none cursor-pointer"
           >
             <option value={0}>Select Examination</option>
             {examinations.map((examination) => (
@@ -69,7 +76,7 @@ const FinalPaperTransfer: React.FC<FinalPaperTransferProps> = ({
               setSelectedCourse(Number(e.target.value));
               setPaperType('');
             }}
-            className="input-field appearance-none"
+            className="input-field appearance-none cursor-pointer"
             required
           >
             <option value={''}>Select Course</option>
@@ -88,7 +95,7 @@ const FinalPaperTransfer: React.FC<FinalPaperTransferProps> = ({
           <select
             value={paperType}
             onChange={(e) => setPaperType(e.target.value)}
-            className="input-field appearance-none"
+            className="input-field appearance-none cursor-pointer"
             required
           >
             <option value="">Select Paper Type</option>
@@ -111,7 +118,7 @@ const FinalPaperTransfer: React.FC<FinalPaperTransferProps> = ({
           <select
             value={selectedModerator || ''}
             onChange={(e) => setSelectedModerator(Number(e.target.value))}
-            className="input-field appearance-none"
+            className="input-field appearance-none cursor-pointer"
           >
             <option value={''}>Select Moderator</option>
             {moderators.map((moderator) => (
