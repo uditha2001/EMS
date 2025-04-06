@@ -116,38 +116,49 @@ const PaperSettings: React.FC = () => {
         const roleAssignments = roleAssignmentsResponse.data.filter(
           (assignment: any) => assignment.isAuthorized,
         );
+
         const examinationIds: number[] = Array.from(
           new Set(
             roleAssignments.map((assignment: any) => assignment.examinationId),
           ),
         );
+
         const examData = await Promise.all(
           examinationIds.map((examId: number) => getExaminationById(examId)),
         );
+
         const ongoingExams = examData
           .flat()
           .filter((exam: Examination) => exam.status === 'ONGOING');
         setExaminations(ongoingExams);
 
-        const filteredCourses = roleAssignments.filter((assignment: any) =>
-          examinationIds.includes(Number(assignment.examinationId)),
-        );
-        const uniqueCourses: Course[] = Array.from(
-          new Map<number, Course>(
-            filteredCourses.map((assignment: any) => [
-              assignment.courseId,
-              {
-                courseId: assignment.courseId,
-                courseCode: assignment.courseCode,
-                courseName: assignment.courseName,
-                paperType: assignment.paperType,
-                roleId: assignment.roleId,
-              },
-            ]),
-          ).values(),
-        );
+        // If an examination is selected, filter courses for that examination only
+        if (selectedExamination) {
+          const filteredCourses = roleAssignments.filter(
+            (assignment: any) =>
+              Number(assignment.examinationId) === selectedExamination,
+          );
 
-        setCourses(uniqueCourses);
+          const uniqueCourses: Course[] = Array.from(
+            new Map(
+              filteredCourses.map((assignment: any) => [
+                assignment.courseId,
+                {
+                  courseId: assignment.courseId,
+                  courseCode: assignment.courseCode,
+                  courseName: assignment.courseName,
+                  paperType: assignment.paperType,
+                  roleId: assignment.roleId,
+                } as Course,
+              ]),
+            ).values(),
+          ) as Course[];
+
+          setCourses(uniqueCourses);
+        } else {
+          // If no examination is selected, show all courses (or none)
+          setCourses([]);
+        }
 
         if (selectedCourse !== null) {
           const courseAssignments = roleAssignments.filter(
@@ -167,7 +178,7 @@ const PaperSettings: React.FC = () => {
     };
 
     fetchData();
-  }, [auth.id, selectedCourse]);
+  }, [auth.id, selectedExamination, selectedCourse]); // Add selectedExamination to dependencies
 
   useEffect(() => {
     const fetchModerators = async () => {

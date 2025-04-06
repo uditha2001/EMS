@@ -7,6 +7,7 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import useAuth from '../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 interface RoleAssignment {
   id: number;
@@ -25,7 +26,7 @@ interface RoleAssignment {
   completeDate: string | null;
 }
 
-const UserTasksDashboard = () => {
+const UserTasksDashboard = ({ showAll = false }) => {
   const [assignments, setAssignments] = useState<RoleAssignment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { getRoleAssignmentByUserId } = useApi();
@@ -123,9 +124,43 @@ const UserTasksDashboard = () => {
     }
   };
 
-  const sortedAssignments = [...assignments].sort((a, b) => {
+  const getTaskLink = (assignment: RoleAssignment) => {
+    switch (assignment.roleName) {
+      case 'PAPER_CREATOR':
+        return assignment.completed
+          ? `/paper/moderate/dashboard`
+          : `/paper/transfer`;
+      case 'FIRST_MAKER':
+        return `/result/firstmarking`;
+      case 'SECOND_MAKER':
+        return `/result/secondmarking`;
+      case 'PAPER_MODERATOR':
+        return assignment.completed
+          ? `/paper/moderate/dashboard`
+          : `/paper/transfer`;
+      default:
+        return '#';
+    }
+  };
+
+  // Filter out completed tasks for dashboard
+  const filteredAssignments = showAll
+    ? assignments
+    : assignments.filter((a) => !a.completed);
+
+  const sortedAssignments = [...filteredAssignments].sort((a, b) => {
     return new Date(a.grantAt).getTime() - new Date(b.grantAt).getTime();
   });
+
+  // Task statistics
+  const totalTasks = assignments.length;
+  const completedTasks = assignments.filter((a) => a.completed).length;
+  const pendingTasks = totalTasks - completedTasks;
+
+  // Show max 3 tasks in dashboard, all tasks in All Tasks page
+  const displayedAssignments = showAll
+    ? sortedAssignments
+    : sortedAssignments.slice(0, 3);
 
   if (loading) {
     return (
@@ -144,153 +179,171 @@ const UserTasksDashboard = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="flex justify-between mb-4 px-1">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Total Tasks
-              </p>
-              <p className="text-xl font-semibold text-gray-800 dark:text-white">
-                {assignments.length}
-              </p>
+        <div>
+          {!showAll && (
+            <div className="flex justify-between mb-4 px-1">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Your Tasks
+                </p>
+                <p className="text-xl font-semibold text-gray-800 dark:text-white">
+                  {completedTasks}/{totalTasks}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Due Soon
+                </p>
+                <p className="text-xl font-semibold text-red-600">
+                  {
+                    assignments.filter((a) => {
+                      const due = new Date(a.grantAt);
+                      const today = new Date();
+                      const diffDays = Math.ceil(
+                        (due.getTime() - today.getTime()) /
+                          (1000 * 60 * 60 * 24),
+                      );
+                      return diffDays >= 0 && diffDays <= 3 && !a.completed;
+                    }).length
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Overdue
+                </p>
+                <p className="text-xl font-semibold text-gray-600">
+                  {
+                    assignments.filter((a) => {
+                      const due = new Date(a.grantAt);
+                      const today = new Date();
+                      return due < today && !a.completed;
+                    }).length
+                  }
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Due Soon
-              </p>
-              <p className="text-xl font-semibold text-red-600">
-                {
-                  assignments.filter((a) => {
-                    const due = new Date(a.grantAt);
-                    const today = new Date();
-                    const diffDays = Math.ceil(
-                      (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-                    );
-                    return diffDays >= 0 && diffDays <= 3;
-                  }).length
-                }
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Overdue
-              </p>
-              <p className="text-xl font-semibold text-gray-600">
-                {
-                  assignments.filter((a) => {
-                    const due = new Date(a.grantAt);
-                    const today = new Date();
-                    return due < today;
-                  }).length
-                }
-              </p>
-            </div>
+          )}
+
+          <div
+            className={
+              showAll
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                : 'space-y-4'
+            }
+          >
+            {displayedAssignments.map((assignment) => {
+              const {
+                status,
+                color,
+                textColor,
+                borderColor,
+                icon: StatusIcon,
+                iconColor,
+              } = getTaskStatus(
+                assignment.grantAt,
+                assignment.roleName === 'PAPER_CREATOR' && assignment.completed,
+              );
+
+              return (
+                <Link
+                  to={getTaskLink(assignment)}
+                  key={assignment.id}
+                  className={`block bg-white dark:bg-gray-800 rounded-sm shadow-sm border-l-4 ${borderColor} overflow-hidden hover:shadow-md transition-shadow ${
+                    showAll ? 'h-full' : ''
+                  }`}
+                >
+                  <div className="p-4 h-full">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center">
+                        <StatusIcon className={`h-5 w-5 ${iconColor} mr-2`} />
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${color} ${textColor}`}
+                        >
+                          {status}
+                        </span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                        {assignment.paperType}
+                      </span>
+                    </div>
+
+                    <h3 className="font-medium text-gray-800 dark:text-white mb-1">
+                      {assignment.roleName.replace(/_/g, ' ')}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {assignment.courseCode}: {assignment.courseName}
+                    </p>
+
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                      <div className="flex items-center">
+                        <CalendarIcon className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
+                        <span className="text-gray-600 dark:text-gray-300">
+                          {formatDate(assignment.grantAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <ClockIcon className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
+                        <span className={textColor}>
+                          {getDaysRemaining(assignment.grantAt)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Display additional status messages */}
+                    {assignment.completed && assignment.completeDate ? (
+                      <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                        Completed on {formatDate(assignment.completeDate)}
+                      </p>
+                    ) : null}
+
+                    {assignment.roleName === 'PAPER_CREATOR' &&
+                      !assignment.completed && (
+                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                          You have to submit a paper. Please submit it before
+                          the due date.
+                        </p>
+                      )}
+
+                    {assignment.roleName === 'FIRST_MAKER' &&
+                      !assignment.completed && (
+                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                          You have to mark the paper. Please complete it before
+                          the due date.
+                        </p>
+                      )}
+
+                    {assignment.roleName === 'PAPER_MODERATOR' &&
+                      !assignment.completed && (
+                        <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                          You have to moderate the paper. Please approve it
+                          before the due date.
+                        </p>
+                      )}
+
+                    {assignment.roleName === 'SECOND_MAKER' &&
+                      !assignment.completed && (
+                        <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
+                          You have to mark the paper. Please complete it before
+                          the due date.
+                        </p>
+                      )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
-          {sortedAssignments.map((assignment) => {
-            const {
-              status,
-              color,
-              textColor,
-              borderColor,
-              icon: StatusIcon,
-              iconColor,
-            } = getTaskStatus(
-              assignment.grantAt,
-              assignment.roleName === 'PAPER_CREATOR' && assignment.completed,
-            );
-
-            return (
-              <div
-                key={assignment.id}
-                className={`bg-white dark:bg-gray-800 rounded-sm shadow-sm border-l-4 ${borderColor} overflow-hidden hover:shadow-md transition-shadow`}
+          {!showAll && assignments.length > 0 && (
+            <div className="mt-4">
+              <Link
+                to="/tasks/all"
+                className="w-full block text-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md text-sm transition-colors dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-200"
               >
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center">
-                      <StatusIcon className={`h-5 w-5 ${iconColor} mr-2`} />
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${color} ${textColor}`}
-                      >
-                        {status}
-                      </span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                      {assignment.paperType}
-                    </span>
-                  </div>
-
-                  <h3 className="font-medium text-gray-800 dark:text-white mb-1">
-                    {assignment.roleName.replace(/_/g, ' ')}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {assignment.courseCode}: {assignment.courseName}
-                  </p>
-
-                  <div className="mt-3 flex items-center justify-between text-xs">
-                    <div className="flex items-center">
-                      <CalendarIcon className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-300">
-                        {formatDate(assignment.grantAt)}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <ClockIcon className="h-4 w-4 mr-1 text-gray-500 dark:text-gray-400" />
-                      <span className={textColor}>
-                        {getDaysRemaining(assignment.grantAt)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Display additional status messages */}
-                  {(assignment.roleName === 'PAPER_CREATOR' ||
-                    assignment.roleName === 'FIRST_MAKER') &&
-                  assignment.completed &&
-                  assignment.completeDate ? (
-                    <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                      Completed on {formatDate(assignment.completeDate)}
-                    </p>
-                  ) : null}
-
-                  {assignment.roleName === 'PAPER_CREATOR' &&
-                    !assignment.completed && (
-                      <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-                        You have to submit a paper.Please submit it before the
-                        due date.
-                      </p>
-                    )}
-
-                  {assignment.roleName === 'FIRST_MAKER' &&
-                    !assignment.completed && (
-                      <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
-                        You have to marking the paper. Please complete it before
-                        the due date.
-                      </p>
-                    )}
-
-                  {assignment.roleName === 'PAPER_MODERATOR' &&
-                    assignment.completed && (
-                      <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
-                        Paper creator has submitted the paper. You can start
-                        moderation now.
-                      </p>
-                    )}
-
-                  {assignment.roleName === 'SECOND_MAKER' &&
-                    assignment.completed && (
-                      <p className="text-sm text-orange-600 dark:text-orange-400 mt-2">
-                        First maker has completed the marking. You can start
-                        second marking now.
-                      </p>
-                    )}
-                </div>
-              </div>
-            );
-          })}
-
-          <button className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-md text-sm transition-colors dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-200">
-            View All Tasks
-          </button>
+                View All Tasks ({pendingTasks} pending)
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
