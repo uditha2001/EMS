@@ -10,7 +10,5 @@ RUN mvn clean package -DskipTests
 FROM openjdk:21-jdk
 WORKDIR /app
 COPY --from=build /backend/target/examManagementBackend-0.0.1-SNAPSHOT.jar /app/app.jar
-RUN mkdir -p /app/resources/Profile_Images && \
-    chmod -R 777 /app/resources/Profile_Images
 EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
