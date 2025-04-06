@@ -72,6 +72,8 @@ jobs:
           sudo chmod 666 /var/run/docker.sock           
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker pull udithaimesh/ems:frontend-latest
+          docker pull udithaimesh/ems:backend-latest
+          
           
           # Navigate to /home/ec2-user where docker-compose.yml exists
             cd /home/ec2-user || exit 1
@@ -81,32 +83,4 @@ jobs:
           docker image prune
           exit
           EOF
-          
-          
-          
-
-      - name: Set up SSH Key
-        run: |
-          # Save the private key stored in GitHub Secrets as a file
-          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-          chmod 600 key.pem  # Secure the key file with the correct permissions
-
-      - name: Deploy to EC2 Backend
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_BACKEND_HOST }} << 'EOF'
-          sudo systemctl start docker
-          sudo usermod -aG docker ec2-user
-          sudo chmod 666 /var/run/docker.sock           
-          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker pull udithaimesh/ems:backend-latest
-          
-          # Navigate to /home/ec2-user where docker-compose.yml exists
-          cd /home/ec2-user || exit 1
-          
-          docker-compose down
-          docker-compose up -d
-          docker image prune
-          exit
-          EOF
-      
-      
+        
