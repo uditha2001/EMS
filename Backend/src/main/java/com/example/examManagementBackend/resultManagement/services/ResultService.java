@@ -4,6 +4,7 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.resultManagement.dto.*;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
@@ -38,8 +39,9 @@ public class ResultService {
     private final CoursesRepository coursesRepository;
     private final ExaminationRepository examinationRepository;
     private final PublishedResultsRepo publishedResultsRepo;
+    private final RoleAssignmentService roleAssignmentService;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, CoursesRepository coursesRepository,ExaminationRepository examinationRepository, PublishedResultsRepo publishedResultsRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, CoursesRepository coursesRepository, ExaminationRepository examinationRepository, PublishedResultsRepo publishedResultsRepo, RoleAssignmentService roleAssignmentService) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
@@ -50,6 +52,7 @@ public class ResultService {
         this.coursesRepository = coursesRepository;
         this.examinationRepository = examinationRepository;
         this.publishedResultsRepo = publishedResultsRepo;
+        this.roleAssignmentService = roleAssignmentService;
     }
     public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
@@ -90,6 +93,7 @@ public class ResultService {
                     }
 
                 }
+
                 return new ResponseEntity<>(
                         new StandardResponse(201, "sucess", null), HttpStatus.CREATED
                 );
