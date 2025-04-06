@@ -65,7 +65,7 @@ const Courses: React.FC = () => {
 
   useEffect(() => {
     fetchCourses();
-  }, [fetchCourses]);
+  }, []);
 
   const handleFilterChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,

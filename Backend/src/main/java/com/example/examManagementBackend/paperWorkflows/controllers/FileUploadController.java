@@ -4,7 +4,10 @@ import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperDTO;
 import com.example.examManagementBackend.paperWorkflows.dto.EncryptedPaperViewRequestDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
+import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.service.FileService;
+import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +24,17 @@ public class FileUploadController {
 
     private final FileService fileService;
 
-    public FileUploadController(FileService fileService) {
+    private final UserManagementRepo userRepository;
+
+    private final CoursesRepository coursesRepository;
+
+    private final ExaminationRepository examinationRepository;
+
+    public FileUploadController(FileService fileService, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository) {
         this.fileService = fileService;
+        this.userRepository = userRepository;
+        this.coursesRepository = coursesRepository;
+        this.examinationRepository = examinationRepository;
     }
 
     @PostMapping("/upload")
@@ -37,15 +49,15 @@ public class FileUploadController {
             @RequestParam("examinationId") Long examinationId) {
         try {
             // Validate courseId
-            fileService.coursesRepository.findById(courseId)
+            coursesRepository.findById(courseId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid course ID."));
 
             // Validate creator existence
-            fileService.userRepository.findById(creatorId)
+            userRepository.findById(creatorId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid creator ID."));
 
             // Validate moderator existence
-            fileService.userRepository.findById(moderatorId)
+            userRepository.findById(moderatorId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid moderator ID."));
 
             // Validate file type

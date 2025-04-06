@@ -57,9 +57,9 @@ public class RoleService {
         RolesEntity role = rolesRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
 
-        if (role.isProtected()) {
-            throw new RuntimeException("Cannot update seeded role");
-        }
+//        if (role.isProtected()) {
+//            throw new RuntimeException("Cannot update seeded role");
+//        }
 
         role.setRoleName(roleName);
         role.setRoleDescription(roleDescription);

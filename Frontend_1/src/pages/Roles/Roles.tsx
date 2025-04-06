@@ -273,6 +273,9 @@ const Roles: React.FC = () => {
                 <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                   Permissions
                 </th>
+                <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -289,6 +292,16 @@ const Roles: React.FC = () => {
                   </td>
                   <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
                     {getPermissionNames(role.permissionIds).toLowerCase()}
+                  </td>
+                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                    {hasEditPermission && (
+                      <Link
+                        to={`/usermanagement/roles/edit/${role.roleId}`}
+                        className="text-primary hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}

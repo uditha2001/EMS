@@ -84,10 +84,11 @@ public class ExaminationService {
 
     public List<ExaminationDTO> getAllExaminations() {
         return examinationRepository.findAll().stream()
-                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING)
+                .filter(exam -> exam.getStatus() == ExamStatus.ONGOING || exam.getStatus() == ExamStatus.SCHEDULED)
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
+
 
 
     public ExaminationDTO updateExamination(Long id, ExaminationDTO examinationDTO) {
