@@ -14,6 +14,7 @@ import com.example.examManagementBackend.paperWorkflows.specifications.ArchivedP
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,8 @@ import java.util.Optional;
 @Service
 public class PaperArchivingService {
 
-    private final Path storagePath = Paths.get("src/main/resources/Archived_Papers/");
+    @Value("${file.upload.archived-dir}")
+    private String storagePath;
 
     private final EncryptedPaperRepository encryptedPaperRepository;
 
@@ -110,10 +112,12 @@ public class PaperArchivingService {
     }
 
     private String saveDecryptedFile(byte[] decryptedFile, String fileName) throws IOException {
-        Path outputPath = Paths.get("src/main/resources/Archived_Papers/").resolve(fileName);
+        // Use injected storage path
+        Path outputPath = Paths.get(storagePath).resolve(fileName);
         Files.write(outputPath, decryptedFile);
         return outputPath.toString();
     }
+
 
 
     public Page<ArchivedPaperDTO> getArchivedPapers(int page, int size) {
@@ -194,8 +198,9 @@ public class PaperArchivingService {
         }
 
         // Ensure storage directory exists
-        if (!Files.exists(storagePath)) {
-            Files.createDirectories(storagePath);
+        Path storageDir = Paths.get(storagePath);
+        if (!Files.exists(storageDir)) {
+            Files.createDirectories(storageDir);
         }
 
         // Validate filename to prevent path traversal attacks
@@ -205,8 +210,8 @@ public class PaperArchivingService {
         }
 
         // Save file to storage
-        Path filePath = storagePath.resolve(originalFilename).normalize();
-        if (!filePath.startsWith(storagePath)) {
+        Path filePath = storageDir.resolve(originalFilename).normalize();
+        if (!filePath.startsWith(storageDir)) {
             throw new IllegalArgumentException("Invalid file path");
         }
         Files.write(filePath, file.getBytes());

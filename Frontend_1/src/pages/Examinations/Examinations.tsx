@@ -84,7 +84,7 @@ export default function Examinations() {
 
   useEffect(() => {
     fetchExaminations();
-  }, [fetchExaminations]);
+  }, []);
 
   // Save or update examination
   const handleSave = async () => {

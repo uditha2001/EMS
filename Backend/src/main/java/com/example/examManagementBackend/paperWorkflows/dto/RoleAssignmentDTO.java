@@ -2,6 +2,7 @@ package com.example.examManagementBackend.paperWorkflows.dto;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,5 +25,7 @@ public class RoleAssignmentDTO {
     private Boolean isAuthorized;
     private PaperType paperType;
     private LocalDateTime grantAt;
+    private boolean isCompleted;
+    private LocalDateTime completeDate;
 
 }

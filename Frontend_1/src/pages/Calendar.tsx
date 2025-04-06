@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import useEventApi from '../api/eventApi';
-import { Loader } from 'lucide-react';
+import Loader from '../common/Loader';
 import useAuth from '../hooks/useAuth';
 import EventPopup from '../components/Modals/EventModal';
 
