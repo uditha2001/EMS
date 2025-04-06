@@ -73,6 +73,7 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
       'Exam Center',
       'No of Candidates',
       ...(includeHallStaff ? ['Supervisor', 'Invigilators'] : []),
+      'Remarks',
     ];
 
     const tableData: (string | { content: string; rowSpan: number })[][] = [];
@@ -101,7 +102,7 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
               .map((inv: { invigilatorName: string }) => inv.invigilatorName)
               .join(', ')
           : 'N/A';
-
+        const remarks = center.remarks || 'N/A';
         // Use rowspan on the first row for the exam entry
         if (index === 0) {
           tableData.push([
@@ -111,12 +112,14 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
             examCenterName,
             numOfCandidates,
             ...(includeHallStaff ? [supervisorName, invigilators] : []),
+            remarks,
           ]);
         } else {
           tableData.push([
             examCenterName,
             numOfCandidates,
             ...(includeHallStaff ? [supervisorName, invigilators] : []),
+            remarks,
           ]);
         }
       });
@@ -153,7 +156,7 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
       pageHeight - 10,
     );
 
-    doc.save(`exam-timetable-${examination?.year}.pdf`);
+    doc.save(`exam-centers-${examination?.year}.pdf`);
   };
 
   return (

@@ -90,6 +90,62 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.get('/academic-years/with-timetable');
   };
 
+  const reviseTimeTable = async (payload: {
+    examTimeTableId: number;
+    newDate: string;
+    newStartTime: string;
+    newEndTime: string;
+    revisedById: number;
+    changeReason: string;
+  }) => {
+    try {
+      console.log('Payload:', payload); // Log the payload for debugging
+      const response = await axiosPrivate.put(
+        '/exam-time-table/change-time-slot',
+        payload,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const approveTimeSlot = async (examTimeTableId: number) => {
+    return axiosPrivate.post(
+      `/exam-time-table/slot/approve/${examTimeTableId}`,
+    );
+  };
+
+  const checkPaperExists = async (
+    courseId: number,
+    examinationId: number,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ): Promise<boolean> => {
+    try {
+      const response = await axiosPrivate.get(`/exam-time-table/paper/exists`, {
+        params: {
+          courseId,
+          examinationId,
+          paperType,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data.exists;
+      console.log(response.data.exists);
+    } catch (error) {
+      console.error('Error checking paper existence:', error);
+      return false;
+    }
+  };
+
+  const getTimetableRevisions = async (examinationId: number) => {
+    return axiosPrivate.get(`/exam-time-table/revisions/${examinationId}`);
+  };
+  const getAllTimetableRevisions = async (examinationIds: any) => {
+    return axiosPrivate.post(`/exam-time-table/revisions/all`, examinationIds);
+  };
   return {
     getExamTimeTableByExamination,
     saveExamTimeTable,
@@ -106,6 +162,11 @@ const useExamTimeTableApi = () => {
     getExamTimeTableByExaminationsWithResources,
     approveTimetable,
     getOnGoingExaminations,
+    reviseTimeTable,
+    approveTimeSlot,
+    checkPaperExists,
+    getTimetableRevisions,
+    getAllTimetableRevisions,
   };
 };
 

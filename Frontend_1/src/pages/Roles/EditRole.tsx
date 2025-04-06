@@ -242,14 +242,13 @@ const EditRole: React.FC = () => {
               >
                 Back
               </button>
-              {!isProtected && (
-                <button
-                  type="submit"
-                  className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
-                >
-                  Update Role
-                </button>
-              )}
+
+              <button
+                type="submit"
+                className="flex justify-center rounded bg-primary py-2 px-6 font-medium text-gray hover:bg-opacity-90"
+              >
+                Update Role
+              </button>
             </div>
           </div>
         </form>

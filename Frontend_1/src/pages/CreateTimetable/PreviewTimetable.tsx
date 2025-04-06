@@ -4,12 +4,12 @@ import Loader from '../../common/Loader';
 import ErrorMessage from '../../components/ErrorMessage';
 import SuccessMessage from '../../components/SuccessMessage';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import autoTable, { FontStyle } from 'jspdf-autotable';
 import useApi from '../../api/api';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import useHasPermission from '../../hooks/useHasPermission';
-import { FaCheckCircle, FaClock } from 'react-icons/fa';
+import { FaCheckCircle, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 
 interface Examination {
   id: number;
@@ -29,6 +29,20 @@ interface ExamTimeTable {
   endTime: string;
   timetableGroup: string;
   approve: boolean;
+  courseId: number;
+  hasPaper: boolean;
+}
+
+interface TimeTableRevision {
+  id: number;
+  examTimeTableId: number;
+  previousDate: string;
+  previousStartTime: string;
+  previousEndTime: string;
+  revisedById: number;
+  revisedBy: string;
+  changeReason: string;
+  revisedAt: string;
 }
 
 interface PreviewTimetableProps {
@@ -53,50 +67,198 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
     useState<boolean>(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
+  const [approvingSlotId, setApprovingSlotId] = useState<number | null>(null);
+  const [missingPapers, setMissingPapers] = useState<
+    { courseCode: string; courseName: string; examType: string }[]
+  >([]);
 
-  const { getExamTimeTableByExamination, approveTimetable } =
-    useExamTimeTableApi();
+  const {
+    getExamTimeTableByExamination,
+    approveTimetable,
+    approveTimeSlot,
+    checkPaperExists,
+  } = useExamTimeTableApi();
   const { getExaminationById } = useApi();
   const hasApprovePermission = useHasPermission('APPROVE_TIMETABLE');
 
+  const [revisions, setRevisions] = useState<TimeTableRevision[]>([]);
+  const { getTimetableRevisions } = useExamTimeTableApi();
+
   useEffect(() => {
     if (!examinationId) return;
-    setIsLoading(true);
 
-    Promise.all([
-      getExaminationById(Number(examinationId)),
-      getExamTimeTableByExamination(Number(examinationId)),
-    ])
-      .then(([exam, response]) => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
+        setSuccessMessage('');
+
+        const [exam, timetableResponse, revisionsResponse] = await Promise.all([
+          getExaminationById(Number(examinationId)),
+          getExamTimeTableByExamination(Number(examinationId)),
+          getTimetableRevisions(Number(examinationId)),
+        ]);
+
         setExamination(exam);
-        if (response && Array.isArray(response.data.data)) {
-          const sortedData = response.data.data.sort(
-            (a: ExamTimeTable, b: ExamTimeTable) =>
-              new Date(a.date + ' ' + a.startTime).getTime() -
-              new Date(b.date + ' ' + b.startTime).getTime(),
-          );
-          setTimetable(sortedData);
-          setIsTimetableApproved(response.data.data[0].approve);
-        } else {
-          setErrorMessage('Failed to fetch timetable.');
+        setRevisions(revisionsResponse.data || []);
+      
+
+        if (
+          !timetableResponse?.data?.data ||
+          !Array.isArray(timetableResponse.data.data)
+        ) {
+          setErrorMessage('Failed to fetch timetable data');
+          return;
         }
-      })
-      .catch(() => setErrorMessage('Error fetching timetable.'))
-      .finally(() => setIsLoading(false));
+
+        // First, get all Theory/Practical entries that need paper checks
+        const entriesNeedingCheck = timetableResponse.data.data.filter(
+          (entry: ExamTimeTable) =>
+            entry.examType === 'THEORY' || entry.examType === 'PRACTICAL',
+        );
+
+        // Batch check papers for these entries
+        const paperChecks = await Promise.all(
+          entriesNeedingCheck.map((entry: ExamTimeTable) =>
+            checkPaperExists(
+              entry.courseId,
+              Number(examinationId),
+              entry.examType as 'THEORY' | 'PRACTICAL',
+            ).then((exists) => ({
+              courseId: entry.courseId,
+              examType: entry.examType,
+              exists,
+            })),
+          ),
+        );
+
+        // Create a map of courseId+examType to paper existence
+        const paperExistsMap = new Map<string, boolean>();
+        paperChecks.forEach((check) => {
+          paperExistsMap.set(
+            `${check.courseId}-${check.examType}`,
+            check.exists,
+          );
+        });
+
+        // Process all timetable entries
+        const processedTimetable = timetableResponse.data.data.map(
+          (entry: ExamTimeTable) => {
+            const needsPaper =
+              entry.examType === 'THEORY' || entry.examType === 'PRACTICAL';
+            const hasPaper = needsPaper
+              ? paperExistsMap.get(`${entry.courseId}-${entry.examType}`) ??
+                false
+              : true;
+
+            return {
+              ...entry,
+              hasPaper,
+            };
+          },
+        );
+
+        // Sort by date and time
+        const sortedData = processedTimetable.sort(
+          (a: ExamTimeTable, b: ExamTimeTable) =>
+            new Date(a.date + ' ' + a.startTime).getTime() -
+            new Date(b.date + ' ' + b.startTime).getTime(),
+        );
+
+        setTimetable(sortedData);
+        setIsTimetableApproved(
+          sortedData.every((entry: ExamTimeTable) => entry.approve),
+        );
+
+        // Find missing papers for display
+        const missing = sortedData
+          .filter(
+            (entry: ExamTimeTable) =>
+              (entry.examType === 'THEORY' || entry.examType === 'PRACTICAL') &&
+              !entry.hasPaper,
+          )
+          .map((entry: ExamTimeTable) => ({
+            courseCode: entry.courseCode,
+            courseName: entry.courseName,
+            examType: entry.examType,
+          }));
+        setMissingPapers(missing);
+      } catch (error) {
+        console.error('Error fetching timetable:', error);
+        setErrorMessage('Error fetching timetable data. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [examinationId]);
 
-  const confirmAction = (action: () => void) => {
+  const hasRevisions = (examTimeTableId: number) => {
+    return revisions.some((rev) => rev.examTimeTableId === examTimeTableId);
+  };
+
+  const confirmAction = (action: () => void, slotId: number | null = null) => {
     setActionToConfirm(() => action);
+    setApprovingSlotId(slotId);
     setIsConfirmationModalOpen(true);
   };
 
-  const handleApproveTimetable = () => {
-    approveTimetable(Number(examinationId))
-      .then(() => {
-        setIsTimetableApproved(true);
-        setSuccessMessage('Timetable approved successfully.');
-      })
-      .catch(() => setErrorMessage('Failed to approve timetable.'));
+  const handleApproveTimetable = async () => {
+    try {
+      // Check if there are any missing papers for Theory/Practical exams
+      const hasMissingPapers = timetable.some(
+        (entry) =>
+          (entry.examType === 'THEORY' || entry.examType === 'PRACTICAL') &&
+          !entry.hasPaper,
+      );
+
+      if (hasMissingPapers) {
+        setErrorMessage('Cannot approve timetable. Some papers are missing.');
+        return;
+      }
+
+      await approveTimetable(Number(examinationId));
+      setIsTimetableApproved(true);
+      setSuccessMessage('Timetable approved successfully.');
+    } catch (error) {
+      setErrorMessage('Failed to approve timetable.');
+    }
+  };
+
+  const handleApproveTimeSlot = async (slotId: number) => {
+    try {
+      const slot = timetable.find((entry) => entry.examTimeTableId === slotId);
+      if (!slot) return;
+
+      // Check paper existence for Theory/Practical exams
+      if (
+        (slot.examType === 'THEORY' || slot.examType === 'PRACTICAL') &&
+        !slot.hasPaper
+      ) {
+        setErrorMessage(
+          `Cannot approve time slot. Paper not found for ${slot.courseCode} - ${slot.courseName} (${slot.examType})`,
+        );
+        return;
+      }
+
+      await approveTimeSlot(slotId);
+
+      // Update local state
+      setTimetable((prev) =>
+        prev.map((entry) =>
+          entry.examTimeTableId === slotId
+            ? { ...entry, approve: true }
+            : entry,
+        ),
+      );
+
+      setSuccessMessage(
+        `Time slot for ${slot.courseCode} approved successfully.`,
+      );
+    } catch (error) {
+      setErrorMessage('Failed to approve time slot.');
+    }
   };
 
   // Extract Examination Start and End Date
@@ -150,29 +312,70 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
 
     // Table Headers and Data
     const tableHeaders = ['Date', 'Time', 'Paper'];
-    const tableData = timetable.map((entry) => [
-      { content: formatDateWithDay(entry.date) },
-      `${entry.startTime} - ${entry.endTime}`,
-      `${entry.courseCode} (${
-        entry.examType === 'THEORY'
-          ? 'T'
-          : entry.examType === 'PRACTICAL'
-          ? 'P'
-          : entry.examType
-      }) - ${entry.courseName}${
-        entry.timetableGroup ? ' - (Group ' + entry.timetableGroup + ')' : ''
-      }`,
-    ]);
+    const tableData = timetable.map((entry) => {
+      const isRevised = hasRevisions(entry.examTimeTableId);
+      const textColor = isRevised ? [0, 0, 255] as [number, number, number] : undefined;
+      const fontStyle = isRevised ? ('bolditalic' as FontStyle) : undefined;
+      
+      return [
+        { 
+          content: formatDateWithDay(entry.date) + (isRevised ? ' (Revised)' : ''),
+          styles: { 
+            fontStyle: fontStyle,
+            textColor
+          }
+        },
+        { 
+          content: `${entry.startTime} - ${entry.endTime}`,
+          styles: { 
+            textColor
+          }
+        },
+        { 
+          content: `${entry.courseCode} (${
+            entry.examType === 'THEORY'
+              ? 'T'
+              : entry.examType === 'PRACTICAL'
+              ? 'P'
+              : entry.examType
+          }) - ${entry.courseName}${
+            entry.timetableGroup ? ' - (Group ' + entry.timetableGroup + ')' : ''
+          }`,
+          styles: { 
+            textColor
+          }
+        }
+      ];
+    });
 
-    // Create the table and add page numbers on every page
+    // Create the table with conditional styling
     autoTable(doc, {
       startY: currentY,
       head: [tableHeaders],
       body: tableData,
       theme: 'grid',
-      styles: { fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255] },
+      styles: { 
+        fontSize: 10, 
+        cellPadding: 3,
+      },
+      headStyles: { 
+        fillColor: [22, 160, 133], 
+        textColor: [255, 255, 255] 
+      },
       margin: { top: 10 },
+      didDrawCell: (data) => {
+        // Add left border for revised entries
+        if (data.column.index === 0 && hasRevisions(timetable[data.row.index].examTimeTableId)) {
+          doc.setDrawColor(0, 0, 255); // Blue border
+          doc.setLineWidth(0.5);
+          doc.line(
+            data.cell.x,
+            data.cell.y,
+            data.cell.x,
+            data.cell.y + data.cell.height
+          );
+        }
+      },
       didDrawPage: function () {
         // Add page number at the bottom right on every page
         const pageCurrent = doc.getNumberOfPages();
@@ -183,8 +386,15 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
       },
     });
 
+    // Add legend for revised entries
+    currentY = (doc as any).lastAutoTable?.finalY + 10 || currentY;
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 255); // Blue
+    doc.text('* Revised entries are shown in blue', margin, currentY);
+
     // Footer on final page
     doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0); // Reset to black
     doc.text(
       `Generated on: ${new Date().toLocaleString()}`,
       margin,
@@ -204,6 +414,28 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
         message={successMessage}
         onClose={() => setSuccessMessage('')}
       />
+
+      {/* Missing Papers Warning */}
+      {missingPapers.length > 0 && (
+        <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+          <div className="flex items-center">
+            <FaExclamationTriangle className="text-yellow-400 mr-2" />
+            <h3 className="text-yellow-800 font-medium">Missing Papers</h3>
+          </div>
+          <p className="text-yellow-700 mt-1">
+            The following courses are missing papers (required for
+            Theory/Practical exams):
+          </p>
+          <ul className="list-disc pl-5 text-yellow-700 mt-1">
+            {missingPapers.map((paper, index) => (
+              <li key={index}>
+                {paper.courseCode} - {paper.courseName} ({paper.examType})
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto text-sm">
         <div className="border-b border-stroke dark:border-strokedark py-6 px-8">
           <header className="text-center mb-6">
@@ -244,24 +476,36 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
               {examination?.year}
             </h3>
 
-            {!isTimetableApproved && hasApprovePermission && (
+            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+              {!isTimetableApproved && hasApprovePermission && (
+                <button
+                  className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition duration-200 whitespace-nowrap w-full sm:w-auto"
+                  onClick={() => confirmAction(handleApproveTimetable)}
+                  disabled={missingPapers.length > 0}
+                >
+                  Approve Entire Timetable
+                </button>
+              )}
               <button
-                className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition duration-200 whitespace-nowrap"
-                onClick={() => confirmAction(handleApproveTimetable)}
+                className="btn-primary w-full sm:w-auto"
+                onClick={generatePDF}
               >
-                Approve Timetable
+                Download PDF
               </button>
-            )}
-            <button className="btn-primary" onClick={generatePDF}>
-              Download PDF
-            </button>
+              <Link
+                className="btn-primary w-full sm:w-auto"
+                to={'/scheduling/revisions/' + examinationId}
+              >
+                Revisions
+              </Link>
+            </div>
           </div>
         </div>
 
         {isLoading ? (
           <Loader />
         ) : (
-          <div className="overflow-x-auto m-4 ">
+          <div className="overflow-x-auto m-4">
             <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
               <thead>
                 <tr className="bg-gray-100 dark:bg-form-input">
@@ -274,33 +518,116 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
                   <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                     Paper
                   </th>
+                  {hasApprovePermission && !isTimetableApproved && (
+                    <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {timetable.map((entry) => (
                   <tr
                     key={entry.examTimeTableId}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                      entry.approve ? 'bg-green-50 dark:bg-gray-800' : ''
+                    } ${
+                      (entry.examType === 'THEORY' ||
+                        entry.examType === 'PRACTICAL') &&
+                      !entry.hasPaper
+                        ? 'bg-yellow-50 dark:bg-yellow-900'
+                        : ''
+                    } ${
+                      hasRevisions(entry.examTimeTableId)
+                        ? 'border-l-4 border-blue-500 dark:border-blue-400'
+                        : ''
+                    }`}
                   >
                     <td className="border border-gray-300 dark:border-strokedark px-4 py-2 italic">
                       {formatDateWithDay(entry.date)}
-                    </td>
-                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">{`${entry.startTime} - ${entry.endTime}`}</td>
-                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                      {entry.courseCode} (
-                      {entry.examType === 'THEORY'
-                        ? 'T'
-                        : entry.examType === 'PRACTICAL'
-                        ? 'P'
-                        : entry.examType}
-                      ) - {entry.courseName}
-                      {entry.timetableGroup && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {' - '}
-                          (Group {entry.timetableGroup})
+                      {hasRevisions(entry.examTimeTableId) && (
+                        <span
+                          className="ml-2 text-blue-600 dark:text-blue-300 text-xs"
+                          title="This slot has been revised"
+                        >
+                          (Revised)
                         </span>
                       )}
                     </td>
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      {entry.startTime} - {entry.endTime}
+                    </td>
+                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                      <div className="flex items-center">
+                        {entry.courseCode} (
+                        {entry.examType === 'THEORY'
+                          ? 'T'
+                          : entry.examType === 'PRACTICAL'
+                          ? 'P'
+                          : entry.examType}
+                        ) - {entry.courseName}
+                        {entry.timetableGroup && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {' - '}
+                            (Group {entry.timetableGroup})
+                          </span>
+                        )}
+                        {(entry.examType === 'THEORY' ||
+                          entry.examType === 'PRACTICAL') &&
+                          !entry.hasPaper && (
+                            <span
+                              className="ml-2 text-yellow-600 dark:text-yellow-300"
+                              title="Paper not found"
+                            >
+                              <FaExclamationTriangle />
+                            </span>
+                          )}
+                        {entry.approve && (
+                          <span
+                            className="ml-2 text-green-600 dark:text-green-300"
+                            title="Approved"
+                          >
+                            <FaCheckCircle />
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    {hasApprovePermission && !isTimetableApproved && (
+                      <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                        {!entry.approve && (
+                          <button
+                            onClick={() =>
+                              confirmAction(
+                                () =>
+                                  handleApproveTimeSlot(entry.examTimeTableId),
+                                entry.examTimeTableId,
+                              )
+                            }
+                            className={`px-3 py-1 rounded ${
+                              (entry.examType === 'THEORY' ||
+                                entry.examType === 'PRACTICAL') &&
+                              !entry.hasPaper
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                                : 'bg-green-500 hover:bg-green-600 text-white'
+                            }`}
+                            disabled={
+                              (entry.examType === 'THEORY' ||
+                                entry.examType === 'PRACTICAL') &&
+                              !entry.hasPaper
+                            }
+                            title={
+                              (entry.examType === 'THEORY' ||
+                                entry.examType === 'PRACTICAL') &&
+                              !entry.hasPaper
+                                ? `Paper not found for ${entry.courseCode} (${entry.examType})`
+                                : 'Approve this time slot'
+                            }
+                          >
+                            Approve
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -309,15 +636,22 @@ const PreviewTimetable: React.FC<PreviewTimetableProps> = ({
         )}
       </div>
 
-      {/* Render the ConfirmationModal */}
+      {/* Confirmation Modal */}
       {isConfirmationModalOpen && (
         <ConfirmationModal
-          message="Are you sure you want to approve this timetable? Once approved, you won't be able to edit it."
+          message={
+            approvingSlotId
+              ? 'Are you sure you want to approve this time slot?'
+              : "Are you sure you want to approve the entire timetable? Once approved, you won't be able to edit it."
+          }
           onConfirm={() => {
             actionToConfirm();
             setIsConfirmationModalOpen(false);
           }}
-          onCancel={() => setIsConfirmationModalOpen(false)}
+          onCancel={() => {
+            setIsConfirmationModalOpen(false);
+            setApprovingSlotId(null);
+          }}
         />
       )}
     </div>

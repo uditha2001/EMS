@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect} from 'react';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -32,9 +32,8 @@ export default function DegreePrograms() {
   } = useDegreeApi();
 
   // Fetch degree programs
-  const fetchDegreePrograms = useCallback(async () => {
+  const fetchDegreePrograms =async () => {
     try {
-      setLoading(true);
       const response = await getAllDegreePrograms();
       setDegreePrograms(response.data);
     } catch (error) {
@@ -43,11 +42,11 @@ export default function DegreePrograms() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchDegreePrograms();
-  }, [fetchDegreePrograms]);
+  }, []);
 
   // Save or update degree program
   const handleSave = async () => {

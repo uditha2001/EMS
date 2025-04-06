@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import useEventApi from '../api/eventApi';
-import { Loader } from 'lucide-react';
+import Loader from '../common/Loader';
 import useAuth from '../hooks/useAuth';
+import EventPopup from '../components/Modals/EventModal';
 
 interface Event {
   id: number;
@@ -21,6 +22,8 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { getPublicEvents, getEventByUserId } = useEventApi();
   const { auth } = useAuth();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Fetch calendar events from the API
   useEffect(() => {
@@ -30,7 +33,6 @@ const Calendar = () => {
           getPublicEvents(),
           getEventByUserId(Number(auth.id)),
         ]);
-
         // Merge both event lists (adjust as needed)
         setEvents([...publicEvents.data, ...userEvents.data]);
       } catch (error) {
@@ -122,8 +124,9 @@ const Calendar = () => {
             <div
               key={event.id}
               className="group h-16 w-full flex-grow cursor-pointer py-1"
+              onClick={() => handleEventClick(event)}
             >
-              <span className="group-hover:text-primary">More</span>
+              {/* <span className="group-hover:text-primary">More</span> */}
               <div className="event invisible absolute left-2 z-99 mb-1 flex w-[200%] flex-col rounded-sm border-l-[3px] border-primary bg-gray px-3 py-1 text-left opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-meta-4 md:visible md:w-[190%] md:opacity-100">
                 <span className="event-name text-sm font-semibold text-black dark:text-white">
                   {event.title}
@@ -168,6 +171,11 @@ const Calendar = () => {
     );
   };
 
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsPopupOpen(true);
+  };
+
   if (loading) {
     return (
       <div>
@@ -180,6 +188,12 @@ const Calendar = () => {
     <>
       <Breadcrumb pageName="Calendar" />
       <div className="w-full max-w-full rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+        {isPopupOpen && selectedEvent && (
+          <EventPopup
+            event={selectedEvent}
+            onClose={() => setIsPopupOpen(false)}
+          />
+        )}
         <div className="flex justify-between p-4">
           <button
             onClick={() => changeMonth(-1)}

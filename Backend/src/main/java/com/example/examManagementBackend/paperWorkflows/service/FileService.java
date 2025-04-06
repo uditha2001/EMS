@@ -5,11 +5,17 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
+import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.EncryptedPaperRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
+import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
+import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
+import com.example.examManagementBackend.userManagement.userManagementRepo.RoleRepository;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,21 +34,29 @@ public class FileService {
 
     private final EncryptedPaperRepository encryptedPaperRepository;
 
-    public final UserManagementRepo userRepository;
+    private final UserManagementRepo userRepository;
 
-    public final CoursesRepository coursesRepository;
+    private final CoursesRepository coursesRepository;
 
-    final
-    ExaminationRepository examinationRepository;
+    private final ExaminationRepository examinationRepository;
 
-    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository) {
+    private final RoleAssignmentRepository roleAssignmentRepository;
+
+    private final RoleRepository roleRepository;
+
+    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository, RoleAssignmentRepository roleAssignmentRepository, RoleRepository roleRepository) {
         this.encryptionService = encryptionService;
         this.encryptedPaperRepository = encryptedPaperRepository;
         this.userRepository = userRepository;
         this.coursesRepository = coursesRepository;
         this.examinationRepository = examinationRepository;
+        this.roleAssignmentRepository = roleAssignmentRepository;
+        this.roleRepository = roleRepository;
     }
 
+
+
+    @Transactional
     public Long saveEncryptedPaper(String encryptedFile, Long creatorId, String fileName, Long moderatorId, Long courseId, String remarks, Long examinationId, String paperType, String encryptedMarkingFile) {
         // Validate courseId
         CoursesEntity course = coursesRepository.findById(courseId)
@@ -63,14 +78,14 @@ public class FileService {
         String markingFilePath = saveFileToStorage(encryptedMarkingFile, "MARKING_" + fileName);
         encryptedPaper.setMarkingFilePath(markingFilePath);
 
-        // Fetch and set creator
-        encryptedPaper.setCreator(userRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("Creator not found.")));
+        // Fetch and set creator and moderator
+        UserEntity creator = userRepository.findById(creatorId)
+                .orElseThrow(() -> new RuntimeException("Creator not found."));
+        UserEntity moderator = userRepository.findById(moderatorId)
+                .orElseThrow(() -> new RuntimeException("Moderator not found."));
 
-        // Fetch and set moderator
-        encryptedPaper.setModerator(userRepository.findById(moderatorId)
-                .orElseThrow(() -> new RuntimeException("Moderator not found.")));
-
+        encryptedPaper.setCreator(creator);
+        encryptedPaper.setModerator(moderator);
         encryptedPaper.setRemarks(remarks);
         encryptedPaper.setExamination(examination);
         encryptedPaper.setPaperType(PaperType.valueOf(paperType));
@@ -78,9 +93,42 @@ public class FileService {
 
         // Save the EncryptedPaper entity and get the generated ID
         EncryptedPaper savedPaper = encryptedPaperRepository.save(encryptedPaper);
-        return savedPaper.getId();  // Return the ID
+
+        // Update RoleAssignmentEntity for both PAPER_CREATOR and MODERATOR
+        PaperType type = PaperType.valueOf(paperType);
+
+        // Fetch PAPER_CREATOR role
+        RolesEntity creatorRole = roleRepository.findByRoleName("PAPER_CREATOR")
+                .orElseThrow(() -> new RuntimeException("Role 'PAPER_CREATOR' not found."));
+
+        // Fetch MODERATOR role
+        RolesEntity moderatorRole = roleRepository.findByRoleName("PAPER_MODERATOR")
+                .orElseThrow(() -> new RuntimeException("Role 'MODERATOR' not found."));
+
+        // Update role assignment for PAPER_CREATOR
+        RoleAssignmentEntity creatorRoleAssignment = roleAssignmentRepository
+                .findByUserIdAndCourseAndExaminationIdAndRoleAndPaperType(
+                        creator, course, examination, creatorRole, type
+                )
+                .orElseThrow(() -> new RuntimeException("Creator role assignment not found."));
+        creatorRoleAssignment.setCompleted(true);
+        creatorRoleAssignment.setCompleteDate(LocalDateTime.now());
+        roleAssignmentRepository.save(creatorRoleAssignment);
+
+        // Update role assignment for MODERATOR
+        RoleAssignmentEntity moderatorRoleAssignment = roleAssignmentRepository
+                .findByUserIdAndCourseAndExaminationIdAndRoleAndPaperType(
+                        moderator, course, examination, moderatorRole, type
+                )
+                .orElseThrow(() -> new RuntimeException("Moderator role assignment not found."));
+        moderatorRoleAssignment.setCompleted(true);
+        moderatorRoleAssignment.setCompleteDate(LocalDateTime.now());
+        roleAssignmentRepository.save(moderatorRoleAssignment);
+
+        return savedPaper.getId();  // Return the ID of the saved paper
     }
 
+    @Transactional
     public void updateEncryptedPaper(
             Long paperId,
             String encryptedFile,

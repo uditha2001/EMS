@@ -461,7 +461,7 @@ const useApi = () => {
     try {
       const response = await axiosPrivate.get('/user/count');
       if (response?.data?.code === 200) {
-        return response.data.data;
+        return response?.data?.data;
       }
     } catch (error: any) {
       throw new Error(
@@ -836,6 +836,14 @@ const useApi = () => {
       throw error;
     }
   };
+  const getRoleAssignments = async () => {
+    try {
+      const response = await axiosPrivate.get('/role-assignments');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   return {
     uploadFile,
@@ -920,6 +928,7 @@ const useApi = () => {
     fetchEncryptedMarking,
     getGradesConditionsValues,
     getOngoingexaminationCount,
+    getRoleAssignments,
   };
 };
 

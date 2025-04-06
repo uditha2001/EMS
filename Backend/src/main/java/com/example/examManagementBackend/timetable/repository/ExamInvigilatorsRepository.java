@@ -20,4 +20,6 @@ public interface ExamInvigilatorsRepository extends JpaRepository<ExamInvigilato
             @Param("examTimeTableId") Long examTimeTableId,
             @Param("examCenterId") Long examCenterId);
 
+    List<ExamInvigilatorsEntity> findByExamTimeTablesExamTimeTableId(Long examTimeTableId);
+
 }

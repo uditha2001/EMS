@@ -7,4 +7,5 @@ public class ExamCenterAllocationDTO {
     private Long examTimeTableId;
     private Long examCenterId;
     private Integer numOfCandidates;
+    private String remarks;
 }
