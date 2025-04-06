@@ -130,10 +130,10 @@ const PaperTracking: React.FC = () => {
           case 'PAPER_MODERATOR':
             paperData.paperModeration = assignment;
             break;
-          case 'FIRST_MAKER':
+          case 'FIRST_MARKER':
             paperData.firstMarking = assignment;
             break;
-          case 'SECOND_MAKER':
+          case 'SECOND_MARKER':
             paperData.secondMarking = assignment;
             break;
         }
@@ -182,7 +182,7 @@ const PaperTracking: React.FC = () => {
           </span>
         </div>
         <div className="text-sm text-gray-600 dark:text-gray-300">
-         {assignment.user}
+          {assignment.user}
         </div>
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <div>
@@ -423,27 +423,27 @@ const PaperTracking: React.FC = () => {
 
       {/* Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-sm ">
-      <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
+        <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
           <thead className="bg-gray-50 dark:bg-gray-700">
-          <tr className="bg-gray-100 dark:bg-form-input">
-               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+            <tr className="bg-gray-100 dark:bg-form-input">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper
               </th>
-               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper Setting
               </th>
-               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Paper Moderation
               </th>
-               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 First Marking
               </th>
-               <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+              <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
                 Second Marking
               </th>
             </tr>
           </thead>
-          <tbody >
+          <tbody>
             {groupedData.length === 0 ? (
               <tr>
                 <td

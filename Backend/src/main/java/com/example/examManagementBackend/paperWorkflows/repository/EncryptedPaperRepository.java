@@ -1,8 +1,10 @@
 package com.example.examManagementBackend.paperWorkflows.repository;
 
 
+import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.EncryptedPaper;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
+import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,6 +40,13 @@ public interface EncryptedPaperRepository extends JpaRepository<EncryptedPaper, 
             Long courseId,
             Long examinationId,
             PaperType paperType);
+
+    Optional<EncryptedPaper> findByCourseAndExaminationAndPaperType(
+            CoursesEntity course,
+            ExaminationEntity examination,
+            PaperType paperType
+    );
+
 
 }
 

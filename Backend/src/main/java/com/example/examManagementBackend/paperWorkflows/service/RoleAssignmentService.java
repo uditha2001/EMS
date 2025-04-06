@@ -1,15 +1,12 @@
 package com.example.examManagementBackend.paperWorkflows.service;
 
 import com.example.examManagementBackend.paperWorkflows.dto.*;
-import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.*;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
-import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentEntity;
-import com.example.examManagementBackend.paperWorkflows.entity.RoleAssignmentRevisionEntity;
-import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
-import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRevisionRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.*;
+import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
+import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
+import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.userManagement.userManagementEntity.RolesEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
@@ -38,7 +35,11 @@ public class RoleAssignmentService {
 
     private final RoleAssignmentRevisionRepository roleAssignmentRevisionRepository;
 
-    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository)
+    private final EncryptedPaperRepository encryptedPaperRepository;
+
+    private final ResultRepo resultRepository;
+
+    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository, EncryptedPaperRepository encryptedPaperRepository, ResultRepo resultRepository)
     {
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
@@ -47,6 +48,8 @@ public class RoleAssignmentService {
         this.examinationRepository = examinationRepository;
         this.userRolesRepo = userRolesRepository;
         this.roleAssignmentRevisionRepository = roleAssignmentRevisionRepository;
+        this.encryptedPaperRepository = encryptedPaperRepository;
+        this.resultRepository = resultRepository;
     }
 
     @Transactional
@@ -406,5 +409,80 @@ public class RoleAssignmentService {
                 revision.getRevisedAt().format(formatter)
         )).collect(Collectors.toList());
     }
+
+    @Transactional
+    public void updateRoleAssignmentCompletionStatus() {
+        List<RoleAssignmentEntity> assignments = roleAssignmentRepository.findAll();
+
+        for (RoleAssignmentEntity assignment : assignments) {
+            Optional<EncryptedPaper> paperOpt = encryptedPaperRepository.findByCourseAndExaminationAndPaperType(
+                    assignment.getCourse(),
+                    assignment.getExaminationId(),
+                    assignment.getPaperType()
+            );
+
+            if (paperOpt.isPresent()) {
+                EncryptedPaper paper = paperOpt.get();
+
+                boolean completed = assignment.getRole().getRoleName().equalsIgnoreCase("PAPER_CREATOR") &&
+                        paper.getCreator().getUserId().equals(assignment.getUserId().getUserId());
+
+                if (assignment.getRole().getRoleName().equalsIgnoreCase("PAPER_MODERATOR") &&
+                        paper.getModerator() != null &&
+                        paper.getModerator().getUserId().equals(assignment.getUserId().getUserId()) &&
+                        paper.getStatus().name().equals("APPROVED")) {
+                    completed = true;
+                }
+
+                if (completed && !assignment.isCompleted()) {
+                    assignment.setCompleted(true);
+                    assignment.setCompleteDate(LocalDateTime.now());
+                    roleAssignmentRepository.save(assignment);
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public void updateRoleAssignmentsFromResults() {
+        List<RoleAssignmentEntity> assignments = roleAssignmentRepository.findAll();
+
+        for (RoleAssignmentEntity assignment : assignments) {
+            // Only proceed for FIRST_MARKER or SECOND_MARKER
+            String roleName = assignment.getRole().getRoleName().toUpperCase();
+
+            if (!roleName.equals("FIRST_MARKER") && !roleName.equals("SECOND_MARKER")) {
+                continue;
+            }
+
+            List<ResultEntity> results = resultRepository.findByExaminationAndCourseAndExamType(
+                    assignment.getExaminationId(),
+                    assignment.getCourse(),
+                    assignment.getPaperType()
+            );
+
+            if (results.isEmpty()) continue;
+
+            boolean allFirstMarked = results.stream()
+                    .allMatch(r -> r.getStatus() == ResultStatus.FIRST_MARKING_COMPLETE || r.getStatus() == ResultStatus.SECOND_MARKING_COMPLETE);
+
+            boolean allSecondMarked = results.stream()
+                    .allMatch(r -> r.getStatus() == ResultStatus.SECOND_MARKING_COMPLETE);
+
+            boolean shouldComplete = roleName.equals("FIRST_MARKER") && allFirstMarked;
+
+            if (roleName.equals("SECOND_MARKER") && allSecondMarked) {
+                shouldComplete = true;
+            }
+
+            if (shouldComplete && !assignment.isCompleted()) {
+                assignment.setCompleted(true);
+                assignment.setCompleteDate(LocalDateTime.now());
+                roleAssignmentRepository.save(assignment);
+            }
+        }
+    }
+
+
 
 }

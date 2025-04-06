@@ -100,8 +100,8 @@ public class DatabaseSeeder {
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
             RolesEntity paperCreatorRole = createRole("PAPER_CREATOR", "Role responsible for creating exam papers");
             RolesEntity paperModeratorRole = createRole("PAPER_MODERATOR", "Role responsible for moderating exam papers");
-            RolesEntity firstMakerRole = createRole("FIRST_MAKER", "Role responsible for moderating and reviewing exam papers (First Maker)");
-            RolesEntity secondMakerRole = createRole("SECOND_MAKER", "Role responsible for reviewing and finalizing exam papers (Second Maker)");
+            RolesEntity firstMakerRole = createRole("FIRST_MARKER", "Role responsible for moderating and reviewing exam papers (First Maker)");
+            RolesEntity secondMakerRole = createRole("SECOND_MARKER", "Role responsible for reviewing and finalizing exam papers (Second Maker)");
             RolesEntity academyCoordinatorRole = createRole("ACADEMY_COORDINATOR", "Role responsible for overseeing the academic aspects and coordination");
 
             createExamType("THEORY");
