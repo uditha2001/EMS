@@ -1,9 +1,11 @@
 package com.example.examManagementBackend.resultManagement.services;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRepository;
+import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.resultManagement.dto.*;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
@@ -11,10 +13,7 @@ import com.example.examManagementBackend.resultManagement.entities.ExamTypesEnti
 import com.example.examManagementBackend.resultManagement.entities.PublishedAndReCorrectedResultsEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
-import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
-import com.example.examManagementBackend.resultManagement.repo.PublishedResultsRepo;
-import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
-import com.example.examManagementBackend.resultManagement.repo.StudentRepo;
+import com.example.examManagementBackend.resultManagement.repo.*;
 import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
@@ -36,12 +35,12 @@ public class ResultService {
     private final ExamTypeRepo examTypeRepo;
     private final JwtService jwtService;
     private final UserManagementRepo userManagementRepo;
-    private final CoursesRepository coursesRepository;
-    private final ExaminationRepository examinationRepository;
     private final PublishedResultsRepo publishedResultsRepo;
     private final RoleAssignmentService roleAssignmentService;
+    private final RoleAssignmentRepository roleAssignmentRepository;
+    private final CourseEvaluationRepo courseEvaluationRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, CoursesRepository coursesRepository, ExaminationRepository examinationRepository, PublishedResultsRepo publishedResultsRepo, RoleAssignmentService roleAssignmentService) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, PublishedResultsRepo publishedResultsRepo, RoleAssignmentService roleAssignmentService, RoleAssignmentRepository roleAssignmentRepository, CourseEvaluationRepo courseEvaluationRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
@@ -49,10 +48,10 @@ public class ResultService {
         this.examTypeRepo=examTypeRepo;
         this.jwtService = jwtService;
         this.userManagementRepo = userManagementRepo;
-        this.coursesRepository = coursesRepository;
-        this.examinationRepository = examinationRepository;
         this.publishedResultsRepo = publishedResultsRepo;
         this.roleAssignmentService = roleAssignmentService;
+        this.roleAssignmentRepository = roleAssignmentRepository;
+        this.courseEvaluationRepo = courseEvaluationRepo;
     }
     public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
@@ -93,7 +92,7 @@ public class ResultService {
                     }
 
                 }
-
+                roleAssignmentService.updateRoleAssignmentsFromResults();
                 return new ResponseEntity<>(
                         new StandardResponse(201, "sucess", null), HttpStatus.CREATED
                 );
@@ -177,18 +176,37 @@ public class ResultService {
         }
     }
 
-    public ResponseEntity<StandardResponse> getAllExamsTypes() {
+    public ResponseEntity<StandardResponse> getAllAssignedExamsTypes(String courseCode,HttpServletRequest request,Long examId,String roleName) {
         try{
-            List<ExamTypesEntity> examTypesEntities=examTypeRepo.getAllExamTypes();
-            List<ExamTypesDTO> examTypesDTOS= new ArrayList<>();
-            for(ExamTypesEntity examTypesEntity:examTypesEntities){
-                ExamTypesDTO examTypesDTO=new ExamTypesDTO();
-                examTypesDTO.setId(examTypesEntity.getId());
-                examTypesDTO.setName(examTypesEntity.getExamType());
-                examTypesDTOS.add(examTypesDTO);
+            List<String> evaluationsType=courseEvaluationRepo.getExamTypesByCourseCode(courseCode);
+            Object[] loginData=jwtService.getUserNameAndToken(request);
+            String name=loginData[0].toString();
+            Long userId=userManagementRepo.getUserIdByUsername(name);
+            List<PaperType> assignedExamTypes=roleAssignmentRepository.getPaperTypeByCourseCode(courseCode,userId,roleName,examId);
+            List<ExamTypesDTO> examTypes=new ArrayList<>();
+            for (String type : evaluationsType) {
+                if (type.equalsIgnoreCase("THEORY") || type.equalsIgnoreCase("PRACTICAL")) {
+                    boolean isAssigned = false;
+                    for (PaperType paperType : assignedExamTypes) {
+                        if (type.equalsIgnoreCase(paperType.toString())) {
+                            isAssigned = true;
+                            break;
+                        }
+                    }
+                    if (isAssigned) {
+                        ExamTypesDTO examTypesDTO=new ExamTypesDTO();
+                        examTypesDTO.setName(type);
+                        examTypes.add(examTypesDTO);
+                    }
+                } else {
+                    ExamTypesDTO examTypesDTO=new ExamTypesDTO();
+                    examTypesDTO.setName(type);
+                    examTypes.add(examTypesDTO);
+                }
             }
+
             return new ResponseEntity<>(
-                    new StandardResponse(200, "success", examTypesDTOS), HttpStatus.OK
+                    new StandardResponse(200, "success", examTypes), HttpStatus.OK
             );
         }
         catch(Exception e){
@@ -204,8 +222,8 @@ public class ResultService {
             Object[] logedUserDetails=jwtService.getUserNameAndToken(request);
             String publisherName = (String) logedUserDetails[0];
             if(publishedDataDTO.getGrades().size()!=0 && publishedDataDTO.getCourseCode()!=null && publishedDataDTO.getExaminationId()!=null){
-                CoursesEntity coursesEntity=coursesRepository.findByCourseCode(publishedDataDTO.getCourseCode());
-                ExaminationEntity examinationEntity=examinationRepository.findExaminationById(publishedDataDTO.getExaminationId());
+                CoursesEntity coursesEntity=coursesRepo.findByCourseCode(publishedDataDTO.getCourseCode());
+                ExaminationEntity examinationEntity=examinationRepo.findExaminationById(publishedDataDTO.getExaminationId());
                 UserEntity publisher=userManagementRepo.findByUsername(publisherName);
                 LocalDateTime currentDateTime = LocalDateTime.now();
                 for(GradeDetailsDTO gradeDetailsDTO:publishedDataDTO.getGrades()){

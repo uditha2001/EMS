@@ -49,7 +49,7 @@ const SelectExaminationComponent = ({
   const [examType, setExamType] = useState<string>('THEORY');
   const [examTypes, setExamTypes] = useState<examTypeData[]>([]);
   const {
-    getCoursesUsingExaminationId,
+    getSecondMarkerCoursesUsingExaminationId,
     getExamTypes,
   } = useApi();
 
@@ -91,7 +91,7 @@ const SelectExaminationComponent = ({
 
   useEffect(() => {
     if (examName != '' && examName != null) {
-      getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
+      getSecondMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
         setExaminationCourseCode(data);
       });
     }

@@ -28,6 +28,9 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
     List<RoleAssignmentEntity> findByCourseIdAndPaperType(Long courseId, PaperType paperType);
 
     boolean existsByUserId_UserIdAndRole_RoleIdAndIsAuthorizedTrue(Long userId, Long roleId);
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM RoleAssignmentEntity r WHERE r.userId.userId = :userid AND r.role.roleName = :name AND r.course.code = :code")
+    boolean existedByUserId_RoleName_courseCode(@Param("userid") Long userId, @Param("name") String roleName, @Param("code") String courseCode);
+
 
     List<RoleAssignmentEntity> findByUserId_UserIdAndRole_RoleId(Long userId, Long roleId);
 
@@ -49,8 +52,11 @@ public interface RoleAssignmentRepository extends JpaRepository<RoleAssignmentEn
     @Query("SELECT r FROM RoleAssignmentEntity r WHERE r.examinationId.status = com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus.ONGOING" + " AND r.isAuthorized = true ")
     List<RoleAssignmentEntity> findAllByOngoingExaminations();
 
-    @Query("SELECT r.examinationId.id FROM RoleAssignmentEntity r WHERE r.role.roleName=:roleName AND r.userId.userId=:userId")
+    @Query("SELECT DISTINCT r.examinationId.id FROM RoleAssignmentEntity r WHERE r.role.roleName = :roleName AND r.userId.userId = :userId")
     List<Long> getExamIdByRoleNameAndUserID(@Param("roleName") String roleName, @Param("userId") Long userId);
+
+    @Query("SELECT r.paperType FROM RoleAssignmentEntity r WHERE r.course.code=:courseCode AND r.role.roleName = :roleName AND r.userId.userId = :userId AND r.examinationId.id=:examId")
+    List<PaperType> getPaperTypeByCourseCode(@Param("courseCode") String courseCode, @Param("userId") Long userId, @Param("roleName") String roleName, @Param("examId") Long examId);
 
 
 

@@ -13,6 +13,7 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import useResultsApi from '../../api/ResultsApi';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+import useExaminationApi from '../../api/examinationApi';
 
 type ExaminationName = {
   key: number;
@@ -44,7 +45,8 @@ const GradeConditions = () => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [isValuesChanged, setIsValueChanged] = useState(false);
   const [previousData, setPreviousData] = useState<marksConditions[]>();
-  const {getAllExaminationDetailsWithDegreeName,getCoursesUsingExaminationId,getGradesConditionsValues,} = useApi();
+  const {getFirstMarkerCoursesUsingExaminationId,getGradesConditionsValues,} = useApi();
+  const {getFirstMarkerAssignedExaminations}=useExaminationApi();
   const { saveChangeMarksConditions } = useResultsApi();
   const navigate = useNavigate();
   const [createdExamNames, setCreatedExamNames] = useState<ExaminationName[]>([]);
@@ -59,7 +61,7 @@ const GradeConditions = () => {
   const [isAcceptEnable, setIsAcceptEnable] = useState(true);
 
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
+    getFirstMarkerAssignedExaminations().then((response) => {
       let examData: ExaminationName[] = response.map((obj: any) => ({
         key: obj.id,
         name: `${obj.year}-${obj.degreeProgramName}-Level ${obj.level}-Semester ${obj.semester}`,
@@ -72,7 +74,7 @@ const GradeConditions = () => {
 
   useEffect(() => {
     if (selectedExaminationKey !== undefined) {
-      getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
+      getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
         setExaminationCourseCode(data);
       });
     }

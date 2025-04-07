@@ -46,5 +46,8 @@ public interface CourseEvaluationRepo extends JpaRepository<CourseEvaluationsEnt
     @Query("SELECT ce FROM CourseEvaluationsEntity ce WHERE ce.courses.id = :courseId")
     List<CourseEvaluationsEntity> findByCourseId(@Param("courseId") Long courseId);
 
+    @Query("SELECT ce.examTypes.examType FROM CourseEvaluationsEntity  ce WHERE ce.courses.code=:courseCode")
+    List<String> getExamTypesByCourseCode(@Param("courseCode") String courseCode);
+
 
 }

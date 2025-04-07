@@ -40,15 +40,11 @@ public class RoleAssignmentService {
     private final ExaminationRepository examinationRepository;
     private final UserRolesRepository userRolesRepo;
     private final JwtService jwtService;
-
     private final RoleAssignmentRevisionRepository roleAssignmentRevisionRepository;
-
-    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository, JwtService jwtService)
     private final EncryptedPaperRepository encryptedPaperRepository;
-
     private final ResultRepo resultRepository;
 
-    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository, EncryptedPaperRepository encryptedPaperRepository, ResultRepo resultRepository)
+    public RoleAssignmentService(RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, RoleRepository roleRepository, UserManagementRepo userManagementRepo, ExaminationRepository examinationRepository, UserRolesRepository userRolesRepository, RoleAssignmentRevisionRepository roleAssignmentRevisionRepository, EncryptedPaperRepository encryptedPaperRepository, ResultRepo resultRepository,JwtService jwtService)
     {
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
@@ -446,6 +442,11 @@ public class RoleAssignmentService {
 
 
     }
+//    public ResponseEntity<StandardResponse> getAssignedExamsType(Long examinationId,Long courseCode,String RoleName){
+//
+//    }
+
+
     private ExaminationDTO mapToDTO(ExaminationEntity entity) {
         ExaminationDTO dto = new ExaminationDTO();
         dto.setId(entity.getId());
@@ -509,7 +510,7 @@ public class RoleAssignmentService {
             List<ResultEntity> results = resultRepository.findByExaminationAndCourseAndExamType(
                     assignment.getExaminationId(),
                     assignment.getCourse(),
-                    assignment.getPaperType()
+                    assignment.getPaperType().toString()
             );
 
             if (results.isEmpty()) continue;

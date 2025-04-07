@@ -151,10 +151,10 @@ public class RoleAssignmentController {
 
      @GetMapping("/FirstMarkingexaminations")
      public ResponseEntity<StandardResponse> getExaminations(HttpServletRequest request) {
-        return roleAssignmentService.getAllExaminations(request,"FIRST_MAKER");
+        return roleAssignmentService.getAllExaminations(request,"FIRST_MARKER");
      }
     @GetMapping("/secondMarkingexaminations")
     public ResponseEntity<StandardResponse> getSecondMarkingExaminations(HttpServletRequest request) {
-        return roleAssignmentService.getAllExaminations(request,"SECOND_MAKER");
+        return roleAssignmentService.getAllExaminations(request,"SECOND_MARKER");
     }
 }

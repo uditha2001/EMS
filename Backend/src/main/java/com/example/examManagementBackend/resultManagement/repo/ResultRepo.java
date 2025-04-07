@@ -66,10 +66,11 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
     @Query("UPDATE ResultEntity r SET r.status=:status,r.finalMarks=:marks,r.approvedBy=:approvedby WHERE r.resultId=:id")
     void updatePublishedResults(@Param("status") ResultStatus status,@Param("marks") Float marks,@Param("approvedby") UserEntity approvedBy,@Param("id") Long id);
 
+    @Query("SELECT r FROM ResultEntity r WHERE r.examination=:examination AND r.course=:course AND r.examType.examType=:examType")
     List<ResultEntity> findByExaminationAndCourseAndExamType(
             ExaminationEntity examination,
             CoursesEntity course,
-            PaperType examType
+            String examType
     );
 
 }

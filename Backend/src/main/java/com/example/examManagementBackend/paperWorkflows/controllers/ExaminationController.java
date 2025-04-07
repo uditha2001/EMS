@@ -5,6 +5,7 @@ import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.service.ExaminationService;
 import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,10 +77,15 @@ public class ExaminationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/getCoursesUsingExaminationId")
-    public ResponseEntity<StandardResponse> getCoursesUsingExaminationId(@RequestParam Long examinationId) {
-        return examinationService.getCoursesByExaminationId(examinationId);
+    @GetMapping("/getFirstMarkerCoursesUsingExaminationId")
+    public ResponseEntity<StandardResponse> getFirstMarkerCoursesUsingExaminationId(@RequestParam Long examinationId, HttpServletRequest request) {
+        return examinationService.getCoursesByExaminationId(examinationId,request,"FIRST_MARKER");
     }
+    @GetMapping("/getSecondMarkerCoursesUsingExaminationId")
+    public ResponseEntity<StandardResponse> getSecondMarkerCoursesUsingExaminationId(@RequestParam Long examinationId, HttpServletRequest request) {
+        return examinationService.getCoursesByExaminationId(examinationId,request,"SECOND_MARKER");
+    }
+
     @PutMapping("/{examId}/update-status")
     public ResponseEntity<String> updateExamStatus(@PathVariable Long examId) {
         examinationService.updateExamStatus(examId);
