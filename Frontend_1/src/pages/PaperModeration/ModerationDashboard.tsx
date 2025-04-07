@@ -10,9 +10,13 @@ import {
   faClock,
   faPen,
   faComment,
+  faGavel,
+  faComments,
+  faPenToSquare,
 } from '@fortawesome/free-solid-svg-icons';
 import useApi from '../../api/api';
 import useAuth from '../../hooks/useAuth';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface SubSubQuestion {
   subSubQuestionId: number;
@@ -66,6 +70,14 @@ const ModerationDashboard: React.FC = () => {
   const { getPapers, getPaperStructure } = useApi();
   const [feedback, setFeedback] = useState<string>('');
   const { auth } = useAuth();
+
+  const navigate = useNavigate();
+  const handleModerate = (paperId: number) => {
+    navigate('/paper/moderate', { state: { paperId } });
+  };
+  const modifyPaper = (fileId: number) => {
+    navigate('/paper/transfer/edit', { state: { fileId } });
+  };
 
   // Function to fetch paper data
   useEffect(() => {
@@ -375,35 +387,89 @@ const ModerationDashboard: React.FC = () => {
           return (
             <div
               key={paper.id}
-              className="border p-4 rounded-sm cursor-pointer border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
+              className="border p-4 rounded-md cursor-pointer border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark hover:shadow-lg transition-shadow"
               onClick={() => handleCardClick(paper.id)}
             >
-              <h3 className="font-semibold">{paper.fileName}</h3>
-              <p className="text-sm flex items-center">
+              <h3 className="font-semibold text-lg text-gray-800 dark:text-white">
+                {paper.fileName}
+              </h3>
+
+              <p className="text-sm flex items-center mt-1 text-gray-600 dark:text-gray-300">
                 {getProgress(paper.status)}
-                <span className={`ml-2 ${getStatusColor(paper.status)}`} />
+                <span
+                  className={`ml-2 w-3 h-3 rounded-full ${getStatusColor(
+                    paper.status,
+                  )}`}
+                />
               </p>
-              <p>
+
+              <p className="text-sm mt-1 text-gray-700 dark:text-gray-300">
                 Created by: {paper.creator?.firstName} {paper.creator?.lastName}
               </p>
-              <p>
+              <p className="text-sm mt-1 text-gray-700 dark:text-gray-300">
                 Moderator: {paper.moderator?.firstName}{' '}
                 {paper.moderator?.lastName}
               </p>
 
+              {/* Action Buttons */}
+              <div className="mt-3 flex flex-wrap gap-4 items-center">
+                {Number(auth.id) === paper.creator.id &&
+                  paper.status !== 'APPROVED' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        modifyPaper(paper.id);
+                      }}
+                      className="flex items-center text-blue-600 hover:underline text-sm"
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} className="mr-1" />
+                      Modify Paper
+                    </button>
+                  )}
+
+                {Number(auth.id) === paper.moderator.id && (
+                  <>
+                    {paper.status !== 'APPROVED' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleModerate(paper.id);
+                        }}
+                        className="flex items-center text-blue-600 hover:underline text-sm"
+                      >
+                        <FontAwesomeIcon icon={faGavel} className="mr-1" />
+                        Moderate Paper
+                      </button>
+                    )}
+
+                    {paper.status === 'APPROVED' && (
+                      <Link
+                        to={`/paper/feedback`}
+                        className="flex items-center text-green-600 hover:underline text-sm"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FontAwesomeIcon icon={faComments} className="mr-1" />
+                        Feedback
+                      </Link>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Progress Bar */}
               <div className="mt-4">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Progress:
                 </label>
                 <div className="relative pt-1">
                   <div className="flex mb-2 items-center justify-between">
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                       {paperCompletionPercentage}% Completed
                     </span>
                   </div>
-                  <div className="w-full bg-gray-300 rounded-full">
+                  <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full bg-primary`}
+                      className="h-2 bg-primary rounded-full transition-all"
                       style={{ width: `${paperCompletionPercentage}%` }}
                     ></div>
                   </div>

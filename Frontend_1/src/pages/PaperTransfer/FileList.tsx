@@ -7,7 +7,7 @@ import useApi from '../../api/api';
 import { Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faCheckCircle,faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 const FileList: React.FC = () => {
   const { auth } = useAuth();
@@ -131,6 +131,8 @@ const FileList: React.FC = () => {
         );
       case 'DRAFT':
         return <FontAwesomeIcon icon={faEdit} className="text-blue-700" />;
+      case 'REJECTED':
+        return <FontAwesomeIcon icon={faTimesCircle} className="text-red-500" />;
 
       default:
         return null;

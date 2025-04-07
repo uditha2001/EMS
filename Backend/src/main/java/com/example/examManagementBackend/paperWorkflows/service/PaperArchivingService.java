@@ -242,6 +242,10 @@ public class PaperArchivingService {
         archivedPaperRepository.save(archivedPaper);
     }
 
+    public long getArchivedPaperCount() {
+        return archivedPaperRepository.count();
+    }
+
 
 }
 

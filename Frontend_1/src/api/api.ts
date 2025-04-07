@@ -845,6 +845,24 @@ const useApi = () => {
     }
   };
 
+  const getExaminationCount = async () => {
+    try {
+      const response = await axiosPrivate.get('/academic-years/count');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const getArchivedPaperCount = async () => {
+    try {
+      const response = await axiosPrivate.get('/papers/count');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     uploadFile,
     getAllFiles,
@@ -929,6 +947,8 @@ const useApi = () => {
     getGradesConditionsValues,
     getOngoingexaminationCount,
     getRoleAssignments,
+    getExaminationCount,
+    getArchivedPaperCount,
   };
 };
 
