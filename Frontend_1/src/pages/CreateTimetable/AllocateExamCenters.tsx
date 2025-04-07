@@ -153,40 +153,40 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
                             )}
                           />
                           <span className="text-xs text-gray-500">
-                            Max:{' '}
+                            Available:{' '}
                             {getAvailableCapacity(
                               centerData.centerId,
                               exam.examTimeTableId,
                             )}
                           </span>
                           {centerData.isSaved ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteExamCenter(
-                                exam.examCenters[index].allocationId,
-                                exam.examTimeTableId,
-                                index,
-                              )
-                            }
-                            className="text-red-500 hover:text-red-700 md:ml-2"
-                          >
-                            <FontAwesomeIcon icon={faDeleteLeft} />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRemoveExamCenter(
-                                exam.examTimeTableId,
-                                index,
-                              )
-                            }
-                            className="text-red-500 hover:text-red-700 md:ml-2"
-                          >
-                            <FontAwesomeIcon icon={faMinus} />
-                          </button>
-                        )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteExamCenter(
+                                  exam.examCenters[index].allocationId,
+                                  exam.examTimeTableId,
+                                  index,
+                                )
+                              }
+                              className="text-red-500 hover:text-red-700 md:ml-2"
+                            >
+                              <FontAwesomeIcon icon={faDeleteLeft} />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveExamCenter(
+                                  exam.examTimeTableId,
+                                  index,
+                                )
+                              }
+                              className="text-red-500 hover:text-red-700 md:ml-2"
+                            >
+                              <FontAwesomeIcon icon={faMinus} />
+                            </button>
+                          )}
                         </div>
 
                         {/* Second row: Remarks */}
@@ -209,7 +209,6 @@ const AllocateExamCenters: React.FC<AllocateExamCentersProps> = ({
                         </div>
 
                         {/* Delete or Remove Button */}
-                      
                       </div>
                     ),
                   )}

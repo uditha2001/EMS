@@ -452,12 +452,124 @@ const CreateTimetable: React.FC = () => {
     return startTime1 < endTime2 && endTime1 > startTime2;
   };
 
+  const handleSaveAllChanges = async () => {
+    if (!selectedExamination) {
+      setErrorMessage('Please select an examination.');
+      return;
+    }
+
+    // Collect all time slots that need to be saved
+    const timeSlotsToSave: any[] = [];
+    let hasEmptyFields = false;
+    let hasConflicts = false;
+
+    Object.entries(courseDetails).forEach(([key, slots]) => {
+      const [courseId, evaluationType] = key.split('-');
+      const course = courses.find((c) => c.id === parseInt(courseId));
+
+      if (!course) return;
+
+      slots.forEach((slot, index) => {
+        // Check for required fields
+        if (!slot.examDate || !slot.examTime || !slot.duration) {
+          hasEmptyFields = true;
+          return;
+        }
+
+        // Check for conflicts
+        const conflicts = checkForConflicts(
+          parseInt(courseId),
+          evaluationType,
+          index,
+        );
+        if (conflicts.length > 0) {
+          hasConflicts = true;
+          return;
+        }
+
+        // Only include unsaved or modified slots
+        if (slot.isNew || slot.isSaved) {
+          const endTime = calculateEndTime(slot.examTime, slot.duration);
+          timeSlotsToSave.push({
+            examTimeTableId: slot.examTimeTableId || 0,
+            examinationId: selectedExamination,
+            courseId: parseInt(courseId),
+            examTypeId: course.evaluationTypeId,
+            date: slot.examDate,
+            startTime: slot.examTime,
+            endTime: endTime,
+            timetableGroup: slot.timetableGroup || '',
+          });
+        }
+      });
+    });
+
+    if (hasEmptyFields) {
+      setErrorMessage(
+        'Please fill all required fields (Date, Time, Duration) for all time slots.',
+      );
+      return;
+    }
+
+    if (hasConflicts) {
+      setErrorMessage('Please resolve all time slot conflicts before saving.');
+      return;
+    }
+
+    if (timeSlotsToSave.length === 0) {
+      setSuccessMessage('No changes to save.');
+      return;
+    }
+
+    try {
+      const response = await saveExamTimeTable(timeSlotsToSave);
+      if (response.data) {
+        setSuccessMessage('All changes saved successfully!');
+
+        // Update the slot statuses
+        setCourseDetails((prev) => {
+          const updatedDetails = { ...prev };
+          Object.keys(updatedDetails).forEach((key) => {
+            updatedDetails[key] = updatedDetails[key].map((slot) => ({
+              ...slot,
+              isNew: false,
+              isSaved: true,
+            }));
+          });
+          return updatedDetails;
+        });
+
+        // Refresh the timetable data
+        fetchExamTimeTables();
+      } else {
+        setErrorMessage('Failed to save changes.');
+      }
+    } catch (error: any) {
+      console.error('Error saving changes:', error);
+      setErrorMessage(
+        error.response?.data?.message || 'Failed to save changes.',
+      );
+    }
+  };
+  const hasUnsavedSlots = () => {
+    return Object.values(courseDetails).some((slots) =>
+      slots.some((slot) => slot.isNew || !slot.isSaved),
+    );
+  };
   // Navigation functions
+
   const nextStep = () => {
     if (currentStep === 1 && !selectedExamination) {
       setErrorMessage('Please select an examination.');
       return;
     }
+
+    // Check for unsaved slots in Step 2
+    if (currentStep === 2 && hasUnsavedSlots()) {
+      setErrorMessage('Please save all time slots before proceeding.');
+      return;
+    }
+
     setErrorMessage('');
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
@@ -535,278 +647,321 @@ const CreateTimetable: React.FC = () => {
                 <h3 className="font-medium text-black dark:text-white mb-4">
                   Assign Time Slots and Dates
                 </h3>
-                <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-form-input">
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Paper
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Date
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Time
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Duration (hrs)
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Group
-                      </th>
-                      <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {courses.map((course) => {
-                      const key = `${course.id}-${course.evaluationType}`;
-                      const timeSlots = courseDetails[key] || [];
+                <div className="overflow-x-auto">
+                  <table className="table-auto w-full border-collapse border border-gray-200 dark:border-strokedark">
+                    <thead>
+                      <tr className="bg-gray-100 dark:bg-form-input">
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Paper
+                        </th>
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Date
+                        </th>
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Time
+                        </th>
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Duration (hrs)
+                        </th>
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Group
+                        </th>
+                        <th className="border border-gray-300 dark:border-strokedark px-4 py-2 text-left">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((course) => {
+                        const key = `${course.id}-${course.evaluationType}`;
+                        const timeSlots = courseDetails[key] || [];
 
-                      return (
-                        <React.Fragment key={key}>
-                          {timeSlots.map((slot, index) => {
-                            const isApproved = slot.approve;
-                            const isNew = slot.isNew;
-                            const hasConflict =
-                              checkForConflicts(
-                                course.id,
-                                course.evaluationType,
-                                index,
-                              ).length > 0;
+                        return (
+                          <React.Fragment key={key}>
+                            {timeSlots.map((slot, index) => {
+                              const isApproved = slot.approve;
+                              const isNew = slot.isNew;
+                              const hasConflict =
+                                checkForConflicts(
+                                  course.id,
+                                  course.evaluationType,
+                                  index,
+                                ).length > 0;
 
-                            return (
-                              <React.Fragment key={`${key}-${index}`}>
-                                <tr
-                                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                                    hasConflict
-                                      ? 'bg-red-50 dark:bg-red-900/10'
-                                      : ''
-                                  }`}
-                                >
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    {index === 0 && (
-                                      <>
-                                        {course.code} (
-                                        {course.evaluationType === 'THEORY'
-                                          ? 'T'
-                                          : course.evaluationType ===
-                                            'PRACTICAL'
-                                          ? 'P'
-                                          : course.evaluationType}
-                                        ) - {course.name}
-                                      </>
-                                    )}
-                                  </td>
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    <input
-                                      type="date"
-                                      value={slot.examDate}
-                                      onChange={(e) =>
-                                        handleCourseDetailsChange(
-                                          course.id,
-                                          course.evaluationType,
-                                          'examDate',
-                                          e.target.value,
-                                          index,
-                                        )
-                                      }
-                                      className={`input-field ${
-                                        isApproved
-                                          ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
-                                          : ''
-                                      }`}
-                                      disabled={isApproved}
-                                    />
-                                  </td>
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    <input
-                                      type="time"
-                                      value={slot.examTime}
-                                      onChange={(e) =>
-                                        handleCourseDetailsChange(
-                                          course.id,
-                                          course.evaluationType,
-                                          'examTime',
-                                          e.target.value,
-                                          index,
-                                        )
-                                      }
-                                      className={`input-field ${
-                                        isApproved
-                                          ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
-                                          : ''
-                                      }`}
-                                      disabled={isApproved}
-                                    />
-                                  </td>
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    <input
-                                      type="number"
-                                      value={slot.duration}
-                                      onChange={(e) =>
-                                        handleCourseDetailsChange(
-                                          course.id,
-                                          course.evaluationType,
-                                          'duration',
-                                          e.target.value,
-                                          index,
-                                        )
-                                      }
-                                      className={`input-field ${
-                                        isApproved
-                                          ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
-                                          : ''
-                                      }`}
-                                      placeholder="Duration (hrs)"
-                                      disabled={isApproved}
-                                      min="0.5"
-                                      step="0.5"
-                                    />
-                                  </td>
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    <input
-                                      type="text"
-                                      value={slot.timetableGroup}
-                                      onChange={(e) =>
-                                        handleCourseDetailsChange(
-                                          course.id,
-                                          course.evaluationType,
-                                          'timetableGroup',
-                                          e.target.value,
-                                          index,
-                                        )
-                                      }
-                                      className={`input-field ${
-                                        isApproved
-                                          ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
-                                          : ''
-                                      }`}
-                                      placeholder="Group (optional)"
-                                      disabled={isApproved}
-                                    />
-                                  </td>
-                                  <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
-                                    <div className="flex items-center space-x-2">
-                                      {isApproved ? (
-                                        <span className="text-green-500 flex items-center">
-                                          <FontAwesomeIcon
-                                            icon={faCheckCircle}
-                                            className="mr-1"
-                                          />
-                                          Approved
-                                        </span>
-                                      ) : (
+                              return (
+                                <React.Fragment key={`${key}-${index}`}>
+                                  <tr
+                                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                                      hasConflict
+                                        ? 'bg-red-50 dark:bg-red-900/10'
+                                        : slot.isNew || !slot.isSaved
+                                        ? 'bg-yellow-50 dark:bg-yellow-900/10'
+                                        : ''
+                                    }`}
+                                  >
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      {index === 0 && (
                                         <>
-                                          {/* Show save button for unsaved or modified slots */}
+                                          {course.code} (
+                                          {course.evaluationType === 'THEORY'
+                                            ? 'T'
+                                            : course.evaluationType ===
+                                              'PRACTICAL'
+                                            ? 'P'
+                                            : course.evaluationType}
+                                          ) - {course.name}
+                                        </>
+                                      )}
+                                    </td>
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      <input
+                                        type="date"
+                                        value={slot.examDate}
+                                        onChange={(e) =>
+                                          handleCourseDetailsChange(
+                                            course.id,
+                                            course.evaluationType,
+                                            'examDate',
+                                            e.target.value,
+                                            index,
+                                          )
+                                        }
+                                        className={`input-field ${
+                                          isApproved
+                                            ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+                                            : ''
+                                        }`}
+                                        disabled={isApproved}
+                                      />
+                                    </td>
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      <input
+                                        type="time"
+                                        value={slot.examTime}
+                                        onChange={(e) =>
+                                          handleCourseDetailsChange(
+                                            course.id,
+                                            course.evaluationType,
+                                            'examTime',
+                                            e.target.value,
+                                            index,
+                                          )
+                                        }
+                                        className={`input-field ${
+                                          isApproved
+                                            ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+                                            : ''
+                                        }`}
+                                        disabled={isApproved}
+                                      />
+                                    </td>
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      <input
+                                        type="number"
+                                        value={slot.duration}
+                                        onChange={(e) =>
+                                          handleCourseDetailsChange(
+                                            course.id,
+                                            course.evaluationType,
+                                            'duration',
+                                            e.target.value,
+                                            index,
+                                          )
+                                        }
+                                        className={`input-field ${
+                                          isApproved
+                                            ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+                                            : ''
+                                        }`}
+                                        placeholder="Duration (hrs)"
+                                        disabled={isApproved}
+                                        min="0.5"
+                                        step="0.5"
+                                      />
+                                    </td>
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      <input
+                                        type="text"
+                                        value={slot.timetableGroup}
+                                        onChange={(e) =>
+                                          handleCourseDetailsChange(
+                                            course.id,
+                                            course.evaluationType,
+                                            'timetableGroup',
+                                            e.target.value,
+                                            index,
+                                          )
+                                        }
+                                        className={`input-field ${
+                                          isApproved
+                                            ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+                                            : ''
+                                        }`}
+                                        placeholder="Group (optional)"
+                                        disabled={isApproved}
+                                      />
+                                    </td>
+                                    <td className="border border-gray-300 dark:border-strokedark px-4 py-2">
+                                      <div className="flex items-center space-x-2">
+                                        {isApproved ? (
+                                          <span className="text-green-500 flex items-center">
+                                            <FontAwesomeIcon
+                                              icon={faCheckCircle}
+                                              className="mr-1"
+                                            />
+                                            Approved
+                                          </span>
+                                        ) : (
+                                          <>
+                                            {/* Show save button for unsaved or modified slots */}
 
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              handleSaveTimeSlot(
-                                                course.id,
-                                                course.evaluationType,
-                                                course.evaluationTypeId,
-                                                index,
-                                              )
-                                            }
-                                            className="text-blue-500 hover:text-blue-700 disabled:text-gray-400"
-                                            disabled={
-                                              !slot.examDate ||
-                                              !slot.examTime ||
-                                              !slot.duration ||
-                                              hasConflict
-                                            }
-                                            title="Save this time slot"
-                                          >
-                                            <FontAwesomeIcon icon={faSave} />
-                                          </button>
-
-                                          {!isNew ? (
                                             <button
                                               type="button"
                                               onClick={() =>
-                                                openDeleteModal(
-                                                  course.id,
-                                                  course.evaluationType,
-                                                  index,
-                                                  slot.examTimeTableId,
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700"
-                                              title="Delete this time slot"
-                                            >
-                                              <FontAwesomeIcon
-                                                icon={faDeleteLeft}
-                                              />
-                                            </button>
-                                          ) : (
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleRemoveTimetableSlot(
+                                                handleSaveTimeSlot(
                                                   course.id,
                                                   course.evaluationType,
                                                   course.evaluationTypeId,
                                                   index,
                                                 )
                                               }
-                                              className="text-red-500 hover:text-red-700"
-                                              title="Delete this time slot"
+                                              className="text-primary hover:underline disabled:text-gray-400"
+                                              disabled={
+                                                !slot.examDate ||
+                                                !slot.examTime ||
+                                                !slot.duration ||
+                                                hasConflict
+                                              }
+                                              title="Save this time slot"
                                             >
-                                              <FontAwesomeIcon icon={faMinus} />
+                                              <FontAwesomeIcon icon={faSave} />
+                                              {isNew ? (
+                                                <span className="ml-1">
+                                                  Add
+                                                </span>
+                                              ) : (
+                                                <span className="ml-1">
+                                                  Save
+                                                </span>
+                                              )}
                                             </button>
-                                          )}
-                                        </>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                                {hasConflict && (
-                                  <tr className="bg-red-50 dark:bg-red-900/20">
-                                    <td
-                                      colSpan={6}
-                                      className="border px-4 py-1 text-red-500 text-sm"
-                                    >
-                                      Conflict detected with other time slots
+
+                                            {!isNew ? (
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  openDeleteModal(
+                                                    course.id,
+                                                    course.evaluationType,
+                                                    index,
+                                                    slot.examTimeTableId,
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700"
+                                                title="Delete this time slot"
+                                              >
+                                                <FontAwesomeIcon
+                                                  icon={faDeleteLeft}
+                                                />
+                                              </button>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleRemoveTimetableSlot(
+                                                    course.id,
+                                                    course.evaluationType,
+                                                    course.evaluationTypeId,
+                                                    index,
+                                                  )
+                                                }
+                                                className="text-red-500 hover:text-red-700"
+                                                title="Delete this time slot"
+                                              >
+                                                <FontAwesomeIcon
+                                                  icon={faMinus}
+                                                />
+                                              </button>
+                                            )}
+                                          </>
+                                        )}
+                                      </div>
                                     </td>
                                   </tr>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
+                                  {hasConflict && (
+                                    <tr className="bg-red-50 dark:bg-red-900/20">
+                                      <td
+                                        colSpan={6}
+                                        className="border px-4 py-1 text-red-500 text-sm"
+                                      >
+                                        Conflict detected with other time slots
+                                      </td>
+                                    </tr>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
 
-                          <tr>
-                            <td
-                              colSpan={6}
-                              className="border border-gray-300 dark:border-strokedark px-4 py-2"
-                            >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  addTimeSlot(course.id, course.evaluationType)
-                                }
-                                className="text-green-500 hover:text-green-700 flex items-center"
+                            <tr>
+                              <td
+                                colSpan={6}
+                                className="border border-gray-300 dark:border-strokedark px-4 py-2"
                               >
-                                <FontAwesomeIcon
-                                  icon={faPlus}
-                                  className="mr-1"
-                                />
-                                Add time slot for {course.code} (
-                                {course.evaluationType === 'THEORY'
-                                  ? 'T'
-                                  : course.evaluationType === 'PRACTICAL'
-                                  ? 'P'
-                                  : course.evaluationType}
-                                )
-                              </button>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    addTimeSlot(
+                                      course.id,
+                                      course.evaluationType,
+                                    )
+                                  }
+                                  className="text-green-500 hover:text-green-700 flex items-center"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faPlus}
+                                    className="mr-1"
+                                  />
+                                  Add time slot for {course.code} (
+                                  {course.evaluationType === 'THEORY'
+                                    ? 'T'
+                                    : course.evaluationType === 'PRACTICAL'
+                                    ? 'P'
+                                    : course.evaluationType}
+                                  )
+                                </button>
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {courses.length === 0 && (
+                  <div className="mt-4 text-center text-gray-500">
+                    No courses available for this examination.
+                  </div>
+                )}
+                {Object.keys(courseDetails).length > 0 && (
+                  <div className="mt-4 text-center text-gray-500">
+                    Note: Time slots with conflicts are highlighted in red.
+                  </div>
+                )}
+                <div className="flex justify-end mt-4 space-x-4">
+                  <button
+                    onClick={handleSaveAllChanges}
+                    className="btn-primary cursor-pointer"
+                    disabled={
+                      !selectedExamination ||
+                      Object.keys(courseDetails).length === 0 ||
+                      Object.values(courseDetails).every((slots) =>
+                        slots.every((slot) => slot.isSaved),
+                      )
+                    }
+                  >
+                    Save All New Slots
+                  </button>
+                </div>
               </div>
             )}
 
@@ -830,7 +985,10 @@ const CreateTimetable: React.FC = () => {
                 type="button"
                 onClick={nextStep}
                 className="btn-primary"
-                disabled={!selectedExamination}
+                disabled={
+                  !selectedExamination ||
+                  (currentStep === 2 && hasUnsavedSlots())
+                }
               >
                 Next
               </button>
