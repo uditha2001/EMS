@@ -152,7 +152,7 @@ const FileList: React.FC = () => {
 
       <div className="mb-4 flex flex-wrap justify-between items-center text-sm gap-2">
         <div className="w-full sm:w-auto">
-          <Link to="/paper/transfer/new" className="inline-block btn-primary">
+          <Link to="/tasks/all" className="inline-block btn-primary">
             New Transaction
           </Link>
         </div>

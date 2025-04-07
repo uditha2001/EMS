@@ -87,7 +87,7 @@ export default function HistoricalData() {
               icon={faPen}
               className="text-yellow-500 text-4xl"
             />
-            <h3 className="text-lg font-semibold">Examination</h3>
+            <h3 className="text-lg font-semibold">Examinations</h3>
           </div>
           <p className="text-sm mt-2 text-gray-600">
             View and manage all past examinations.

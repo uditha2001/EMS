@@ -127,17 +127,14 @@ const UserTasksDashboard = ({ showAll = false }) => {
   const getTaskLink = (assignment: RoleAssignment) => {
     switch (assignment.roleName) {
       case 'PAPER_CREATOR':
-        return assignment.completed
-          ? `/paper/moderate/dashboard`
-          : `/paper/transfer`;
+        return `/paper/transfer/new/${assignment.id}`;
       case 'FIRST_MARKER':
         return `/result/firstmarking`;
       case 'SECOND_MARKER':
         return `/result/secondmarking`;
       case 'PAPER_MODERATOR':
-        return assignment.completed
-          ? `/paper/moderate/dashboard`
-          : `/paper/transfer`;
+        return `/paper/moderate/dashboard`;
+
       default:
         return '#';
     }
