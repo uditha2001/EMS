@@ -49,7 +49,7 @@ services:
       - FILE_UPLOAD_ENCRYPTED_DIR=/app/uploads/encrypted-papers
 
     volumes:
-      - /home/ec2-user/uploads:/app/uploads
+      - ./uploads:/app/uploads
 
     networks:
       - webnet
