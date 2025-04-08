@@ -6,6 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @Data
 public class ExamTypesDTO {
+    private Long id;
     private String name;
 
 
