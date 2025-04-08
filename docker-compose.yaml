@@ -47,8 +47,10 @@ services:
       - FILE_UPLOAD_PROFILE_DIR=/app/uploads/profile_images
       - FILE_UPLOAD_ARCHIVED_DIR=/app/uploads/archived-papers
       - FILE_UPLOAD_ENCRYPTED_DIR=/app/uploads/encrypted-papers
+
     volumes:
       - /home/ec2-user/uploads:/app/uploads
+
     networks:
       - webnet
 
