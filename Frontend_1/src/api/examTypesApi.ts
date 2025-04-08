@@ -3,7 +3,7 @@ const useExamTypesApi = () => {
  const axiosPrivate = useAxiosPrivate();
  const getAllExamTypes = async () => {
     try {
-      const response = await axiosPrivate.get('/api/v1/examType/allExamTypes');
+      const response = await axiosPrivate.get('/examType/allExamTypes');
       return response.data;
     } catch (error) {
       throw error;
@@ -11,7 +11,7 @@ const useExamTypesApi = () => {
   };
   const getExamTypeById = async (examTypeId:number) => {
     try {
-      const response = await axiosPrivate.get('/api/v1/examType/examTypesById', {
+      const response = await axiosPrivate.get('/examType/examTypesById', {
         params: { examTypeId }
       });
       return response.data;
@@ -21,7 +21,7 @@ const useExamTypesApi = () => {
   };
   const createExamType = async (examType:String) => {
     try {
-      const response = await axiosPrivate.post('/api/v1/examType/examTypes', null, {
+      const response = await axiosPrivate.post('/examType/examTypes', null, {
         params: { examType }
       });
       return response.data;
@@ -31,7 +31,7 @@ const useExamTypesApi = () => {
   };
   const updateExamType = async (examTypeId:number, examType:string) => {
     try {
-      const response = await axiosPrivate.put('/api/v1/examType/examType', null, {
+      const response = await axiosPrivate.put('/examType/examType', null, {
         params: { examTypeId, examType }
       });
       return response.data;
@@ -41,7 +41,7 @@ const useExamTypesApi = () => {
   };
   const deleteExamType = async (examTypeId:number) => {
     try {
-      const response = await axiosPrivate.delete('/api/v1/examType/deleteExamType', {
+      const response = await axiosPrivate.delete('/examType/deleteExamType', {
         params: { examTypeId }
       });
       return response.data;
