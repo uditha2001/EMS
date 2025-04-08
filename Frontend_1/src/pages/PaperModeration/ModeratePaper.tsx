@@ -7,10 +7,7 @@ import QuestionStructure from './QuestionStructure';
 import useApi from '../../api/api';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faEdit,
-  faCheckCircle,
-} from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faCheckCircle,faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import useAuth from '../../hooks/useAuth';
 
@@ -18,11 +15,11 @@ export default function ModeratePaper() {
   const { auth } = useAuth();
   const moderatorId = Number(auth.id);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [markingPdfUrl, setMarkingPdfUrl] = useState<string | null>(null); 
+  const [markingPdfUrl, setMarkingPdfUrl] = useState<string | null>(null);
   const [questionStructure, setQuestionStructure] = useState<any>(null);
   const {
     fetchEncryptedPaper,
-    fetchEncryptedMarking, 
+    fetchEncryptedMarking,
     getPaperStructure,
     createModeration,
     updatePaperStatusAndFeedback,
@@ -31,9 +28,12 @@ export default function ModeratePaper() {
   const [feedback, setFeedback] = useState<string>('');
   const [paperStatus, setPaperStatus] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [isViewingMarking, setIsViewingMarking] = useState(false); 
+  const [isViewingMarking, setIsViewingMarking] = useState(false);
   const location = useLocation();
   const { paperId } = location.state || {};
+  const [modalAction, setModalAction] = useState<'APPROVE' | 'REJECT' | null>(
+    null,
+  );
 
   // Fetch the paper PDF
   const fetchPdf = async () => {
@@ -104,13 +104,40 @@ export default function ModeratePaper() {
     }
   };
 
+  const rejectPaper = async () => {
+    try {
+      const response = await updatePaperStatusAndFeedback(
+        Number(paperId),
+        'REJECTED',
+        feedback,
+      );
+      if (response.code === 200) {
+        fetchPaperStatus();
+        console.log('Paper rejected successfully');
+      }
+    } catch (error) {
+      console.error('Error rejecting paper:', error);
+    }
+  };
+
   const handleApproveClick = () => {
+    setModalAction('APPROVE');
     setShowModal(true);
   };
 
-  const handleConfirmApprove = () => {
-    setShowModal(false);
-    approvePaper();
+  const handleRejectClick = () => {
+    setModalAction('REJECT');
+    setShowModal(true);
+  };
+
+  const handleConfirmAction = () => {
+    if (modalAction === 'APPROVE') {
+      setShowModal(false);
+      approvePaper();
+    } else if (modalAction === 'REJECT') {
+      setShowModal(false);
+      rejectPaper();
+    }
   };
 
   const updateModerationForMainQuestion = async (questionId: number) => {
@@ -242,7 +269,7 @@ export default function ModeratePaper() {
 
   useEffect(() => {
     fetchPdf();
-    fetchMarkingPdf(); 
+    fetchMarkingPdf();
     fetchQuestionStructure();
     fetchPaperStatus();
 
@@ -263,10 +290,7 @@ export default function ModeratePaper() {
         <div className="flex-1 bg-white rounded shadow-lg overflow-hidden">
           {/* Toggle Button */}
           <div className="flex justify-end p-2">
-            <button
-              onClick={toggleView}
-              className="btn-primary text-sm"
-            >
+            <button onClick={toggleView} className="btn-primary text-sm">
               {isViewingMarking ? 'View Paper' : 'View Marking'}
             </button>
           </div>
@@ -316,6 +340,21 @@ export default function ModeratePaper() {
                 </Link>
               </p>
             </div>
+          ) : paperStatus === 'REJECTED' ? (
+            <div className="text-center text-red-600 text-md font-semibold">
+              <FontAwesomeIcon
+                icon={faTimesCircle}
+                className="text-red-500 mr-2"
+              />
+              This paper has been <strong>rejected</strong>.
+              {feedback && (
+                <p className="text-gray-600 mt-2">Feedback: {feedback}</p>
+              )}
+              <p className="mt-4 text-gray-700 dark:text-gray-300">
+                Please wait for the paper setter to revise and resubmit the
+                paper.
+              </p>
+            </div>
           ) : questionStructure ? (
             <QuestionStructure
               questionStructure={questionStructure}
@@ -342,7 +381,7 @@ export default function ModeratePaper() {
                     setFeedback(e.target.value);
                   }
                 }}
-                maxLength={500} // Ensures input doesn't exceed 500 characters
+                maxLength={500}
               ></textarea>
               <div className="text-sm text-gray-500 mt-1">
                 {feedback.length}/500 characters
@@ -353,14 +392,20 @@ export default function ModeratePaper() {
               >
                 Approve Paper
               </button>
+              <button
+                className="mt-2 ml-2 px-4 py-2 bg-red-600 text-white rounded"
+                onClick={handleRejectClick}
+              >
+                Reject Paper
+              </button>
             </div>
           )}
         </div>
         {showModal && (
           <ConfirmationModal
-            message="Are you sure you want to approve this paper?"
-            onConfirm={handleConfirmApprove} // Call approval on confirm
-            onCancel={() => setShowModal(false)} // Close modal on cancel
+            message={`Are you sure you want to ${modalAction?.toLowerCase()} this paper?`}
+            onConfirm={handleConfirmAction}
+            onCancel={() => setShowModal(false)}
           />
         )}
       </div>

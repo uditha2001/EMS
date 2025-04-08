@@ -31,7 +31,7 @@ import java.util.List;
 @Service
 public class FileService {
 
-    @Value("${file.upload.encrypted-dir}")
+    @Value("${file.upload.encrypted-dir:uploads/encrypted-papers}")
     private String encryptedPaperStoragePath;
     private final EncryptionService encryptionService;
 

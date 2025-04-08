@@ -88,6 +88,7 @@ const AdminDashboard = () => {
         const userEvents = userRes?.data ?? [];
 
         setEvents([...publicEvents, ...userEvents]);
+        
       } catch (error) {
         console.error('Error fetching events:', error);
       } finally {

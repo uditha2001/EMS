@@ -120,6 +120,9 @@ public class PaperArchivingController {
         return ResponseEntity.ok(new StandardResponse(200, "Filtered papers retrieved successfully", papers));
     }
 
-
+    @GetMapping("/count")
+    public long getArchivedPaperCount() {
+        return paperArchivingService.getArchivedPaperCount();
+    }
 
 }
