@@ -18,9 +18,12 @@ import com.example.examManagementBackend.timetable.dto.TimeTableCoursesDTO;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.timetable.repository.ExaminationTimeTableRepository;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserRoles;
+import com.example.examManagementBackend.userManagement.userManagementRepo.UserManagementRepo;
 import com.example.examManagementBackend.userManagement.userManagementRepo.UserRolesRepository;
+import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 import org.springframework.http.HttpStatus;
@@ -45,8 +48,11 @@ public class ExaminationService {
     private final RoleAssignmentRepository roleAssignmentRepository;
     private final CoursesRepository coursesRepository;
     private final CourseEvaluationRepo courseEvaluationsRepository;
+    private final JwtService jwtService;
+    private final UserManagementRepo userManagementRepo;
 
-    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, CourseEvaluationRepo courseEvaluationsRepository) {
+
+    public ExaminationService(ExaminationRepository examinationRepository, ExaminationTimeTableRepository examinationTimeTableRepository, UserRolesRepository userRolesRepository, DegreeProgramRepo degreeProgramsRepository, RoleAssignmentRepository roleAssignmentRepository, CoursesRepository coursesRepository, CourseEvaluationRepo courseEvaluationsRepository,JwtService jwtService, UserManagementRepo userManagementRepo) {
         this.examinationRepository = examinationRepository;
         this.examinationTimeTableRepository = examinationTimeTableRepository;
         this.userRolesRepository = userRolesRepository;
@@ -54,6 +60,8 @@ public class ExaminationService {
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.coursesRepository = coursesRepository;
         this.courseEvaluationsRepository = courseEvaluationsRepository;
+        this.jwtService = jwtService;
+        this.userManagementRepo = userManagementRepo;
     }
 
     public ExaminationDTO createExamination(ExaminationDTO examinationDTO) {
@@ -188,44 +196,37 @@ public class ExaminationService {
                 .build();
     }
 
-
-    //get examination data related to selected degree program
-    public ResponseEntity<StandardResponse> getExaminationWithDegreeProgram() {
-        List<ExaminationDTO> examinationDTOS = new ArrayList<>();
-        List<ExaminationEntity> examinationEntities = examinationRepository.findAllOngoingExams(ExamStatus.ONGOING);
-        for (ExaminationEntity examinationEntity : examinationEntities) {
-            ExaminationDTO examinationDTO = mapToDTO(examinationEntity);
-            examinationDTOS.add(examinationDTO);
-        }
-
-        return new ResponseEntity<>(
-                new StandardResponse(200, "sucess", examinationDTOS), HttpStatus.OK
-        );
-    }
-
     //create a methode to get course data which ara belongs to particular exam
-    public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId) {
+    public ResponseEntity<StandardResponse> getCoursesByExaminationId(Long examinationId, HttpServletRequest request,String roleName) {
         try {
             Set<CourseDTO> courseDTOS = new HashSet<>();
             List<ExamTimeTablesEntity> examTimeTablesEntities = examinationRepository.getCoursesUsingExaminationId(examinationId);
+            Object[] loginDetails=jwtService.getUserNameAndToken(request);
+            String userName=loginDetails[0].toString();
+            Long userId=userManagementRepo.getUserIdByUsername(userName);
             for (ExamTimeTablesEntity examinationEntity : examTimeTablesEntities) {
                 CourseDTO courseDTO = new CourseDTO();
                 CoursesEntity coursesEntity = examinationTimeTableRepository.getCourseEntities(examinationEntity.getExamTimeTableId());
-                courseDTO.setId(coursesEntity.getId());
-                courseDTO.setCode(coursesEntity.getCode());
-                courseDTO.setName(coursesEntity.getName());
-                courseDTO.setDescription(coursesEntity.getDescription());
-                courseDTO.setLevel(coursesEntity.getLevel());
-                courseDTO.setSemester(coursesEntity.getSemester());
-                courseDTO.setIsActive(coursesEntity.getIsActive());
-                courseDTO.setCourseType(coursesEntity.getCourseType().name());
-                courseDTO.setDegreeProgramId(coursesEntity.getDegreeProgramsEntity().getId());
-                courseDTOS.add(courseDTO);
+                boolean isAssigned=roleAssignmentRepository.existedByUserId_RoleName_courseCode(userId,roleName,coursesEntity.getCode());
+                if(isAssigned) {
+                    courseDTO.setId(coursesEntity.getId());
+                    courseDTO.setCode(coursesEntity.getCode());
+                    courseDTO.setName(coursesEntity.getName());
+                    courseDTO.setDescription(coursesEntity.getDescription());
+                    courseDTO.setLevel(coursesEntity.getLevel());
+                    courseDTO.setSemester(coursesEntity.getSemester());
+                    courseDTO.setIsActive(coursesEntity.getIsActive());
+                    courseDTO.setCourseType(coursesEntity.getCourseType().name());
+                    courseDTO.setDegreeProgramId(coursesEntity.getDegreeProgramsEntity().getId());
+                    courseDTOS.add(courseDTO);
+                }
+
             }
             return new ResponseEntity<>(
                     new StandardResponse(200, "sucess", courseDTOS), HttpStatus.OK
             );
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(
                     new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
@@ -396,6 +397,10 @@ public class ExaminationService {
 
     public Long getOngoingExaminationsCount() {
         return examinationRepository.countByStatus(ExamStatus.ONGOING);
+    }
+
+    public long getExaminationCount() {
+        return examinationRepository.count();
     }
 }
 

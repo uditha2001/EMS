@@ -35,7 +35,7 @@ import java.util.Optional;
 @Service
 public class PaperArchivingService {
 
-    @Value("${file.upload.archived-dir}")
+    @Value("${file.upload.archived-dir:uploads/archived-papers}")
     private String storagePath;
 
     private final EncryptedPaperRepository encryptedPaperRepository;
@@ -240,6 +240,10 @@ public class PaperArchivingService {
         archivedPaper.setShared(true);
 
         archivedPaperRepository.save(archivedPaper);
+    }
+
+    public long getArchivedPaperCount() {
+        return archivedPaperRepository.count();
     }
 
 

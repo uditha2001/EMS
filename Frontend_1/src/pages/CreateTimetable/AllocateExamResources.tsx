@@ -331,7 +331,7 @@ const AllocateExamResources: React.FC = () => {
                   getAvailableCapacity={getAvailableCapacity}
                   handleSaveExamCenters={handleAllocateCenters} 
                 />
-                {/* <div className="flex justify-end mt-4">
+                <div className="flex justify-end mt-4">
                   <button
                     onClick={handleAllocateCenters}
                     className="btn-primary"
@@ -339,7 +339,7 @@ const AllocateExamResources: React.FC = () => {
                   >
                     Save Changes
                   </button>
-                </div> */}
+                </div>
               </>
             )}
 

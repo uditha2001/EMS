@@ -3,25 +3,14 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 // Fallback Loader
 import Loader from './common/Loader';
-import PageTitle from './components/PageTitle';
-import SecondMarking from './pages/Results/SecondMarking';
-import UploadArchivedPaper from './pages/HistoricalData/UploadArchivedPaper';
-import ResultGrading from './pages/Results/ResultGrading';
-import RoleAssignmentRevision from './pages/RoleAssignments/RoleAssignmentRevision';
-import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleAssignmentRevisions';
-import GradeConditions from './pages/Results/GradeConditions';
-import LearnMore from './components/LearnMore';
-import AllocateExamResources from './pages/CreateTimetable/AllocateExamResources';
-import PreviewTimetable from './pages/CreateTimetable/PreviewTimetable';
-import TimeTableRevision from './pages/CreateTimetable/TimeTableRevision';
-import PreviewTimetableRevisions from './pages/CreateTimetable/PreviewTimetableRevisions';
-import PaperTracking from './pages/PaperTracking/PaperTracking';
-import ResultDashboard from './pages/Results/ResultDashboard';
 
 // Lazy-loaded components
+const LearnMore = React.lazy(() => import('./components/LearnMore'));
+const PageTitle = React.lazy(() => import('./components/PageTitle'));
 const Calendar = React.lazy(() => import('./pages/Calendar'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Settings = React.lazy(() => import('./pages/Settings'));
+const AllTasksPage = React.lazy(() => import('./pages/Dashboard/AllTasksPage'));
 const AdminDashboard = React.lazy(
   () => import('./pages/Dashboard/AdminDashboard'),
 );
@@ -110,6 +99,39 @@ const SynchronizeTimetables = React.lazy(
   () => import('./pages/CreateTimetable/SynchronizeTimetables'),
 );
 
+const SecondMarking = React.lazy(() => import('./pages/Results/SecondMarking'));
+const UploadArchivedPaper = React.lazy(
+  () => import('./pages/HistoricalData/UploadArchivedPaper'),
+);
+const ResultGrading = React.lazy(() => import('./pages/Results/ResultGrading'));
+const RoleAssignmentRevision = React.lazy(
+  () => import('./pages/RoleAssignments/RoleAssignmentRevision'),
+);
+const PreviewRoleAssignmentRevisions = React.lazy(
+  () => import('./pages/RoleAssignments/PreviewRoleAssignmentRevisions'),
+);
+const GradeConditions = React.lazy(
+  () => import('./pages/Results/GradeConditions'),
+);
+const AllocateExamResources = React.lazy(
+  () => import('./pages/CreateTimetable/AllocateExamResources'),
+);
+const PreviewTimetable = React.lazy(
+  () => import('./pages/CreateTimetable/PreviewTimetable'),
+);
+const TimeTableRevision = React.lazy(
+  () => import('./pages/CreateTimetable/TimeTableRevision'),
+);
+const PreviewTimetableRevisions = React.lazy(
+  () => import('./pages/CreateTimetable/PreviewTimetableRevisions'),
+);
+const PaperTracking = React.lazy(
+  () => import('./pages/PaperTracking/PaperTracking'),
+);
+const ResultDashboard = React.lazy(
+  () => import('./pages/Results/ResultDashboard'),
+);
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { pathname } = useLocation();
@@ -178,6 +200,11 @@ function App() {
             <Route
               path="/settings"
               element={renderPage('Settings | EMS', <Settings />)}
+            />
+
+            <Route
+              path="/tasks/all"
+              element={renderPage('Settings | EMS', <AllTasksPage />)}
             />
 
             {/* User Management Routes */}
@@ -349,6 +376,16 @@ function App() {
               />
             </Route>
 
+            <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
+              <Route
+                path="/history/archived/upload"
+                element={renderPage(
+                  'Archived Papers Upload | EMS',
+                  <UploadArchivedPaper />,
+                )}
+              />
+            </Route>
+
             <Route
               element={<RequireAuth allowedPermissions={['MODERATE_PAPER']} />}
             >
@@ -382,7 +419,7 @@ function App() {
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
               />
               <Route
-                path="/paper/transfer/new"
+                path="/paper/transfer/new/:id"
                 element={renderPage(
                   'Paper Transfer | EMS',
                   <CreateTransaction />,

@@ -31,7 +31,7 @@ import java.util.List;
 @Service
 public class FileService {
 
-    @Value("${file.upload.encrypted-dir}")
+    @Value("${file.upload.encrypted-dir:uploads/encrypted-papers}")
     private String encryptedPaperStoragePath;
     private final EncryptionService encryptionService;
 
@@ -43,18 +43,15 @@ public class FileService {
 
     private final ExaminationRepository examinationRepository;
 
-    private final RoleAssignmentRepository roleAssignmentRepository;
+    private final RoleAssignmentService roleAssignmentService;
 
-    private final RoleRepository roleRepository;
-
-    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository, RoleAssignmentRepository roleAssignmentRepository, RoleRepository roleRepository) {
+    public FileService(EncryptionService encryptionService, EncryptedPaperRepository encryptedPaperRepository, UserManagementRepo userRepository, CoursesRepository coursesRepository, ExaminationRepository examinationRepository, RoleAssignmentRepository roleAssignmentRepository, RoleRepository roleRepository, RoleAssignmentService roleAssignmentService) {
         this.encryptionService = encryptionService;
         this.encryptedPaperRepository = encryptedPaperRepository;
         this.userRepository = userRepository;
         this.coursesRepository = coursesRepository;
         this.examinationRepository = examinationRepository;
-        this.roleAssignmentRepository = roleAssignmentRepository;
-        this.roleRepository = roleRepository;
+        this.roleAssignmentService = roleAssignmentService;
     }
 
 
@@ -97,38 +94,9 @@ public class FileService {
         // Save the EncryptedPaper entity and get the generated ID
         EncryptedPaper savedPaper = encryptedPaperRepository.save(encryptedPaper);
 
-        // Update RoleAssignmentEntity for both PAPER_CREATOR and MODERATOR
-        PaperType type = PaperType.valueOf(paperType);
+        roleAssignmentService.updateRoleAssignmentCompletionStatus();
 
-        // Fetch PAPER_CREATOR role
-        RolesEntity creatorRole = roleRepository.findByRoleName("PAPER_CREATOR")
-                .orElseThrow(() -> new RuntimeException("Role 'PAPER_CREATOR' not found."));
-
-        // Fetch MODERATOR role
-        RolesEntity moderatorRole = roleRepository.findByRoleName("PAPER_MODERATOR")
-                .orElseThrow(() -> new RuntimeException("Role 'MODERATOR' not found."));
-
-        // Update role assignment for PAPER_CREATOR
-        RoleAssignmentEntity creatorRoleAssignment = roleAssignmentRepository
-                .findByUserIdAndCourseAndExaminationIdAndRoleAndPaperType(
-                        creator, course, examination, creatorRole, type
-                )
-                .orElseThrow(() -> new RuntimeException("Creator role assignment not found."));
-        creatorRoleAssignment.setCompleted(true);
-        creatorRoleAssignment.setCompleteDate(LocalDateTime.now());
-        roleAssignmentRepository.save(creatorRoleAssignment);
-
-        // Update role assignment for MODERATOR
-        RoleAssignmentEntity moderatorRoleAssignment = roleAssignmentRepository
-                .findByUserIdAndCourseAndExaminationIdAndRoleAndPaperType(
-                        moderator, course, examination, moderatorRole, type
-                )
-                .orElseThrow(() -> new RuntimeException("Moderator role assignment not found."));
-        moderatorRoleAssignment.setCompleted(true);
-        moderatorRoleAssignment.setCompleteDate(LocalDateTime.now());
-        roleAssignmentRepository.save(moderatorRoleAssignment);
-
-        return savedPaper.getId();  // Return the ID of the saved paper
+        return savedPaper.getId();
     }
 
     @Transactional
@@ -176,6 +144,7 @@ public class FileService {
 
         // Save the updated paper record
         encryptedPaperRepository.save(existingPaper);
+        roleAssignmentService.updateRoleAssignmentCompletionStatus();
     }
 
 
