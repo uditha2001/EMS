@@ -34,9 +34,13 @@ public class ResultController {
         return resultService.saveMarkingResults(results,request);
     }
 
-    @GetMapping("/examType")
-    public ResponseEntity<StandardResponse> getExamTypes(){
-        return resultService.getAllExamsTypes();
+    @GetMapping("/firstMarkerExamTypes")
+    public ResponseEntity<StandardResponse> getFirstMarkerExamTypes(HttpServletRequest request,@RequestParam String courseCode,@RequestParam Long examId){
+        return resultService.getAllAssignedExamsTypes(courseCode,request,examId,"FIRST_MARKER");
+    }
+    @GetMapping("/secondMarkerExamTypes")
+    public ResponseEntity<StandardResponse> getSecondMarkerExamTypes(HttpServletRequest request,@RequestParam String courseCode,@RequestParam Long examId){
+        return resultService.getAllAssignedExamsTypes(courseCode,request,examId,"SECOND_MARKER");
     }
 
     @PostMapping("/saveFinalResults")

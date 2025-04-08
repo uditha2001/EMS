@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import useApi from '../../api/api';
 import SuccessMessage from '../../components/SuccessMessage';
@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import useResultsApi from '../../api/ResultsApi';
+import useExaminationApi from '../../api/examinationApi';
 
 type RowData = {
   [key: string]: any;
@@ -35,7 +36,6 @@ type courseData = {
   degreeProgramId: string;
 };
 type examTypeData = {
-  id: number;
   name: string;
 };
 
@@ -47,14 +47,15 @@ const ResultsUpload = () => {
   const [createdExamNames, setCreatedExamNames] = useState<examinationName[]>(
     [],
   );
+  const isFirstRender = useRef(true);
   const [examName, setExamName] = useState<string>('');
   const [courseCode, setCourseCode] = useState<string>('');
-  const [examType, setExamType] = useState<string>('THEORY');
+  const [examType, setExamType] = useState<string>('');
   const {
-    getAllExaminationDetailsWithDegreeName,
-    getCoursesUsingExaminationId,
-    getExamTypes,
+    getFirstMarkerCoursesUsingExaminationId,
+    firstMarkerExamTypes
   } = useApi();
+  const { getFirstMarkerAssignedExaminations} = useExaminationApi();
   const {saveMarkingResults}=useResultsApi();
 
   const [selectedExaminationKey, setSelectedExaminationKey] =
@@ -72,7 +73,7 @@ const ResultsUpload = () => {
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [examTypes, setExamTypes] = useState<examTypeData[]>([]);
   useEffect(() => {
-    getAllExaminationDetailsWithDegreeName().then((response) => {
+    getFirstMarkerAssignedExaminations().then((response) => {
       let examData: examinationName[] = [];
       let i = 0;
       for (const obj of response) {
@@ -83,15 +84,13 @@ const ResultsUpload = () => {
       setCreatedExamNames(examData);
     });
 
-    getExamTypes().then((response) => {
-      setExamTypes(response.data);
-    });
+   
   }, []);
 
  
   useEffect(() => {
     if (examName != '' && examName != null) {
-      getCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
+      getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
         setExaminationCourseCode(data);
       });
     }
@@ -105,7 +104,23 @@ const ResultsUpload = () => {
     ) {
       setCourseCode(examinationCourseCode[0].code);
     }
+    
   }, [examinationCourseCode]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return; 
+    }
+    firstMarkerExamTypes(courseCode,selectedExaminationKey).then((response) => {
+      setExamTypes(response.data);
+    });
+  },[courseCode]);
+
+  useEffect(() => {
+    setExamType(examTypes[0]?.name);
+},[examTypes]);
+
 
   useEffect(() => {
     if (allowToSend) {
@@ -254,7 +269,6 @@ const ResultsUpload = () => {
                       value={examOptionIdentifier}
                       className="input-field"
                       onChange={(e) => {
-                        console.log(e.target.value);
                         setExamOptionIdentifier(e.target.value);
                         const selectedIndex = parseInt(e.target.value, 10);
                         setExamName(createdExamNames[selectedIndex].name);
@@ -299,10 +313,10 @@ const ResultsUpload = () => {
                     </label>
                     <select
                       className="input-field"
-                      value={examType}
+                      value={examTypes[0]?.name}
                       onChange={(e) => setExamType(e.target.value)}
                     >
-                      {examTypes.map((type, index) => (
+                      {examTypes && examTypes.map((type, index) => (
                         <option key={index}>{type.name}</option>
                       ))}{' '}
                     </select>

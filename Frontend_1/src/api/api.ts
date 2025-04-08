@@ -505,10 +505,15 @@ const useApi = () => {
       throw new Error('failed to get degree names');
     }
   };
-  const getAllExaminationDetailsWithDegreeName = async () => {
+  const getFirstMarkerCoursesUsingExaminationId = async (
+    examinationId: number | undefined,
+  ) => {
     try {
       const response = await axiosPrivate.get(
-        'academic-years/getExaminationWithDegreeName',
+        'academic-years/getFirstMarkerCoursesUsingExaminationId',
+        {
+          params: { examinationId: examinationId },
+        },
       );
       if (response.data.code === 200) {
         return response.data.data;
@@ -517,13 +522,12 @@ const useApi = () => {
       throw new Error('failed to fetch examinations name');
     }
   };
-
-  const getCoursesUsingExaminationId = async (
+  const getSecondMarkerCoursesUsingExaminationId = async (
     examinationId: number | undefined,
   ) => {
     try {
       const response = await axiosPrivate.get(
-        'academic-years/getCoursesUsingExaminationId',
+        'academic-years/getSecondMarkerCoursesUsingExaminationId',
         {
           params: { examinationId: examinationId },
         },
@@ -695,9 +699,27 @@ const useApi = () => {
     }
   };
 
-  const getExamTypes = async () => {
+  const firstMarkerExamTypes = async (courseCode:String,examId:number|undefined) => {
     try {
-      const response = await axiosPrivate.get(`/result/examType`);
+      const response = await axiosPrivate.get(`/result/firstMarkerExamTypes`,{
+        params: {
+          courseCode,
+          examId,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+  const secondMarkerExamTypes = async (courseCode:String,examId:number | undefined) => {
+    try {
+      const response = await axiosPrivate.get(`/result/secondMarkerExamTypes`,{
+        params: {
+          courseCode,
+          examId,
+        },
+      });
       return response.data;
     } catch (error) {
       throw error;
@@ -920,8 +942,7 @@ const useApi = () => {
     getRoleAssignmentById,
     getExaminationById,
     getDegreeProgramById,
-    getAllExaminationDetailsWithDegreeName,
-    getCoursesUsingExaminationId,
+    getFirstMarkerCoursesUsingExaminationId,
     getArchivedPapers,
     getArchivedPaperById,
     archivePapersManually,
@@ -939,7 +960,8 @@ const useApi = () => {
     getPaperStatus,
     reviseRoleAssignments,
     fetchRoleAssignmentRevisions,
-    getExamTypes,
+    firstMarkerExamTypes,
+    secondMarkerExamTypes,
     getModerators,
     getPaperById,
     downloadMarkingFile,
@@ -947,6 +969,7 @@ const useApi = () => {
     getGradesConditionsValues,
     getOngoingexaminationCount,
     getRoleAssignments,
+    getSecondMarkerCoursesUsingExaminationId,
     getExaminationCount,
     getArchivedPaperCount,
   };

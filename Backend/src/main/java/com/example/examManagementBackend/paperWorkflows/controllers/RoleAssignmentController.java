@@ -4,6 +4,8 @@ import com.example.examManagementBackend.paperWorkflows.dto.*;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -145,5 +147,14 @@ public class RoleAssignmentController {
             @PathVariable String examinationId) {
         List<RoleAssignmentRevisionDTO> revisions = roleAssignmentService.getRevisionsByExamination(Long.valueOf(examinationId));
         return ResponseEntity.ok(new StandardResponse(200, "Role Assignment Revision fetched successfully",revisions));
+    }
+
+     @GetMapping("/FirstMarkingexaminations")
+     public ResponseEntity<StandardResponse> getExaminations(HttpServletRequest request) {
+        return roleAssignmentService.getAllExaminations(request,"FIRST_MARKER");
+     }
+    @GetMapping("/secondMarkingexaminations")
+    public ResponseEntity<StandardResponse> getSecondMarkingExaminations(HttpServletRequest request) {
+        return roleAssignmentService.getAllExaminations(request,"SECOND_MARKER");
     }
 }
