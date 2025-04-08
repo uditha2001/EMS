@@ -38,6 +38,10 @@ public class ResultController {
     public ResponseEntity<StandardResponse> getFirstMarkerExamTypes(HttpServletRequest request,@RequestParam String courseCode,@RequestParam Long examId){
         return resultService.getAllAssignedExamsTypes(courseCode,request,examId,"FIRST_MARKER");
     }
+    @GetMapping("/secondMarkerExamTypes")
+    public ResponseEntity<StandardResponse> getSecondMarkerExamTypes(HttpServletRequest request,@RequestParam String courseCode,@RequestParam Long examId){
+        return resultService.getAllAssignedExamsTypes(courseCode,request,examId,"SECOND_MARKER");
+    }
 
     @PostMapping("/saveFinalResults")
     public ResponseEntity<StandardResponse> saveFinalResults(@RequestBody PublishedDataDTO publishedData, HttpServletRequest request) {

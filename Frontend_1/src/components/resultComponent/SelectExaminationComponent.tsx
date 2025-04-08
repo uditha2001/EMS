@@ -25,7 +25,6 @@ type requiredData = {
   examType: string;
 };
 type examTypeData = {
-  id: number;
   name: string;
 };
 const SelectExaminationComponent = ({
@@ -50,7 +49,7 @@ const SelectExaminationComponent = ({
   const [examTypes, setExamTypes] = useState<examTypeData[]>([]);
   const {
     getSecondMarkerCoursesUsingExaminationId,
-    getExamTypes,
+    secondMarkerExamTypes,
   } = useApi();
 
   useEffect(() => {
@@ -74,9 +73,7 @@ const SelectExaminationComponent = ({
       setCreatedExamNames(examData);
     });
 
-    getExamTypes().then((response) => {
-      setExamTypes(response.data);
-    });
+    
   }, []);
 
   useEffect(() => {
@@ -96,6 +93,11 @@ const SelectExaminationComponent = ({
       });
     }
   }, [examName]);
+  useEffect(() => {
+    secondMarkerExamTypes(courseCode,selectedExaminationKey).then((response) => {
+      setExamTypes(response.data);
+    });
+  },[courseCode]);
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto pb-4 ">
