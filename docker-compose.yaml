@@ -44,10 +44,11 @@ services:
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=prod
+      - FILE_UPLOAD_PROFILE_DIR=/app/uploads/profile_images
+      - FILE_UPLOAD_ARCHIVED_DIR=/app/uploads/archived-papers
+      - FILE_UPLOAD_ENCRYPTED_DIR=/app/uploads/encrypted-papers
     volumes:
-      - /home/ec2-user/uploads/profile_images:/app/uploads/profile_images
-      - /home/ec2-user/uploads/archived-papers:/app/uploads/archived-papers
-      - /home/ec2-user/uploads/encrypted-papers:/app/uploads/encrypted-papers
+      - /home/ec2-user/uploads:/app/uploads
     networks:
       - webnet
 
