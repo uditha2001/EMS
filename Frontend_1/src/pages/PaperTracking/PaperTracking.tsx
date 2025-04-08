@@ -168,14 +168,14 @@ const PaperTracking: React.FC = () => {
             className={
               assignment.completed
                 ? 'text-green-500 dark:text-green-400 mr-2'
-                : 'text-yellow-500 dark:text-yellow-400 mr-2'
+                : 'text-primary dark:text-blue-600 mr-2'
             }
           />
           <span
             className={
               assignment.completed
                 ? 'text-green-600 dark:text-green-400 font-semibold'
-                : 'text-yellow-600 dark:text-yellow-400 font-semibold'
+                : 'text-primary dark:text-blue-600 font-semibold'
             }
           >
             {/* {assignment.completed ? 'Completed' : 'Pending'} */}
@@ -379,11 +379,11 @@ const PaperTracking: React.FC = () => {
         <h2 className="font-medium text-black dark:text-white ">
           <FontAwesomeIcon
             icon={faChartBar}
-            className="mr-2 text-blue-500 dark:text-blue-400"
+            className="mr-2 text-primary dark:text-blue-600"
           />
           Paper Status Overview
         </h2>
-        <div className="h-48">
+        <div className="h-40">
           <div className="flex h-full">
             {chartData.map((data, index) => (
               <div
@@ -400,7 +400,7 @@ const PaperTracking: React.FC = () => {
                     title={`Completed: ${data.completed}`}
                   ></div>
                   <div
-                    className="bg-yellow-500 dark:bg-yellow-600 w-16 mt-1"
+                    className="bg-primary dark:bg-blue-600 w-16 mt-1"
                     style={{ height: `${data.pending * 10}px` }}
                     title={`Pending: ${data.pending}`}
                   ></div>
@@ -411,7 +411,7 @@ const PaperTracking: React.FC = () => {
                     {data.completed}
                   </div>
                   <div>
-                    <span className="inline-block w-3 h-3 bg-yellow-500 dark:bg-yellow-600 mr-1"></span>
+                    <span className="inline-block w-3 h-3 bg-primary dark:bg-blue-600 mr-1"></span>
                     {data.pending}
                   </div>
                 </div>

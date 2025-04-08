@@ -66,6 +66,8 @@ const EditCourse: React.FC = () => {
     { id: 2, name: 'Course Evaluations', icon: faList },
   ];
 
+  const [totalWeightage, setTotalWeightage] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -86,6 +88,14 @@ const EditCourse: React.FC = () => {
     };
     fetchData();
   }, [courseId]);
+
+  useEffect(() => {
+    const total = formData.courseEvaluations.reduce(
+      (sum, evaluation) => sum + (parseFloat(evaluation.weightage) || 0),
+      0,
+    );
+    setTotalWeightage(total);
+  }, [formData.courseEvaluations]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -116,11 +126,34 @@ const EditCourse: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
+
+    // Prevent entering values over 100 for weightage
+    if (name === 'weightage') {
+      const numericValue = parseFloat(value);
+      if (numericValue > 100) {
+        setErrorMessage('Weightage cannot exceed 100%');
+        return;
+      }
+      if (numericValue < 0) {
+        setErrorMessage('Weightage cannot be negative');
+        return;
+      }
+    }
+
     setFormData((prevFormData) => {
       const newEvaluations = [...prevFormData.courseEvaluations];
       newEvaluations[index] = { ...newEvaluations[index], [name]: value };
       return { ...prevFormData, courseEvaluations: newEvaluations };
     });
+
+    // Clear any previous error if the new value is valid
+    if (
+      name === 'weightage' &&
+      parseFloat(value) <= 100 &&
+      parseFloat(value) >= 0
+    ) {
+      setErrorMessage('');
+    }
   };
 
   const handleRemoveEvaluation = (index: number) => {
@@ -141,6 +174,24 @@ const EditCourse: React.FC = () => {
       setErrorMessage('Please complete all required fields.');
       setLoading(false);
       return;
+    }
+
+    if (
+      formData.courseType !== 'NO_PAPER' &&
+      formData.courseEvaluations.length > 0
+    ) {
+      const total = formData.courseEvaluations.reduce(
+        (sum, evaluation) => sum + (parseFloat(evaluation.weightage) || 0),
+        0,
+      );
+
+      if (Math.round(total) !== 100) {
+        setErrorMessage(
+          'Total weightage must equal 100%. Current total: ' + total + '%',
+        );
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -378,6 +429,15 @@ const EditCourse: React.FC = () => {
                 <label className="mb-2.5 block text-black dark:text-white">
                   Course Evaluations
                 </label>
+                <div className="mb-4 font-medium">
+                  Total Weightage: {totalWeightage}%
+                  {totalWeightage !== 100 &&
+                    formData.courseEvaluations.length > 0 && (
+                      <span className="text-red-500 ml-2">
+                        (Must equal 100%)
+                      </span>
+                    )}
+                </div>
                 {formData.courseEvaluations.map((evaluation, index) => (
                   <div
                     key={index}
