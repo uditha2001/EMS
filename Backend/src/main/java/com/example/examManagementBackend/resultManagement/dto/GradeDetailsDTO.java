@@ -3,6 +3,8 @@ package com.example.examManagementBackend.resultManagement.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Data
@@ -14,5 +16,4 @@ public class GradeDetailsDTO {
     Map<String,Float> examTypesName;
     float TotalMarks;
     String grade;
-
 }
