@@ -4,6 +4,8 @@ import {
   faCalendarAlt,
   faSync,
   faCheckCircle,
+  faExclamationTriangle,
+  faFileAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 import { Link } from 'react-router-dom';
@@ -14,6 +16,9 @@ interface Examination {
   degreeProgramId: string;
   level: string;
   semester: string;
+  examProcessStartDate: string | null;
+  paperSettingCompleteDate: string | null;
+  markingCompleteDate: string | null;
   status: string;
 }
 
@@ -77,6 +82,51 @@ export default function ExaminationList({
     }
   };
 
+  const getPaperSettingStatus = (paperSettingCompleteDate: string | null) => {
+    if (!paperSettingCompleteDate) {
+      return null;
+    }
+
+    const today = new Date();
+    const paperDate = new Date(paperSettingCompleteDate);
+
+    return (
+      <div className="flex items-center text-xs mt-1">
+        <FontAwesomeIcon icon={faFileAlt} className="mr-1" />
+        <span className="text-green-600 dark:text-green-400">
+          Paper Setting Completed
+        </span>
+        {paperDate > today && (
+          <span className="ml-1 text-gray-500">
+            (on {paperDate.toLocaleDateString()})
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const getMarkingWarning = (markingCompleteDate: string | null) => {
+    if (!markingCompleteDate) return null;
+
+    const today = new Date();
+    const markingDate = new Date(markingCompleteDate);
+    const timeDiff = markingDate.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    if (daysRemaining <= 7 && daysRemaining > 0) {
+      return (
+        <>
+          <div className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+            <FontAwesomeIcon icon={faExclamationTriangle} className="mr-1" />
+            Examination complete in {daysRemaining} day
+            {daysRemaining !== 1 ? 's' : ''} Please extend the deadline
+          </div>
+        </>
+      );
+    }
+    return null;
+  };
+
   const handleConfirmDelete = () => {
     if (deleteId !== null) {
       handleDelete(deleteId);
@@ -102,9 +152,12 @@ export default function ExaminationList({
             {sortedExaminations.map((year) => (
               <div
                 key={year.id}
-                className="flex flex-col border p-4 rounded-sm  border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark hover:shadow-xl transition-all duration-300 "
+                className="flex flex-col border p-4 rounded-sm border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark hover:shadow-xl transition-all duration-300"
               >
-                <div>{getStatusBadge(year.status)}</div>
+                <div className="flex justify-between items-start">
+                  {getStatusBadge(year.status)}
+                </div>
+
                 <div className="mt-2">
                   <div className="text-black dark:text-white font-medium">
                     Year: {year.year}
@@ -121,6 +174,11 @@ export default function ExaminationList({
                     </div>
                   )}
                 </div>
+
+                {getPaperSettingStatus(year.paperSettingCompleteDate)}
+                {year.markingCompleteDate &&
+                  getMarkingWarning(year.markingCompleteDate)}
+
                 <div className="mt-4 flex justify-normal gap-4">
                   <button
                     onClick={() => handleEdit(year.id)}

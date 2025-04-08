@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 // Fallback Loader
 import Loader from './common/Loader';
 import ExamTypes from './pages/ExamTypes/ExamTypes';
+import PastExaminations from './pages/HistoricalData/PastExamination';
 
 // Lazy-loaded components
 const LearnMore = React.lazy(() => import('./components/LearnMore'));
@@ -384,6 +385,14 @@ function App() {
                 )}
               />
             </Route>
+
+            <Route
+                path="/history/examinations"
+                element={renderPage(
+                  'Past Examinations | EMS',
+                  <PastExaminations />,
+                )}
+              />
 
             <Route element={<RequireAuth allowedRoles={['ADMIN']} />}>
               <Route
