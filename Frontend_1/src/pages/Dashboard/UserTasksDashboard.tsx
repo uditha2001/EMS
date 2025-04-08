@@ -237,10 +237,7 @@ const UserTasksDashboard = ({ showAll = false }) => {
                 borderColor,
                 icon: StatusIcon,
                 iconColor,
-              } = getTaskStatus(
-                assignment.grantAt,
-                assignment.roleName === 'PAPER_CREATOR' && assignment.completed,
-              );
+              } = getTaskStatus(assignment.grantAt, assignment.completed);
 
               return (
                 <Link
@@ -296,7 +293,7 @@ const UserTasksDashboard = ({ showAll = false }) => {
 
                     {assignment.roleName === 'PAPER_CREATOR' &&
                       !assignment.completed && (
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                        <p className="text-sm text-primary dark:text-blue-400 mt-2">
                           You have to submit a paper. Please submit it before
                           the due date.
                         </p>
@@ -304,7 +301,7 @@ const UserTasksDashboard = ({ showAll = false }) => {
 
                     {assignment.roleName === 'FIRST_MARKER' &&
                       !assignment.completed && (
-                        <p className="text-sm text-blue-600 dark:text-blue-400 mt-2">
+                        <p className="text-sm text-primary dark:text-blue-400 mt-2">
                           You have to mark the paper. Please complete it before
                           the due date.
                         </p>
