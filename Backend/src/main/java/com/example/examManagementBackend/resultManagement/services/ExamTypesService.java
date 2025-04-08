@@ -18,7 +18,7 @@ public class ExamTypesService {
     }
     public ResponseEntity<StandardResponse> getAllExamTypes() {
         try{
-            List<ExamTypesEntity> examTypes=examTypesRepository.getExamTypes();
+            List<ExamTypesEntity> examTypes=examTypesRepository.getAllExamTypes();
             List<ExamTypesDTO> examTypesDTOList=new ArrayList<>();
             for(ExamTypesEntity examType:examTypes){
                 ExamTypesDTO examTypesDTO=new ExamTypesDTO();

@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 
 // Fallback Loader
 import Loader from './common/Loader';
+import ExamTypes from './pages/ExamTypes/ExamTypes';
 
 // Lazy-loaded components
 const LearnMore = React.lazy(() => import('./components/LearnMore'));
@@ -319,6 +320,14 @@ function App() {
               />
             </Route>
 
+            <Route
+              element={<RequireAuth allowedPermissions={['EXAMINATION']} />}
+            >
+              <Route
+                path="/examTypes"
+                element={renderPage('Evaluation Methods | EMS', <ExamTypes />)}
+              />
+            </Route>
             {/* Paper Workflow Routes */}
             <Route
               element={<RequireAuth allowedPermissions={['CREATE_PAPER']} />}
