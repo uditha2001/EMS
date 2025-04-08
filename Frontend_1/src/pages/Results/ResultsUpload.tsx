@@ -313,7 +313,7 @@ const ResultsUpload = () => {
                     </label>
                     <select
                       className="input-field"
-                      value={examTypes[0]?.name}
+                      value={examType}
                       onChange={(e) => setExamType(e.target.value)}
                     >
                       {examTypes && examTypes.map((type, index) => (
