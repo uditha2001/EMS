@@ -47,6 +47,15 @@ public class ExaminationController {
         );
     }
 
+    @GetMapping("/completed")
+    public ResponseEntity<StandardResponse> getCompletedExaminations() {
+        List<ExaminationDTO> Examinations = examinationService.getCompletedExaminations();
+        return new ResponseEntity<>(
+                new StandardResponse(200, "Examinations retrieved successfully", Examinations),
+                HttpStatus.OK
+        );
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<StandardResponse> updateExamination(@PathVariable Long id, @RequestBody ExaminationDTO ExaminationsDTO) {
         ExaminationDTO updatedExamination = examinationService.updateExamination(id, ExaminationsDTO);

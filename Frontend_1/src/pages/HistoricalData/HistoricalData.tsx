@@ -77,7 +77,7 @@ export default function HistoricalData() {
       </Link>
 
       {/* Examination Card */}
-      <Link to="#">
+      <Link to="/history/examinations">
         <div
           className="border p-4 rounded-sm cursor-pointer border-stroke bg-white shadow-default 
                     dark:border-strokedark dark:bg-boxdark hover:shadow-lg transition"

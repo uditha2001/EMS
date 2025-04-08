@@ -302,6 +302,9 @@ const Settings = () => {
                           placeholder="+990 3343 7865"
                           value={formData.contactNo || ''}
                           onChange={handleChange}
+                          maxLength={15} // assuming max 15 characters for international numbers
+                          pattern="^\+?[0-9\s\-]{7,15}$" // optional: adds input validation pattern
+                          required
                         />
                       </div>
                     </div>
