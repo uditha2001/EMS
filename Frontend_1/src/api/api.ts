@@ -289,6 +289,10 @@ const useApi = () => {
     return axiosPrivate.get('/academic-years');
   };
 
+  const getCompletedExaminations = async () => {
+    return axiosPrivate.get('/academic-years/completed');
+  };
+
   const deleteExamination = async (id: number) => {
     return axiosPrivate.delete(`/academic-years/${id}`);
   };
@@ -699,9 +703,12 @@ const useApi = () => {
     }
   };
 
-  const firstMarkerExamTypes = async (courseCode:String,examId:number|undefined) => {
+  const firstMarkerExamTypes = async (
+    courseCode: String,
+    examId: number | undefined,
+  ) => {
     try {
-      const response = await axiosPrivate.get(`/result/firstMarkerExamTypes`,{
+      const response = await axiosPrivate.get(`/result/firstMarkerExamTypes`, {
         params: {
           courseCode,
           examId,
@@ -712,9 +719,12 @@ const useApi = () => {
       throw error;
     }
   };
-  const secondMarkerExamTypes = async (courseCode:String,examId:number | undefined) => {
+  const secondMarkerExamTypes = async (
+    courseCode: String,
+    examId: number | undefined,
+  ) => {
     try {
-      const response = await axiosPrivate.get(`/result/secondMarkerExamTypes`,{
+      const response = await axiosPrivate.get(`/result/secondMarkerExamTypes`, {
         params: {
           courseCode,
           examId,
@@ -972,6 +982,7 @@ const useApi = () => {
     getSecondMarkerCoursesUsingExaminationId,
     getExaminationCount,
     getArchivedPaperCount,
+    getCompletedExaminations,
   };
 };
 

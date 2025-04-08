@@ -97,6 +97,13 @@ public class ExaminationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ExaminationDTO> getCompletedExaminations() {
+        return examinationRepository.findAll().stream()
+                .filter(exam -> exam.getStatus() == ExamStatus.COMPLETED)
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
 
 
     public ExaminationDTO updateExamination(Long id, ExaminationDTO examinationDTO) {
