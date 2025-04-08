@@ -9,7 +9,7 @@ export default function CreateTransaction() {
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark max-w-270 mx-auto">
         <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
           <h3 className="font-medium text-black dark:text-white">
-            Paper Transactions
+           Paper Transfer to Moderation
           </h3>
         </div>
 

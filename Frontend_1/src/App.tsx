@@ -419,7 +419,7 @@ function App() {
                 element={renderPage('Paper Transfer | EMS', <TransferPaper />)}
               />
               <Route
-                path="/paper/transfer/new"
+                path="/paper/transfer/new/:id"
                 element={renderPage(
                   'Paper Transfer | EMS',
                   <CreateTransaction />,

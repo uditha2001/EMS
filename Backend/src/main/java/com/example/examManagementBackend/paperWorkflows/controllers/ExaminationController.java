@@ -121,4 +121,9 @@ public class ExaminationController {
         return ResponseEntity.ok(count);
     }
 
+    @GetMapping("/count")
+    public long getExaminationCount() {
+        return examinationService.getExaminationCount();
+    }
+
 }

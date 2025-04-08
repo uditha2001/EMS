@@ -398,5 +398,9 @@ public class ExaminationService {
     public Long getOngoingExaminationsCount() {
         return examinationRepository.countByStatus(ExamStatus.ONGOING);
     }
+
+    public long getExaminationCount() {
+        return examinationRepository.count();
+    }
 }
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useApi from '../../api/api';
-import { Link, useLocation } from 'react-router-dom';
+import {  useLocation, useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,11 +10,43 @@ import {
   faUser,
   faBook,
   faFileAlt,
+  faCheckCircle,
+  faClock,
+  faExclamationTriangle,
+  faCalendarCheck,
 } from '@fortawesome/free-solid-svg-icons';
+import Loader from '../../common/Loader';
+
+interface FileDetails {
+  id: number;
+  remarks: string;
+  paperType: string;
+  moderator: {
+    firstName: string;
+    lastName: string;
+  };
+  course: {
+    code: string;
+    name: string;
+  };
+  examination: number;
+  createdAt: string;
+  updatedAt: string;
+  completed: boolean;
+  completeDate: string;
+}
+
+interface ExaminationDetails {
+  id: number;
+  year: string;
+  level: number;
+  semester: number;
+  degreeProgramName: string;
+}
 
 const FileUpdate: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [markingFile, setMarkingFile] = useState<File | null>(null); // New state for marking file
+  const [markingFile, setMarkingFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState<string>('');
   const [paperType, setPaperType] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -23,55 +55,96 @@ const FileUpdate: React.FC = () => {
   const [moderator, setModerator] = useState<string>('');
   const [course, setCourse] = useState<string>('');
   const [courseCode, setCourseCode] = useState<string>('');
-  const [examination, setExamination] = useState<string>('');
+  const [examinationYear, setExaminationYear] = useState<string>('');
   const [examinationName, setExaminationName] = useState<string>('');
-  const [, setExistingFileDetails] = useState<any>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false); // Drag-and-drop state for paper file
-  const [isMarkingDragging, setIsMarkingDragging] = useState<boolean>(false); // Drag-and-drop state for marking file
+  const [fileDetails, setFileDetails] = useState<FileDetails | null>(null);
+  const [examinationDetails, setExaminationDetails] =
+    useState<ExaminationDetails | null>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isMarkingDragging, setIsMarkingDragging] = useState<boolean>(false);
   const { updateFile, getExaminationById, getPaperById } = useApi();
   const location = useLocation();
+  const navigate = useNavigate();
   const { fileId } = location.state || {};
 
   useEffect(() => {
     const fetchFileDetails = async () => {
       try {
         const fileDetailsResponse = await getPaperById(fileId);
+        setFileDetails(fileDetailsResponse);
 
-        const fileDetails = fileDetailsResponse;
-        setExistingFileDetails(fileDetails);
         const examinationResponse = await getExaminationById(
-          fileDetails.examination,
+          fileDetailsResponse.examination,
         );
-        setRemarks(fileDetails.remarks);
+        setExaminationDetails(examinationResponse);
+
+        setRemarks(fileDetailsResponse.remarks);
         setModerator(
-          fileDetails.moderator.firstName +
-            ' ' +
-            fileDetails.moderator.lastName,
+          `${fileDetailsResponse.moderator.firstName} ${fileDetailsResponse.moderator.lastName}`,
         );
-        setCourse(fileDetails.course.code + ' - ' + fileDetails.course.name);
-        setCourseCode(fileDetails.course.code);
-        setExamination(examinationResponse.year);
-        setPaperType(fileDetails.paperType);
+        setCourse(
+          `${fileDetailsResponse.course.code} - ${fileDetailsResponse.course.name}`,
+        );
+        setCourseCode(fileDetailsResponse.course.code);
+        setExaminationYear(examinationResponse.year);
+        setPaperType(fileDetailsResponse.paperType);
         setExaminationName(
-          examinationResponse.year +
-            ' - ' +
-            'Level' +
-            ' ' +
-            examinationResponse.level +
-            ' - ' +
-            'Semester' +
-            ' ' +
-            examinationResponse.semester +
-            ' - ' +
-            examinationResponse.degreeProgramName,
+          `${examinationResponse.year} - Level ${examinationResponse.level} - Semester ${examinationResponse.semester} - ${examinationResponse.degreeProgramName}`,
         );
       } catch (error: any) {
         setErrorMessage('Failed to fetch data: ' + error.message);
+        navigate('/paper/transfer');
       }
     };
 
-    fetchFileDetails();
-  }, [fileId]);
+    if (fileId) {
+      fetchFileDetails();
+    } else {
+      navigate('/paper/transfer');
+    }
+  }, [fileId, navigate]);
+
+  const getStatusInfo = () => {
+    if (!fileDetails) return { text: '', color: '', icon: null };
+
+    if (fileDetails.completed) {
+      return {
+        text: `Completed on ${new Date(
+          fileDetails.completeDate,
+        ).toLocaleDateString()}`,
+        color: 'text-success',
+        icon: faCheckCircle,
+      };
+    }
+
+    const createdAt = new Date(fileDetails.createdAt);
+    const today = new Date();
+    const timeDiff = today.getTime() - createdAt.getTime();
+    const daysPassed = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+    if (daysPassed > 14) {
+      // Assuming 14 days is the deadline
+      return {
+        text: `Past due by ${daysPassed - 14} days`,
+        color: 'text-danger',
+        icon: faExclamationTriangle,
+      };
+    } else if (daysPassed === 14) {
+      return {
+        text: 'Due today',
+        color: 'text-warning',
+        icon: faClock,
+      };
+    } else {
+      return {
+        text: `Due in ${14 - daysPassed} days`,
+        color: 'text-primary',
+        icon: faCalendarCheck,
+      };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -146,16 +219,11 @@ const FileUpdate: React.FC = () => {
       return;
     }
 
-    if (!file && !markingFile) {
-      setErrorMessage('No files selected.');
-      return;
-    }
-
-    const renamedFileName = `${courseCode}_${paperType}_${examination.replace(
+    const renamedFileName = `${courseCode}_${paperType}_${examinationYear.replace(
       '/',
       '_',
     )}.pdf`;
-    const renamedMarkingFileName = `MARKING_${courseCode}_${paperType}_${examination.replace(
+    const renamedMarkingFileName = `MARKING_${courseCode}_${paperType}_${examinationYear.replace(
       '/',
       '_',
     )}.pdf`;
@@ -184,7 +252,10 @@ const FileUpdate: React.FC = () => {
       if (response?.message) {
         setErrorMessage(response.message);
       } else {
-        setSuccessMessage('Files updated successfully.');
+        setSuccessMessage('Files updated successfully!');
+        // Refresh file details after successful update
+        const updatedResponse = await getPaperById(fileId);
+        setFileDetails(updatedResponse);
       }
     } catch (error: any) {
       setErrorMessage(
@@ -195,6 +266,14 @@ const FileUpdate: React.FC = () => {
       setIsUploading(false);
     }
   };
+
+  if (!fileDetails || !examinationDetails) {
+    return (
+      <div className="p-4">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-270">
@@ -215,23 +294,24 @@ const FileUpdate: React.FC = () => {
             onClose={() => setErrorMessage('')}
           />
 
-          {/* Examination */}
-          <div className="flex items-center space-x-4 mb-8">
-            <FontAwesomeIcon
-              icon={faCalendarAlt}
-              className="text-primary text-xl"
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Examination
-              </label>
-              <p className="text-gray-900 dark:text-gray-100">
-                {examinationName}
-              </p>
+          {/* Assignment Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {/* Examination */}
+            <div className="flex items-center space-x-4">
+              <FontAwesomeIcon
+                icon={faCalendarAlt}
+                className="text-primary text-xl"
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Examination
+                </label>
+                <p className="text-gray-900 dark:text-gray-100">
+                  {examinationName}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
             {/* Moderator */}
             <div className="flex items-center space-x-4">
               <FontAwesomeIcon icon={faUser} className="text-primary text-xl" />
@@ -240,6 +320,17 @@ const FileUpdate: React.FC = () => {
                   Moderator
                 </label>
                 <p className="text-gray-900 dark:text-gray-100">{moderator}</p>
+              </div>
+            </div>
+
+            {/* Course */}
+            <div className="flex items-center space-x-4">
+              <FontAwesomeIcon icon={faBook} className="text-primary text-xl" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Course
+                </label>
+                <p className="text-gray-900 dark:text-gray-100">{course}</p>
               </div>
             </div>
 
@@ -257,125 +348,164 @@ const FileUpdate: React.FC = () => {
               </div>
             </div>
 
-            {/* Course */}
-            <div className="flex items-center space-x-4 ">
-              <FontAwesomeIcon icon={faBook} className="text-primary text-xl" />
+            {/* Status */}
+            <div className="flex items-center space-x-4">
+              {statusInfo.icon && (
+                <FontAwesomeIcon
+                  icon={statusInfo.icon}
+                  className={`${statusInfo.color} text-xl`}
+                />
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Course
+                  Status
                 </label>
-                <p className="text-gray-900 dark:text-gray-100">{course}</p>
+                <p className={`${statusInfo.color} dark:text-gray-100`}>
+                  {statusInfo.text}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Upload Paper */}
-          <div>
-            <label className="mb-2.5 block text-black dark:text-white mt-4">
-              Upload Paper
-            </label>
-            <div
-              onDragOver={(e) => handleDragOver(e, false)}
-              onDragLeave={() => handleDragLeave(false)}
-              onDrop={(e) => handleDrop(e, false)}
-              className={`border-2 border-dashed rounded-lg p-6 ${
-                isDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
-              }`}
-            >
-              <input
-                type="file"
-                onChange={(e) => handleFileChange(e, false)}
-                className="hidden"
-                id="file-upload"
+          {!fileDetails.completed ? (
+            <>
+              {/* Upload Paper */}
+              <div className="mb-6">
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Upload Paper (PDF only, max 10MB)
+                </label>
+                <div
+                  onDragOver={(e) => handleDragOver(e, false)}
+                  onDragLeave={() => handleDragLeave(false)}
+                  onDrop={(e) => handleDrop(e, false)}
+                  className={`border-2 border-dashed rounded-lg p-6 ${
+                    isDragging
+                      ? 'border-primary bg-primary/10'
+                      : 'border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    onChange={(e) => handleFileChange(e, false)}
+                    className="hidden"
+                    id="file-upload"
+                    accept=".pdf"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer block text-center"
+                  >
+                    <div className="text-gray-600 dark:text-gray-400">
+                      Drag and drop your paper PDF here, or{' '}
+                      <span className="text-primary underline">
+                        click to browse
+                      </span>
+                    </div>
+                  </label>
+                  {file && (
+                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p>Selected: {file.name}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload Marking */}
+              <div className="mb-6">
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Upload Marking Scheme (PDF only, max 10MB)
+                </label>
+                <div
+                  onDragOver={(e) => handleDragOver(e, true)}
+                  onDragLeave={() => handleDragLeave(true)}
+                  onDrop={(e) => handleDrop(e, true)}
+                  className={`border-2 border-dashed rounded-lg p-6 ${
+                    isMarkingDragging
+                      ? 'border-primary bg-primary/10'
+                      : 'border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    onChange={(e) => handleFileChange(e, true)}
+                    className="hidden"
+                    id="marking-file-upload"
+                    accept=".pdf"
+                  />
+                  <label
+                    htmlFor="marking-file-upload"
+                    className="cursor-pointer block text-center"
+                  >
+                    <div className="text-gray-600 dark:text-gray-400">
+                      Drag and drop your marking scheme PDF here, or{' '}
+                      <span className="text-primary underline">
+                        click to browse
+                      </span>
+                    </div>
+                  </label>
+                  {markingFile && (
+                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p>Selected: {markingFile.name}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Remarks */}
+              <div className="mb-6">
+                <label className="mb-2.5 block text-black dark:text-white">
+                  Remarks (Optional)
+                </label>
+                <textarea
+                  value={remarks}
+                  onChange={(e) => setRemarks(e.target.value)}
+                  className="w-full rounded border border-stroke bg-gray py-3 px-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                  rows={3}
+                  maxLength={200}
+                  placeholder="Add any remarks about this update (max 200 characters)"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-between">
+                <button
+                  onClick={() => navigate('/paper/transfer')}
+                  className="btn btn-secondary"
+                >
+                  Back to Papers
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  disabled={
+                    isUploading || (!file && !markingFile && !remarks.trim())
+                  }
+                  className="btn btn-primary"
+                >
+                  {isUploading ? 'Updating...' : 'Update Files'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center p-8 bg-success/10 rounded-lg">
+              <FontAwesomeIcon
+                icon={faCheckCircle}
+                className="text-success text-4xl mb-4"
               />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer block text-center"
+              <h3 className="text-xl font-semibold text-success mb-2">
+                Submission Completed
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Your files were successfully submitted on{' '}
+                {new Date(fileDetails.completeDate).toLocaleDateString()}
+              </p>
+              <button
+                onClick={() => navigate('/paper/transfer')}
+                className="btn btn-primary"
               >
-                <div className="text-gray-600 dark:text-gray-400">
-                  Drag and drop a PDF file here, or{' '}
-                  <span className="text-primary underline">
-                    click to browse
-                  </span>
-                  .
-                </div>
-              </label>
-              {file && (
-                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>File Selected: {file.name}</p>
-                </div>
-              )}
+                Back to Papers
+              </button>
             </div>
-          </div>
-
-          {/* Upload Marking */}
-          <div>
-            <label className="mb-2.5 block text-black dark:text-white mt-4">
-              Upload Marking
-            </label>
-            <div
-              onDragOver={(e) => handleDragOver(e, true)}
-              onDragLeave={() => handleDragLeave(true)}
-              onDrop={(e) => handleDrop(e, true)}
-              className={`border-2 border-dashed rounded-lg p-6 ${
-                isMarkingDragging
-                  ? 'border-primary bg-primary/10'
-                  : 'border-gray-300'
-              }`}
-            >
-              <input
-                type="file"
-                onChange={(e) => handleFileChange(e, true)}
-                className="hidden"
-                id="marking-file-upload"
-              />
-              <label
-                htmlFor="marking-file-upload"
-                className="cursor-pointer block text-center"
-              >
-                <div className="text-gray-600 dark:text-gray-400">
-                  Drag and drop a PDF file here, or{' '}
-                  <span className="text-primary underline">
-                    click to browse
-                  </span>
-                  .
-                </div>
-              </label>
-              {markingFile && (
-                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  <p>File Selected: {markingFile.name}</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Remarks */}
-          <div>
-            <label className="mb-2.5 block text-black dark:text-white mt-4">
-              Remarks
-            </label>
-            <textarea
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              className="input-field"
-              rows={2}
-              maxLength={100}
-              placeholder="Enter remarks here...(Max 100 characters)"
-            ></textarea>
-          </div>
-
-          <div className="flex justify-between mt-4">
-            <Link to={'/paper/transfer'} className="btn-secondary">
-              Back
-            </Link>
-            <button
-              onClick={handleUpdate}
-              disabled={isUploading}
-              className="btn-primary"
-            >
-              {isUploading ? 'Updating...' : 'Update Files'}
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </div>

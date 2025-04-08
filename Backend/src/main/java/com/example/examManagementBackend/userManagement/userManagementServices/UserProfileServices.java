@@ -24,8 +24,7 @@ public class UserProfileServices {
     private final UserManagementRepo userManagementRepo;
     private final String uploadDir;
 
-    public UserProfileServices(UserManagementRepo userManagementRepo,
-                               @Value("${file.upload.profile-dir}") String uploadDir) {
+    public UserProfileServices(UserManagementRepo userManagementRepo,@Value("${file.upload.profile-dir:uploads/profile_images}") String uploadDir) {
         this.userManagementRepo = userManagementRepo;
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize().toString();
     }
