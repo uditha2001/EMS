@@ -109,6 +109,7 @@ public class GradingService {
         try{
 
             LinkedHashMap<String,float[]> examtypesMarks=new LinkedHashMap<>();
+            Map<String,Integer> gradeCount=new HashMap<>();
             List<ResultEntity> StudentResults=resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode,examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             Set<GradeDetailsDTO> gradeDetailsDTOS=new LinkedHashSet<>();
             List<String> examTypeNames=resultRepo.getExamTypeName(courseCode,examinationId,ResultStatus.SECOND_MARKING_COMPLETE);
@@ -116,12 +117,13 @@ public class GradingService {
                 float[] marksConditions=getExamTypesMarksConditions(courseCode,name);
                 examtypesMarks.put(name,marksConditions);
             }
-            Map<String, Map<String, Float>> marksData=storeStudentDataWithexamTypeIdAndStudentNumber(StudentResults);
+            Map<String, Map<String, Float>> marksData=storeStudentDataWithExamTypeIdAndStudentNumber(StudentResults);
             saveCalculatedMarksValues(marksData,examtypesMarks);
             for(ResultEntity resultEntity:StudentResults){
                 GradeDetailsDTO gradeDetailsDTO=new GradeDetailsDTO();
                 float totalMarks=calculateTotalMarks(marksData,resultEntity);
                 String Grade=gradeTheMarks(totalMarks);
+                calculateGradeCount(gradeCount,Grade);
                 Map<String,Float> examTypesName=marksData.get(resultEntity.getStudent().getStudentNumber());
                 gradeDetailsDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
                 gradeDetailsDTO.setStudentName(resultEntity.getStudent().getStudentName());
@@ -130,8 +132,9 @@ public class GradingService {
                 gradeDetailsDTO.setExamTypesName(examTypesName);
                 gradeDetailsDTOS.add(gradeDetailsDTO);
             }
+            Object[] responseData = new Object[]{gradeDetailsDTOS, gradeCount};
             return  new ResponseEntity<>(
-                    new StandardResponse(200, "sucess", gradeDetailsDTOS), HttpStatus.OK
+                    new StandardResponse(200, "sucess", responseData), HttpStatus.OK
             );
         }
         catch(Exception e){
@@ -143,7 +146,7 @@ public class GradingService {
     }
 
     //used to store students marks with their scNumber and examTypeId
-    private  Map<String, Map<String, Float>>  storeStudentDataWithexamTypeIdAndStudentNumber(List<ResultEntity> results){
+    private  Map<String, Map<String, Float>>  storeStudentDataWithExamTypeIdAndStudentNumber(List<ResultEntity> results){
         Map<String, Map<String, Float>> marksData = new HashMap<>();
         for(ResultEntity resultEntity:results){
             marksData.putIfAbsent(resultEntity.getStudent().getStudentNumber(), new HashMap<>());
@@ -227,6 +230,16 @@ public class GradingService {
             }
            return new float[]{0,0};
         }
+    private void calculateGradeCount(Map<String,Integer> gradeDetails,String grade){
+        if(gradeDetails.containsKey(grade)){
+            int value=gradeDetails.get(grade);
+            value+=1;
+            gradeDetails.put(grade,value);
+        }
+        else{
+            gradeDetails.put(grade,1);
+        }
+    }
 
 
 }

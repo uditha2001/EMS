@@ -3,7 +3,6 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import useCourseApi from '../../api/courseApi';
 import useDegreeApi from '../../api/degreeApi';
-import useApi from '../../api/api';
 
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
@@ -16,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Stepper from '../PaperTransfer/Stepper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import useExamTypeApi from '../../api/examTypesApi';
 
 const levels = ['1', '2', '3', '4'];
 const courseTypes = ['THEORY', 'PRACTICAL', 'BOTH', 'NO_PAPER'];
@@ -23,7 +23,7 @@ const courseTypes = ['THEORY', 'PRACTICAL', 'BOTH', 'NO_PAPER'];
 const CreateCourse: React.FC = () => {
   const { saveCourse } = useCourseApi();
   const { getAllDegreePrograms } = useDegreeApi();
-  const { getExamTypes } = useApi();
+  const { getAllExamTypes } = useExamTypeApi();
 
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -72,7 +72,7 @@ const CreateCourse: React.FC = () => {
   useEffect(() => {
     const fetchExamTypes = async () => {
       try {
-        const response = await getExamTypes();
+        const response = await getAllExamTypes();
         setExamTypes(response.data);
       } catch (err) {
         setErrorMessage('Failed to load exam types.');

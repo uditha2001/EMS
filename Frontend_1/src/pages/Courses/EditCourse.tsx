@@ -4,7 +4,6 @@ import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import Loader from '../../common/Loader';
 import useCourseApi from '../../api/courseApi';
 import useDegreeApi from '../../api/degreeApi';
-import useApi from '../../api/api';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import Stepper from '../PaperTransfer/Stepper';
@@ -17,6 +16,7 @@ import {
   faPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import ConfirmationModal from '../../components/Modals/ConfirmationModal';
+import useExamTypeApi from '../../api/examTypesApi';
 
 const levels = ['1', '2', '3', '4'];
 const courseTypes = ['THEORY', 'PRACTICAL', 'BOTH', 'NO_PAPER'];
@@ -26,7 +26,7 @@ const EditCourse: React.FC = () => {
   const { getCourseById, updateCourse, deleteCourseEvaluation } =
     useCourseApi();
   const { getAllDegreePrograms } = useDegreeApi();
-  const { getExamTypes } = useApi();
+  const { getAllExamTypes } = useExamTypeApi();
 
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -73,7 +73,7 @@ const EditCourse: React.FC = () => {
           await Promise.all([
             getCourseById(Number(courseId)),
             getAllDegreePrograms(),
-            getExamTypes(),
+            getAllExamTypes(),
           ]);
         setFormData(courseResponse.data.data);
         setDegreePrograms(degreeResponse.data);

@@ -27,6 +27,7 @@ public class UserProfileServices {
     public UserProfileServices(UserManagementRepo userManagementRepo,@Value("${file.upload.profile-dir}") String uploadDir) {
         this.userManagementRepo = userManagementRepo;
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize().toString();
+        System.out.println("Upload directory: " + this.uploadDir);
     }
 
     // Existing method to update user profile info (name, email, contact, bio)
@@ -70,6 +71,7 @@ public class UserProfileServices {
             Path targetPath = Paths.get(uploadDir).resolve(userId + "_" + sanitizedFileName).normalize();
 
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            System.out.println("upload path: "+uploadPath);
             if (!targetPath.startsWith(uploadPath)) {
                 throw new IllegalArgumentException("Invalid file path");
             }
@@ -141,13 +143,14 @@ public class UserProfileServices {
 
         String profileImagePath = userEntity.getProfileImage();
 
+
         if (StringUtils.isEmpty(profileImagePath)) {
             throw new RuntimeException("No profile image found for this user");
         }
 
         try {
             Path imagePath = Paths.get(profileImagePath);
-
+            System.out.println("path is :"+imagePath);
             // Check if the file exists
             if (!Files.exists(imagePath)) {
                 throw new RuntimeException("Profile image file not found on disk");
