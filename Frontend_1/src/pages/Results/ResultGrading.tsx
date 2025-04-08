@@ -5,6 +5,7 @@ import PasswordConfirm from "../../components/PasswordConfirm";
 import UserApi from "../../api/UserApi";
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
+
 type ExamType = Record<string, number>;
 type GradeDetails = {
   studentName: string;
@@ -13,38 +14,51 @@ type GradeDetails = {
   totalMarks: number;
   grade: string;
 };
-type publishedData={
+
+type publishedData = {
   courseCode: string;
   examinationId: number;
   grades: GradeDetails[];
-}
+};
+
+type gradeCount = {
+  [key: string]: number;
+};
 
 const ResultGrading = () => {
   const location = useLocation();
-  const { confirmUser } = UserApi()
+  const { confirmUser } = UserApi();
   const queryParams = new URLSearchParams(location.search);
   const examinationId = queryParams.get("examinationId");
   const courseCode = queryParams.get("courseCode");
   const examName = queryParams.get("examName");
-  const { getGradingResults,saveFinalResults } = useResultsApi();
+  const { getGradingResults, saveFinalResults } = useResultsApi();
   const navigate = useNavigate();
   const [grades, setGrades] = useState<GradeDetails[]>([]);
   const [examTypes, setExamTypes] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [publishedData, setPublishData] = useState<publishedData>({
     courseCode: '',
     examinationId: 0,
     grades: []
   });
+  const [gradeCount, setGradeCounts] = useState<gradeCount>({});
+
+  // List of all possible grades
+  const possibleGrades = [
+    "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "E ", "F"
+  ];
 
   useEffect(() => {
     if (examinationId && courseCode) {
       getGradingResults(courseCode, examinationId)
         .then((response) => {
           if (response.code === 200) {
-            setGrades(response.data);
+            console.log("Grading results:", response.data);
+            setGrades(response.data[0]);
+            setGradeCounts(response.data[1]);
           } else if (response.code === 404) {
             setErrorMessage("Results not found");
             setGrades([]);
@@ -57,6 +71,7 @@ const ResultGrading = () => {
         });
     }
   }, []);
+
   useEffect(() => {
     if (grades.length > 0) {
       saveFinalResults(publishedData)
@@ -73,8 +88,7 @@ const ResultGrading = () => {
           setErrorMessage("An error occurred while publishing data.");
         });
     }
-  }
-  , [publishedData]);
+  }, [publishedData]);
 
   useEffect(() => {
     if (grades.length > 0) {
@@ -82,14 +96,14 @@ const ResultGrading = () => {
     }
   }, [grades]);
 
-
   const handleBack = () => {
     navigate(-1);
-  }
-  //handle data publishing
+  };
+
   const handlePublish = () => {
     setShowPasswordConfirm(true);
-  }
+  };
+
   const handleConfirm = async (enteredPassword: string) => {
     try {
       const response = await confirmUser(enteredPassword);
@@ -99,8 +113,7 @@ const ResultGrading = () => {
           examinationId: Number(examinationId),
           grades: grades,
         });
-      }
-      else if (response?.error) {
+      } else if (response?.error) {
         setSuccessMessage('');
         if (response.status === 500) {
           setErrorMessage("An error occurred while confirming the password.");
@@ -116,7 +129,6 @@ const ResultGrading = () => {
         setErrorMessage("No response received from the server.");
       } else {
         setSuccessMessage('');
-
         setErrorMessage("An error occurred while confirming the password.");
       }
     } catch (error: any) {
@@ -127,12 +139,17 @@ const ResultGrading = () => {
     setShowPasswordConfirm(false);
   };
 
-
   const handleCancel = () => {
     setErrorMessage('');
     setSuccessMessage('');
     setShowPasswordConfirm(false);
   };
+
+  // Merge the possibleGrades with gradeCount and set missing grades to 0
+  const gradeDistribution = possibleGrades.map((grade) => ({
+    grade,
+    count: gradeCount[grade] || 0,
+  }));
 
   return (
     <div className="p-4 md:p-6">
@@ -150,7 +167,6 @@ const ResultGrading = () => {
       }} />}
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-
         <div className="flex flex-col md:flex-row md:items-center gap-4 text-lg font-semibold">
           <span className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-lg">
             Examination: <span className="text-blue-600 dark:text-blue-400">{examName}</span>
@@ -160,23 +176,37 @@ const ResultGrading = () => {
           </span>
         </div>
 
-        {/* Buttons Container - Changed to horizontal alignment */}
+        {/* Buttons Container */}
         <div className="flex flex-row gap-3 w-full md:w-auto">
           <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all 
                         transform hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg
                         flex items-center justify-center gap-2 whitespace-nowrap"
-            onClick={handlePublish}         >
+            onClick={handlePublish}>
             Publish
           </button>
           <button className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all
                         transform hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg
                         flex items-center justify-center gap-2 whitespace-nowrap"
-
-            onClick={handleBack}         >
+            onClick={handleBack}>
             Back
           </button>
         </div>
       </div>
+
+      {/* Grade Count Display */}
+      {gradeDistribution.length > 0 && (
+        <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6">
+          <h3 className="text-xl font-semibold mb-3">Grade Count</h3>
+          <div className="flex flex-wrap gap-3 justify-center">
+            {gradeDistribution.map((gradeData) => (
+              <div key={gradeData.grade} className="bg-white dark:bg-gray-800 p-2 rounded-lg text-center">
+                <span className="text-sm font-semibold">{gradeData.grade}:</span>
+                <div className="text-lg font-bold text-blue-600">{gradeData.count}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Table Container */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">
@@ -249,7 +279,6 @@ const ResultGrading = () => {
         </div>
       )}
     </div>
-
   );
 };
 
