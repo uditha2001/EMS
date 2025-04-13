@@ -335,165 +335,234 @@ const ResultDashboard: React.FC = () => {
   );
 
   return (
-    <div className={`${darkMode ? 'dark' : ''} min-h-screen`}>
-      <div className="dark:bg-gray-900 dark:text-white">
-        <div className="mx-auto max-w-270">
-          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-gray-700 dark:bg-gray-800 max-w-270 mx-auto">
-            <div className="border-b border-stroke py-4 px-6.5 dark:border-gray-700">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-black dark:text-white">
-                  Result Dashboard
-                </h3>
-              </div>
+    <div className={`${darkMode ? 'dark' : ''} min-h-screen p-4 bg-gray-50 dark:bg-gray-900`}>
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Academic Analytics Dashboard</h1>
+          <div className="flex gap-4">
+            <button className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+              Export Report
+            </button>
+          </div>
+        </div>
+
+        {/* Filters Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800">
+          <div>
+            <label className="block text-sm font-medium mb-2 dark:text-gray-300">Subject (Results)</label>
+            <select
+              value={searchSubject}
+              onChange={(e) => setSearchSubject(e.target.value)}
+              className="w-full p-2 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              {subjects.map((subject) => (
+                <option key={subject} value={subject}>{subject}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 dark:text-gray-300">Subject (Grades)</label>
+            <select
+              value={searchSubjectGrades}
+              onChange={(e) => setSearchSubjectGrades(e.target.value)}
+              className="w-full p-2 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              {subjects.map((subject) => (
+                <option key={subject} value={subject}>{subject}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2 dark:text-gray-300">Year</label>
+            <select
+              value={searchYear}
+              onChange={(e) => setSearchYear(e.target.value)}
+              className="w-full p-2 rounded-lg border border-gray-200 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              {years.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Main Metrics Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Pass/Fail Charts */}
+          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Pass/Fail Rate Over Years</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={filteredResults}>
+                  <CartesianGrid strokeDasharray="3 3" className="dark:opacity-30" />
+                  <XAxis
+                    dataKey="year"
+                    className="dark:text-white"
+                    tick={{ fill: darkMode ? '#CBD5E0' : '#4A5568' }}
+                  />
+                  <YAxis className="dark:text-white" />
+                  <Tooltip
+                    contentStyle={{
+                      background: darkMode ? '#1F2937' : '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Bar
+                    dataKey="pass"
+                    fill="#10B981"
+                    radius={[4, 4, 0, 0]}
+                    name="Pass Rate (%)"
+                  />
+                  <Bar
+                    dataKey="fail"
+                    fill="#EF4444"
+                    radius={[4, 4, 0, 0]}
+                    name="Fail Rate (%)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
+          </div>
 
-            <div className="p-6.5">
-              {/* Search Bar for Bar and Line Chart */}
-              <div className="flex space-x-4 mb-4">
-                <select
-                  value={searchSubject}
-                  onChange={(e) => setSearchSubject(e.target.value)}
-                  className="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  {subjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Line Chart Container */}
+          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Pass/Fail Trend</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={filteredResults}>
+                  <CartesianGrid strokeDasharray="3 3" className="dark:opacity-30" />
+                  <XAxis
+                    dataKey="year"
+                    className="dark:text-white"
+                    tick={{ fill: darkMode ? '#CBD5E0' : '#4A5568' }}
+                  />
+                  <YAxis className="dark:text-white" />
+                  <Tooltip
+                    contentStyle={{
+                      background: darkMode ? '#1F2937' : '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="pass"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10B981', r: 4 }}
+                    name="Pass Rate (%)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="fail"
+                    stroke="#EF4444"
+                    strokeWidth={2}
+                    dot={{ fill: '#EF4444', r: 4 }}
+                    name="Fail Rate (%)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
 
-              {/* Bar Chart */}
-              <div className="bg-white p-4 rounded-lg shadow mb-6 dark:bg-gray-700">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={filteredResults}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={darkMode ? '#4A5568' : '#E2E8F0'}
-                    />
-                    <XAxis
-                      dataKey="year"
-                      stroke={darkMode ? '#CBD5E0' : '#4A5568'}
-                    />
-                    <YAxis stroke={darkMode ? '#CBD5E0' : '#4A5568'} />
-                    <Tooltip />
-                    <Bar dataKey="pass" fill="#4CAF50" />
-                    <Bar dataKey="fail" fill="#F44336" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+        {/* Grade Distribution Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Grade Distribution</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b dark:border-gray-700">
+                    {gradeOrder.map((grade) => (
+                      <th
+                        key={grade}
+                        className="px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 text-center"
+                      >
+                        {grade}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {gradeOrder.map((grade) => (
+                      <td
+                        key={grade}
+                        className="px-4 py-3 text-center text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        {aggregatedGrades[grade] || 0}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              {/* Line Chart */}
-              <div className="bg-white p-4 rounded-lg shadow mb-6 dark:bg-gray-700">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={filteredResults}>
-                    <XAxis
-                      dataKey="year"
-                      stroke={darkMode ? '#CBD5E0' : '#4A5568'}
-                    />
-                    <YAxis stroke={darkMode ? '#CBD5E0' : '#4A5568'} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="pass" stroke="#4CAF50" />
-                    <Line type="monotone" dataKey="fail" stroke="#F44336" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+          {/* Normal Distribution Section */}
+          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Marks Distribution Analysis</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={cleanedData}>
+                  <CartesianGrid strokeDasharray="3 3" className="dark:opacity-30" />
+                  <XAxis
+                    dataKey="x"
+                    type="number"
+                    domain={['dataMin', 'dataMax']}
+                    tick={{ fill: darkMode ? '#CBD5E0' : '#4A5568' }}
+                    tickFormatter={(value) => Math.floor(value).toString()}
+                  />
+                  <YAxis
+                    label={{
+                      value: 'Probability Density',
+                      angle: -90,
+                      position: 'insideLeft',
+                      className: 'dark:text-white'
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: darkMode ? '#1F2937' : '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    formatter={(value: number) => [value.toFixed(4), 'Density']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="y"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
 
-              {/* Search Bars for Grade Distribution and Normal Distribution Graph (Side by Side) */}
-              <div className="flex space-x-4 mb-4">
-                <select
-                  value={searchSubjectGrades}
-                  onChange={(e) => setSearchSubjectGrades(e.target.value)}
-                  className="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  {subjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={searchYear}
-                  onChange={(e) => setSearchYear(e.target.value)}
-                  className="input-field dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  {years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Grade Distribution Table */}
-              <div className="bg-white p-4 rounded-lg shadow mb-6 dark:bg-gray-700">
-                <table className="w-full border-collapse border border-gray-300 dark:border-gray-600">
-                  <thead>
-                    <tr className="bg-gray-200 dark:bg-gray-600">
-                      {gradeOrder.map((grade) => (
-                        <th
-                          key={grade}
-                          className="border p-2 dark:border-gray-600"
-                        >
-                          {grade}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      {gradeOrder.map((grade) => (
-                        <td
-                          key={grade}
-                          className="border p-2 text-center dark:border-gray-600"
-                        >
-                          {aggregatedGrades[grade] || 0}
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Normal Distribution Graph */}
-              <div className="bg-white p-4 rounded-lg shadow dark:bg-gray-700">
-                <h4 className="text-center font-medium mb-4 dark:text-white">
-                  Normal Distribution of Marks
-                </h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart
-                    data={cleanedData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="x"
-                      type="number"
-                      domain={['dataMin', 'dataMax']}
-                      tickFormatter={(value) => Math.floor(value).toString()} // Convert to string
-                      ticks={[
-                        -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,
-                      ]} // Specify the ticks you want to display
-                    />
-                    <YAxis
-                      label={{
-                        value: 'PDF ',
-                        angle: -90,
-                        position: 'insideLeft',
-                      }}
-                      domain={['auto', 'auto']} // Adjusts Y scale dynamically
-                    />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="y"
-                      stroke="#0000FF"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+        {/* Stats Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-blue-100 p-6 rounded-xl dark:bg-blue-900/30">
+            <div className="text-blue-600 dark:text-blue-400 mb-2">Mean Score</div>
+            <div className="text-3xl font-bold dark:text-white">{mean.toFixed(1)}</div>
+          </div>
+          <div className="bg-purple-100 p-6 rounded-xl dark:bg-purple-900/30">
+            <div className="text-purple-600 dark:text-purple-400 mb-2">Std Deviation</div>
+            <div className="text-3xl font-bold dark:text-white">{stdDev.toFixed(1)}</div>
+          </div>
+          <div className="bg-green-100 p-6 rounded-xl dark:bg-green-900/30">
+            <div className="text-green-600 dark:text-green-400 mb-2">Pass Rate</div>
+            <div className="text-3xl font-bold dark:text-white">
+              {filteredResults[0]?.pass || 0}%
             </div>
           </div>
         </div>
