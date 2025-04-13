@@ -55,8 +55,8 @@ const ResultsUpload = () => {
     getFirstMarkerCoursesUsingExaminationId,
     firstMarkerExamTypes
   } = useApi();
-  const { getFirstMarkerAssignedExaminations} = useExaminationApi();
-  const {saveMarkingResults}=useResultsApi();
+  const { getFirstMarkerAssignedExaminations } = useExaminationApi();
+  const { saveMarkingResults } = useResultsApi();
 
   const [selectedExaminationKey, setSelectedExaminationKey] =
     useState<number>();
@@ -84,14 +84,14 @@ const ResultsUpload = () => {
       setCreatedExamNames(examData);
     });
 
-   
+
   }, []);
 
- 
+
   useEffect(() => {
     if (examName != '' && examName != null) {
       getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
-        setExaminationCourseCode(data);
+        setExaminationCourseCode(data.data.data);
       });
     }
   }, [examName]);
@@ -104,22 +104,22 @@ const ResultsUpload = () => {
     ) {
       setCourseCode(examinationCourseCode[0].code);
     }
-    
+
   }, [examinationCourseCode]);
 
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      return; 
+      return;
     }
-    firstMarkerExamTypes(courseCode,selectedExaminationKey).then((response) => {
+    firstMarkerExamTypes(courseCode, selectedExaminationKey).then((response) => {
       setExamTypes(response.data);
     });
-  },[courseCode]);
+  }, [courseCode]);
 
   useEffect(() => {
     setExamType(examTypes[0]?.name);
-},[examTypes]);
+  }, [examTypes]);
 
 
   useEffect(() => {
@@ -208,8 +208,8 @@ const ResultsUpload = () => {
 
   const handleDownloadExcel = () => {
     const csvContent =
-      'studentNumber,studentName,firstMarking\n' +
-      'SC/2021/12345,John Doe,85\n';
+      'studentNumber,studentName,firstMarking,absent,hasMedicalSubmit\n' +
+      'SC/2021/12345,John Doe,85,true,false\n';
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
 
@@ -228,6 +228,7 @@ const ResultsUpload = () => {
       courseCode,
       examName,
       examType,
+      status: 'firstMarking',
     });
     setShowProgressBar(true);
     setAllowToSend(true);
@@ -343,6 +344,11 @@ const ResultsUpload = () => {
                     <FontAwesomeIcon icon={faDownload} className="mr-2" />
                     Download Template
                   </button>
+                  <p className="text-sm bg-blue-100 text-gray-800 border border-blue-300 rounded-md p-4 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 leading-relaxed">
+                    Please use only the <strong>downloaded template</strong> for uploading results. <br />
+                    For the <strong>Absent</strong> and <strong>Medical</strong> fields, use <strong className="text-red-600 dark:text-red-400">true</strong> or <strong className="text-red-600 dark:text-red-400">false</strong> values only.
+                  </p>
+
 
                   <div className="mb-4">
                     <input
@@ -392,7 +398,11 @@ const ResultsUpload = () => {
                     />
                     Data Preview
                   </h3>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Total Data Count: <span className="font-semibold text-black dark:text-white">{studentsData.length}</span>
+                  </p>
                 </div>
+
                 <div className="overflow-x-auto">
                   <div className="mb-6 p-6">
                     <div className="flex flex-wrap gap-4 mb-4">

@@ -13,4 +13,6 @@ public class StudentDTO {
     private Float firstMarking;
     private Float secondMarking;
     private Float finalMarking;
+    private boolean absent;
+    private boolean hasMedicalSubmit;
 }

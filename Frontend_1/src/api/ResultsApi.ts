@@ -3,7 +3,7 @@ const useResultsApi = () => {
     const axiosPrivate=useAxiosPrivate();
     const saveMarkingResults = async (result: any, config = {}) => {
         try {
-          const response = await axiosPrivate.post('result/firstMarking', result, {
+          const response = await axiosPrivate.post('result/saveMarking', result, {
             ...config,
           });
           return response.data;
@@ -69,25 +69,10 @@ const useResultsApi = () => {
 
 
       const getGradingResults = async (courseCode: string, ExaminationId: String) => {
-        try {
           const response = await axiosPrivate.get('grading/grades', {
             params: { courseCode, ExaminationId },
           });
-          return response.data;
-        }
-        catch (error: any) {
-          if (error.response) {
-            return { error: true, status: 500, message: error.response.data };
-          } else if (error.request) {
-            return {
-              error: true,
-              status: 500,
-              message: 'No response received from the server',
-            };
-          } else {
-            return { error: true, status: 500, message: error.message };
-          }
-        }
+          return response; 
       }
 
       const saveFinalResults=async (publishedData:any)=>{

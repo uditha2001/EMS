@@ -110,32 +110,58 @@ public class GradingService {
 
             LinkedHashMap<String,float[]> examtypesMarks=new LinkedHashMap<>();
             Map<String,Integer> gradeCount=new HashMap<>();
-            List<ResultEntity> StudentResults=resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode,examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
+            Set<StudentsEntity> studentNumbers=new HashSet<>();
+            List<ResultStatus> statuses = Arrays.asList(ResultStatus.SECOND_MARKING_COMPLETE, ResultStatus.MEDICAL, ResultStatus.ABSENT);
+            List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, statuses);
             Set<GradeDetailsDTO> gradeDetailsDTOS=new LinkedHashSet<>();
             List<String> examTypeNames=resultRepo.getExamTypeName(courseCode,examinationId,ResultStatus.SECOND_MARKING_COMPLETE);
-            for(String name:examTypeNames){
-                float[] marksConditions=getExamTypesMarksConditions(courseCode,name);
-                examtypesMarks.put(name,marksConditions);
+            if(!studentResults.isEmpty() && !examTypeNames.isEmpty()){
+                String Grade;
+                for(String name:examTypeNames){
+                    float[] marksConditions=getExamTypesMarksConditions(courseCode,name);
+                    examtypesMarks.put(name,marksConditions);
+                }
+                Map<String, Map<String, Float>> marksData=storeStudentDataWithExamTypeIdAndStudentNumber(studentResults);
+                saveCalculatedMarksValues(marksData,examtypesMarks);
+                extractStudent(studentNumbers,studentResults);
+                for(StudentsEntity student:studentNumbers){
+                    GradeDetailsDTO gradeDetailsDTO=new GradeDetailsDTO();
+                    float totalMarks=calculateTotalMarks(marksData,student.getStudentNumber());
+                    if(totalMarks==-1){
+                        gradeDetailsDTO.setGrade("ABSENT");
+                        calculateGradeCount(gradeCount,"ABSENT ");
+
+                    }
+                    else if(totalMarks==-2){
+                        gradeDetailsDTO.setGrade("MEDICAL");
+                        calculateGradeCount(gradeCount,"MEDICAL ");
+
+                    }
+                    else{
+                        Grade=gradeTheMarks(totalMarks);
+                        calculateGradeCount(gradeCount,Grade);
+                        gradeDetailsDTO.setGrade(Grade);
+                    }
+                    Map<String,Float> examTypesName=marksData.get(student.getStudentNumber());
+                    gradeDetailsDTO.setStudentNumber(student.getStudentNumber());
+                    gradeDetailsDTO.setStudentName(student.getStudentName());
+                    gradeDetailsDTO.setTotalMarks(totalMarks);
+                    gradeDetailsDTO.setExamTypesName(examTypesName);
+                    gradeDetailsDTOS.add(gradeDetailsDTO);
+                }
+
+
+                Object[] responseData = new Object[]{gradeDetailsDTOS, gradeCount};
+                return  new ResponseEntity<>(
+                        new StandardResponse(200, "sucess", responseData), HttpStatus.OK
+                );
             }
-            Map<String, Map<String, Float>> marksData=storeStudentDataWithExamTypeIdAndStudentNumber(StudentResults);
-            saveCalculatedMarksValues(marksData,examtypesMarks);
-            for(ResultEntity resultEntity:StudentResults){
-                GradeDetailsDTO gradeDetailsDTO=new GradeDetailsDTO();
-                float totalMarks=calculateTotalMarks(marksData,resultEntity);
-                String Grade=gradeTheMarks(totalMarks);
-                calculateGradeCount(gradeCount,Grade);
-                Map<String,Float> examTypesName=marksData.get(resultEntity.getStudent().getStudentNumber());
-                gradeDetailsDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
-                gradeDetailsDTO.setStudentName(resultEntity.getStudent().getStudentName());
-                gradeDetailsDTO.setTotalMarks(totalMarks);
-                gradeDetailsDTO.setGrade(Grade);
-                gradeDetailsDTO.setExamTypesName(examTypesName);
-                gradeDetailsDTOS.add(gradeDetailsDTO);
+            else{
+                return new ResponseEntity<>(
+                        new StandardResponse(422, "already published!", null), HttpStatus.UNPROCESSABLE_ENTITY
+                );
             }
-            Object[] responseData = new Object[]{gradeDetailsDTOS, gradeCount};
-            return  new ResponseEntity<>(
-                    new StandardResponse(200, "sucess", responseData), HttpStatus.OK
-            );
+
         }
         catch(Exception e){
             e.printStackTrace();
@@ -165,6 +191,12 @@ public class GradingService {
                         marks= (float) Math.round((marks * (examMarks[1] / 100)));
                         studentMarks.put(examTypeID,marks);
                     }
+                    else if(marks==-1){
+                        studentMarks.put(examTypeID,-1f);
+                    }
+                    else if(marks==-2){
+                        studentMarks.put(examTypeID,-2f);
+                    }
                     else{
                         studentMarks.put(examTypeID,0f);
                     }
@@ -174,17 +206,25 @@ public class GradingService {
     }
 
     //calculate total marks
-    private float calculateTotalMarks(Map<String, Map<String, Float>> marksData,ResultEntity resultEntity){
+    private float calculateTotalMarks(Map<String, Map<String, Float>> marksData,String studentNumber){
         float totalMarks = 0;
-        if (marksData.containsKey(resultEntity.getStudent().getStudentNumber())) {
-            Map<String, Float> studentMarks = marksData.get(resultEntity.getStudent().getStudentNumber());
+        if (marksData.containsKey(studentNumber)) {
+            Map<String, Float> studentMarks = marksData.get(studentNumber);
 
             for (Map.Entry<String, Float> entry : studentMarks.entrySet()) {
 
                 Float marks = entry.getValue();
+                if(marks!=-2 && marks !=-1){
                     totalMarks += marks;
-
-
+                }
+                else if(marks==-2){
+                    totalMarks=-2;
+                    return totalMarks;
+                }
+                else if(marks==-1){
+                    totalMarks=-1;
+                    return totalMarks;
+                }
             }
 
         }
@@ -239,6 +279,12 @@ public class GradingService {
         else{
             gradeDetails.put(grade,1);
         }
+    }
+
+    private void extractStudent(Set<StudentsEntity>studentNumbers,List<ResultEntity> resultEntities){
+                    for(ResultEntity resultEntity : resultEntities){
+                        studentNumbers.add(resultEntity.getStudent());
+                    }
     }
 
 

@@ -48,28 +48,34 @@ const ResultGrading = () => {
 
   // List of all possible grades
   const possibleGrades = [
-    "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "E ", "F"
+    "A+", "A ", "A-", "B+", "B ", "B-", "C+", "C ", "C-", "D ","D+", "E ","ABSENT ","MEDICAL "
   ];
 
   useEffect(() => {
-    if (examinationId && courseCode) {
-      getGradingResults(courseCode, examinationId)
-        .then((response) => {
-          if (response.code === 200) {
-            console.log("Grading results:", response.data);
-            setGrades(response.data[0]);
-            setGradeCounts(response.data[1]);
-          } else if (response.code === 404) {
+    const fetchGradingResults = async () => {
+      if (examinationId && courseCode) {
+        try {
+          const response = await getGradingResults(courseCode, examinationId);
+          if (response.data.code === 200) {
+            setGrades(response.data.data[0]);
+            setGradeCounts(response.data.data[1]);
+          } else if (response.data.code === 404) {
             setErrorMessage("Results not found");
             setGrades([]);
           }
-        })
-        .catch((err) => {
-          console.error("Fetch error:", err);
-          setErrorMessage("An error occurred while fetching data.");
+        } catch (err: any) {
+          if (err.response.data.code === 422) {
+            setErrorMessage("Results have already been published for this course, or second marking has not been uploaded yet.");
+          }
+          else {
+            setErrorMessage("An error occurred while fetching data.");
+          }
           setGrades([]);
-        });
-    }
+        }
+      }
+    };
+
+    fetchGradingResults();
   }, []);
 
   useEffect(() => {
@@ -107,6 +113,7 @@ const ResultGrading = () => {
   const handleConfirm = async (enteredPassword: string) => {
     try {
       const response = await confirmUser(enteredPassword);
+      console.log("Confirm user response:", response);
       if (response?.data?.code === 200) {
         setPublishData({
           courseCode: courseCode || '',
@@ -150,6 +157,8 @@ const ResultGrading = () => {
     grade,
     count: gradeCount[grade] || 0,
   }));
+  const totalCount = gradeDistribution.reduce((sum, item) => sum + item.count, 0);
+
 
   return (
     <div className="p-4 md:p-6">
@@ -196,7 +205,7 @@ const ResultGrading = () => {
       {/* Grade Count Display */}
       {gradeDistribution.length > 0 && (
         <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-6">
-          <h3 className="text-xl font-semibold mb-3">Grade Count</h3>
+          <h3 className="text-xl font-semibold mb-3">Total Grade Count:{totalCount}</h3>
           <div className="flex flex-wrap gap-3 justify-center">
             {gradeDistribution.map((gradeData) => (
               <div key={gradeData.grade} className="bg-white dark:bg-gray-800 p-2 rounded-lg text-center">
@@ -252,15 +261,28 @@ const ResultGrading = () => {
                 {examTypes.map((examType) => (
                   <td key={examType} className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400
                               whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
-                    {data.examTypesName[examType] || (
-                      <span className="text-red dark:text-red">failed</span>
+                    {data.examTypesName[examType] === -1 ? (
+                      <span className="text-yellow dark:text-yellow">ABSENT</span>
+                    ) : data.examTypesName[examType] === -2 ? (
+                      <span className="text-blue dark:text-blue">MEDICAL</span>
+                    ) : data.examTypesName[examType] === 0 ? (
+                      <span className="text-red dark:text-red">FAILED</span>
+                    ) : (
+                      data.examTypesName[examType]
                     )}
                   </td>
                 ))}
                 <td className="px-4 py-3 text-center text-sm font-semibold text-blue-600 dark:text-blue-400
                             bg-blue-50/50 dark:bg-blue-900/20">
-                  {data.totalMarks}
-                </td>
+                  {data.totalMarks === -1 ? (
+                    <span className="text-yellow dark:text-yellow">ABSENT</span>
+                  ) : data.totalMarks === -2 ? (
+                    <span className="text-blue dark:text-blue">MEDICAL</span>
+                  ) : data.totalMarks === 0 ? (
+                    <span className="text-red dark:text-red">FAILED</span>
+                  ) : (
+                    data.totalMarks
+                  )}                </td>
                 <td className="px-4 py-3 text-center text-sm font-semibold text-green-600 dark:text-green-400
                             bg-green-50/50 dark:bg-green-900/20">
                   {data.grade}

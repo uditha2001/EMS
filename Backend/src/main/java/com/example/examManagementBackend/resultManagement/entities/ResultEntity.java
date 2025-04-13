@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.FIRST_MARKING_COMPLETE;
+import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.PENDING;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -48,7 +49,7 @@ public class ResultEntity {
     private float finalMarks;
 
     @Enumerated(EnumType.STRING)
-    private ResultStatus status=FIRST_MARKING_COMPLETE;
+    private ResultStatus status=PENDING;
 
     @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="approved_by",referencedColumnName = "userId")
@@ -62,5 +63,8 @@ public class ResultEntity {
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
+
+    private boolean isAbsent=false;
+    private boolean hasSubmittedMedical=false;
 
 }
