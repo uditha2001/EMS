@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.Notification.NotificationDTO;
 
 
+import com.example.examManagementBackend.Notification.NotificationEntity.NotificationsLabels;
 import lombok.*;
 
 @Getter
@@ -10,7 +11,7 @@ import lombok.*;
 @ToString
 @Builder
 public class NotificationDTO {
-    private NotificationStatus status;
-    private String message;
-    private String title;
+    private Long id;
+    private String content;
+    private NotificationsLabels notificationsLabels;
 }

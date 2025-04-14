@@ -1,4 +1,5 @@
 import React from 'react';
+import 'global';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
@@ -8,8 +9,10 @@ import 'jsvectormap/dist/css/jsvectormap.css';
 import 'flatpickr/dist/flatpickr.min.css';
 import { AuthProvider } from './context/AuthProvider';
 import { PermissionsProvider } from './context/PermissionsProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
+    <ErrorBoundary>
     <Router>
       <AuthProvider>
         <PermissionsProvider>
@@ -17,5 +20,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         </PermissionsProvider>
       </AuthProvider>
     </Router>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

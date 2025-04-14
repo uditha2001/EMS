@@ -1,5 +1,7 @@
 package com.example.examManagementBackend.resultManagement.services;
 
+import com.example.examManagementBackend.Notification.NotificationDTO.NotificationDTO;
+import com.example.examManagementBackend.Notification.NotificationService.NotificationService;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -23,11 +26,13 @@ public class GradingService {
     private final ExamTypeRepo examTypeRepo;
     private final CoursesRepository coursesRepository;
     private final ResultRepo resultRepo;
-    public GradingService(CourseEvaluationRepo courseEvaluationRepo, ExamTypeRepo examTypeRepo, CoursesRepository coursesRepository, ResultRepo resultRepo) {
+    private final NotificationService notificationService;
+    public GradingService(CourseEvaluationRepo courseEvaluationRepo, ExamTypeRepo examTypeRepo, CoursesRepository coursesRepository, ResultRepo resultRepo, NotificationService notificationService) {
         this.courseEvaluationRepo = courseEvaluationRepo;
         this.examTypeRepo = examTypeRepo;
         this.coursesRepository = coursesRepository;
         this.resultRepo = resultRepo;
+        this.notificationService = notificationService;
     }
 
     /*
@@ -107,7 +112,6 @@ public class GradingService {
     //used to getStudents marks Grades
     public ResponseEntity<StandardResponse> getGradingsMark(String courseCode,Long examinationId){
         try{
-
             LinkedHashMap<String,float[]> examtypesMarks=new LinkedHashMap<>();
             Map<String,Integer> gradeCount=new HashMap<>();
             Set<StudentsEntity> studentNumbers=new HashSet<>();
