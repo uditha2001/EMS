@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
@@ -40,8 +40,7 @@ const Courses: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
 
-  const fetchCourses = useCallback(async () => {
-    setLoading(true);
+  const fetchCourses = async () => {
     try {
       const response = await fetchAllCourses();
       setCourses(response.data.data);
@@ -50,7 +49,7 @@ const Courses: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     async function fetchDegreePrograms() {

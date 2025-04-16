@@ -6,7 +6,6 @@ const useResultsApi = () => {
           const response = await axiosPrivate.post('result/firstMarking', result, {
             ...config,
           });
-          console.log(response.data);
           return response.data;
         } catch (error: any) {
           if (error.response) {
@@ -90,13 +89,39 @@ const useResultsApi = () => {
           }
         }
       }
+
+      const saveFinalResults=async (publishedData:any)=>{
+        try{
+          const response=await axiosPrivate.post('result/saveFinalResults',publishedData);
+          return response;
+        }
+        catch(error: any) {
+          if (error.response) {
+            return {
+                error: true,
+                status: error.response.status,
+                message: error.response.data?.message || "Request failed",
+            };
+        } else if (error.request) {
+            return {
+              error: true,
+              status: 500,
+              message: 'No response received from the server',
+            };
+          } else {
+            return { error: true, status: 500, message: error.message };
+          }
+        }
+            
+      }
         
 
   return {
     saveMarkingResults,
     getFirstMarkingResults,
     saveChangeMarksConditions,
-    getGradingResults
+    getGradingResults,
+    saveFinalResults
     }
 }
 

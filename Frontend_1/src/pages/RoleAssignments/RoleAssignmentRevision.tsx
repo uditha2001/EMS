@@ -5,6 +5,7 @@ import ErrorMessage from '../../components/ErrorMessage';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import useAuth from '../../hooks/useAuth';
 import SearchableSelectBox from '../../components/SearchableSelectBox';
+import ConfirmationModal from '../../components/Modals/ConfirmationModal';
 
 interface Examination {
   id: string;
@@ -55,6 +56,8 @@ const RoleAssignmentRevision: React.FC = () => {
   const [revisionReason, setRevisionReason] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [submissionPayload, setSubmissionPayload] = useState<any>(null);
 
   const {
     getExaminations,
@@ -181,16 +184,39 @@ const RoleAssignmentRevision: React.FC = () => {
       revisionReason,
     };
 
+    // Store the payload and show confirmation instead of submitting directly
+    setSubmissionPayload(payload);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = async () => {
     try {
-      const response = await reviseRoleAssignments([payload]);
+      await reviseRoleAssignments([submissionPayload]);
       setSuccessMessage('Role assignment revised successfully.');
       setErrorMessage('');
-      console.log('Revision Response:', response);
+      resetForm();
+      setShowConfirmation(false);
     } catch (error) {
       setErrorMessage('Failed to revise role assignment. Please try again.');
       setSuccessMessage('');
       console.error('Error revising role assignment:', error);
+      setShowConfirmation(false);
     }
+  };
+
+  const handleCancelSubmit = () => {
+    setShowConfirmation(false);
+    setSubmissionPayload(null);
+  };
+
+  const resetForm = () => {
+    setSelectedExamination('');
+    setSelectedCourse('');
+    setSelectedPaperType('THEORY');
+    setSelectedRole('');
+    setPreviousUser('');
+    setNewUserId('');
+    setRevisionReason('');
   };
 
   return (
@@ -355,6 +381,14 @@ const RoleAssignmentRevision: React.FC = () => {
           </form>
         </div>
       </div>
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <ConfirmationModal
+          message="Are you sure you want to revise this role assignment?"
+          onConfirm={handleConfirmSubmit}
+          onCancel={handleCancelSubmit}
+        />
+      )}
     </div>
   );
 };

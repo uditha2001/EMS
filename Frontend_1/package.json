@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "PORT=5173 react-scripts start",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vite --mode development",
+    "build": "vite build --mode production",
+    "serve": "vite preview"
   },
   "author": {
     "name": "TailAdmin",
@@ -64,4 +64,6 @@
     "vite": "^4.5.5",
     "webpack": "^5.88.2"
   }
+
+
 }

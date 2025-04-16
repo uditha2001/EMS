@@ -1,9 +1,10 @@
 package com.example.examManagementBackend.configurations;
 
+import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
+import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.userManagement.userManagementEntity.*;
 import com.example.examManagementBackend.userManagement.userManagementRepo.*;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +25,16 @@ public class DatabaseSeeder {
 
     private final PasswordEncoder passwordEncoder; // Properly inject PasswordEncoder
 
-    public DatabaseSeeder(PermissionRepository permissionRepository, RoleRepository rolesRepository, UserManagementRepo userRepository, UserRolesRepository userRolesRepository, RolePermissionRepository rolePermissionRepository, PasswordEncoder passwordEncoder) {
+    private final ExamTypeRepo examTypeRepo;
+
+    public DatabaseSeeder(PermissionRepository permissionRepository, RoleRepository rolesRepository, UserManagementRepo userRepository, UserRolesRepository userRolesRepository, RolePermissionRepository rolePermissionRepository, PasswordEncoder passwordEncoder, ExamTypeRepo examTypeRepo) {
         this.permissionRepository = permissionRepository;
         this.rolesRepository = rolesRepository;
         this.userRepository = userRepository;
         this.userRolesRepository = userRolesRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.examTypeRepo = examTypeRepo;
     }
 
     @PostConstruct
@@ -84,6 +88,8 @@ public class DatabaseSeeder {
             PermissionEntity p31 = createPermission("TIMETABLE", "Allows viewing of Time Table", "Scheduling");
             PermissionEntity p32 = createPermission("PAPER_EVALUATION", "Allows Add exam paper Evaluation", "Paper Workflow");
             PermissionEntity p33 = createPermission("EXAM_CENTERS", "Allows Manage of Exam Centers", "Scheduling");
+            PermissionEntity p34 = createPermission("APPROVE_TIMETABLE", "Allows approving timetables", "Scheduling");
+
 
             // Seed roles
             RolesEntity adminRole = createRole("ADMIN", "Administrator role(Head of the department)");
@@ -93,6 +99,8 @@ public class DatabaseSeeder {
             RolesEntity secondMakerRole = createRole("SECOND_MAKER", "Role responsible for reviewing and finalizing exam papers (Second Maker)");
             RolesEntity academyCoordinatorRole = createRole("ACADEMY_COORDINATOR", "Role responsible for overseeing the academic aspects and coordination");
 
+            createExamType("THEORY");
+            createExamType("PRACTICAL");
 
 
             // Assign permissions to roles
@@ -108,6 +116,7 @@ public class DatabaseSeeder {
             assignPermissionToRole(adminRole, p31);
             assignPermissionToRole(adminRole, p32);
             assignPermissionToRole(adminRole, p33);
+            assignPermissionToRole(adminRole, p34);
             assignPermissionToRole(academyCoordinatorRole,p4);
             assignPermissionToRole(academyCoordinatorRole,p9);
             assignPermissionToRole(academyCoordinatorRole,p20);
@@ -140,6 +149,13 @@ public class DatabaseSeeder {
         return permissionRepository.findByPermissionName(name)
                 .orElseGet(() -> permissionRepository.save(new PermissionEntity(name, description, type)));
     }
+
+    private void createExamType(String examType) {
+        examTypeRepo.findByExamType(examType)
+                .orElseGet(() -> examTypeRepo.save(new ExamTypesEntity(examType)));
+    }
+
+
 
     private RolesEntity createRole(String name, String description) {
         return rolesRepository.findByRoleName(name)

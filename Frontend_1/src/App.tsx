@@ -12,6 +12,9 @@ import PreviewRoleAssignmentRevisions from './pages/RoleAssignments/PreviewRoleA
 import GradeConditions from './pages/Results/GradeConditions';
 import LearnMore from './components/LearnMore';
 import AllocateExamResources from './pages/CreateTimetable/AllocateExamResources';
+import PreviewTimetable from './pages/CreateTimetable/PreviewTimetable';
+import TimeTableRevision from './pages/CreateTimetable/TimeTableRevision';
+import PreviewTimetableRevisions from './pages/CreateTimetable/PreviewTimetableRevisions';
 
 // Lazy-loaded components
 const Calendar = React.lazy(() => import('./pages/Calendar'));
@@ -101,6 +104,9 @@ const ArchivedPapers = React.lazy(
   () => import('./pages/HistoricalData/ArchivedPapers'),
 );
 const ExamCenters = React.lazy(() => import('./pages/ExamCenters/ExamCenters'));
+const SynchronizeTimetables = React.lazy(
+  () => import('./pages/CreateTimetable/SynchronizeTimetables'),
+);
 
 const ResultDashboard = React.lazy(
   () => import('./pages/Results/ResultDashboard')
@@ -438,12 +444,43 @@ function App() {
                   <CreateTimetable />,
                 )}
               />
+              <Route
+                path="/scheduling/revise-timetable"
+                element={renderPage(
+                  'Revise Timetable | EMS',
+                  <TimeTableRevision />,
+                )}
+              />
+
+              <Route
+                path="/scheduling/revisions/:examinationId"
+                element={renderPage(
+                  'Timetable Revisions | EMS',
+                  <PreviewTimetableRevisions />,
+                )}
+              />
+
+              <Route
+                path="/scheduling/preview-timetable/:examinationId"
+                element={renderPage(
+                  'Preview Timetable | EMS',
+                  <PreviewTimetable examinationId={null} />,
+                )}
+              />
 
               <Route
                 path="/scheduling/allocateExamResources"
                 element={renderPage(
                   'Allocate Exam Resources | EMS',
                   <AllocateExamResources />,
+                )}
+              />
+
+              <Route
+                path="/scheduling/synchronizeTimetables"
+                element={renderPage(
+                  'Synchronize Timetables | EMS',
+                  <SynchronizeTimetables />,
                 )}
               />
             </Route>

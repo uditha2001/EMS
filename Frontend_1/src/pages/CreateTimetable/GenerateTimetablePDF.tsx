@@ -25,17 +25,18 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
   const generatePDF = () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // 'l' for landscape orientation
     const margin = 15;
-    const pageWidth = doc.internal.pageSize.width;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     let currentY = 40;
 
-    // Header
+    // Header on the first page
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('University of Ruhuna', pageWidth / 2, 15, { align: 'center' });
     doc.text('Department of Computer Science', pageWidth / 2, 21, {
       align: 'center',
     });
-    doc.text('Examination Timetable', pageWidth / 2, 27, { align: 'center' });
+    doc.text('Examination Centers', pageWidth / 2, 27, { align: 'center' });
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -68,10 +69,11 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
     const tableHeaders = [
       'Date',
       'Time',
-      'Course',
+      'Paper',
       'Exam Center',
       'No of Candidates',
-      ...(includeHallStaff ? ['Supervisor', 'Invigilators'] : []), // Conditionally add columns
+      ...(includeHallStaff ? ['Supervisor', 'Invigilators'] : []),
+      'Remarks',
     ];
 
     const tableData: (string | { content: string; rowSpan: number })[][] = [];
@@ -97,11 +99,11 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
           : 'N/A';
         const invigilators = center.invigilators
           ? center.invigilators
-              .map((invigilator: any) => invigilator.invigilatorName)
+              .map((inv: { invigilatorName: string }) => inv.invigilatorName)
               .join(', ')
           : 'N/A';
-
-        // If it's the first row for the exam, merge cells (rowspan)
+        const remarks = center.remarks || 'N/A';
+        // Use rowspan on the first row for the exam entry
         if (index === 0) {
           tableData.push([
             { content: examDate, rowSpan: entry.examCenters.length },
@@ -109,19 +111,21 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
             { content: course, rowSpan: entry.examCenters.length },
             examCenterName,
             numOfCandidates,
-            ...(includeHallStaff ? [supervisorName, invigilators] : []), // Conditionally add row data
+            ...(includeHallStaff ? [supervisorName, invigilators] : []),
+            remarks,
           ]);
         } else {
           tableData.push([
             examCenterName,
             numOfCandidates,
-            ...(includeHallStaff ? [supervisorName, invigilators] : []), // Conditionally add row data
+            ...(includeHallStaff ? [supervisorName, invigilators] : []),
+            remarks,
           ]);
         }
       });
     });
 
-    // Generate the table with dynamic rowspan
+    // Generate the table and add page numbers on each page
     autoTable(doc, {
       startY: currentY,
       head: [tableHeaders],
@@ -130,17 +134,29 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
       styles: { fontSize: 10, cellPadding: 3 },
       headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255] },
       margin: { top: 10 },
+      didDrawPage: function () {
+        // Footer: add page number at the bottom right on every page
+        doc.setFontSize(10);
+        doc.text(
+          `Page ${
+            doc.getCurrentPageInfo().pageNumber
+          } of ${doc.getNumberOfPages()}`,
+          pageWidth - margin,
+          pageHeight - 10,
+          { align: 'right' },
+        );
+      },
     });
 
-    // Footer
+    // Footer on the final page (additional info)
     doc.setFontSize(10);
     doc.text(
       `Generated on: ${new Date().toLocaleString()}`,
       margin,
-      doc.internal.pageSize.height - 15,
+      pageHeight - 10,
     );
 
-    doc.save(`exam-timetable-${examination?.year}.pdf`);
+    doc.save(`exam-centers-${examination?.year}.pdf`);
   };
 
   return (
@@ -159,7 +175,7 @@ const GenerateTimetablePDF: React.FC<GenerateTimetablePDFProps> = ({
         onClick={generatePDF}
         className="btn-primary flex items-center gap-2"
       >
-        <FontAwesomeIcon icon={faDownload} /> Download Timetable PDF
+        <FontAwesomeIcon icon={faDownload} /> Download Examination Centers PDF
       </button>
     </div>
   );

@@ -1,13 +1,8 @@
 package com.example.examManagementBackend.utill;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-
 
 public class StandardResponse {
-    private int code;
+    private static int code;
     private String message;
     private Object data;
     public StandardResponse(int code, String message, Object data) {
@@ -44,7 +39,7 @@ public class StandardResponse {
         return new StandardResponse(200, "Request was successful", data);
     }
 
-    public static StandardResponse error(int code, String message) {
+    public static StandardResponse error(String message) {
         return new StandardResponse(code, message, null);
     }
 }

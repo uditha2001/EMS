@@ -22,12 +22,13 @@ interface Examination {
 }
 
 const AllocateExamResources: React.FC = () => {
-  const { getExaminations, getExaminationById } = useApi();
+  const { getExaminationById } = useApi();
   const { getAllExamCenters } = useExamCenterApi();
   const {
     getExamTimeTableByExaminationWithResources,
     allocateExamCenters,
     removeExamCenter,
+    getOnGoingExaminations,
   } = useExamTimeTableApi();
 
   const [examinations, setExaminations] = useState<any[]>([]);
@@ -39,7 +40,12 @@ const AllocateExamResources: React.FC = () => {
   const [allocations, setAllocations] = useState<
     Record<
       number,
-      { centerId: string; numOfCandidates: string; isSaved: boolean }[]
+      {
+        centerId: string;
+        numOfCandidates: string;
+        isSaved: boolean;
+        remarks: string;
+      }[]
     >
   >({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -58,7 +64,7 @@ const AllocateExamResources: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const examRes = await getExaminations();
+        const examRes = await getOnGoingExaminations();
         setExaminations(examRes.data.data);
       } catch (error) {
         setErrorMessage('Failed to fetch examinations.');
@@ -82,6 +88,7 @@ const AllocateExamResources: React.FC = () => {
             acc[exam.examTimeTableId] = exam.examCenters.map((center: any) => ({
               centerId: center.examCenterId.toString(),
               numOfCandidates: center.numOfCandidates.toString(),
+              remarks: center.remarks,
               isSaved: true, // Mark as saved initially
             }));
             return acc;
@@ -123,6 +130,7 @@ const AllocateExamResources: React.FC = () => {
             examTimeTableId: Number(examTimeTableId),
             examCenterId: centerData.centerId,
             numOfCandidates: centerData.numOfCandidates,
+            remarks: centerData.remarks,
           })),
       );
 
@@ -139,6 +147,7 @@ const AllocateExamResources: React.FC = () => {
               centerId: string;
               numOfCandidates: string;
               isSaved: boolean;
+              remarks: string;
             }) => ({
               ...center,
               isSaved: true,
@@ -159,7 +168,7 @@ const AllocateExamResources: React.FC = () => {
       ...prev,
       [examTimeTableId]: [
         ...(prev[examTimeTableId] || []),
-        { centerId: '', numOfCandidates: '', isSaved: false },
+        { centerId: '', numOfCandidates: '', isSaved: false, remarks: '' },
       ],
     }));
   };
@@ -176,7 +185,7 @@ const AllocateExamResources: React.FC = () => {
     examTimeTableId: number,
     newValue: string,
     index: number,
-    field: 'centerId' | 'numOfCandidates',
+    field: 'centerId' | 'numOfCandidates' | 'remarks',
   ) => {
     setAllocations((prev) => {
       const newAllocations = [...(prev[examTimeTableId] || [])];
@@ -320,8 +329,9 @@ const AllocateExamResources: React.FC = () => {
                   handleDeleteExamCenter={handleDeleteExamCenter}
                   calculateTotalCandidates={calculateTotalCandidates}
                   getAvailableCapacity={getAvailableCapacity}
+                  handleSaveExamCenters={handleAllocateCenters} 
                 />
-                <div className="flex justify-end mt-4">
+                {/* <div className="flex justify-end mt-4">
                   <button
                     onClick={handleAllocateCenters}
                     className="btn-primary"
@@ -329,7 +339,7 @@ const AllocateExamResources: React.FC = () => {
                   >
                     Save Changes
                   </button>
-                </div>
+                </div> */}
               </>
             )}
 

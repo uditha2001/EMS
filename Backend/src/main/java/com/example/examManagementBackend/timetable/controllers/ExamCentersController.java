@@ -32,7 +32,7 @@ public class ExamCentersController {
     public ResponseEntity<StandardResponse> getExamCenterById(@PathVariable Long id) {
         return examCenterService.getExamCenterById(id)
                 .map(examCentersDTO -> ResponseEntity.ok(StandardResponse.success(examCentersDTO)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error(404, "Exam Center not found")));
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error("Exam Center not found")));
     }
 
     // Create a new exam center
@@ -48,7 +48,7 @@ public class ExamCentersController {
     public ResponseEntity<StandardResponse> updateExamCenter(@PathVariable Long id, @RequestBody ExamCentersDTO examCentersDTO) {
         return examCenterService.updateExamCenter(id, examCentersDTO)
                 .map(updatedExamCenter -> ResponseEntity.ok(StandardResponse.success(updatedExamCenter)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error(404, "Exam Center not found")));
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error("Exam Center not found")));
     }
 
     // Delete an exam center
@@ -56,7 +56,7 @@ public class ExamCentersController {
     public ResponseEntity<StandardResponse> deleteExamCenter(@PathVariable Long id) {
         return examCenterService.deleteExamCenter(id)
                 .map(deleted -> ResponseEntity.status(HttpStatus.NO_CONTENT).body(StandardResponse.success("Exam Center deleted successfully")))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error(404, "Exam Center not found")));
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(StandardResponse.error("Exam Center not found")));
     }
 
 

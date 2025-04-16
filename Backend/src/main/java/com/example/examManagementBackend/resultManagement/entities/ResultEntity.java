@@ -6,11 +6,15 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.FIRST_MARKING_COMPLETE;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name="result")
 @NoArgsConstructor
@@ -52,5 +56,11 @@ public class ResultEntity {
 
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime publishAt;
+    @CreatedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime updatedAt;
 
 }

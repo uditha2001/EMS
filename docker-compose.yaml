@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: examPapperManagement
+      MYSQL_DATABASE: examPaperManagement
       MYSQL_USER: uditha
       MYSQL_PASSWORD: SPAxim1@
       MYSQL_ROOT_HOST: '%'
@@ -15,13 +15,19 @@ services:
       - webnet
     ports:
       - "3307:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "db"]
       interval: 5s
       timeout: 10s
       retries: 10
     security_opt:
-      - seccomp:unconfined
+      - "seccomp:unconfined"
 
   backend:
     image: udithaimesh/ems:backend-latest
@@ -34,29 +40,33 @@ services:
       db:
         condition: service_healthy
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPapperManagement?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=uditha
-      - SPRING_DATASOURCE_PASSWORD=SPAxim1@
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_PROFILES_ACTIVE=prod
+    volumes:
+      - ./Archived_Papers:/app/src/main/resources/Archived_Papers
+      - ./Encrypted_Papers:/app/src/main/resources/Encrypted_Papers
+      - ./Profile_Images:/app/src/main/resources/Profile_Images
     networks:
       - webnet
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   frontend:
     image: udithaimesh/ems:frontend-latest
     build:
       context: ./Frontend_1
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://13.53.133.27/api/v1
     ports:
       - "3000:80"
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://backend:8080  # Vite uses VITE_ prefix
+      - VITE_API_URL=http://13.53.133.27/api/v1
+    networks:
+      - webnet
+
 
 volumes:
   db-data:

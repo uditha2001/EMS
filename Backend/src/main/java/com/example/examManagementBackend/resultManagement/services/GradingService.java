@@ -4,10 +4,8 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.MarksPercentageDTO;
-import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
+import com.example.examManagementBackend.resultManagement.entities.*;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
-import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
-import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import com.example.examManagementBackend.resultManagement.repo.CourseEvaluationRepo;
 import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
@@ -229,7 +227,6 @@ public class GradingService {
             }
            return new float[]{0,0};
         }
-    private LinkedHashMap<String,Float> getTakenMarksFromEachExamTypes(LinkedHashMap<Long,float[]> examtypesMarks,ResultEntity resultEntity){
-        return null;
-    }
+
+
 }

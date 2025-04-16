@@ -15,6 +15,15 @@ const useExamTimeTableApi = () => {
     );
   };
 
+  const getExamTimeTableByExaminationsWithResources = async (
+    examinationIds: any,
+  ) => {
+    return axiosPrivate.post(
+      `/exam-time-table/exam/with-resources`,
+      examinationIds,
+    );
+  };
+
   const saveExamTimeTable = async (examTimeTableData: any) => {
     console.log(examTimeTableData);
     return axiosPrivate.post('/exam-time-table/create', examTimeTableData);
@@ -26,6 +35,10 @@ const useExamTimeTableApi = () => {
 
   const getCourses = async (examinationId: number) => {
     return axiosPrivate.get(`/academic-years/${examinationId}/courses`);
+  };
+
+  const approveTimetable = async (examinationId: number) => {
+    return axiosPrivate.post(`/exam-time-table/approve/${examinationId}`);
   };
 
   // Allocate or update exam centers
@@ -62,6 +75,77 @@ const useExamTimeTableApi = () => {
     return axiosPrivate.delete(`/exam-time-table/center/${examCenterId}`);
   };
 
+  const checkConflicts = async (examinationIds: any) => {
+    return axiosPrivate.post(
+      '/exam-time-table/check-conflicts',
+      examinationIds,
+    );
+  };
+
+  const getSynchronizedTimetable = async (examinationIds: any) => {
+    return axiosPrivate.post('/exam-time-table/synchronize', examinationIds);
+  };
+
+  const getOnGoingExaminations = async () => {
+    return axiosPrivate.get('/academic-years/with-timetable');
+  };
+
+  const reviseTimeTable = async (payload: {
+    examTimeTableId: number;
+    newDate: string;
+    newStartTime: string;
+    newEndTime: string;
+    revisedById: number;
+    changeReason: string;
+  }) => {
+    try {
+      console.log('Payload:', payload); // Log the payload for debugging
+      const response = await axiosPrivate.put(
+        '/exam-time-table/change-time-slot',
+        payload,
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const approveTimeSlot = async (examTimeTableId: number) => {
+    return axiosPrivate.post(
+      `/exam-time-table/slot/approve/${examTimeTableId}`,
+    );
+  };
+
+  const checkPaperExists = async (
+    courseId: number,
+    examinationId: number,
+    paperType: 'THEORY' | 'PRACTICAL',
+  ): Promise<boolean> => {
+    try {
+      const response = await axiosPrivate.get(`/exam-time-table/paper/exists`, {
+        params: {
+          courseId,
+          examinationId,
+          paperType,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data.exists;
+      console.log(response.data.exists);
+    } catch (error) {
+      console.error('Error checking paper existence:', error);
+      return false;
+    }
+  };
+
+  const getTimetableRevisions = async (examinationId: number) => {
+    return axiosPrivate.get(`/exam-time-table/revisions/${examinationId}`);
+  };
+  const getAllTimetableRevisions = async (examinationIds: any) => {
+    return axiosPrivate.post(`/exam-time-table/revisions/all`, examinationIds);
+  };
   return {
     getExamTimeTableByExamination,
     saveExamTimeTable,
@@ -73,6 +157,16 @@ const useExamTimeTableApi = () => {
     getExamTimeTableByExaminationWithResources,
     removeInvigilator,
     removeExamCenter,
+    checkConflicts,
+    getSynchronizedTimetable,
+    getExamTimeTableByExaminationsWithResources,
+    approveTimetable,
+    getOnGoingExaminations,
+    reviseTimeTable,
+    approveTimeSlot,
+    checkPaperExists,
+    getTimetableRevisions,
+    getAllTimetableRevisions,
   };
 };
 

@@ -513,6 +513,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 </li>
                                 <li>
                                   <NavLink
+                                    to="/scheduling/revise-timetable"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                      (isActive && '!text-white')
+                                    }
+                                  >
+                                    Timetable Revision
+                                  </NavLink>
+                                </li>
+                                <li>
+                                  <NavLink
                                     to="/scheduling/allocateExamResources"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
@@ -520,6 +531,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                     }
                                   >
                                     Allocate Exam Resources
+                                  </NavLink>
+                                </li>
+                                <li>
+                                  <NavLink
+                                    to="/scheduling/synchronizeTimetables"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ' +
+                                      (isActive && '!text-white')
+                                    }
+                                  >
+                                    Synchronize Timetables
                                   </NavLink>
                                 </li>
                               </>

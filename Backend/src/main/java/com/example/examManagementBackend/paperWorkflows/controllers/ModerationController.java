@@ -1,0 +1,66 @@
+package com.example.examManagementBackend.paperWorkflows.controllers;
+
+import com.example.examManagementBackend.paperWorkflows.dto.FeedBackData.FeedBackDTO;
+import com.example.examManagementBackend.paperWorkflows.dto.QuestionModerationDTO;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamPaperStatus;
+import com.example.examManagementBackend.paperWorkflows.service.ModerationService;
+import com.example.examManagementBackend.utill.PdfGenrationUtill;
+import com.example.examManagementBackend.utill.StandardResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@CrossOrigin
+@RestController
+@RequestMapping("/api/v1/moderation")
+public class ModerationController {
+
+
+    private final ModerationService moderationService;
+    private final PdfGenrationUtill pdfGenrationUtill;
+
+
+    public ModerationController(PdfGenrationUtill pdfGenrationUtill, ModerationService moderationService) {
+        this.pdfGenrationUtill = pdfGenrationUtill;
+        this.moderationService = moderationService;
+    }
+
+    @PostMapping("/question-with-hierarchy")
+    public ResponseEntity<StandardResponse> moderateQuestionWithHierarchy(@RequestBody QuestionModerationDTO dto) {
+        moderationService.moderateQuestionWithHierarchy(dto);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                "Question and its hierarchy moderated successfully.",
+                null
+        ));
+
+    }
+    //generate the pdf and save data;
+    @PostMapping("/saveFeedBackData")
+    public ResponseEntity<byte[]> saveFeedBackData(@RequestBody FeedBackDTO dto, HttpServletRequest request) {
+       try{
+          return pdfGenrationUtill.genratePdf(dto,request);
+       }
+       catch(Exception e){
+           return new ResponseEntity<byte[]> (
+                   null,null,HttpStatus.INTERNAL_SERVER_ERROR
+           );
+       }
+
+    }
+
+    @PatchMapping("/{id}/update")
+    public ResponseEntity<StandardResponse> updateStatusAndFeedback(
+            @PathVariable Long id,
+            @RequestParam(required = false) ExamPaperStatus status,
+            @RequestParam(required = false) String feedback) {
+        String message = moderationService.updateStatusAndFeedback(id, status, feedback);
+        return ResponseEntity.ok(new StandardResponse(
+                200,
+                message,
+                null
+        ));
+    }
+}
+
