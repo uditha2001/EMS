@@ -17,8 +17,8 @@ public class NotificationController {
     public ResponseEntity<StandardResponse> getAllNotifications(HttpServletRequest request) {
         return notificationService.getNotifications(request);
     }
-    @PatchMapping("/readStatus")
-    public ResponseEntity<StandardResponse> readStatus(Long notificationId) {
+    @PostMapping("/readStatus")
+    public ResponseEntity<StandardResponse> readStatus(@RequestBody Long notificationId) {
                 return notificationService.markAsRead(notificationId);
     }
 }

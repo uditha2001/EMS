@@ -66,6 +66,8 @@ public class NotificationService implements NotificationServiceInterface{
                     notificationDTO.setContent(notificationEntity.getContent());
                     notificationDTO.setNotificationsLabels(notificationEntity.getStatus());
                     notificationDTO.setId(notificationEntity.getNotificationId());
+                    notificationDTO.setRead(notificationEntity.isRead());
+                    notificationDTO.setCreatedAt(notificationEntity.getCreatedAt());
                     notificationDTOS.add(notificationDTO);
                 }
                 return new ResponseEntity<>(
