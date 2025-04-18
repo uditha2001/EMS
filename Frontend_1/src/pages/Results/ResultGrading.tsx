@@ -48,7 +48,7 @@ const ResultGrading = () => {
 
   // List of all possible grades
   const possibleGrades = [
-    "A+", "A ", "A-", "B+", "B ", "B-", "C+", "C ", "C-", "D ","D+", "E ","ABSENT ","MEDICAL "
+    "A+", "A ", "A-", "B+", "B ", "B-", "C+", "C ", "C-", "D ", "D+", "E ", "ABSENT ", "MEDICAL "
   ];
 
   useEffect(() => {
@@ -82,10 +82,10 @@ const ResultGrading = () => {
     if (grades.length > 0) {
       saveFinalResults(publishedData)
         .then((response) => {
-          if (response.code === 200) {
+          if (response.data.code === 200) {
             setSuccessMessage("Results published successfully");
             setGrades([]);
-          } else if (response.code === 404) {
+          } else if (response.data.code === 404) {
             setErrorMessage("Results not found");
           }
         })
@@ -97,6 +97,7 @@ const ResultGrading = () => {
   }, [publishedData]);
 
   useEffect(() => {
+    console.log(grades)
     if (grades.length > 0) {
       setExamTypes(Object.keys(grades[0]?.examTypesName || {}));
     }
@@ -113,7 +114,6 @@ const ResultGrading = () => {
   const handleConfirm = async (enteredPassword: string) => {
     try {
       const response = await confirmUser(enteredPassword);
-      console.log("Confirm user response:", response);
       if (response?.data?.code === 200) {
         setPublishData({
           courseCode: courseCode || '',
@@ -216,6 +216,17 @@ const ResultGrading = () => {
           </div>
         </div>
       )}
+      {/* User Note Section */}
+      <div className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 border-l-4 border-yellow-500 p-4 rounded-lg mb-6 shadow-sm">
+        <p className="font-medium">
+          ⚠️ Please note:
+        </p>
+        <ul className="list-disc list-inside text-sm mt-2">
+          <li>Before publishing results, ensure that <strong>all exam types are visible</strong>.</li>
+          <li>If any exam type are missing, please request the second marker to submit their evaluations first.</li>
+        </ul>
+      </div>
+
 
       {/* Table Container */}
       <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg">

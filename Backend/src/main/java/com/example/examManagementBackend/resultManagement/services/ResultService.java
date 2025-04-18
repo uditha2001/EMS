@@ -273,6 +273,7 @@ public class ResultService {
                     publishedAndReCorrectedResultsEntity.setApprovedBy(publisher);
                     publishedAndReCorrectedResultsEntity.setCourse(coursesEntity);
                     publishedAndReCorrectedResultsEntity.setPublishAt(currentDateTime);
+                    publishedAndReCorrectedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
                     publishedResultsRepo.save(publishedAndReCorrectedResultsEntity);
                     Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
                     String examTypeName = examType.keySet().iterator().next();

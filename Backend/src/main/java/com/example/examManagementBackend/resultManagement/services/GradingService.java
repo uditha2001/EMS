@@ -6,18 +6,22 @@ import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
 import com.example.examManagementBackend.resultManagement.dto.MarksPercentageDTO;
+import com.example.examManagementBackend.resultManagement.dto.PublishedResultsDTO;
 import com.example.examManagementBackend.resultManagement.entities.*;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.repo.CourseEvaluationRepo;
 import com.example.examManagementBackend.resultManagement.repo.ExamTypeRepo;
+import com.example.examManagementBackend.resultManagement.repo.PublishedResultsRepo;
 import com.example.examManagementBackend.resultManagement.repo.ResultRepo;
 import com.example.examManagementBackend.utill.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -26,13 +30,13 @@ public class GradingService {
     private final ExamTypeRepo examTypeRepo;
     private final CoursesRepository coursesRepository;
     private final ResultRepo resultRepo;
-    private final NotificationService notificationService;
-    public GradingService(CourseEvaluationRepo courseEvaluationRepo, ExamTypeRepo examTypeRepo, CoursesRepository coursesRepository, ResultRepo resultRepo, NotificationService notificationService) {
+    private final PublishedResultsRepo publishedResultsRepo;
+    public GradingService(CourseEvaluationRepo courseEvaluationRepo, ExamTypeRepo examTypeRepo, CoursesRepository coursesRepository, ResultRepo resultRepo,PublishedResultsRepo publishedResultsRepo) {
         this.courseEvaluationRepo = courseEvaluationRepo;
         this.examTypeRepo = examTypeRepo;
         this.coursesRepository = coursesRepository;
         this.resultRepo = resultRepo;
-        this.notificationService = notificationService;
+        this.publishedResultsRepo = publishedResultsRepo;
     }
 
     /*
@@ -290,6 +294,133 @@ public class GradingService {
                         studentNumbers.add(resultEntity.getStudent());
                     }
     }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void cleanUpNotifications() {
+        LocalDateTime eightYearsAgo = LocalDateTime.now().minusYears(8);
+        publishedResultsRepo.deletePublishedResultsOlderThanEightYears(eightYearsAgo);
+    }
+
+
+    public ResponseEntity<StandardResponse> getAllPublishedCoursesResults(Long id){
+        try{
+            List<String> courseCode=publishedResultsRepo.getAllCourses(id);
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"sucess",courseCode),HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500,"failed",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getPublishedYears(){
+        try{
+            List<String> years=publishedResultsRepo.getAllYears();
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"sucess",years),HttpStatus.OK
+            ) ;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500,"failed",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getAllExaminationDetails(Long id) {
+        try {
+            List<PublishedAndReCorrectedResultsEntity> publishedResults = publishedResultsRepo.getAllResults(id);
+            List<PublishedResultsDTO> publishedResultsDTO = mapDTOtoEntity(publishedResults);
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", publishedResultsDTO),
+                    HttpStatus.OK
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "Failed", null),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getPublishedExaminationDetailsUsingCourse(Long id,String Course){
+        try{
+            List<PublishedAndReCorrectedResultsEntity> publishedResults = publishedResultsRepo.getAllResultsByCode(id,Course);
+            List<PublishedResultsDTO> publishedResultsDTO = mapDTOtoEntity(publishedResults);
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", publishedResultsDTO),
+                    HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500,"failed",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getpublishedDataByCourseAndYear(Long id,String courseCode,int year){
+        try{
+            List<PublishedAndReCorrectedResultsEntity> publishedResults = publishedResultsRepo.findByProgramIdAndCourseCodeAndPublishedYear(id,courseCode,year);
+            List<PublishedResultsDTO> publishedResultsDTO = mapDTOtoEntity(publishedResults);
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"Sucess",publishedResultsDTO),HttpStatus.OK
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500,"failed to fetch data",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getPublishedDataByProgramIdAndYear(Long id, int year) {
+        try {
+            List<PublishedAndReCorrectedResultsEntity> publishedResults = publishedResultsRepo.findByProgramIdAndYear(id, year);
+            List<PublishedResultsDTO> publishedResultsDTO = mapDTOtoEntity(publishedResults);
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", publishedResultsDTO), HttpStatus.OK
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "Failed to fetch data", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getAllPublishedData() {
+        try {
+            List<PublishedAndReCorrectedResultsEntity> publishedResults = publishedResultsRepo.findAll();
+            List<PublishedResultsDTO> publishedResultsDTO = mapDTOtoEntity(publishedResults);
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "Success", publishedResultsDTO), HttpStatus.OK
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "Failed to fetch data", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+
+    private List<PublishedResultsDTO> mapDTOtoEntity(List<PublishedAndReCorrectedResultsEntity> publishedResults) {
+        return publishedResults.stream()
+                .map(result -> new PublishedResultsDTO(
+                        result.getPublishedResultsId(),
+                        result.getFinalMarks(),
+                        result.getGrade(),
+                        result.getCourse().getCode(),
+                        String.valueOf(result.getPublishAt().getYear())
+                ))
+                .collect(Collectors.toList());
+    }
+
+
+
+
 
 
 }
