@@ -34,16 +34,19 @@ public class WebSecuirityConfiguration{
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->authorizeRequests
-                        .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**","/actuator/health","/actuator/info").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**",
+                                "/actuator/health", "/actuator/info",
+                                "/ws/**",
+                                "/sockjs-node/**"
+                        ).permitAll()
                         .requestMatchers(
                                  "/api/v1/login/authentication",
                                 "/api/v1/login/refresh-token",
                                 "/api/v1/login/logout",
                                 "/api/v1/login/verifyuser",
                                 "/api/v1/login/otpValidate",
-                                "/api/v1/login/updatePassword",
-                                "/ws/**"
-                                ).permitAll()
+                                "/api/v1/login/updatePassword").permitAll()
                         .anyRequest().authenticated()
 
 

@@ -38,6 +38,8 @@ public class PublishedAndReCorrectedResultsEntity {
 
     private float finalMarks;
 
+    private String grade;
+
     @Enumerated(EnumType.STRING)
     private ResultStatus status=PUBLISHED;
 

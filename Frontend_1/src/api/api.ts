@@ -512,20 +512,16 @@ const useApi = () => {
   const getFirstMarkerCoursesUsingExaminationId = async (
     examinationId: number | undefined,
   ) => {
-    try {
-      const response = await axiosPrivate.get(
-        'academic-years/getFirstMarkerCoursesUsingExaminationId',
-        {
-          params: { examinationId: examinationId },
-        },
-      );
-      if (response.data.code === 200) {
-        return response.data.data;
-      }
-    } catch (error: any) {
-      throw new Error('failed to fetch examinations name');
-    }
+    const response = await axiosPrivate.get(
+      'academic-years/getFirstMarkerCoursesUsingExaminationId',
+      {
+        params: { examinationId },
+      },
+    );
+    return response; // let the calling function decide how to handle it
   };
+  
+  
   const getSecondMarkerCoursesUsingExaminationId = async (
     examinationId: number | undefined,
   ) => {

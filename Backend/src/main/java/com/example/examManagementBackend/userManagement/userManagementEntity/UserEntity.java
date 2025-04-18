@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 
+import com.example.examManagementBackend.Notification.NotificationEntity.NotificationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
 import com.example.examManagementBackend.timetable.entities.ExamCentersEntity;
 import com.example.examManagementBackend.timetable.entities.ExamInvigilatorsEntity;
@@ -99,6 +100,9 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArchivedPaper> archivedPapers;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<NotificationEntity> notificationEntities;
 
     public UserEntity() {
 

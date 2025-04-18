@@ -75,22 +75,28 @@ public class ResultService {
                         resultEntity.setCourse(coursesEntity);
                         resultEntity.setExamType(examTypes);
                         resultEntity.setExamination(examinationEntity);
-                        resultEntity.setFirstMarking(student.getFirstMarking());
+                        if(!student.isAbsent() && !student.isHasMedicalSubmit()){
+                            resultEntity.setFirstMarking(student.getFirstMarking());
+                            resultEntity.setStatus(ResultStatus.FIRST_MARKING_COMPLETE);
+                        } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
+                            resultEntity.setStatus(ResultStatus.ABSENT);
+                            resultEntity.setFirstMarking(-1);
+                        } else if (student.isHasMedicalSubmit()) {
+                            resultEntity.setStatus(ResultStatus.MEDICAL);
+                            resultEntity.setFirstMarking(-2);
+                        }
                         resultEntity.setApprovedBy(approvedBy);
                         resultRepo.save(resultEntity);
 
                     }
                     else if(resultRepo.isEmpty(examinationId,studentId,examinationTypeId,courseId)>0){
-                        Long resultId= resultRepo.getResultIdIfExists(examinationId,studentId,examinationTypeId,courseId);
-                        if(student.getSecondMarking()!=null){
-                            resultRepo.updateSecondMarkingResults(student.getSecondMarking(),approvedBy,resultId,ResultStatus.SECOND_MARKING_COMPLETE);
-
-                        }
-                        else{
-                            resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
-                        }
+                      updateResults(examinationId,studentId,examinationTypeId,courseId,results,student,approvedBy);
                     }
 
+                }
+                if(results.getStatus().equals("secondMarking")){
+                    updateSecondMarkingMedicalResults();
+                    updateSecondMarkingAbsentResults();
                 }
                 roleAssignmentService.updateRoleAssignmentsFromResults();
                 return new ResponseEntity<>(
@@ -109,6 +115,37 @@ public class ResultService {
             return new ResponseEntity<>(
                     new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
             );
+        }
+    }
+
+    private void updateResults(Long examinationId,Long studentId,Long examinationTypeId,Long courseId,ResultDTO results,StudentDTO student,UserEntity approvedBy ){
+        Long resultId= resultRepo.getResultIdIfExists(examinationId,studentId,examinationTypeId,courseId);
+        if(results.getStatus().equals("secondMarking")){
+            resultRepo.updateSecondMarkingResults(student.getSecondMarking(),approvedBy,resultId,ResultStatus.SECOND_MARKING_COMPLETE);
+
+        } else if (results.getStatus().equals("firstMarking")) {
+
+            if(!student.isAbsent() && !student.isHasMedicalSubmit()){
+                resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
+            } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
+                resultRepo.updateFirstMarkingResults(-1,approvedBy,resultId,ResultStatus.ABSENT);
+            }
+            else {
+                resultRepo.updateFirstMarkingResults(-2,approvedBy,resultId,ResultStatus.MEDICAL);
+            }
+        }
+    }
+
+    private void updateSecondMarkingAbsentResults(){
+        List<Long> absentResultsId=resultRepo.getResultIdsByStatus(ResultStatus.ABSENT);
+        for(Long resultId: absentResultsId){
+            resultRepo.updateSecondMarks(-1,resultId);
+        };
+    }
+    private void updateSecondMarkingMedicalResults(){
+        List<Long> medicalResultsId=resultRepo.getResultIdsByStatus(ResultStatus.MEDICAL);
+        for(Long resultId: medicalResultsId){
+            resultRepo.updateSecondMarks(-2,resultId);
         }
     }
 
@@ -144,7 +181,7 @@ public class ResultService {
             Long examinationTypeId=getExaminationTypeId(examType);
             Set<StudentDTO> studentDTOS= new HashSet<>();
             List<ResultEntity> resultEntities=resultRepo.getFirstMarkingResults(courseId,examinationId,examinationTypeId,ResultStatus.FIRST_MARKING_COMPLETE);
-            if(resultEntities!=null){
+            if(!resultEntities.isEmpty()){
                 for(ResultEntity resultEntity:resultEntities){
                     StudentDTO studentDTO=new StudentDTO();
                     studentDTO.setStudentNumber(resultEntity.getStudent().getStudentNumber());
@@ -164,7 +201,7 @@ public class ResultService {
             }
             else{
                 return new ResponseEntity<>(
-                        new StandardResponse(500, "failed to save data", null), HttpStatus.INTERNAL_SERVER_ERROR
+                        new StandardResponse(422, "already completed", null), HttpStatus.UNPROCESSABLE_ENTITY
                 );
             }
 
@@ -236,6 +273,7 @@ public class ResultService {
                     publishedAndReCorrectedResultsEntity.setApprovedBy(publisher);
                     publishedAndReCorrectedResultsEntity.setCourse(coursesEntity);
                     publishedAndReCorrectedResultsEntity.setPublishAt(currentDateTime);
+                    publishedAndReCorrectedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
                     publishedResultsRepo.save(publishedAndReCorrectedResultsEntity);
                     Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
                     String examTypeName = examType.keySet().iterator().next();

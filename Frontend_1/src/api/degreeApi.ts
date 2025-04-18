@@ -23,12 +23,18 @@ const deleteDegreeProgram = async (id: number) => {
     return axiosPrivate.delete(`/degreePrograms/${id}`);
 };
 
+
+
+
+
+
   return {
     getAllDegreePrograms,
     getDegreeProgramById,
     saveDegreeProgram,
     updateDegreeProgram,
     deleteDegreeProgram,
+ 
    
   };
 };

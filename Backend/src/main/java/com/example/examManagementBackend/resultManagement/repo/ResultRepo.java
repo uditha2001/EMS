@@ -57,8 +57,8 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
     @Query("SELECT r FROM ResultEntity r WHERE r.course.id= :courseId AND r.examination.id= :examId AND r.examType.id= :examTypeId AND r.status=:status")
     List<ResultEntity> getFirstMarkingResults(@Param("courseId") Long courseId, @Param("examId") Long examId, @Param("examTypeId") Long examTypeId, @Param("status") ResultStatus status);
 
-    @Query("SELECT r FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examID AND r.status=:status")
-    List<ResultEntity> getStudentResultsByCourseCodeAndExamId (@Param("courseCode") String courseCode, @Param("examID") Long examID, @Param("status") ResultStatus status);
+    @Query("SELECT r FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examID AND r.status IN :status")
+    List<ResultEntity> getStudentResultsByCourseCodeAndExamId (@Param("courseCode") String courseCode, @Param("examID") Long examID, @Param("status") List<ResultStatus> status);
     @Query("SELECT DISTINCT r.examType.examType FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examId AND r.status=:status")
     List<String> getExamTypeName(@Param("courseCode") String courseCode, @Param("examId") Long examID, @Param("status") ResultStatus status);
     @Modifying
@@ -72,5 +72,12 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
             CoursesEntity course,
             String examType
     );
+    @Query("SELECT r.resultId FROM ResultEntity r WHERE r.status=:status")
+    List<Long> getResultIdsByStatus(@Param("status") ResultStatus status);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ResultEntity r SET r.secondMarking=:secondMarks WHERE r.resultId=:id")
+    void updateSecondMarks(@Param("secondMarks") float secondMarks,@Param("id") Long id);
 
 }

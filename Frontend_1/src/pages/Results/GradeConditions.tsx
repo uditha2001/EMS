@@ -75,7 +75,7 @@ const GradeConditions = () => {
   useEffect(() => {
     if (selectedExaminationKey !== undefined) {
       getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
-        setExaminationCourseCode(data);
+        setExaminationCourseCode(data.data.data);
       });
     }
   }, [selectedExaminationKey]);
@@ -106,12 +106,12 @@ const GradeConditions = () => {
     setIsValueChanged(true);
     setIsConfirm(false);
     setMarksConditions((prev) => prev?.map((mark) => {
-      if (mark.examType + " passMarks" === e.target.name) {
-        return { ...mark, passMark: e.target.value };
-      } else if (mark.examType + " weightage" === e.target.name) {
-        return { ...mark, weightage: e.target.value };
-      }
-      return mark;
+        if (mark.examType + " passMarks" === e.target.name) {
+          return { ...mark, passMark: e.target.value };
+        } else if (mark.examType + " weightage" === e.target.name) {
+          return { ...mark, weightage: e.target.value };
+        }
+        return mark;
     }) || []);
   };
 
@@ -125,13 +125,24 @@ const GradeConditions = () => {
   };
 
   const handleConfirm = () => {
-    setMarksConditions((prev) => {
-      if (prev) {
-        return prev.map((mark) => ({ ...mark, courseCode: courseCode }));
-      }
-      return prev;
-    });
-    setIsConfirm(true);
+    const totalWeightage=marksConditions?.reduce((total,marksConditions)=>{
+      return total + Number(marksConditions.weightage || 0);
+    },0);
+    if (totalWeightage !== 100) {
+      setErrorMessage('Total weightage must be 100%');
+      return;
+    }
+    else{
+      setErrorMessage('');
+      setMarksConditions((prev) => {
+        if (prev) {
+          return prev.map((mark) => ({ ...mark, courseCode: courseCode }));
+        }
+        return prev;
+      });
+      setIsConfirm(true);
+    }
+    
   };
 
   const handleCancel = () => {
