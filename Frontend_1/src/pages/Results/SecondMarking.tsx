@@ -140,26 +140,35 @@ const SecondMarking = () => {
     setErrorMessage('');
   };
 
-  const handleSubmit = () => {
-    if(isSaved){
-    if (
-      examsData.courseCode != '' &&
-      examsData.examName != '' &&
-      examsData.examType != ''
-    ) {
-      getFirstMarkingResults(
-        examsData.id,
-        examsData.courseCode,
-        examsData.examType,
-      ).then((data) => {
-        if (data.code === 200) {
-          setStudentsData(data.data);
+  const handleSubmit = async () => {
+    if (isSaved) {
+      if (
+        examsData.courseCode != '' &&
+        examsData.examName != '' &&
+        examsData.examType != ''
+      ) {
+        try {
+          const data = await getFirstMarkingResults(
+            examsData.id,
+            examsData.courseCode,
+            examsData.examType,
+          );
+          console.log(data.message);
+          if (data.code === 200) {
+            setStudentsData(data.data);
+          }
+          else if (data.message.code === 422) {
+            setErrorMessage('Second marking data has already been submitted for this course unit, or First Marking has not been uploaded yet. ');
+          }
         }
-      });
+        catch (error) {
+          setErrorMessage('error while fetching data');
+        }
+
+      }
+    } else {
+      setErrorMessage('please save before search');
     }
-  }else{
-    setErrorMessage('please save before search');
-  }
   };
   const handleUpload = () => {
     if (isSaved) {
@@ -169,6 +178,7 @@ const SecondMarking = () => {
         courseCode: examsData.courseCode,
         examName: examsData.examName,
         examType: examsData.examType,
+        status: 'secondMarking',
       });
       setErrorMessage('');
       setSuccessMessage('');
@@ -216,12 +226,16 @@ const SecondMarking = () => {
               <span>Search FirstMarking Marks</span>
             </button>
           </div>
+
           <div className="mt-4 flex justify-center">
             {studentsData.length > 0 && (
               <div className="w-full ">
                 <div className="bg-blue-50 p-4 rounded mb-4 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400 shadow-md">
                   <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
                     You can edit second marks if any marks change.
+                  </p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    Total Data Count: <span className="font-semibold text-black dark:text-white">{studentsData.length}</span>
                   </p>
                 </div>
                 <div className="relative mb-4 mt-4 flex flex-col sm:flex-row justify-between gap-2 sm:gap-4">
@@ -352,7 +366,7 @@ const SecondMarking = () => {
                         <thead>
                           <tr className="bg-gray-50 dark:bg-gray-700">
                             {Object.keys(filterData[0])
-                              .slice(0, -2)
+                              .slice(0, -4)
                               .map((key) => (
                                 <th
                                   key={key}
@@ -370,7 +384,7 @@ const SecondMarking = () => {
                               className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
                             >
                               {Object.values(row)
-                                .slice(0, -3)
+                                .slice(0, -5)
                                 .map((value, colIndex) => (
                                   <td
                                     key={colIndex}
@@ -380,21 +394,20 @@ const SecondMarking = () => {
                                   </td>
                                 ))}
                               <td
-                                className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${
-                                  highlightChanges &&
-                                  editedMarks.some(
-                                    (mark) => mark.key === row['originalIndex'],
-                                  )
+                                className={`px-3 py-2 sm:px-6 sm:py-4 text-xs sm:text-sm text-gray-700 border-b border-gray-200 dark:border-gray-600 dark:text-gray-300 text-center ${highlightChanges &&
+                                    editedMarks.some(
+                                      (mark) => mark.key === row['originalIndex'],
+                                    )
                                     ? 'bg-yellow-500 && npmdark:text-black'
                                     : ''
-                                }`}
+                                  }`}
                               >
                                 {editable ? (
                                   <input
                                     type="text"
                                     className="w-full bg-transparent border-none focus:outline-none text-xs sm:text-sm"
                                     defaultValue={
-                                      Object.values(row).at(-3) as string
+                                      Object.values(row).at(3) as string
                                     }
                                     onChange={(e) => {
                                       console.log(
@@ -411,7 +424,7 @@ const SecondMarking = () => {
                                   />
                                 ) : (
                                   <div className="relative">
-                                    {Object.values(row).at(-3) as string}
+                                    {Object.values(row).at(3) as string}
 
                                     {highlightChanges &&
                                       editedMarks.some(

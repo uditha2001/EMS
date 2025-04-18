@@ -33,6 +33,37 @@ public class GradeController {
         return  gradingService.getGradingsMark(courseCode, ExaminationId);
     }
 
+    @GetMapping("/publishedCourses")
+    public ResponseEntity<StandardResponse> getPublishedCourses(@RequestParam Long degreeProgramId) {
+        return gradingService.getAllPublishedCoursesResults(degreeProgramId);
+    }
+    @GetMapping("/resultsReleasedYears")
+    public ResponseEntity<StandardResponse> getResultsReleasedYears() {
+        return gradingService.getPublishedYears();
+    }
+    @GetMapping("/allCourseWithAllYears")
+    public ResponseEntity<StandardResponse> getAllResults(@RequestParam Long degreeProgramId) {
+            return gradingService.getAllExaminationDetails(degreeProgramId);
+    }
+    @GetMapping("/allResultsWithCourse")
+    public ResponseEntity<StandardResponse> getAllResultsWithCourse(@RequestParam Long degreeProgramId,@RequestParam String courseCode) {
+        return gradingService.getPublishedExaminationDetailsUsingCourse(degreeProgramId, courseCode);
+    }
+    @GetMapping("/allResultsWithCourseAndYear")
+    public ResponseEntity<StandardResponse> getAllResultsWithCourseAndYear(@RequestParam Long degreeProgramId,@RequestParam String courseCode,@RequestParam int year) {
+        return gradingService.getpublishedDataByCourseAndYear(degreeProgramId,courseCode,year);
+    }
+    @GetMapping("/resultsByProgramAndYear")
+    public ResponseEntity<StandardResponse> getResultsByProgramAndYear(@RequestParam Long degreeProgramId, @RequestParam int year) {
+        return gradingService.getPublishedDataByProgramIdAndYear(degreeProgramId, year);
+    }
+//    @GetMapping("/allPublishedResults")
+//    public ResponseEntity<StandardResponse> getAllPublishedResults() {
+//        return gradingService.getAllPublishedData();
+//    }
+
+
+
 
 
 

@@ -3,7 +3,7 @@ const useResultsApi = () => {
     const axiosPrivate=useAxiosPrivate();
     const saveMarkingResults = async (result: any, config = {}) => {
         try {
-          const response = await axiosPrivate.post('result/firstMarking', result, {
+          const response = await axiosPrivate.post('result/saveMarking', result, {
             ...config,
           });
           return response.data;
@@ -69,25 +69,10 @@ const useResultsApi = () => {
 
 
       const getGradingResults = async (courseCode: string, ExaminationId: String) => {
-        try {
           const response = await axiosPrivate.get('grading/grades', {
             params: { courseCode, ExaminationId },
           });
-          return response.data;
-        }
-        catch (error: any) {
-          if (error.response) {
-            return { error: true, status: 500, message: error.response.data };
-          } else if (error.request) {
-            return {
-              error: true,
-              status: 500,
-              message: 'No response received from the server',
-            };
-          } else {
-            return { error: true, status: 500, message: error.message };
-          }
-        }
+          return response; 
       }
 
       const saveFinalResults=async (publishedData:any)=>{
@@ -114,6 +99,43 @@ const useResultsApi = () => {
         }
             
       }
+      const getResultsReleaedCourses = async (degreeProgramId: number) => {
+        return await axiosPrivate.get(`grading/publishedCourses`, {
+          params: { degreeProgramId }
+        });
+      };
+      
+      const getResultsReleasedYears=async()=>{
+        return await axiosPrivate.get('grading/resultsReleasedYears');
+      }
+      const getAllPublishedResultsWithProgramId=async(degreeProgramId: number)=>{
+        return await axiosPrivate.get(`grading/allCourseWithAllYears`, {
+          params: { degreeProgramId }
+        });      }
+
+        const getAllPublishedResultsWithCourse = async (degreeProgramId: number, courseCode: string) => {
+          return axiosPrivate.get(`grading/allResultsWithCourse`, {
+              params: { degreeProgramId, courseCode }
+          });
+        };
+        
+        const getAllPublishedResultsWithCourseAndYear = async (degreeProgramId: number, courseCode: string, year: string) => {
+          return axiosPrivate.get(`grading/allResultsWithCourseAndYear`, {
+              params: { degreeProgramId, courseCode, year }
+          });
+        };
+        const getPublishedResultsByProgramAndYear = async (
+          degreeProgramId: number,
+          year: string
+        ) => {
+          return axiosPrivate.get(`grading/resultsByProgramAndYear`, {
+            params: { degreeProgramId, year }
+          });
+        };
+        
+        const getAllPublishedResults = async () => {
+          return axiosPrivate.get(`grading/allPublishedResults`);
+        };
         
 
   return {
@@ -121,7 +143,14 @@ const useResultsApi = () => {
     getFirstMarkingResults,
     saveChangeMarksConditions,
     getGradingResults,
-    saveFinalResults
+    saveFinalResults,
+    getResultsReleaedCourses,
+    getResultsReleasedYears,
+    getAllPublishedResultsWithProgramId,
+    getAllPublishedResultsWithCourse,
+    getAllPublishedResultsWithCourseAndYear,
+    getPublishedResultsByProgramAndYear,
+    getAllPublishedResults
     }
 }
 

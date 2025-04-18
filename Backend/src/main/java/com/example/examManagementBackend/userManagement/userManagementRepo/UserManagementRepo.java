@@ -36,4 +36,7 @@ public interface UserManagementRepo extends JpaRepository<UserEntity,Long> {
     int getAllActiveUsers();
     @Query("SELECT ur.userId FROM UserEntity ur WHERE ur.username=:usrName")
     Long getUserIdByUsername(@Param("usrName") String usrName);
+
+    @Query("SELECT ur FROM UserEntity ur WHERE ur.userId=:id")
+    UserEntity getUserById(@Param("id") Long id);
 }

@@ -8,11 +8,11 @@ export default defineConfig({
     strictPort: true,
     port: 3000,
     proxy: {
-      '/api':'http://localhost:8080',
-  }
-},
+      '/api': 'http://localhost:8080',
+    }
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true
-  }
+  },
 })
