@@ -15,7 +15,4 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true
   },
-  define: {
-    global: {}, // Add this line to define the global variable
-  }
 })
