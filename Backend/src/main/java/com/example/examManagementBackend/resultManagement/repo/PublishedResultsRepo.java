@@ -30,7 +30,7 @@ public interface PublishedResultsRepo extends JpaRepository<PublishedAndReCorrec
             "FROM PublishedAndReCorrectedResultsEntity pac WHERE pac.examination.degreeProgramsEntity.id = :id")
     List<DataForCalCulationDTO> getAllResults(@Param("id") Long id);
 
-    @Query("SELECT DISTINCT new com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO(pac.finalMarks, pac.grade,pac.publishAt,pac.course.code) " +
+    @Query("SELECT DISTINCT new com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO(pac.finalMarks,pac.grade,pac.publishAt,pac.course.code) " +
             "FROM PublishedAndReCorrectedResultsEntity pac WHERE pac.examination.degreeProgramsEntity.id = :id AND pac.course.code = :code")
     List<DataForCalCulationDTO> getAllResultsByCode(@Param("id") Long id, @Param("code") String code);
 

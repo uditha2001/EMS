@@ -13,7 +13,7 @@ public class CalDataForaCourse implements DashBoardDataCalStartegy {
         Map<String, Integer> gradeCount = new LinkedHashMap<>();
         Map<String, Float> averageGradeCount = new LinkedHashMap<>();
         for (DataForCalCulationDTO data : dataForCalCulationDTO) {
-            String grade = data.getGrade().toUpperCase();
+            String grade = data.getGrade();
             calculateGradeCount(gradeCount, grade);
         }
 
@@ -28,6 +28,7 @@ public class CalDataForaCourse implements DashBoardDataCalStartegy {
         // Build response DTO
         DashboardPublishedResultsDTO dashboardPublishedResultsDTO = new DashboardPublishedResultsDTO();
         dashboardPublishedResultsDTO.setMarksAverage(averageGradeCount);
+        dashboardPublishedResultsDTO.setGradeCount(gradeCount);
         dashboardPublishedResultsDTO.setXAxisName("Grades");
         dashboardPublishedResultsDTO.setYAxisName("Average Ratio");
 

@@ -33,8 +33,8 @@ type DegreeProgram = {
 type allData = {
   marksAverage: Record<string, number>;
   gradeCount: Record<string, number>;
-  yAxisName: string;
-  xAxisName: string;
+  yaxisName: string;
+  xaxisName: string;
 }
 
 const gradeOrder = ['A+', 'A ', 'A-', 'B+', 'B ', 'B-', 'C+', 'C ', 'C-', 'D+', 'D ', 'E', 'ABSENT', 'MEDICAL'];
@@ -95,8 +95,9 @@ const ResultDashboard: React.FC = () => {
     fetchSubjects();
   }, [selectedProgramId]);
   useEffect(() => {
-    console.log('allData:', allData);
-  }, [allData]);
+    console.log("xaxisName:", allData?.xaxisName);
+    console.log("yaxisName:", allData?.yaxisName);
+      }, [allData]);
 
   useEffect(() => {
     if (selectedProgramId === undefined || selectedProgramId === 0) {
@@ -184,6 +185,13 @@ const ResultDashboard: React.FC = () => {
       console.error('Error fetching results:', error);
     }
   }
+  // Ensure gradeCount and data are available before rendering the Pie chart
+  const pieData = gradeOrder
+    .map(grade => ({
+      name: grade.trim(),
+      value: allData?.gradeCount?.[grade] || 0
+    }))
+    .filter(entry => entry.value > 0); // Only show grades with data
 
   return (
     <div className={`${darkMode ? 'dark' : ''} min-h-screen p-4 bg-gray-50 dark:bg-gray-900`}>
@@ -195,7 +203,8 @@ const ResultDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Academic Analytics Dashboard</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800">
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800">
           <div>
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">Degree Program</label>
             <select
@@ -240,11 +249,14 @@ const ResultDashboard: React.FC = () => {
             </select>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-          <h3 className="text-lg font-semibold mb-4 dark:text-white">
-            {allData?.yAxisName || 'Marks Distribution'}
-          </h3>
+
+        {/* Graphs Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-white rounded-xl shadow-sm dark:bg-gray-800">
+          {/* Marks Distribution Bar Chart */}
           <div className="h-96">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">
+              {allData?.yaxisName || 'Marks Distribution'}
+            </h3>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={Object.entries(allData?.marksAverage || {}).map(([subject, marks]) => ({
@@ -257,14 +269,14 @@ const ResultDashboard: React.FC = () => {
                 <XAxis
                   dataKey="subject"
                   label={{
-                    value: allData?.xAxisName || 'Subjects',
+                    value: allData?.xaxisName || 'Subjects',
                     position: 'bottom',
                     offset: 0
                   }}
                 />
                 <YAxis
                   label={{
-                    value: allData?.yAxisName || 'Average Marks',
+                    value: allData?.yaxisName || 'Average Marks',
                     angle: -90,
                     position: 'insideLeft',
                     offset: 10
@@ -287,93 +299,86 @@ const ResultDashboard: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* Grade Distribution Pie Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-          <h3 className="text-lg font-semibold mb-4 dark:text-white">Grade Distribution</h3>
+          {/* Grade Distribution Pie Chart */}
           <div className="h-96">
+            <h3 className="text-lg font-semibold mb-4 dark:text-white">Grade Distribution</h3>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                {(() => {
-                  const pieData = gradeOrder
-                    .map(grade => ({
-                      name: grade.trim(),
-                      value: allData?.gradeCount?.[grade] || 0
-                    }))
-                    .filter(entry => entry.value > 0);
-
-                  return (
-                    <>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                        labelLine={false}
-                        label={({ name, percent }) =>
-                          `${name}: ${(percent * 100).toFixed(0)}%`
-                        }
-                      >
-                        {pieData.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value: number, name: string) => {
-                          const total = pieData.reduce((a, b) => a + b.value, 0);
-                          return [
-                            value,
-                            `${name}: ${((value / total) * 100).toFixed(1)}%`
-                          ];
-                        }}
-                        contentStyle={{
-                          backgroundColor: darkMode ? '#374151' : '#fff',
-                          borderColor: darkMode ? '#4B5563' : '#E5E7EB'
-                        }}
-                        itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
-                      />
-                      <Legend
-                        layout="vertical"
-                        align="right"
-                        verticalAlign="middle"
-                        wrapperStyle={{ paddingLeft: 30 }}
-                        formatter={(value) => (
-                          <span className={darkMode ? 'text-white' : 'text-gray-700'}>
-                            {value}
-                          </span>
-                        )}
-                      />
-                    </>
-                  );
-                })()}
+                {pieData.length > 0 ? (
+                  <>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={5}
+                      dataKey="value"
+                      labelLine={false}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
+                    >
+                      {pieData.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number, name: string) => {
+                        const total = pieData.reduce((a, b) => a + b.value, 0);
+                        return [
+                          value,
+                          `${name}: ${((value / total) * 100).toFixed(1)}%`
+                        ];
+                      }}
+                      contentStyle={{
+                        backgroundColor: darkMode ? '#374151' : '#fff',
+                        borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                      }}
+                      itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
+                    />
+                    <Legend
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
+                      wrapperStyle={{ paddingLeft: 30 }}
+                      formatter={(value) => (
+                        <span className={darkMode ? 'text-white' : 'text-gray-700'}>
+                          {value}
+                        </span>
+                      )}
+                    />
+                  </>
+                ) : (
+                  <p className="text-center text-gray-500 dark:text-gray-400">
+                    No data available for the selected program or filters.
+                  </p>
+                )}
               </PieChart>
             </ResponsiveContainer>
           </div>
-
-          {/* Note for Hidden Grades */}
-          {(() => {
-            const hiddenGrades = gradeOrder.filter(
-              grade => (allData?.gradeCount?.[grade] || 0) === 0
-            );
-            return hiddenGrades.length > 0 ? (
-              <p className="text-sm mt-2 text-gray-500 dark:text-gray-400">
-                No data for grades: {hiddenGrades.join(', ')}
-              </p>
-            ) : null;
-          })()}
         </div>
 
-
+        {/* Note for Hidden Grades */}
+        {(() => {
+          const hiddenGrades = gradeOrder.filter(
+            grade => (allData?.gradeCount?.[grade] || 0) === 0
+          );
+          return hiddenGrades.length > 0 ? (
+            <p className="text-sm mt-2 text-gray-500 dark:text-gray-400">
+              No data for grades: {hiddenGrades.join(', ')}
+            </p>
+          ) : null;
+        })()}
       </div>
-    </div >
+    </div>
   );
+
+
 };
 
 export default ResultDashboard;
