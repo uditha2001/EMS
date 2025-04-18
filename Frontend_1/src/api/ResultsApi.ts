@@ -109,7 +109,7 @@ const useResultsApi = () => {
         return await axiosPrivate.get('grading/resultsReleasedYears');
       }
       const getAllPublishedResultsWithProgramId=async(degreeProgramId: number)=>{
-        return await axiosPrivate.get(`grading/publishedCourses`, {
+        return await axiosPrivate.get(`grading/allCourseWithAllYears`, {
           params: { degreeProgramId }
         });      }
 

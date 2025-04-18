@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  Legend
 } from 'recharts';
 import useResultsApi from '../../api/ResultsApi';
 import SuccessMessage from '../../components/SuccessMessage';
@@ -29,20 +31,19 @@ type DegreeProgram = {
 };
 
 type allData = {
-  id: number;
-  marks: number;
-  grade: string;
-  course: string;
-  year: string;
+  marksAverage: Record<string, number>;
+  gradeCount: Record<string, number>;
+  yAxisName: string;
+  xAxisName: string;
 }
 
-type DashboardData = {
-  resultData: GradeDistribution[];
-  gradeDistribution: GradeDistribution[];
-  studentMarks: { subject: string; year: number; marks: number[] }[];
-};
-
-const gradeOrder = ['A+', 'A ','A-', 'B+', 'B ','B-', 'C+', 'C ','C-', 'D+','D ', 'E','ABSENT','MEDICAL'];
+const gradeOrder = ['A+', 'A ', 'A-', 'B+', 'B ', 'B-', 'C+', 'C ', 'C-', 'D+', 'D ', 'E', 'ABSENT', 'MEDICAL'];
+const COLORS = [
+  '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+  '#A05195', '#D45087', '#F95D6A', '#FF7C43',
+  '#665191', '#2F4B7C', '#003F5C', '#4B384C',
+  '#FFA600', '#58508D'
+];
 
 const ResultDashboard: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,15 +55,7 @@ const ResultDashboard: React.FC = () => {
   const [darkMode] = useState(false);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
-  const [filteredResults, setFilteredResults] = useState<GradeDistribution[]>([]);
-  const [filteredGrades, setFilteredGrades] = useState<GradeDistribution[]>([]);
-  const [filteredMarks, setFilteredMarks] = useState<number[]>([]);
-  const [allData, setAllData] = useState<allData[]>([])
-  const [dashboardData, setDashboardData] = useState<DashboardData>({
-    resultData: [],
-    gradeDistribution: [],
-    studentMarks: [],
-  });
+  const [allData, setAllData] = useState<allData>()
 
   const { getResultsReleaedCourses, getResultsReleasedYears, getAllPublishedResultsWithCourse, getAllPublishedResultsWithProgramId, getAllPublishedResultsWithCourseAndYear, getAllPublishedResults, getPublishedResultsByProgramAndYear } = useResultsApi();
   const { getAllDegreePrograms } = useDegreeApi();
@@ -87,11 +80,11 @@ const ResultDashboard: React.FC = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        if (selectedProgramId!==undefined && selectedProgramId !== 0) {
+        if (selectedProgramId !== undefined && selectedProgramId !== 0) {
           const res = await getResultsReleaedCourses(selectedProgramId);
           if (res.data.code === 200) setSubjects(res.data.data);
         }
-        else{
+        else {
           setSubjects([]);
         }
       } catch (error) {
@@ -101,14 +94,17 @@ const ResultDashboard: React.FC = () => {
 
     fetchSubjects();
   }, [selectedProgramId]);
+  useEffect(() => {
+    console.log('allData:', allData);
+  }, [allData]);
 
   useEffect(() => {
     if (selectedProgramId === undefined || selectedProgramId === 0) {
       getAllResultsData();
     }
-    else{
+    else {
       if (searchSubject === "" && searchYear === "") {
-          getAllPublishedResultsbyProgramId(selectedProgramId);
+        getAllPublishedResultsbyProgramId(selectedProgramId);
       }
       else if (searchYear === "") {
         getAllDataByCourse(searchSubject, selectedProgramId);
@@ -120,12 +116,7 @@ const ResultDashboard: React.FC = () => {
         getAllDataByCourseAndYear(searchSubject, searchYear);
       }
     }
-   
   }, [searchSubject, searchYear, selectedProgramId]);
-
-  useEffect(() => {
-    console.log("alldata", allData);
-  }, [allData])
 
   const getAllResultsData = async () => {
     try {
@@ -133,7 +124,6 @@ const ResultDashboard: React.FC = () => {
       if (response.data.code === 200) {
         setAllData(response.data.data);
       }
-
     }
     catch (error) {
       console.error('Error fetching results:', error);
@@ -195,75 +185,11 @@ const ResultDashboard: React.FC = () => {
     }
   }
 
-  const aggregateGrades = (grades: GradeDistribution[]) => {
-    const aggregated: { [key: string]: number } = {};
-    grades.forEach((gradeData) => {
-      gradeOrder.forEach((grade) => {
-        if (gradeData[grade] !== undefined) {
-          aggregated[grade] = (aggregated[grade] || 0) + Number(gradeData[grade]);
-        }
-      });
-    });
-    return aggregated;
-  };
-
-  const aggregatedGrades = aggregateGrades(filteredGrades);
-
-  const selectedMarks =
-    dashboardData.studentMarks.find(
-      (item) =>
-        item.subject === searchSubject &&
-        item.year.toString() === searchYear,
-    )?.marks || [];
-
-  const calculateMeanAndStdDev = (marks: number[]) => {
-    const mean = marks.reduce((sum, mark) => sum + mark, 0) / marks.length;
-    const variance =
-      marks.reduce((sum, mark) => sum + Math.pow(mark - mean, 2), 0) /
-      marks.length;
-    const stdDev = Math.sqrt(variance);
-    return { mean, stdDev };
-  };
-
-  const { mean, stdDev } = calculateMeanAndStdDev(selectedMarks);
-
-  const generateNormalDistributionData = (
-    mean: number,
-    stdDev: number,
-    marks: number[],
-  ) => {
-    const data: { x: number; y: number }[] = [];
-    const minX = Math.min(...marks) - 10;
-    const maxX = Math.max(...marks) + 10;
-    const numPoints = 1000;
-
-    for (let i = 0; i < numPoints; i++) {
-      const x = minX + (i * (maxX - minX)) / (numPoints - 1);
-      const y =
-        (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
-        Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
-      data.push({ x, y });
-    }
-
-    return data;
-  };
-
-  const normalDistributionData = generateNormalDistributionData(
-    mean,
-    stdDev,
-    selectedMarks,
-  );
-
-  const cleanedData = normalDistributionData.filter(
-    (d) => d.x !== undefined && !isNaN(d.y),
-  );
-
   return (
     <div className={`${darkMode ? 'dark' : ''} min-h-screen p-4 bg-gray-50 dark:bg-gray-900`}>
       {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage('')} />}
       {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage('')} />}
 
-      {/* Header and Filters */}
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Academic Analytics Dashboard</h1>
@@ -314,91 +240,139 @@ const ResultDashboard: React.FC = () => {
             </select>
           </div>
         </div>
-
-        {/* Graphs and Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Bar Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">Pass/Fail Rate Over Years</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={filteredResults}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="pass" fill="#10B981" />
-                  <Bar dataKey="fail" fill="#EF4444" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Line Chart */}
-          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">Pass/Fail Trend</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={filteredResults}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="pass" stroke="#10B981" />
-                  <Line type="monotone" dataKey="fail" stroke="#EF4444" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* Grade Table and Normal Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">Grade Distribution</h3>
-            <table className="w-full text-center">
-              <thead>
-                <tr>{gradeOrder.map((grade) => <th key={grade}>{grade}</th>)}</tr>
-              </thead>
-              <tbody>
-                <tr>{gradeOrder.map((grade) => <td key={grade}>{aggregatedGrades[grade] || 0}</td>)}</tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
-            <h3 className="text-lg font-semibold mb-4 dark:text-white">Marks Distribution</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={cleanedData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={['dataMin', 'dataMax']} />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => [value.toFixed(4), 'Density']} />
-                  <Line type="monotone" dataKey="y" stroke="#3B82F6" dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+          <h3 className="text-lg font-semibold mb-4 dark:text-white">
+            {allData?.yAxisName || 'Marks Distribution'}
+          </h3>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={Object.entries(allData?.marksAverage || {}).map(([subject, marks]) => ({
+                  subject,
+                  marks: Number(parseFloat(marks.toString()).toFixed(2)) // just in case it's not a number
+                }))}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="subject"
+                  label={{
+                    value: allData?.xAxisName || 'Subjects',
+                    position: 'bottom',
+                    offset: 0
+                  }}
+                />
+                <YAxis
+                  label={{
+                    value: allData?.yAxisName || 'Average Marks',
+                    angle: -90,
+                    position: 'insideLeft',
+                    offset: 10
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: darkMode ? '#374151' : '#fff',
+                    borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                  }}
+                  itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
+                />
+                <Bar
+                  dataKey="marks"
+                  fill="#3B82F6"
+                  radius={[4, 4, 0, 0]}
+                  name="Average Marks"
+                />
+                <Legend wrapperStyle={{ paddingTop: 20 }} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-100 p-6 rounded-xl dark:bg-blue-900/30">
-            <div className="text-blue-600 dark:text-blue-400 mb-2">Mean Score</div>
-            <div className="text-3xl font-bold dark:text-white">{mean.toFixed(1)}</div>
+        {/* Grade Distribution Pie Chart */}
+        <div className="bg-white p-6 rounded-xl shadow-sm dark:bg-gray-800">
+          <h3 className="text-lg font-semibold mb-4 dark:text-white">Grade Distribution</h3>
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                {(() => {
+                  const pieData = gradeOrder
+                    .map(grade => ({
+                      name: grade.trim(),
+                      value: allData?.gradeCount?.[grade] || 0
+                    }))
+                    .filter(entry => entry.value > 0);
+
+                  return (
+                    <>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                        labelLine={false}
+                        label={({ name, percent }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {pieData.map((_, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, name: string) => {
+                          const total = pieData.reduce((a, b) => a + b.value, 0);
+                          return [
+                            value,
+                            `${name}: ${((value / total) * 100).toFixed(1)}%`
+                          ];
+                        }}
+                        contentStyle={{
+                          backgroundColor: darkMode ? '#374151' : '#fff',
+                          borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                        }}
+                        itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
+                      />
+                      <Legend
+                        layout="vertical"
+                        align="right"
+                        verticalAlign="middle"
+                        wrapperStyle={{ paddingLeft: 30 }}
+                        formatter={(value) => (
+                          <span className={darkMode ? 'text-white' : 'text-gray-700'}>
+                            {value}
+                          </span>
+                        )}
+                      />
+                    </>
+                  );
+                })()}
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div className="bg-purple-100 p-6 rounded-xl dark:bg-purple-900/30">
-            <div className="text-purple-600 dark:text-purple-400 mb-2">Std Deviation</div>
-            <div className="text-3xl font-bold dark:text-white">{stdDev.toFixed(1)}</div>
-          </div>
-          <div className="bg-green-100 p-6 rounded-xl dark:bg-green-900/30">
-            <div className="text-green-600 dark:text-green-400 mb-2">Pass Rate</div>
-            <div className="text-3xl font-bold dark:text-white">{filteredResults[0]?.pass || 0}%</div>
-          </div>
+
+          {/* Note for Hidden Grades */}
+          {(() => {
+            const hiddenGrades = gradeOrder.filter(
+              grade => (allData?.gradeCount?.[grade] || 0) === 0
+            );
+            return hiddenGrades.length > 0 ? (
+              <p className="text-sm mt-2 text-gray-500 dark:text-gray-400">
+                No data for grades: {hiddenGrades.join(', ')}
+              </p>
+            ) : null;
+          })()}
         </div>
+
+
       </div>
-    </div>
+    </div >
   );
 };
 
