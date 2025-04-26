@@ -133,9 +133,7 @@ const useResultsApi = () => {
           });
         };
         
-        const getAllPublishedResults = async () => {
-          return axiosPrivate.get(`grading/allPublishedResults`);
-        };
+     
         
 
   return {
@@ -150,7 +148,6 @@ const useResultsApi = () => {
     getAllPublishedResultsWithCourse,
     getAllPublishedResultsWithCourseAndYear,
     getPublishedResultsByProgramAndYear,
-    getAllPublishedResults
     }
 }
 

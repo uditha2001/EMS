@@ -37,7 +37,7 @@ type allData = {
   xaxisName: string;
 }
 
-const gradeOrder = ['A+', 'A ', 'A-', 'B+', 'B ', 'B-', 'C+', 'C ', 'C-', 'D+', 'D ', 'E', 'ABSENT', 'MEDICAL'];
+const gradeOrder = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E', 'ABSENT', 'MEDICAL'];
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
   '#A05195', '#D45087', '#F95D6A', '#FF7C43',
@@ -57,7 +57,7 @@ const ResultDashboard: React.FC = () => {
   const [years, setYears] = useState<string[]>([]);
   const [allData, setAllData] = useState<allData>()
 
-  const { getResultsReleaedCourses, getResultsReleasedYears, getAllPublishedResultsWithCourse, getAllPublishedResultsWithProgramId, getAllPublishedResultsWithCourseAndYear, getAllPublishedResults, getPublishedResultsByProgramAndYear } = useResultsApi();
+  const { getResultsReleaedCourses, getResultsReleasedYears, getAllPublishedResultsWithCourse, getAllPublishedResultsWithProgramId, getAllPublishedResultsWithCourseAndYear, getPublishedResultsByProgramAndYear } = useResultsApi();
   const { getAllDegreePrograms } = useDegreeApi();
 
   useEffect(() => {
@@ -95,13 +95,12 @@ const ResultDashboard: React.FC = () => {
     fetchSubjects();
   }, [selectedProgramId]);
   useEffect(() => {
-    console.log("xaxisName:", allData?.xaxisName);
-    console.log("yaxisName:", allData?.yaxisName);
-      }, [allData]);
+    console.log('allData:', allData);
+  }, [allData]);
 
   useEffect(() => {
     if (selectedProgramId === undefined || selectedProgramId === 0) {
-      getAllResultsData();
+      setAllData(undefined);
     }
     else {
       if (searchSubject === "" && searchYear === "") {
@@ -119,17 +118,6 @@ const ResultDashboard: React.FC = () => {
     }
   }, [searchSubject, searchYear, selectedProgramId]);
 
-  const getAllResultsData = async () => {
-    try {
-      const response = await getAllPublishedResults();
-      if (response.data.code === 200) {
-        setAllData(response.data.data);
-      }
-    }
-    catch (error) {
-      console.error('Error fetching results:', error);
-    }
-  }
 
   const getAllDataByCourse = async (courseCode: string, id: number | undefined) => {
     try {
@@ -192,6 +180,8 @@ const ResultDashboard: React.FC = () => {
       value: allData?.gradeCount?.[grade] || 0
     }))
     .filter(entry => entry.value > 0); // Only show grades with data
+
+
 
   return (
     <div className={`${darkMode ? 'dark' : ''} min-h-screen p-4 bg-gray-50 dark:bg-gray-900`}>
@@ -258,47 +248,82 @@ const ResultDashboard: React.FC = () => {
               {allData?.yaxisName || 'Marks Distribution'}
             </h3>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={Object.entries(allData?.marksAverage || {}).map(([subject, marks]) => ({
-                  subject,
-                  marks: Number(parseFloat(marks.toString()).toFixed(2)) // just in case it's not a number
-                }))}
-                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="subject"
-                  label={{
-                    value: allData?.xaxisName || 'Subjects',
-                    position: 'bottom',
-                    offset: 0
-                  }}
-                />
-                <YAxis
-                  label={{
-                    value: allData?.yaxisName || 'Average Marks',
-                    angle: -90,
-                    position: 'insideLeft',
-                    offset: 10
-                  }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: darkMode ? '#374151' : '#fff',
-                    borderColor: darkMode ? '#4B5563' : '#E5E7EB'
-                  }}
-                  itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
-                />
-                <Bar
-                  dataKey="marks"
-                  fill="#3B82F6"
-                  radius={[4, 4, 0, 0]}
-                  name="Average Marks"
-                />
-                <Legend wrapperStyle={{ paddingTop: 20 }} />
-              </BarChart>
+              {allData?.marksAverage ? (
+                <BarChart
+                  data={(() => {
+                    const keys = Object.keys(allData.marksAverage || {});
+
+                    // Check if the keys are all numeric (for year data)
+                    const isYearData = keys.every(key => /^\d+$/.test(key));
+
+                    // Check if the keys are all valid course codes (for course data)
+                    const isCourseCodeData = keys.every(key => /^[A-Za-z0-9-_]+$/.test(key)); // Modified to allow alphanumeric, underscores, and hyphens
+
+                    if (isYearData) {
+                      // Year data: sort years ascending
+                      const sortedYears = keys.sort((a, b) => Number(a) - Number(b));
+                      return sortedYears.map(year => ({
+                        name: year,
+                        value: Number(parseFloat(allData.marksAverage[year].toString()).toFixed(2))
+                      }));
+                    } else if (isCourseCodeData) {
+                      // Course data: use course codes as the name
+                      return keys.map(courseCode => ({
+                        name: courseCode,
+                        value: Number(parseFloat(allData.marksAverage[courseCode]?.toString() || '0').toFixed(4))
+                      })).filter(entry => entry.value > 0);  // Filter out 0 values
+                    } else {
+                      // Grade data: use predefined grade order
+                      const gradeOrder = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E', 'ABSENT', 'MEDICAL'];
+                      return gradeOrder.map(grade => ({
+                        name: grade,
+                        value: Number(parseFloat(allData.marksAverage[grade]?.toString() || '0').toFixed(4))
+                      })).filter(entry => entry.value > 0);  // Filter out 0 values
+                    }
+                  })()}
+
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    label={{
+                      value: allData?.xaxisName || (allData && Object.keys(allData.marksAverage || {}).every(key => /^\d+$/.test(key)) ? 'Year' : 'Grades'),
+                      position: 'bottom',
+                      offset: 0
+                    }}
+                  />
+                  <YAxis
+                    label={{
+                      value: allData?.yaxisName || 'Average Marks',
+                      angle: -90,
+                      position: 'insideLeft',
+                      offset: 10
+                    }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: darkMode ? '#374151' : '#fff',
+                      borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                    }}
+                    itemStyle={{ color: darkMode ? '#F3F4F6' : '#1F2937' }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: 20 }} />
+                  <Bar
+                    dataKey="value"
+                    fill="#3B82F6"
+                    radius={[4, 4, 0, 0]}
+                    name="Average Marks"
+                  />
+                </BarChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No Data Available
+                </div>
+              )}
             </ResponsiveContainer>
           </div>
+
 
           {/* Grade Distribution Pie Chart */}
           <div className="h-96">
@@ -316,9 +341,7 @@ const ResultDashboard: React.FC = () => {
                       paddingAngle={5}
                       dataKey="value"
                       labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
+                      label={({ name, value }) => `${name}: ${value}`}  // Show count of grades
                     >
                       {pieData.map((_, index) => (
                         <Cell
@@ -329,11 +352,8 @@ const ResultDashboard: React.FC = () => {
                     </Pie>
                     <Tooltip
                       formatter={(value: number, name: string) => {
-                        const total = pieData.reduce((a, b) => a + b.value, 0);
-                        return [
-                          value,
-                          `${name}: ${((value / total) * 100).toFixed(1)}%`
-                        ];
+                        // Show the exact value (count of grades)
+                        return [value, `${name}: ${value}`];
                       }}
                       contentStyle={{
                         backgroundColor: darkMode ? '#374151' : '#fff',
@@ -359,6 +379,7 @@ const ResultDashboard: React.FC = () => {
                   </p>
                 )}
               </PieChart>
+
             </ResponsiveContainer>
           </div>
         </div>
