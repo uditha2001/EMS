@@ -12,7 +12,7 @@ public class CalDataWithYear implements DashBoardDataCalStartegy {
         Map<String,Integer> gradeCount=new LinkedHashMap<>();
         Map<String, Integer> courseEntryCount = new HashMap<>();
         dataForCalCulationDTO.stream().forEach(data -> {
-            String grade = data.getGrade();
+            String grade = data.getGrade().replaceAll("\\s+$", "");
             String courseCode = data.getCourseCode();
             float marks = data.getMarks();
 

@@ -118,7 +118,7 @@ public class GradingService {
         try {
             LinkedHashMap<String, float[]> examtypesMarks = new LinkedHashMap<>();
             Map<String, Integer> gradeCount = new HashMap<>();
-            Set<StudentsEntity> studentNumbers = new HashSet<>();
+            Map<StudentsEntity,String> studentNumbers = new LinkedHashMap<>();
             List<ResultStatus> statuses = Arrays.asList(ResultStatus.SECOND_MARKING_COMPLETE, ResultStatus.MEDICAL, ResultStatus.ABSENT);
             List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, statuses);
             Set<GradeDetailsDTO> gradeDetailsDTOS = new LinkedHashSet<>();
@@ -132,14 +132,14 @@ public class GradingService {
                 Map<String, Map<String, Float>> marksData = storeStudentDataWithExamTypeIdAndStudentNumber(studentResults);
                 saveCalculatedMarksValues(marksData, examtypesMarks);
                 extractStudent(studentNumbers, studentResults);
-                for (StudentsEntity student : studentNumbers) {
+                for (Map.Entry<StudentsEntity,String> student : studentNumbers.entrySet()) {
                     GradeDetailsDTO gradeDetailsDTO = new GradeDetailsDTO();
-                    float totalMarks = calculateTotalMarks(marksData, student.getStudentNumber());
-                    if (totalMarks == -1) {
+                    float totalMarks = calculateTotalMarks(marksData, student.getKey().getStudentNumber());
+                    if (student.getValue().equals("ABSENT")) {
                         gradeDetailsDTO.setGrade("ABSENT");
                         calculateGradeCount(gradeCount, "ABSENT ");
 
-                    } else if (totalMarks == -2) {
+                    } else if (student.getValue().equals("MEDICAL")) {
                         gradeDetailsDTO.setGrade("MEDICAL");
                         calculateGradeCount(gradeCount, "MEDICAL ");
 
@@ -148,15 +148,13 @@ public class GradingService {
                         calculateGradeCount(gradeCount, Grade);
                         gradeDetailsDTO.setGrade(Grade);
                     }
-                    Map<String, Float> examTypesName = marksData.get(student.getStudentNumber());
-                    gradeDetailsDTO.setStudentNumber(student.getStudentNumber());
-                    gradeDetailsDTO.setStudentName(student.getStudentName());
+                    Map<String, Float> examTypesName = marksData.get(student.getKey().getStudentNumber());
+                    gradeDetailsDTO.setStudentNumber(student.getKey().getStudentNumber());
+                    gradeDetailsDTO.setStudentName(student.getKey().getStudentName());
                     gradeDetailsDTO.setTotalMarks(totalMarks);
                     gradeDetailsDTO.setExamTypesName(examTypesName);
                     gradeDetailsDTOS.add(gradeDetailsDTO);
                 }
-
-
                 Object[] responseData = new Object[]{gradeDetailsDTOS, gradeCount};
                 return new ResponseEntity<>(
                         new StandardResponse(200, "sucess", responseData), HttpStatus.OK
@@ -279,9 +277,9 @@ public class GradingService {
         }
     }
 
-    private void extractStudent(Set<StudentsEntity> studentNumbers, List<ResultEntity> resultEntities) {
+    private void extractStudent(Map<StudentsEntity,String> studentNumbers, List<ResultEntity> resultEntities) {
         for (ResultEntity resultEntity : resultEntities) {
-            studentNumbers.add(resultEntity.getStudent());
+            studentNumbers.put(resultEntity.getStudent(),resultEntity.getStatus().toString());
         }
     }
 
