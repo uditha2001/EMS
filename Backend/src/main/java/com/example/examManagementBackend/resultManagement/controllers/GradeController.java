@@ -57,10 +57,7 @@ public class GradeController {
     public ResponseEntity<StandardResponse> getResultsByProgramAndYear(@RequestParam Long degreeProgramId, @RequestParam int year) {
         return gradingService.getPublishedDataByProgramIdAndYear(degreeProgramId, year);
     }
-//    @GetMapping("/allPublishedResults")
-//    public ResponseEntity<StandardResponse> getAllPublishedResults() {
-//        return gradingService.getAllPublishedData();
-//    }
+
 
 
 

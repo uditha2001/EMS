@@ -2,7 +2,7 @@ package com.example.examManagementBackend.resultManagement.services.DashBoardDat
 
 import com.example.examManagementBackend.resultManagement.dto.DashboardPublishedResultsDTO;
 import com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO;
-import com.example.examManagementBackend.resultManagement.services.GradingService;
+
 
 
 import java.util.HashMap;
@@ -19,19 +19,16 @@ public class CalDataForAllYears implements DashBoardDataCalStartegy {
 
         Map<String, Float> totalMarksPerYear = new HashMap<>(); // year -> total marks
 
-        for (DataForCalCulationDTO data : dataForCalCulationDTO) {
-            String grade = data.getGrade();
+        dataForCalCulationDTO.stream().forEach(data -> {
+            String grade = data.getGrade().replaceAll("\\s+$", "");
             String year = String.valueOf(data.getPublishedAt().getYear());
             float marks = data.getMarks();
 
-            calculateGradeCount(gradeCount, grade);
+            gradeCount.merge(grade, 1, Integer::sum);
+            totalMarksPerYear.merge(year, marks, Float::sum);
+            yearEntryCount.merge(year, 1, Integer::sum);
+        });
 
-            totalMarksPerYear.put(year,
-                    totalMarksPerYear.getOrDefault(year, 0f) + marks);
-
-            yearEntryCount.put(year,
-                    yearEntryCount.getOrDefault(year, 0) + 1);
-        }
 
         // Calculate average per year
         for (String year : totalMarksPerYear.keySet()) {
@@ -49,14 +46,5 @@ public class CalDataForAllYears implements DashBoardDataCalStartegy {
 
         return dashboardPublishedResultsDTO;
     }
-    private void calculateGradeCount(Map<String,Integer> gradeDetails,String grade){
-        if(gradeDetails.containsKey(grade)){
-            int value=gradeDetails.get(grade);
-            value+=1;
-            gradeDetails.put(grade,value);
-        }
-        else{
-            gradeDetails.put(grade,1);
-        }
-    }
+
 }
