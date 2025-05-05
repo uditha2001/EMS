@@ -65,13 +65,19 @@ const SelectExaminationComponent = ({
      getSecondMarkerAssignedExaminations().then((response) => {
       let examData: examinationName[] = [];
       let i = 0;
+    if(Array.isArray(response)){
       for (const obj of response) {
         let examName = `${obj['year']}-${obj['degreeProgramName']}-Level ${obj['level']}-Semester ${obj['semester']}`;
         examData.push({ key: obj['id'], name: examName });
         i++;
       }
+    }
+    else {
+      console.error("Expected array, got:", response);
+    }
       setCreatedExamNames(examData);
     });
+  
 
     
   }, []);
@@ -94,9 +100,11 @@ const SelectExaminationComponent = ({
     }
   }, [examName]);
   useEffect(() => {
-    secondMarkerExamTypes(courseCode,selectedExaminationKey).then((response) => {
+    if(courseCode != '' && courseCode != null) {
+      secondMarkerExamTypes(courseCode,selectedExaminationKey).then((response) => {
       setExamTypes(response.data);
-    });
+      });
+    }
   },[courseCode]);
 
   return (

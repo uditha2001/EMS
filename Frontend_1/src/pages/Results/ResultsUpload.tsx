@@ -48,7 +48,7 @@ const ResultsUpload = () => {
     [],
   );
   const isFirstRender = useRef(true);
-  const [examName, setExamName] = useState<string>('');
+  const [examName, setExamName] = useState<string|null>('');
   const [courseCode, setCourseCode] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const {
@@ -59,7 +59,7 @@ const ResultsUpload = () => {
   const { saveMarkingResults } = useResultsApi();
 
   const [selectedExaminationKey, setSelectedExaminationKey] =
-    useState<number>();
+    useState<number|undefined>();
   const [examinationCourseCode, setExaminationCourseCode] = useState<
     courseData[]
   >([]);
@@ -90,9 +90,12 @@ const ResultsUpload = () => {
 
   useEffect(() => {
     if (examName != '' && examName != null) {
+      if(selectedExaminationKey != undefined) {
+      console.log("i am running");
       getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
         setExaminationCourseCode(data.data.data);
       });
+    }
     }
   }, [examName]);
 
@@ -112,9 +115,12 @@ const ResultsUpload = () => {
       isFirstRender.current = false;
       return;
     }
-    firstMarkerExamTypes(courseCode, selectedExaminationKey).then((response) => {
-      setExamTypes(response.data);
-    });
+    else if(courseCode != '' && courseCode != null) {
+      firstMarkerExamTypes(courseCode, selectedExaminationKey).then((response) => {
+        setExamTypes(response.data);
+      });
+    }
+   
   }, [courseCode]);
 
   useEffect(() => {

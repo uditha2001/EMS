@@ -94,9 +94,6 @@ const ResultDashboard: React.FC = () => {
 
     fetchSubjects();
   }, [selectedProgramId]);
-  useEffect(() => {
-    console.log('allData:', allData);
-  }, [allData]);
 
   useEffect(() => {
     if (selectedProgramId === undefined || selectedProgramId === 0) {
