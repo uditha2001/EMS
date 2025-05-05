@@ -80,10 +80,10 @@ public class ResultService {
                             resultEntity.setStatus(ResultStatus.FIRST_MARKING_COMPLETE);
                         } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
                             resultEntity.setStatus(ResultStatus.ABSENT);
-                            resultEntity.setFirstMarking(-1);
+                            resultEntity.setFirstMarking(0);
                         } else if (student.isHasMedicalSubmit()) {
                             resultEntity.setStatus(ResultStatus.MEDICAL);
-                            resultEntity.setFirstMarking(-2);
+                            resultEntity.setFirstMarking(0);
                         }
                         resultEntity.setApprovedBy(approvedBy);
                         resultRepo.save(resultEntity);
@@ -128,10 +128,10 @@ public class ResultService {
             if(!student.isAbsent() && !student.isHasMedicalSubmit()){
                 resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
             } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
-                resultRepo.updateFirstMarkingResults(-1,approvedBy,resultId,ResultStatus.ABSENT);
+                resultRepo.updateFirstMarkingResults(0,approvedBy,resultId,ResultStatus.ABSENT);
             }
             else {
-                resultRepo.updateFirstMarkingResults(-2,approvedBy,resultId,ResultStatus.MEDICAL);
+                resultRepo.updateFirstMarkingResults(0,approvedBy,resultId,ResultStatus.MEDICAL);
             }
         }
     }
@@ -139,13 +139,13 @@ public class ResultService {
     private void updateSecondMarkingAbsentResults(){
         List<Long> absentResultsId=resultRepo.getResultIdsByStatus(ResultStatus.ABSENT);
         for(Long resultId: absentResultsId){
-            resultRepo.updateSecondMarks(-1,resultId);
+            resultRepo.updateSecondMarks(0,resultId);
         };
     }
     private void updateSecondMarkingMedicalResults(){
         List<Long> medicalResultsId=resultRepo.getResultIdsByStatus(ResultStatus.MEDICAL);
         for(Long resultId: medicalResultsId){
-            resultRepo.updateSecondMarks(-2,resultId);
+            resultRepo.updateSecondMarks(0,resultId);
         }
     }
 

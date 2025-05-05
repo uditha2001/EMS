@@ -43,9 +43,11 @@ public class ResultEntity {
     @JoinColumn(name="student_id",referencedColumnName = "studentId")
     private StudentsEntity student;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private float firstMarking;
+    @Column(nullable = true)
     private float secondMarking;
+    @Column(nullable = true)
     private float finalMarks;
 
     @Enumerated(EnumType.STRING)
