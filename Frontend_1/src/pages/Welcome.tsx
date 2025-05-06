@@ -9,7 +9,7 @@ const WelcomePage: React.FC = () => {
   // Background images array
   const bgImages = [
     '/images/welcome1.jpg', // Replace with your first image path
-    '/images/welcome2.jpg', // Replace with your second image path
+    //'/images/welcome2.jpg', // Replace with your second image path
   ];
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
