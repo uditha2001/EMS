@@ -20,7 +20,7 @@ public class CalDataForAllYears implements DashBoardDataCalStartegy {
         Map<String, Float> totalMarksPerYear = new HashMap<>(); // year -> total marks
 
         dataForCalCulationDTO.stream().forEach(data -> {
-            String grade = data.getGrade();
+            String grade = data.getGrade().replaceAll("\\s+$", "");
             String year = String.valueOf(data.getPublishedAt().getYear());
             float marks = data.getMarks();
 

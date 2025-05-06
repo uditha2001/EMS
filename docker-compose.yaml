@@ -39,6 +39,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/examPaperManagement?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=root
@@ -47,12 +52,11 @@ services:
       - FILE_UPLOAD_PROFILE_DIR=/app/uploads/profile_images
       - FILE_UPLOAD_ARCHIVED_DIR=/app/uploads/archived-papers
       - FILE_UPLOAD_ENCRYPTED_DIR=/app/uploads/encrypted-papers
-
     volumes:
       - ./uploads:/app/uploads
-
     networks:
       - webnet
+
 
   frontend:
     image: udithaimesh/ems:frontend-latest

@@ -43,11 +43,17 @@ const useExaminationApi = () => {
             }
         }
     }
+    const getAllOngoingExams = async () => {
+        return await axiosPrivate.get('result/onGoingExams');
+     }
+     
+
 
   return (
     {
         getFirstMarkerAssignedExaminations,
-        getSecondMarkerAssignedExaminations
+        getSecondMarkerAssignedExaminations,
+        getAllOngoingExams
     }
   )
 }

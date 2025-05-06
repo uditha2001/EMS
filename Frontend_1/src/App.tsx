@@ -5,7 +5,8 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Loader from './common/Loader';
 import ExamTypes from './pages/ExamTypes/ExamTypes';
 import PastExaminations from './pages/HistoricalData/PastExamination';
-
+import MedicalSubmit from './pages/Results/MedicalSubmit';
+import Recorrections from './pages/Results/Recorrections';
 // Lazy-loaded components
 const LearnMore = React.lazy(() => import('./components/LearnMore'));
 const PageTitle = React.lazy(() => import('./components/PageTitle'));
@@ -579,12 +580,35 @@ function App() {
                   <GradeConditions />,
                 )}
               />
-
+              <Route
+              element={<RequireAuth allowedPermissions={['PUBLISH_RESULTS']} />}
+              >
               <Route
                 path="/result/grading"
                 element={renderPage('Results Grading | EMS', <ResultGrading />)}
               />
-
+              </Route>
+              
+               <Route
+              element={<RequireAuth allowedPermissions={['MODERATE_RESULTS']} />}
+            >
+              <Route
+                path="/result/medicalSubmission"
+                element={renderPage('Medical | EMS', <MedicalSubmit />)}
+              />
+            </Route>
+          
+         <Route
+              element={<RequireAuth allowedPermissions={['MANAGE_REGRADES']} />}
+            >
+              <Route
+                path="/result/recorections"
+                element={renderPage('Recorrections | EMS', <Recorrections />)}
+              />
+            </Route>
+            <Route
+              element={<RequireAuth allowedPermissions={['PUBLISH_RESULTS']} />}
+              >
               <Route
                 path="/result/dashboard"
                 element={renderPage(
@@ -592,6 +616,8 @@ function App() {
                   <ResultDashboard />,
                 )}
               />
+              </Route>
+            
             </Route>
           </Route>
         </Route>

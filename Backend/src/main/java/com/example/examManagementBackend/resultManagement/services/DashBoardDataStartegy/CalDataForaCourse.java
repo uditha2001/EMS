@@ -13,7 +13,7 @@ public class CalDataForaCourse implements DashBoardDataCalStartegy {
         Map<String, Integer> gradeCount = new LinkedHashMap<>();
         Map<String, Float> averageGradeCount = new LinkedHashMap<>();
          dataForCalCulationDTO.stream().forEach(data->{
-             String grade = data.getGrade();
+             String grade = data.getGrade().replaceAll("\\s+$", "");
              gradeCount.merge(grade, 1, Integer::sum);
          });
 

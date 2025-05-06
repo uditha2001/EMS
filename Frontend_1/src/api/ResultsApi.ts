@@ -132,10 +132,25 @@ const useResultsApi = () => {
             params: { degreeProgramId, year }
           });
         };
-        
-        const getAllPublishedResults = async () => {
-          return axiosPrivate.get(`grading/allPublishedResults`);
+        const getAbsentStudents = async (courseCode: string, examinationId: number|undefined) => {
+          return axiosPrivate.get(`result/absentStudents`, {
+            params: { courseCode, examinationId }
+          });
         };
+        
+        const saveSubmittedMedicals = async (medicalData: any,courseCode:string,examinationId:number|undefined) => {
+          return axiosPrivate.post(
+            'result/saveMedical', 
+            medicalData, 
+            {
+              params: {
+                courseCode, 
+                examinationId
+              }
+            }
+          );
+        };
+     
         
 
   return {
@@ -150,7 +165,8 @@ const useResultsApi = () => {
     getAllPublishedResultsWithCourse,
     getAllPublishedResultsWithCourseAndYear,
     getPublishedResultsByProgramAndYear,
-    getAllPublishedResults
+    getAbsentStudents,
+    saveSubmittedMedicals
     }
 }
 

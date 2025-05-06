@@ -24,10 +24,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class JwtServiceIMPL implements UserDetailsService, JwtService {
@@ -37,6 +35,7 @@ public class JwtServiceIMPL implements UserDetailsService, JwtService {
     private final JwtUtill jwtUtill;
     private final UserRolesRepository userRolesRepository;
     private final TokenRepo tokenRepo;
+    private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
 
     public JwtServiceIMPL(UserManagementRepo userManagementRepo, @Lazy AuthenticationManager authenticationManager, JwtUtill jwtUtill, UserRolesRepository userRolesRepository, TokenRepo tokenRepo) {
         this.userManagementRepo = userManagementRepo;
@@ -155,44 +154,47 @@ public class JwtServiceIMPL implements UserDetailsService, JwtService {
 
     //refresh the acess token using refresh token
     public LoginResponseDTO refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        UserEntity userEntity=null;
-        String userName=null;
-        String refreshToken=null;
-        TokenEntity token=null;
-        LoginResponseDTO loginResponseDTO=null;
-        Object[] test=getUserNameAndToken(request);
-        userName=(String)test[0];
-        refreshToken=(String)test[1];
-        token=(TokenEntity)test[2];
-        if(userName!=null && refreshToken!=null && token!=null){
-            UserDetails userDetails=loadUserByUsername(userName);
-            userEntity=userManagementRepo.findByUsername(userName);
-            UserDTO userDTO=new UserDTO(
-                    userEntity.getUserId(),
-                    userEntity.getUsername(),
-                    userEntity.getEmail(),
-                    userEntity.getFirstName(),
-                    userEntity.getLastName(),
-                    getRolesByUserId(userEntity.getUsername()),
-                    userEntity.isActive()
-            );
-            if(userEntity.isActive()){
-                if(jwtUtill.validateToken(refreshToken,userDetails)){
-                    String acessToken= jwtUtill.generateAccessToken(userDetails);
-                    tokenRepo.updateacessTokenValueById(token.getToken_id(),acessToken);
-                    loginResponseDTO=new LoginResponseDTO(
-                            acessToken,
-                            userDTO
+        Object[] test = getUserNameAndToken(request);
 
-                    );
-                    new ObjectMapper().writeValue(response.getOutputStream(),loginResponseDTO);
-                }
+        if (test[0] == null || test[1] == null || test[2] == null) {
+            return null;
+        }
+        String userName = (String) test[0];
+        String refreshToken = (String) test[1];
+        TokenEntity token = (TokenEntity) test[2];
+
+        // Get or create lock object for this user
+        Object userLock = userLocks.computeIfAbsent(userName, k -> new Object());
+
+        synchronized (userLock) {
+            UserEntity userEntity = userManagementRepo.findByUsername(userName);
+            if (userEntity == null || !userEntity.isActive()) return null;
+
+            UserDetails userDetails = loadUserByUsername(userName);
+
+            if (jwtUtill.validateToken(refreshToken, userDetails)) {
+                String accessToken = jwtUtill.generateAccessToken(userDetails);
+                tokenRepo.updateacessTokenValueById(token.getToken_id(), accessToken);
+
+                UserDTO userDTO = new UserDTO(
+                        userEntity.getUserId(),
+                        userEntity.getUsername(),
+                        userEntity.getEmail(),
+                        userEntity.getFirstName(),
+                        userEntity.getLastName(),
+                        getRolesByUserId(userEntity.getUsername()),
+                        userEntity.isActive()
+                );
+
+                LoginResponseDTO loginResponseDTO = new LoginResponseDTO(accessToken, userDTO);
+                new ObjectMapper().writeValue(response.getOutputStream(), loginResponseDTO);
+                return loginResponseDTO;
             }
-
         }
 
-        return loginResponseDTO;
+        return null;
     }
+
     @Override
     public Object[] getUserNameAndToken(HttpServletRequest request){
         final String authorizationHeader = request.getHeader("Authorization");
@@ -203,8 +205,10 @@ public class JwtServiceIMPL implements UserDetailsService, JwtService {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             acesssToken= authorizationHeader.substring(7);
             token=tokenRepo.findByAcessToken(acesssToken);
-            refreshToken=token.getRefreshToken();
-            userName=jwtUtill.extractUserName(refreshToken);
+            if(token!=null){
+                refreshToken=token.getRefreshToken();
+                userName=jwtUtill.extractUserName(refreshToken);
+            }
         }
         return new Object[] {userName,refreshToken,token};
 
