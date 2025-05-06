@@ -1,6 +1,7 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
 import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
+import com.example.examManagementBackend.resultManagement.dto.MedicalSubmitDTO;
 import com.example.examManagementBackend.resultManagement.dto.PublishedDataDTO;
 import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
@@ -39,6 +40,18 @@ public class ResultController {
     @PostMapping("/saveFinalResults")
     public ResponseEntity<StandardResponse> saveFinalResults(@RequestBody PublishedDataDTO publishedData, HttpServletRequest request) {
         return resultService.savePublishedResults(publishedData,request);
+    }
+    @GetMapping("/absentStudents")
+    public ResponseEntity<StandardResponse> getAbsentStudents(@RequestParam String courseCode,@RequestParam Long examinationId){
+            return resultService.getAbsentStudents(courseCode,examinationId);
+    }
+    @PostMapping("/saveMedical")
+    public ResponseEntity<StandardResponse> updateMedicalSubmit(@RequestBody List<MedicalSubmitDTO> medicalData,@RequestParam String courseCode,@RequestParam Long examinationId, HttpServletRequest request){
+            return resultService.saveMedicalResults(medicalData,request,courseCode,examinationId);
+    }
+    @GetMapping("/onGoingExams")
+    public ResponseEntity<StandardResponse> getOnGoingExams(){
+        return resultService.getAllOnGoingExams();
     }
 
 }

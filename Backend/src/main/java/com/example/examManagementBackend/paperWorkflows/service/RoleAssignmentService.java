@@ -425,8 +425,11 @@ public class RoleAssignmentService {
                   List<ExaminationDTO> examinationDTOS=new ArrayList<>();
                   for(Long examinationId:examinationEntities){
                       ExaminationEntity examinationEntity=examinationRepository.findAllOngoingExamsWithId(ExamStatus.ONGOING,examinationId);
-                      ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
-                      examinationDTOS.add(examinationDTO);
+                      if(examinationEntity!=null){
+                          ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
+                          examinationDTOS.add(examinationDTO);
+                      }
+
                   }
                   return new ResponseEntity<>(
                           new StandardResponse(200, "sucess", examinationDTOS), HttpStatus.OK

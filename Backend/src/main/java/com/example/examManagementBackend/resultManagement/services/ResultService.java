@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.resultManagement.services;
 
+import com.example.examManagementBackend.paperWorkflows.dto.ExaminationDTO;
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.paperWorkflows.repository.CoursesRepository;
@@ -75,15 +77,15 @@ public class ResultService {
                         resultEntity.setCourse(coursesEntity);
                         resultEntity.setExamType(examTypes);
                         resultEntity.setExamination(examinationEntity);
+                        resultEntity.setStatus(ResultStatus.FIRST_MARKING_COMPLETE);
                         if(!student.isAbsent() && !student.isHasMedicalSubmit()){
                             resultEntity.setFirstMarking(student.getFirstMarking());
-                            resultEntity.setStatus(ResultStatus.FIRST_MARKING_COMPLETE);
                         } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
-                            resultEntity.setStatus(ResultStatus.ABSENT);
-                            resultEntity.setFirstMarking(-1);
+                            resultEntity.setAbsent(true);
+                            resultEntity.setFirstMarking(0);
                         } else if (student.isHasMedicalSubmit()) {
-                            resultEntity.setStatus(ResultStatus.MEDICAL);
-                            resultEntity.setFirstMarking(-2);
+                            resultEntity.setHasSubmittedMedical(true);
+                            resultEntity.setFirstMarking(0);
                         }
                         resultEntity.setApprovedBy(approvedBy);
                         resultRepo.save(resultEntity);
@@ -126,26 +128,26 @@ public class ResultService {
         } else if (results.getStatus().equals("firstMarking")) {
 
             if(!student.isAbsent() && !student.isHasMedicalSubmit()){
-                resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE);
+                resultRepo.updateFirstMarkingResults(student.getFirstMarking(),approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE,false,false);
             } else if (student.isAbsent() && !student.isHasMedicalSubmit()) {
-                resultRepo.updateFirstMarkingResults(-1,approvedBy,resultId,ResultStatus.ABSENT);
+                resultRepo.updateFirstMarkingResults(0,approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE,true,false);
             }
             else {
-                resultRepo.updateFirstMarkingResults(-2,approvedBy,resultId,ResultStatus.MEDICAL);
+                resultRepo.updateFirstMarkingResults(0,approvedBy,resultId,ResultStatus.FIRST_MARKING_COMPLETE,false,true);
             }
         }
     }
 
     private void updateSecondMarkingAbsentResults(){
-        List<Long> absentResultsId=resultRepo.getResultIdsByStatus(ResultStatus.ABSENT);
+        List<Long> absentResultsId=resultRepo.getResultIdsByAbsentANDMedical(true,false);
         for(Long resultId: absentResultsId){
-            resultRepo.updateSecondMarks(-1,resultId);
+            resultRepo.updateSecondMarks(0,resultId);
         };
     }
     private void updateSecondMarkingMedicalResults(){
-        List<Long> medicalResultsId=resultRepo.getResultIdsByStatus(ResultStatus.MEDICAL);
+        List<Long> medicalResultsId=resultRepo.getResultIdsByAbsentANDMedical(false,true);
         for(Long resultId: medicalResultsId){
-            resultRepo.updateSecondMarks(-2,resultId);
+            resultRepo.updateSecondMarks(0,resultId);
         }
     }
 
@@ -299,5 +301,93 @@ public class ResultService {
                         new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
                 );
         }
+    }
+    //get absent students details
+    public ResponseEntity<StandardResponse> getAbsentStudents(String courseCode,Long examId){
+        try{
+            List<ResultStatus> statuses = Arrays.asList(ResultStatus.FIRST_MARKING_COMPLETE, ResultStatus.SECOND_MARKING_COMPLETE);
+            List<StudentsEntity> absentStudents = resultRepo.getAllAbsentStudents(courseCode, examId, true, statuses);
+            List<StudentDTO> studentDTOList=new ArrayList<>();
+            for(StudentsEntity studentsEntity:absentStudents){
+                StudentDTO studentDTO=new StudentDTO();
+                studentDTO.setStudentNumber(studentsEntity.getStudentNumber());
+                studentDTO.setStudentName(studentsEntity.getStudentName());
+                studentDTOList.add(studentDTO);
+
+            }
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "success", studentDTOList), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> saveMedicalResults(List<MedicalSubmitDTO> medicalSubmitDTOList, HttpServletRequest request,String courseCode,Long examId){
+        try{
+            Object[] user=jwtService.getUserNameAndToken(request);
+            String username = (String) user[0];
+            for(MedicalSubmitDTO medicalSubmitDTO:medicalSubmitDTOList){
+                if ("approved".equalsIgnoreCase(medicalSubmitDTO.getStatus())) {
+                    resultRepo.updateMedical(
+                            username,
+                            false,
+                            true,
+                            examId,
+                            courseCode,
+                            medicalSubmitDTO.getStudentNumber()
+                    );
+                }
+
+            }
+
+            return new ResponseEntity<>(
+                    new StandardResponse(200, "success", null), HttpStatus.OK
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public ResponseEntity<StandardResponse> getAllOnGoingExams(){
+        try{
+            List<ResultStatus> resultStatuses = Arrays.asList(ResultStatus.FIRST_MARKING_COMPLETE, ResultStatus.SECOND_MARKING_COMPLETE);
+            List<ExaminationEntity> examinationEntities=resultRepo.findAllOngoingExaminationsByStatus(resultStatuses,ExamStatus.ONGOING);
+            List<ExaminationDTO> examinationDTOS=new ArrayList<>();
+            for(ExaminationEntity examinationEntity:examinationEntities){
+                ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
+                examinationDTOS.add(examinationDTO);
+            }
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"sucess",examinationDTOS),HttpStatus.OK
+            );
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500,"error occur",null),HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+
+    }
+    private ExaminationDTO mapToDTO(ExaminationEntity entity) {
+        ExaminationDTO dto = new ExaminationDTO();
+        dto.setId(entity.getId());
+        dto.setYear(entity.getYear());
+        dto.setLevel(entity.getLevel());
+        dto.setSemester(entity.getSemester());
+        dto.setDegreeProgramId(entity.getDegreeProgramsEntity().getId());
+        dto.setDegreeProgramName(entity.getDegreeProgramsEntity().getDegreeName());
+        dto.setExamProcessStartDate(entity.getExamProcessStartDate());
+        dto.setPaperSettingCompleteDate(entity.getPaperSettingCompleteDate());
+        dto.setMarkingCompleteDate(entity.getMarkingCompleteDate());
+        dto.setStatus(entity.getStatus());
+        return dto;
     }
 }
