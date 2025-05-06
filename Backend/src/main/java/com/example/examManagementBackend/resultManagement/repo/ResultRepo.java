@@ -1,10 +1,12 @@
 package com.example.examManagementBackend.resultManagement.repo;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
+import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.PaperType;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
+import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -39,11 +41,17 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE ResultEntity r SET r.firstMarking = :firstMarking, " +
-            "r.approvedBy = :approvedBy,r.status=:status " +
+            "r.approvedBy = :approvedBy, r.status = :status, r.isAbsent = :absent, r.hasSubmittedMedical = :medical " +
             "WHERE r.resultId = :id")
-    void updateFirstMarkingResults(@Param("firstMarking") float firstMarking,
-                       @Param("approvedBy") UserEntity approvedBy,
-                       @Param("id") Long id,@Param("status") ResultStatus status);
+    void updateFirstMarkingResults(
+            @Param("firstMarking") float firstMarking,
+            @Param("approvedBy") UserEntity approvedBy,
+            @Param("id") Long id,
+            @Param("status") ResultStatus status,
+            @Param("absent") boolean absent,
+            @Param("medical") boolean medical
+    );
+
 
     @Modifying
     @Transactional
@@ -57,8 +65,8 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
     @Query("SELECT r FROM ResultEntity r WHERE r.course.id= :courseId AND r.examination.id= :examId AND r.examType.id= :examTypeId AND r.status=:status")
     List<ResultEntity> getFirstMarkingResults(@Param("courseId") Long courseId, @Param("examId") Long examId, @Param("examTypeId") Long examTypeId, @Param("status") ResultStatus status);
 
-    @Query("SELECT r FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examID AND r.status IN :status")
-    List<ResultEntity> getStudentResultsByCourseCodeAndExamId (@Param("courseCode") String courseCode, @Param("examID") Long examID, @Param("status") List<ResultStatus> status);
+    @Query("SELECT r FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examID AND r.status=:status")
+    List<ResultEntity> getStudentResultsByCourseCodeAndExamId (@Param("courseCode") String courseCode, @Param("examID") Long examID, @Param("status") ResultStatus status);
     @Query("SELECT DISTINCT r.examType.examType FROM ResultEntity r WHERE r.course.code=:courseCode AND r.examination.id=:examId AND r.status=:status")
     List<String> getExamTypeName(@Param("courseCode") String courseCode, @Param("examId") Long examID, @Param("status") ResultStatus status);
     @Modifying
@@ -72,12 +80,33 @@ public interface ResultRepo extends JpaRepository<ResultEntity, Long> {
             CoursesEntity course,
             String examType
     );
-    @Query("SELECT r.resultId FROM ResultEntity r WHERE r.status=:status")
-    List<Long> getResultIdsByStatus(@Param("status") ResultStatus status);
+    @Query("SELECT r.resultId FROM ResultEntity r WHERE r.isAbsent=:absent AND r.hasSubmittedMedical=:medical")
+    List<Long> getResultIdsByAbsentANDMedical(@Param("absent") boolean absent, @Param("medical") boolean medical);
 
     @Modifying
     @Transactional
     @Query("UPDATE ResultEntity r SET r.secondMarking=:secondMarks WHERE r.resultId=:id")
     void updateSecondMarks(@Param("secondMarks") float secondMarks,@Param("id") Long id);
+
+    @Query("SELECT r.student FROM ResultEntity r WHERE r.course.code = :code AND r.examination.id = :examId AND r.isAbsent= :absent AND r.status IN :statuses")
+    List<StudentsEntity> getAllAbsentStudents(@Param("code") String courseCode,
+                                              @Param("examId") Long examId,
+                                              @Param("absent") boolean absent,
+                                              @Param("statuses") List<ResultStatus> statuses);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE ResultEntity re SET re.isAbsent=:check,re.hasSubmittedMedical=:medical , re.approvedBy.username = :user " +
+            "WHERE re.examination.id = :id AND re.course.code = :code AND re.student.studentNumber = :number")
+    void updateMedical(@Param("user") String user,
+                       @Param("check") boolean check,
+                       @Param("medical")boolean medical,
+                       @Param("id") Long examinationId,
+                       @Param("code") String courseCode,
+                       @Param("number") String studentNumber);
+
+    @Query("SELECT r.examination FROM ResultEntity r WHERE r.status IN :statuses AND r.examination.status = :examStatus")
+    List<ExaminationEntity> findAllOngoingExaminationsByStatus(@Param("statuses") List<ResultStatus> statuses,
+                                                          @Param("examStatus") ExamStatus examStatus);
 
 }

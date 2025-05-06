@@ -23,6 +23,7 @@ const useAxiosPrivate = () => {
         const responseInterceptor = privateAxios.interceptors.response.use(
             (response) => response,
             async (error) => {
+                console.log("code :"+error.response.status);
                 const prevRequest = error?.config;
                 const status=error ?.response ?.status;
                 if (status=== 401 && !prevRequest?.sent) {
