@@ -4,6 +4,7 @@ import AOS from 'aos'; // Import AOS for animations
 import 'aos/dist/aos.css'; // Import the AOS CSS
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; // Import FontAwesome
 import { faArrowRight, faInfoCircle } from '@fortawesome/free-solid-svg-icons'; // Import specific icons
+import { motion } from 'framer-motion';
 
 const WelcomePage: React.FC = () => {
   // Background images array
@@ -13,6 +14,7 @@ const WelcomePage: React.FC = () => {
   ];
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const ruhuna = '/images/ruhuna.gif';
 
   useEffect(() => {
     AOS.init(); // Initialize AOS when the component mounts
@@ -37,6 +39,39 @@ const WelcomePage: React.FC = () => {
 
       {/* Content */}
       <div className="relative text-center text-white px-6 max-w-3xl">
+        <motion.div
+          initial={{ opacity: 0.1, scale: 1.2 }}
+          animate={{ opacity: 0.05, scale: 1 }}
+          transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <img
+            src={ruhuna}
+            alt="University of Ruhuna"
+            className="h-[80%] w-auto object-contain"
+          />
+        </motion.div>
+
+        <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    {/* Animated Logo (smaller version) */}
+                    <motion.div
+                      initial={{ scale: 0.8, rotate: -5 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+                      className="mb-6 flex justify-center"
+                    >
+                      <img
+                        src={ruhuna}
+                        alt="University of Ruhuna"
+                        className="h-16 w-auto object-contain"
+                      />
+                    </motion.div>
+        
+        
         {/* Heading and Paragraph with animations */}
         <h1
           className="text-4xl font-extrabold mb-4"
@@ -54,6 +89,8 @@ const WelcomePage: React.FC = () => {
           Streamline your exam management process with ease. Designed for the
           Department of Computer Science, University of Ruhuna.
         </p>
+
+        </motion.div>
 
         {/* Buttons with animations */}
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+const ruhuna = '/images/ruhuna.gif';
 
 const LearnMore = () => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -205,13 +206,44 @@ const LearnMore = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-r from-[#3c50e0] to-[#5670ef] text-white">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+
+      <section className="pt-32 pb-20 bg-gradient-to-r from-[#3c50e0] to-[#5670ef] text-white relative overflow-hidden">
+        {/* Animated Logo Background */}
+        <motion.div
+          initial={{ opacity: 0.1, scale: 1.2 }}
+          animate={{ opacity: 0.05, scale: 1 }}
+          transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
+          className="absolute inset-0 flex items-center justify-center"
+        >
+          <img
+            src={ruhuna}
+            alt="University of Ruhuna"
+            className="h-[80%] w-auto object-contain"
+          />
+        </motion.div>
+
+        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
+            {/* Animated Logo (smaller version) */}
+            <motion.div
+              initial={{ scale: 0.8, rotate: -5 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 100, damping: 10 }}
+              className="mb-6 flex justify-center"
+            >
+              <img
+                src={ruhuna}
+                alt="University of Ruhuna"
+                className="h-16 w-auto object-contain"
+              />
+            </motion.div>
+
+            
+
             <h1 className="text-5xl font-bold mb-6">Exam Management System</h1>
             <p className="text-xl max-w-3xl mx-auto mb-10">
               Streamlining academic assessments for the Department of Computer
