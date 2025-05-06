@@ -118,9 +118,8 @@ public class GradingService {
         try {
             LinkedHashMap<String, float[]> examtypesMarks = new LinkedHashMap<>();
             Map<String, Integer> gradeCount = new HashMap<>();
-            Map<StudentsEntity,String> studentNumbers = new LinkedHashMap<>();
-            List<ResultStatus> statuses = Arrays.asList(ResultStatus.SECOND_MARKING_COMPLETE, ResultStatus.MEDICAL, ResultStatus.ABSENT);
-            List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, statuses);
+            Map<StudentsEntity,ResultEntity> studentNumbers = new LinkedHashMap<>();
+            List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             Set<GradeDetailsDTO> gradeDetailsDTOS = new LinkedHashSet<>();
             List<String> examTypeNames = resultRepo.getExamTypeName(courseCode, examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             if (!studentResults.isEmpty() && !examTypeNames.isEmpty()) {
@@ -132,14 +131,14 @@ public class GradingService {
                 Map<String, Map<String, Float>> marksData = storeStudentDataWithExamTypeIdAndStudentNumber(studentResults);
                 saveCalculatedMarksValues(marksData, examtypesMarks);
                 extractStudent(studentNumbers, studentResults);
-                for (Map.Entry<StudentsEntity,String> student : studentNumbers.entrySet()) {
+                for (Map.Entry<StudentsEntity,ResultEntity> student : studentNumbers.entrySet()) {
                     GradeDetailsDTO gradeDetailsDTO = new GradeDetailsDTO();
                     float totalMarks = calculateTotalMarks(marksData, student.getKey().getStudentNumber());
-                    if (student.getValue().equals("ABSENT")) {
+                    if (student.getValue().isAbsent() && !student.getValue().isHasSubmittedMedical()) {
                         gradeDetailsDTO.setGrade("ABSENT");
                         calculateGradeCount(gradeCount, "ABSENT ");
 
-                    } else if (student.getValue().equals("MEDICAL")) {
+                    } else if (!student.getValue().isAbsent() && student.getValue().isHasSubmittedMedical()) {
                         gradeDetailsDTO.setGrade("MEDICAL");
                         calculateGradeCount(gradeCount, "MEDICAL ");
 
@@ -277,9 +276,9 @@ public class GradingService {
         }
     }
 
-    private void extractStudent(Map<StudentsEntity,String> studentNumbers, List<ResultEntity> resultEntities) {
+    private void extractStudent(Map<StudentsEntity,ResultEntity> studentNumbers, List<ResultEntity> resultEntities) {
         for (ResultEntity resultEntity : resultEntities) {
-            studentNumbers.put(resultEntity.getStudent(),resultEntity.getStatus().toString());
+            studentNumbers.put(resultEntity.getStudent(),resultEntity);
         }
     }
 
