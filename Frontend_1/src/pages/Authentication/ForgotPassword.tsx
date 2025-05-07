@@ -64,7 +64,7 @@ const ForgotPassword = () => {
   return (
     <div>
       {loadingStatus ? <Loader/>:null}
-      <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
+      <h1 className="text-xl font-bold text-gray-800 dark:text-white text-center mb-6 ">
         Forgot Password
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -125,13 +125,13 @@ const ForgotPassword = () => {
             <div className="flex justify-between">
               <button
                 onClick={confirmNavigation}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600"
               >
                 Yes
               </button>
               <button
                 onClick={cancelNavigation}
-                className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
+                className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
