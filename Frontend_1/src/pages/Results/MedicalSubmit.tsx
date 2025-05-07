@@ -95,9 +95,9 @@ const MedicalSubmit = () => {
 
     useEffect(() => {
         const saveSubmitmedicals = async () => {
+            console.log("submitmeical", submitMedical);
             try {
                 const response = await saveSubmittedMedicals(submitMedical, courseCode, selectedExaminationKey);
-                console.log("response", response);
                 if (response.status === 200) {
                     setErrorMessage('');
                     setSuccessMessage('Medical statuses submitted successfully');
@@ -148,16 +148,33 @@ const MedicalSubmit = () => {
 
     const handleStatusChange = (index: number, newStatus: string) => {
         const updatedStudents = [...students];
-        const submittedMedical = [...submitMedical];
-        const updatedStudent: medicalStudents = {
-            studentNumber: students[index].studentNumber,
-            status: newStatus,
-        };
         updatedStudents[index].status = newStatus;
         setStudents(updatedStudents);
-        submittedMedical[index] = updatedStudent;
+      
+        const updatedStudent: medicalStudents = {
+          studentNumber: students[index].studentNumber,
+          status: newStatus,
+        };
+      
+        // Clone the submitMedical array
+        const submittedMedical = [...submitMedical];
+      
+        // Check if the student is already in submitMedical
+        const existingIndex = submittedMedical.findIndex(
+          (s) => s.studentNumber === updatedStudent.studentNumber
+        );
+      
+        if (existingIndex !== -1) {
+          // Update existing entry
+          submittedMedical[existingIndex] = updatedStudent;
+        } else {
+          // Add new entry
+          submittedMedical.push(updatedStudent);
+        }
+      
         setSubmitMedical(submittedMedical);
-    };
+      };
+      
 
     const handleSubmitMedical = () => {
         setIsSubmitting(true);
