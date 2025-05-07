@@ -48,7 +48,7 @@ const ResultsUpload = () => {
     [],
   );
   const isFirstRender = useRef(true);
-  const [examName, setExamName] = useState<string|null>('');
+  const [examName, setExamName] = useState<string | null>('');
   const [courseCode, setCourseCode] = useState<string>('');
   const [examType, setExamType] = useState<string>('');
   const {
@@ -59,7 +59,7 @@ const ResultsUpload = () => {
   const { saveMarkingResults } = useResultsApi();
 
   const [selectedExaminationKey, setSelectedExaminationKey] =
-    useState<number|undefined>();
+    useState<number | undefined>();
   const [examinationCourseCode, setExaminationCourseCode] = useState<
     courseData[]
   >([]);
@@ -90,12 +90,12 @@ const ResultsUpload = () => {
 
   useEffect(() => {
     if (examName != '' && examName != null) {
-      if(selectedExaminationKey != undefined) {
-      console.log("i am running");
-      getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
-        setExaminationCourseCode(data.data.data);
-      });
-    }
+      if (selectedExaminationKey != undefined) {
+        console.log("i am running");
+        getFirstMarkerCoursesUsingExaminationId(selectedExaminationKey).then((data) => {
+          setExaminationCourseCode(data.data.data);
+        });
+      }
     }
   }, [examName]);
 
@@ -115,12 +115,12 @@ const ResultsUpload = () => {
       isFirstRender.current = false;
       return;
     }
-    else if(courseCode != '' && courseCode != null) {
+    else if (courseCode != '' && courseCode != null) {
       firstMarkerExamTypes(courseCode, selectedExaminationKey).then((response) => {
         setExamTypes(response.data);
       });
     }
-   
+
   }, [courseCode]);
 
   useEffect(() => {
@@ -163,54 +163,96 @@ const ResultsUpload = () => {
   };
 
   const handleFileUpload = () => {
+    const requiredHeaders = [
+      "studentNumber",
+      "studentName",
+      "firstMarking",
+      "absent",
+      "hasMedicalSubmit",
+    ];
+
     if (file) {
       const reader = new FileReader();
 
       reader.onload = (e) => {
         if (!e.target?.result) {
-          console.error('Error: File reading failed.');
+          console.error("Error: File reading failed.");
           return;
         }
+
         const binaryData = new Uint8Array(e.target.result as ArrayBuffer);
-        const workbook = XLSX.read(binaryData, { type: 'array' });
+        const workbook = XLSX.read(binaryData, { type: "array" });
 
         // Extract first sheet
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
 
-        const jsonData: RowData[] = XLSX.utils.sheet_to_json(sheet);
+        const jsonData: RowData[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        // Header validation
+        const actualHeaders = jsonData.length > 0 ? Object.keys(jsonData[0]) : [];
+        const isValidFormat = requiredHeaders.every((header) =>
+          actualHeaders.includes(header)
+        );
+
+        if (!isValidFormat) {
+          setErrorMessage(
+            "Invalid file format. Required headers: studentNumber, studentName, firstMarking, absent, hasMedicalSubmit"
+          );
+          setShowProgressBar(false);
+          setShowTable(false);
+          return;
+        }
+
         setStudentsData(jsonData);
-        setSuccessMessage('');
-        setErrorMessage('');
+        setSuccessMessage("");
+        setErrorMessage("");
         setShowProgressBar(false);
-        if (studentsData.length > 0 && courseCode && examName) {
+
+        if (jsonData.length > 0 && courseCode && examName) {
           setShowTable(true);
         }
       };
 
       reader.readAsArrayBuffer(file);
     } else {
-      if (jsonInput !== '') {
+      if (jsonInput !== "") {
         try {
           const parsedData = JSON.parse(jsonInput);
           const jsonData2: RowData[] = Array.isArray(parsedData)
             ? parsedData
             : [parsedData];
+
+          const actualHeaders = jsonData2.length > 0 ? Object.keys(jsonData2[0]) : [];
+          const isValidFormat = requiredHeaders.every((header) =>
+            actualHeaders.includes(header)
+          );
+
+          if (!isValidFormat) {
+            setErrorMessage(
+              "Invalid JSON format. Required fields: studentNumber, studentName, firstMarking, absent, hasMedicalSubmit"
+            );
+            setShowProgressBar(false);
+            setShowTable(false);
+            return;
+          }
+
           setStudentsData(jsonData2);
-          setSuccessMessage('');
-          setErrorMessage('');
+          setSuccessMessage("");
+          setErrorMessage("");
           setShowProgressBar(false);
 
           if (jsonData2.length > 0 && courseCode && examName) {
             setShowTable(true);
           }
         } catch (error) {
-          setErrorMessage('invailid Jason Format');
+          setErrorMessage("Invalid JSON format");
           setShowProgressBar(false);
         }
       }
     }
   };
+
 
   const handleDownloadExcel = () => {
     const csvContent =
@@ -365,24 +407,6 @@ const ResultsUpload = () => {
                     />
                   </div>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className="px-2 bg-white text-sm text-gray-500 dark:bg-boxdark dark:text-gray-400">
-                        OR
-                      </span>
-                    </div>
-                  </div>
-
-                  <textarea
-                    placeholder="Paste JSON data here..."
-                    value={jsonInput}
-                    onChange={(e) => setJsonInput(e.target.value)}
-                    className="input-field"
-                    rows={6}
-                  />
                   <div className="flex justify-center">
                     <button onClick={handleFileUpload} className="btn-primary">
                       submit

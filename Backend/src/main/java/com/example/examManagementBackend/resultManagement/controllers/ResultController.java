@@ -1,9 +1,6 @@
 package com.example.examManagementBackend.resultManagement.controllers;
 
-import com.example.examManagementBackend.resultManagement.dto.GradeDetailsDTO;
-import com.example.examManagementBackend.resultManagement.dto.MedicalSubmitDTO;
-import com.example.examManagementBackend.resultManagement.dto.PublishedDataDTO;
-import com.example.examManagementBackend.resultManagement.dto.ResultDTO;
+import com.example.examManagementBackend.resultManagement.dto.*;
 import com.example.examManagementBackend.resultManagement.services.ResultService;
 import com.example.examManagementBackend.utill.StandardResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,6 +49,14 @@ public class ResultController {
     @GetMapping("/onGoingExams")
     public ResponseEntity<StandardResponse> getOnGoingExams(){
         return resultService.getAllOnGoingExams();
+    }
+    @GetMapping("/allPublishedExams")
+    public ResponseEntity<StandardResponse> getAllPublishedExams(){
+        return resultService.getAllPublishedExams();
+    }
+    @PostMapping("/recorrectionResults")
+    public ResponseEntity<StandardResponse> uploadRecorrectionResults(@RequestBody List<RecorrectionResultsDTO> recorrectionResultsDTOS,@RequestParam String courseCode,@RequestParam Long examinationId,HttpServletRequest request){
+        return resultService.saveRecorrectionsResults(recorrectionResultsDTOS,courseCode,examinationId,request);
     }
 
 }

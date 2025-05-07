@@ -3,6 +3,8 @@ package com.example.examManagementBackend.userManagement.userManagementEntity;
 
 import com.example.examManagementBackend.Notification.NotificationEntity.NotificationEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ArchivedPaper;
+import com.example.examManagementBackend.resultManagement.entities.PublishedResultsEntity;
+import com.example.examManagementBackend.resultManagement.entities.RecorrectionEntity;
 import com.example.examManagementBackend.timetable.entities.ExamCentersEntity;
 import com.example.examManagementBackend.timetable.entities.ExamInvigilatorsEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
@@ -94,6 +96,10 @@ public class UserEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
     private Set<ResultEntity> resultEntitySet;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
+    private Set<PublishedResultsEntity> publishedResultsEntities;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "approvedBy")
+    private Set<RecorrectionEntity> recorrectionEntities;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "invigilators")
     private Set<ExamInvigilatorsEntity> invigilators;

@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.resultManagement.entities.CourseEvaluationsEntity;
+import com.example.examManagementBackend.resultManagement.entities.PublishedResultsEntity;
+import com.example.examManagementBackend.resultManagement.entities.RecorrectionEntity;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
@@ -78,6 +80,10 @@ public class CoursesEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
     private Set<ResultEntity> resultEntitySet;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+    private Set<PublishedResultsEntity> publishedResultsEntities;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "course")
+    private Set<RecorrectionEntity> recorrectionEntities;
 
     // Enum for Course Type
     public enum CourseType {

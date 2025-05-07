@@ -33,5 +33,9 @@ public class StudentsEntity {
     private LocalDateTime updatedAt;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "student")
     private List<ResultEntity> results;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "student")
+    private List<PublishedResultsEntity> publishedResultsEntities;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "student")
+    private List<RecorrectionEntity> recorrectionEntities;
 
 }

@@ -10,11 +10,8 @@ import com.example.examManagementBackend.paperWorkflows.repository.ExaminationRe
 import com.example.examManagementBackend.paperWorkflows.repository.RoleAssignmentRepository;
 import com.example.examManagementBackend.paperWorkflows.service.RoleAssignmentService;
 import com.example.examManagementBackend.resultManagement.dto.*;
+import com.example.examManagementBackend.resultManagement.entities.*;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
-import com.example.examManagementBackend.resultManagement.entities.ExamTypesEntity;
-import com.example.examManagementBackend.resultManagement.entities.PublishedAndReCorrectedResultsEntity;
-import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
-import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
 import com.example.examManagementBackend.resultManagement.repo.*;
 import com.example.examManagementBackend.userManagement.userManagementServices.serviceInterfaces.JwtService;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
@@ -41,8 +38,9 @@ public class ResultService {
     private final RoleAssignmentService roleAssignmentService;
     private final RoleAssignmentRepository roleAssignmentRepository;
     private final CourseEvaluationRepo courseEvaluationRepo;
+    private final RecorrectionRepo recorrectionRepo;
 
-    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, PublishedResultsRepo publishedResultsRepo, RoleAssignmentService roleAssignmentService, RoleAssignmentRepository roleAssignmentRepository, CourseEvaluationRepo courseEvaluationRepo) {
+    public ResultService(StudentRepo studentRepo, ResultRepo resultRepo, ExaminationRepository examinationRepo, CoursesRepository coursesRepo, ExamTypeRepo examTypeRepo, JwtService jwtService, UserManagementRepo userManagementRepo, PublishedResultsRepo publishedResultsRepo, RoleAssignmentService roleAssignmentService, RoleAssignmentRepository roleAssignmentRepository, CourseEvaluationRepo courseEvaluationRepo, RecorrectionRepo recorrectionRepo) {
         this.studentRepo = studentRepo;
         this.resultRepo = resultRepo;
         this.examinationRepo = examinationRepo;
@@ -54,6 +52,8 @@ public class ResultService {
         this.roleAssignmentService = roleAssignmentService;
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.courseEvaluationRepo = courseEvaluationRepo;
+        this.recorrectionRepo = recorrectionRepo;
+
     }
     public ResponseEntity<StandardResponse> saveMarkingResults(ResultDTO results, HttpServletRequest request){
         try{
@@ -268,15 +268,15 @@ public class ResultService {
                 for(GradeDetailsDTO gradeDetailsDTO:publishedDataDTO.getGrades()){
                     StudentsEntity studentsEntity=studentRepo.findByStudentNumber(gradeDetailsDTO.getStudentNumber());
                     Float finalMark=gradeDetailsDTO.getTotalMarks();
-                    PublishedAndReCorrectedResultsEntity publishedAndReCorrectedResultsEntity=new PublishedAndReCorrectedResultsEntity();
-                    publishedAndReCorrectedResultsEntity.setStudent(studentsEntity);
-                    publishedAndReCorrectedResultsEntity.setExamination(examinationEntity);
-                    publishedAndReCorrectedResultsEntity.setFinalMarks(finalMark);
-                    publishedAndReCorrectedResultsEntity.setApprovedBy(publisher);
-                    publishedAndReCorrectedResultsEntity.setCourse(coursesEntity);
-                    publishedAndReCorrectedResultsEntity.setPublishAt(currentDateTime);
-                    publishedAndReCorrectedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
-                    publishedResultsRepo.save(publishedAndReCorrectedResultsEntity);
+                    PublishedResultsEntity publishedResultsEntity =new PublishedResultsEntity();
+                    publishedResultsEntity.setStudent(studentsEntity);
+                    publishedResultsEntity.setExamination(examinationEntity);
+                    publishedResultsEntity.setFinalMarks(finalMark);
+                    publishedResultsEntity.setApprovedBy(publisher);
+                    publishedResultsEntity.setCourse(coursesEntity);
+                    publishedResultsEntity.setPublishAt(currentDateTime);
+                    publishedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
+                    publishedResultsRepo.save(publishedResultsEntity);
                     Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
                     String examTypeName = examType.keySet().iterator().next();
                     Long examTypeId=examTypeRepo.getExamTypeIdByExamTypeName(examTypeName);
@@ -389,5 +389,67 @@ public class ResultService {
         dto.setMarkingCompleteDate(entity.getMarkingCompleteDate());
         dto.setStatus(entity.getStatus());
         return dto;
+    }
+    public ResponseEntity<StandardResponse> getAllPublishedExams(){
+        try{
+            List<ExaminationEntity> publishedExams=publishedResultsRepo.getAllExaminations();
+            List<ExaminationDTO> publishEdexaminationDTOS=new ArrayList<>();
+            for(ExaminationEntity examinationEntity:publishedExams){
+                ExaminationDTO examinationDTO=mapToDTO(examinationEntity);
+                publishEdexaminationDTOS.add(examinationDTO);
+            }
+            return new ResponseEntity<>(
+                    new StandardResponse(200,"success",publishEdexaminationDTOS),HttpStatus.OK
+            );
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    public ResponseEntity<StandardResponse> saveRecorrectionsResults(List<RecorrectionResultsDTO> recorrectionResultsDTOS,String courseCode,Long examId,HttpServletRequest request){
+        try{
+            Object[] userDetails=jwtService.getUserNameAndToken(request);
+            String username = (String) userDetails[0];
+            UserEntity userEntity=userManagementRepo.findByUsername(username);
+            ExaminationEntity examinationEntity=examinationRepo.findExaminationById(examId);
+            CoursesEntity coursesEntity=coursesRepo.findByCourseCode(courseCode);
+            if(userEntity!=null && courseCode!=null){
+                if(examId!=null){
+                    for(RecorrectionResultsDTO recorrectionResultsDTO:recorrectionResultsDTOS){
+                        StudentsEntity studentsEntity=studentRepo.findByStudentNumber(recorrectionResultsDTO.getStudentNumber());
+                        RecorrectionEntity recorrectionEntity=new RecorrectionEntity();
+                        recorrectionEntity.setExamination(examinationEntity);
+                        recorrectionEntity.setCourse(coursesEntity);
+                        recorrectionEntity.setStudent(studentsEntity);
+                        recorrectionEntity.setApprovedBy(userEntity);
+                        recorrectionEntity.setNewMarks(recorrectionResultsDTO.getNewMarks());
+                        recorrectionEntity.setOldMarks(recorrectionResultsDTO.getOldMarks());
+                        recorrectionEntity.setNewGrade(recorrectionResultsDTO.getNewGrade());
+                        recorrectionEntity.setReason(recorrectionResultsDTO.getReason());
+                        recorrectionRepo.save(recorrectionEntity);
+                        publishedResultsRepo.updateStatusByCourseAndExamAndStudent(ResultStatus.RE_CORRECTION,userEntity,recorrectionResultsDTO.getNewMarks(),recorrectionResultsDTO.getNewGrade(),courseCode,examId, recorrectionResultsDTO.getStudentNumber());
+                    }
+                    return new ResponseEntity<>(
+                            new StandardResponse(200,"success",null),HttpStatus.OK
+                    );
+
+                }
+            }
+            return new ResponseEntity<>(
+                    new StandardResponse(400,"success",null),HttpStatus.BAD_REQUEST
+            );
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(
+                    new StandardResponse(500, "error", null), HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
