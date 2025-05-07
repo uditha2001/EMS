@@ -1,6 +1,8 @@
 package com.example.examManagementBackend.paperWorkflows.entity;
 
 import com.example.examManagementBackend.paperWorkflows.entity.Enums.ExamStatus;
+import com.example.examManagementBackend.resultManagement.entities.PublishedResultsEntity;
+import com.example.examManagementBackend.resultManagement.entities.RecorrectionEntity;
 import com.example.examManagementBackend.timetable.entities.ExamTimeTablesEntity;
 import com.example.examManagementBackend.resultManagement.entities.ResultEntity;
 import jakarta.persistence.*;
@@ -61,6 +63,10 @@ public class ExaminationEntity {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "examination")
     private List<ResultEntity> results;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examination")
+    private List<PublishedResultsEntity> publishedResults;
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "examination")
+    private List<RecorrectionEntity> recorrectionEntities;
 
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime examProcessStartDate;

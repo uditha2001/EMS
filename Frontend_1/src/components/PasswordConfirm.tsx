@@ -1,14 +1,19 @@
-type passwordConfirmProps = {
+type PasswordConfirmProps = {
   onConfirm: (password: string) => void;
   onCancel: () => void;
 };
-const PasswordConfirm = ({ onConfirm, onCancel }: passwordConfirmProps) => {
+
+const PasswordConfirm = ({ onConfirm, onCancel }: PasswordConfirmProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded p-6 w-full max-w-sm shadow-xl">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">
+        <h3 className="text-lg font-semibold mb-3 text-gray-800">
           Confirm Password
         </h3>
+
+        <p className="text-red-600 font-semibold text-sm mb-4">
+          ⚠️ Once the results are published, they cannot be changed again.
+        </p>
 
         <div className="mb-4">
           <label
@@ -30,7 +35,7 @@ const PasswordConfirm = ({ onConfirm, onCancel }: passwordConfirmProps) => {
           <button
             onClick={() => {
               const passwordInput = document.getElementById(
-                'password',
+                'password'
               ) as HTMLInputElement;
               if (passwordInput) {
                 onConfirm(passwordInput.value);

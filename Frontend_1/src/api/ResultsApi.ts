@@ -150,6 +150,17 @@ const useResultsApi = () => {
             }
           );
         };
+        const getAllPublishedExams=async()=>{
+          return await axiosPrivate.get('result/allPublishedExams');
+        }
+        const uploadRecorrectionResults=async(recorrectionResults:any,courseCode:string,examinationId:number)=>{
+          return await axiosPrivate.post('result/recorrectionResults',recorrectionResults,{
+            params:{
+              courseCode,
+              examinationId
+            }
+          });
+        }
      
         
 
@@ -166,7 +177,9 @@ const useResultsApi = () => {
     getAllPublishedResultsWithCourseAndYear,
     getPublishedResultsByProgramAndYear,
     getAbsentStudents,
-    saveSubmittedMedicals
+    saveSubmittedMedicals,
+    getAllPublishedExams,
+    uploadRecorrectionResults
     }
 }
 

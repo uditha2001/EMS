@@ -2,58 +2,57 @@ package com.example.examManagementBackend.resultManagement.entities;
 
 import com.example.examManagementBackend.paperWorkflows.entity.CoursesEntity;
 import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity;
-import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
-import static com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus.PUBLISHED;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name="published_Results")
-@NoArgsConstructor
+@Table(name="recorrection_results")
 @AllArgsConstructor
-@Getter
-@Setter
-public class PublishedAndReCorrectedResultsEntity {
-    @Setter(AccessLevel.NONE)
+@NoArgsConstructor
+@Data
+public class RecorrectionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long publishedResultsId;
+    private Long recorrectionId;
     @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="examination_id",referencedColumnName = "id")
+    @JoinColumn(name="examination_id",referencedColumnName = "id",nullable = false)
     private ExaminationEntity examination;
 
     @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="course_id",referencedColumnName = "id")
+    @JoinColumn(name="course_id",referencedColumnName = "id",nullable = false)
     private CoursesEntity course;
 
     @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="student_id",referencedColumnName = "studentId")
+    @JoinColumn(name="student_id",referencedColumnName = "studentId",nullable = false)
     private StudentsEntity student;
 
-    private float finalMarks;
-
-    private String grade;
-
-    @Enumerated(EnumType.STRING)
-    private ResultStatus status=PUBLISHED;
-
     @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="approved_by",referencedColumnName = "userId")
+    @JoinColumn(name="approved_by",referencedColumnName = "userId",nullable = false)
     private UserEntity approvedBy;
+    @Column(nullable = false)
+    private float oldMarks;
+    private float newMarks;
+    @Column(columnDefinition = "TEXT")
+    private String Reason;
+    private String newGrade;
 
-    @Column(columnDefinition = "DATETIME")
-    private LocalDateTime publishAt;
+
     @CreatedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     @LastModifiedDate
     @Column(columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
+
+
 
 }
