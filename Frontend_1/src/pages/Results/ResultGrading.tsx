@@ -167,11 +167,17 @@ const ResultGrading = () => {
   return (
     <div className="p-4 md:p-6">
       {showPasswordConfirm && (
-        <PasswordConfirm
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-        />
+        <>
+         
+          <PasswordConfirm
+          
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+            
+          />
+        </>
       )}
+
       {errorMessage && <ErrorMessage message={errorMessage} onClose={() => {
         setErrorMessage('');
       }} />}

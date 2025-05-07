@@ -266,27 +266,27 @@ public class ResultService {
                 UserEntity publisher=userManagementRepo.findByUsername(publisherName);
                 LocalDateTime currentDateTime = LocalDateTime.now();
                 for(GradeDetailsDTO gradeDetailsDTO:publishedDataDTO.getGrades()){
-                    StudentsEntity studentsEntity=studentRepo.findByStudentNumber(gradeDetailsDTO.getStudentNumber());
-                    Float finalMark=gradeDetailsDTO.getTotalMarks();
-                    PublishedResultsEntity publishedResultsEntity =new PublishedResultsEntity();
-                    publishedResultsEntity.setStudent(studentsEntity);
-                    publishedResultsEntity.setExamination(examinationEntity);
-                    publishedResultsEntity.setFinalMarks(finalMark);
-                    publishedResultsEntity.setApprovedBy(publisher);
-                    publishedResultsEntity.setCourse(coursesEntity);
-                    publishedResultsEntity.setPublishAt(currentDateTime);
-                    publishedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
-                    publishedResultsRepo.save(publishedResultsEntity);
-                    Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
-                    String examTypeName = examType.keySet().iterator().next();
-                    Long examTypeId=examTypeRepo.getExamTypeIdByExamTypeName(examTypeName);
-                    Long ResultId= resultRepo.getResultIdIfExists(publishedDataDTO.getExaminationId(),studentsEntity.getStudentId(),examTypeId,coursesEntity.getId());
-                    resultRepo.updatePublishedResults(ResultStatus.PUBLISHED,finalMark,publisher,ResultId);
-
-
+                    Long publishedResultId=publishedResultsRepo.getPublishedResultIdIfExists(publishedDataDTO.getExaminationId(),gradeDetailsDTO.getStudentNumber(),publishedDataDTO.getCourseCode());
+                    if(publishedResultId==null){
+                        StudentsEntity studentsEntity=studentRepo.findByStudentNumber(gradeDetailsDTO.getStudentNumber());
+                        Float finalMark=gradeDetailsDTO.getTotalMarks();
+                        PublishedResultsEntity publishedResultsEntity =new PublishedResultsEntity();
+                        publishedResultsEntity.setStudent(studentsEntity);
+                        publishedResultsEntity.setExamination(examinationEntity);
+                        publishedResultsEntity.setFinalMarks(finalMark);
+                        publishedResultsEntity.setApprovedBy(publisher);
+                        publishedResultsEntity.setCourse(coursesEntity);
+                        publishedResultsEntity.setPublishAt(currentDateTime);
+                        publishedResultsEntity.setGrade(gradeDetailsDTO.getGrade());
+                        publishedResultsRepo.save(publishedResultsEntity);
+                        Map<String,Float> examType=gradeDetailsDTO.getExamTypesName();
+                        String examTypeName = examType.keySet().iterator().next();
+                        Long examTypeId=examTypeRepo.getExamTypeIdByExamTypeName(examTypeName);
+                        Long ResultId= resultRepo.getResultIdIfExists(publishedDataDTO.getExaminationId(),studentsEntity.getStudentId(),examTypeId,coursesEntity.getId());
+                        resultRepo.updatePublishedResults(ResultStatus.PUBLISHED,finalMark,publisher,ResultId);
+                    }
                 }
                 return ResponseEntity.ok(new StandardResponse(200, "success", null));
-
             }
             else{
 
@@ -390,6 +390,7 @@ public class ResultService {
         dto.setStatus(entity.getStatus());
         return dto;
     }
+    //used to get all results published exams
     public ResponseEntity<StandardResponse> getAllPublishedExams(){
         try{
             List<ExaminationEntity> publishedExams=publishedResultsRepo.getAllExaminations();
@@ -411,8 +412,8 @@ public class ResultService {
             );
         }
     }
-
-    public ResponseEntity<StandardResponse> saveRecorrectionsResults(List<RecorrectionResultsDTO> recorrectionResultsDTOS,String courseCode,Long examId,HttpServletRequest request){
+//used to save recorrectionresults in a recorrection_results table and update the publishedresult table status
+public ResponseEntity<StandardResponse> saveRecorrectionsResults(List<RecorrectionResultsDTO> recorrectionResultsDTOS,String courseCode,Long examId,HttpServletRequest request){
         try{
             Object[] userDetails=jwtService.getUserNameAndToken(request);
             String username = (String) userDetails[0];
@@ -422,18 +423,22 @@ public class ResultService {
             if(userEntity!=null && courseCode!=null){
                 if(examId!=null){
                     for(RecorrectionResultsDTO recorrectionResultsDTO:recorrectionResultsDTOS){
-                        StudentsEntity studentsEntity=studentRepo.findByStudentNumber(recorrectionResultsDTO.getStudentNumber());
-                        RecorrectionEntity recorrectionEntity=new RecorrectionEntity();
-                        recorrectionEntity.setExamination(examinationEntity);
-                        recorrectionEntity.setCourse(coursesEntity);
-                        recorrectionEntity.setStudent(studentsEntity);
-                        recorrectionEntity.setApprovedBy(userEntity);
-                        recorrectionEntity.setNewMarks(recorrectionResultsDTO.getNewMarks());
-                        recorrectionEntity.setOldMarks(recorrectionResultsDTO.getOldMarks());
-                        recorrectionEntity.setNewGrade(recorrectionResultsDTO.getNewGrade());
-                        recorrectionEntity.setReason(recorrectionResultsDTO.getReason());
-                        recorrectionRepo.save(recorrectionEntity);
-                        publishedResultsRepo.updateStatusByCourseAndExamAndStudent(ResultStatus.RE_CORRECTION,userEntity,recorrectionResultsDTO.getNewMarks(),recorrectionResultsDTO.getNewGrade(),courseCode,examId, recorrectionResultsDTO.getStudentNumber());
+                        Long recorecctionResultsId=recorrectionRepo.getRecorectedResultIdIfExists(examId,recorrectionResultsDTO.getStudentNumber(),coursesEntity.getId());
+                        if(recorecctionResultsId==null){
+                            StudentsEntity studentsEntity=studentRepo.findByStudentNumber(recorrectionResultsDTO.getStudentNumber());
+                            RecorrectionEntity recorrectionEntity=new RecorrectionEntity();
+                            recorrectionEntity.setExamination(examinationEntity);
+                            recorrectionEntity.setCourse(coursesEntity);
+                            recorrectionEntity.setStudent(studentsEntity);
+                            recorrectionEntity.setApprovedBy(userEntity);
+                            recorrectionEntity.setNewMarks(recorrectionResultsDTO.getNewMarks());
+                            recorrectionEntity.setOldMarks(recorrectionResultsDTO.getOldMarks());
+                            recorrectionEntity.setNewGrade(recorrectionResultsDTO.getNewGrade());
+                            recorrectionEntity.setReason(recorrectionResultsDTO.getReason());
+                            recorrectionRepo.save(recorrectionEntity);
+                            publishedResultsRepo.updateStatusByCourseAndExamAndStudent(ResultStatus.RE_CORRECTION,userEntity,recorrectionResultsDTO.getNewMarks(),recorrectionResultsDTO.getNewGrade(),courseCode,examId, recorrectionResultsDTO.getStudentNumber());
+                        }
+
                     }
                     return new ResponseEntity<>(
                             new StandardResponse(200,"success",null),HttpStatus.OK

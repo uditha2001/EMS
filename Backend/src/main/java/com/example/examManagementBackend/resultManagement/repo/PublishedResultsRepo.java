@@ -5,7 +5,6 @@ import com.example.examManagementBackend.paperWorkflows.entity.ExaminationEntity
 import com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO;
 import com.example.examManagementBackend.resultManagement.entities.Enums.ResultStatus;
 import com.example.examManagementBackend.resultManagement.entities.PublishedResultsEntity;
-import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
 import com.example.examManagementBackend.userManagement.userManagementEntity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -56,19 +55,6 @@ public interface PublishedResultsRepo extends JpaRepository<PublishedResultsEnti
             "FROM PublishedResultsEntity pac")
     List<DataForCalCulationDTO> findAllResults();
 
-    @Query("SELECT pac.student FROM PublishedResultsEntity pac where pac.course.code=:courseCode AND pac.examination.id=:id AND pac.grade=:grade")
-    List<StudentsEntity> getAllAbsentStudents(@Param("courseCode") String courseCode, @Param("id") Long id, @Param("grade") String grade);
-    @Modifying
-    @Transactional
-    @Query("UPDATE PublishedResultsEntity pac SET pac.grade = :grade, pac.approvedBy.username = :user " +
-            "WHERE pac.examination.id = :id AND pac.course.code = :code AND pac.student.studentNumber = :number")
-    void updateMedical(@Param("user") String user,
-                       @Param("grade") String grade,
-                       @Param("id") Long examinationId,
-                       @Param("code") String courseCode,
-                       @Param("number") String studentNumber);
-
-
     @Query("SELECT pac.examination FROM PublishedResultsEntity pac")
     List<ExaminationEntity> getAllExaminations();
     @Modifying
@@ -83,5 +69,26 @@ public interface PublishedResultsRepo extends JpaRepository<PublishedResultsEnti
             @Param("code") String courseCode,
             @Param("examId") Long examId,
             @Param("studentNumber") String studentNumber);
+
+    //verify the particular data is already include or not
+    @Query("SELECT pr.publishedResultsId FROM PublishedResultsEntity pr WHERE pr.examination.id = :examId " +
+            "AND pr.course.code = :courseCode " +
+            "AND pr.student.studentNumber = :studentNumber")
+    Long getPublishedResultIdIfExists(@Param("examId") Long examId,
+                             @Param("studentNumber") String studentNumber,
+                             @Param("courseCode") String courseCode);
+    //update already existing recode
+    @Repository
+    public interface PublishedResultsRepository extends JpaRepository<PublishedResultsEntity, Long> {
+
+        @Query("SELECT pr.publishedResultsId FROM PublishedResultsEntity pr WHERE pr.examination.id = :examId " +
+                "AND pr.course.id = :courseId AND pr.student.studentId = :studentId")
+        Long getPublishedResultIdIfExists(@Param("examId") Long examId,
+                                          @Param("studentId") Long studentId,
+                                          @Param("courseId") Long courseId);
+
+
+    }
+
 
 }
