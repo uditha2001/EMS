@@ -25,6 +25,7 @@
     "axios": "^1.7.9",
     "dompurify": "^3.2.3",
     "flatpickr": "^4.6.13",
+    "framer-motion": "^12.10.0",
     "global": "^4.4.0",
     "headlessui": "^0.0.0",
     "html2canvas": "^1.4.1",
