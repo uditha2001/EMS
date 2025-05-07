@@ -7,15 +7,16 @@ const OTPVerification = () => {
   const [resetError, setResetError] = useState(false);
   const [submitFailed, setSubmitFailed] = useState(false);
   const [resetFailed, setResetFailed] = useState(false);
-  const [loadingStatus,setLoadingStatus]=useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(false);
   const currentTime = localStorage.getItem('time');
-  const [timeRemaining, setTimeRemaining] = useState(parseInt(currentTime ? currentTime : '120')); // 2 minutes = 120 seconds
+  const [timeRemaining, setTimeRemaining] = useState(
+    parseInt(currentTime ? currentTime : '120'),
+  ); // 2 minutes = 120 seconds
   const [isOtpExpired, setIsOtpExpired] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const username = location.state?.username;
-  
-  
+
   useEffect(() => {
     let timer: any;
     if (timeRemaining > 0) {
@@ -27,7 +28,7 @@ const OTPVerification = () => {
       setIsOtpExpired(true); // OTP expired
       clearInterval(timer);
     }
-    localStorage.setItem("time", JSON.stringify(timeRemaining));
+    localStorage.setItem('time', JSON.stringify(timeRemaining));
 
     return () => clearInterval(timer); // Clean up the timer on unmount
   }, [timeRemaining]);
@@ -57,16 +58,18 @@ const OTPVerification = () => {
     const enteredOtp = otp.join('');
     try {
       setLoadingStatus(true);
-      const response = await Axios.post(`login/otpValidate?enteredOtp=${enteredOtp}&username=${username}`);
+      const response = await Axios.post(
+        `login/otpValidate?enteredOtp=${enteredOtp}&username=${username}`,
+      );
       if (response.data.code === 200) {
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         navigate('/reset-password', { state: { username } });
       } else if (response.data.code === 304) {
-        setLoadingStatus(false)
+        setLoadingStatus(false);
         setSubmitFailed(true);
       }
     } catch (err) {
-      setLoadingStatus(false)
+      setLoadingStatus(false);
       setSubmitFailed(true);
       console.error('Invalid OTP');
     }
@@ -76,36 +79,33 @@ const OTPVerification = () => {
     // Reset OTP fields, timer, and expiry state
     setOtp(Array(6).fill(''));
     try {
-      setLoadingStatus(true)
+      setLoadingStatus(true);
       Axios.post(`login/verifyuser?username=${username}`)
         .then((res) => {
           if (res.data.code === 200) {
-            setLoadingStatus(false)
+            setLoadingStatus(false);
             setResetFailed(false);
             setTimeRemaining(120); // Reset to 2 minutes
             setIsOtpExpired(false);
-          }
-          else if (res.data.code === 404) {
-            setLoadingStatus(false)
+          } else if (res.data.code === 404) {
+            setLoadingStatus(false);
             setIsOtpExpired(false);
             setResetFailed(true);
           }
-
         })
         .catch(() => {
-          setLoadingStatus(false)
+          setLoadingStatus(false);
           setResetError(true);
           setIsOtpExpired(false);
           setResetFailed(true);
-          console.error("error occur");
+          console.error('error occur');
         });
       console.log(`Sending OTP to ${username}`);
     } catch (err) {
-      setLoadingStatus(false)
+      setLoadingStatus(false);
       setResetError(true);
       console.error('Failed to send OTP');
     }
-
   };
 
   const formatTime = (seconds: number) => {
@@ -116,8 +116,8 @@ const OTPVerification = () => {
 
   return (
     <div>
-      {loadingStatus ? <Loader/>:null}
-      <h1 className="text-2xl font-bold text-center mb-6 dark:text-white">
+      {loadingStatus ? <Loader /> : null}
+      <h1 className="text-xl font-bold text-gray-800 dark:text-white text-center mb-6">
         Verify OTP
       </h1>
 
@@ -127,7 +127,7 @@ const OTPVerification = () => {
             Invalid OTP. Please try again.
           </p>
         ) : null}
-        {(resetError && resetFailed) && (
+        {resetError && resetFailed && (
           <p className="text-red-500 text-center">
             Failed to send OTP. Please try again.
           </p>

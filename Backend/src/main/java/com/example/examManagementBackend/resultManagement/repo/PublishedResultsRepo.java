@@ -3,6 +3,7 @@ package com.example.examManagementBackend.resultManagement.repo;
 
 import com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO;
 import com.example.examManagementBackend.resultManagement.entities.PublishedAndReCorrectedResultsEntity;
+import com.example.examManagementBackend.resultManagement.entities.StudentsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -51,6 +52,19 @@ public interface PublishedResultsRepo extends JpaRepository<PublishedAndReCorrec
     @Query("SELECT DISTINCT new com.example.examManagementBackend.resultManagement.dto.DataForCalCulationDTO( pac.finalMarks, pac.grade,pac.publishAt,pac.course.code) " +
             "FROM PublishedAndReCorrectedResultsEntity pac")
     List<DataForCalCulationDTO> findAllResults();
+
+    @Query("SELECT pac.student FROM PublishedAndReCorrectedResultsEntity pac where pac.course.code=:courseCode AND pac.examination.id=:id AND pac.grade=:grade")
+    List<StudentsEntity> getAllAbsentStudents(@Param("courseCode") String courseCode, @Param("id") Long id, @Param("grade") String grade);
+    @Modifying
+    @Transactional
+    @Query("UPDATE PublishedAndReCorrectedResultsEntity pac SET pac.grade = :grade, pac.approvedBy.username = :user " +
+            "WHERE pac.examination.id = :id AND pac.course.code = :code AND pac.student.studentNumber = :number")
+    void updateMedical(@Param("user") String user,
+                       @Param("grade") String grade,
+                       @Param("id") Long examinationId,
+                       @Param("code") String courseCode,
+                       @Param("number") String studentNumber);
+
 
 
 }

@@ -7,10 +7,12 @@ import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 
 type ExamType = Record<string, number>;
+type failedStudents = Record<string, string[]>;
 type GradeDetails = {
   studentName: string;
   studentNumber: string;
   examTypesName: ExamType;
+  failedStudents: failedStudents;
   totalMarks: number;
   grade: string;
 };
@@ -39,6 +41,7 @@ const ResultGrading = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [isConfirmToPublish, setIsConfirmToPublish] = useState(false);
   const [publishedData, setPublishData] = useState<publishedData>({
     courseCode: '',
     examinationId: 0,
@@ -79,12 +82,13 @@ const ResultGrading = () => {
   }, []);
 
   useEffect(() => {
-    if (grades.length > 0) {
+    if (grades.length > 0 && isConfirmToPublish) {
       saveFinalResults(publishedData)
         .then((response) => {
           if (response.data.code === 200) {
             setSuccessMessage("Results published successfully");
             setGrades([]);
+            setIsConfirmToPublish(false);
           } else if (response.data.code === 404) {
             setErrorMessage("Results not found");
           }
@@ -97,7 +101,6 @@ const ResultGrading = () => {
   }, [publishedData]);
 
   useEffect(() => {
-    console.log(grades)
     if (grades.length > 0) {
       setExamTypes(Object.keys(grades[0]?.examTypesName || {}));
     }
@@ -120,6 +123,7 @@ const ResultGrading = () => {
           examinationId: Number(examinationId),
           grades: grades,
         });
+        setIsConfirmToPublish(true);
       } else if (response?.error) {
         setSuccessMessage('');
         if (response.status === 500) {
@@ -270,30 +274,23 @@ const ResultGrading = () => {
                   {data.studentNumber}
                 </td>
                 {examTypes.map((examType) => (
-                  <td key={examType} className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400
-                              whitespace-nowrap border-r border-gray-200 dark:border-gray-600">
-                    {data.examTypesName[examType] === -1 ? (
-                      <span className="text-yellow dark:text-yellow">ABSENT</span>
-                    ) : data.examTypesName[examType] === -2 ? (
-                      <span className="text-blue dark:text-blue">MEDICAL</span>
-                    ) : data.examTypesName[examType] === 0 ? (
-                      <span className="text-red dark:text-red">FAILED</span>
+                  <td
+                    key={examType}
+                    className="px-4 py-3 text-center text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap border-r border-gray-200 dark:border-gray-600"
+                  >
+                    {data.failedStudents[data.studentNumber]?.includes(examType) ? (
+                      <span className="text-red-600 dark:text-red-400">FAILED</span>
                     ) : (
                       data.examTypesName[examType]
                     )}
                   </td>
+
                 ))}
+
                 <td className="px-4 py-3 text-center text-sm font-semibold text-blue-600 dark:text-blue-400
                             bg-blue-50/50 dark:bg-blue-900/20">
-                  {data.totalMarks === -1 ? (
-                    <span className="text-yellow dark:text-yellow">ABSENT</span>
-                  ) : data.totalMarks === -2 ? (
-                    <span className="text-blue dark:text-blue">MEDICAL</span>
-                  ) : data.totalMarks === 0 ? (
-                    <span className="text-red dark:text-red">FAILED</span>
-                  ) : (
-                    data.totalMarks
-                  )}                </td>
+                  {data.totalMarks}
+                </td>
                 <td className="px-4 py-3 text-center text-sm font-semibold text-green-600 dark:text-green-400
                             bg-green-50/50 dark:bg-green-900/20">
                   {data.grade}

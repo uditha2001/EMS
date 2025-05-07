@@ -35,4 +35,5 @@ public interface ExaminationRepository extends JpaRepository<ExaminationEntity, 
 
 
 
+
 }

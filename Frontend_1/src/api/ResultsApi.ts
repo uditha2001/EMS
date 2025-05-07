@@ -132,7 +132,24 @@ const useResultsApi = () => {
             params: { degreeProgramId, year }
           });
         };
+        const getAbsentStudents = async (courseCode: string, examinationId: number|undefined) => {
+          return axiosPrivate.get(`result/absentStudents`, {
+            params: { courseCode, examinationId }
+          });
+        };
         
+        const saveSubmittedMedicals = async (medicalData: any,courseCode:string,examinationId:number|undefined) => {
+          return axiosPrivate.post(
+            'result/saveMedical', 
+            medicalData, 
+            {
+              params: {
+                courseCode, 
+                examinationId
+              }
+            }
+          );
+        };
      
         
 
@@ -148,6 +165,8 @@ const useResultsApi = () => {
     getAllPublishedResultsWithCourse,
     getAllPublishedResultsWithCourseAndYear,
     getPublishedResultsByProgramAndYear,
+    getAbsentStudents,
+    saveSubmittedMedicals
     }
 }
 

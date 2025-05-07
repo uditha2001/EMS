@@ -16,13 +16,6 @@ import useResultsApi from '../../api/ResultsApi';
 import SuccessMessage from '../../components/SuccessMessage';
 import ErrorMessage from '../../components/ErrorMessage';
 import useDegreeApi from '../../api/degreeApi';
-
-type GradeDistribution = {
-  course: string;
-  year: number;
-  [key: string]: string | number;
-};
-
 type DegreeProgram = {
   id: number;
   name: string;

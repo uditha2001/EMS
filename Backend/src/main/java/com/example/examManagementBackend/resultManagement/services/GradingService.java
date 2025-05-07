@@ -117,10 +117,10 @@ public class GradingService {
     public ResponseEntity<StandardResponse> getGradingsMark(String courseCode, Long examinationId) {
         try {
             LinkedHashMap<String, float[]> examtypesMarks = new LinkedHashMap<>();
+            Map<String,List<String>> failedStudents = new HashMap<>();
             Map<String, Integer> gradeCount = new HashMap<>();
-            Map<StudentsEntity,String> studentNumbers = new LinkedHashMap<>();
-            List<ResultStatus> statuses = Arrays.asList(ResultStatus.SECOND_MARKING_COMPLETE, ResultStatus.MEDICAL, ResultStatus.ABSENT);
-            List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, statuses);
+            Map<StudentsEntity,ResultEntity> studentNumbers = new LinkedHashMap<>();
+            List<ResultEntity> studentResults = resultRepo.getStudentResultsByCourseCodeAndExamId(courseCode, examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             Set<GradeDetailsDTO> gradeDetailsDTOS = new LinkedHashSet<>();
             List<String> examTypeNames = resultRepo.getExamTypeName(courseCode, examinationId, ResultStatus.SECOND_MARKING_COMPLETE);
             if (!studentResults.isEmpty() && !examTypeNames.isEmpty()) {
@@ -130,21 +130,26 @@ public class GradingService {
                     examtypesMarks.put(name, marksConditions);
                 }
                 Map<String, Map<String, Float>> marksData = storeStudentDataWithExamTypeIdAndStudentNumber(studentResults);
-                saveCalculatedMarksValues(marksData, examtypesMarks);
+                saveCalculatedMarksValues(marksData, examtypesMarks,failedStudents);
                 extractStudent(studentNumbers, studentResults);
-                for (Map.Entry<StudentsEntity,String> student : studentNumbers.entrySet()) {
+                for (Map.Entry<StudentsEntity,ResultEntity> student : studentNumbers.entrySet()) {
                     GradeDetailsDTO gradeDetailsDTO = new GradeDetailsDTO();
                     float totalMarks = calculateTotalMarks(marksData, student.getKey().getStudentNumber());
-                    if (student.getValue().equals("ABSENT")) {
+                    if (student.getValue().isAbsent() && !student.getValue().isHasSubmittedMedical()) {
                         gradeDetailsDTO.setGrade("ABSENT");
                         calculateGradeCount(gradeCount, "ABSENT ");
 
-                    } else if (student.getValue().equals("MEDICAL")) {
+                    } else if (!student.getValue().isAbsent() && student.getValue().isHasSubmittedMedical()) {
                         gradeDetailsDTO.setGrade("MEDICAL");
                         calculateGradeCount(gradeCount, "MEDICAL ");
 
                     } else {
-                        Grade = gradeTheMarks(totalMarks);
+                        if(failedStudents.containsKey(student.getKey().getStudentNumber())) {
+                            Grade="C-";
+                        }
+                        else{
+                            Grade = gradeTheMarks(totalMarks);
+                        }
                         calculateGradeCount(gradeCount, Grade);
                         gradeDetailsDTO.setGrade(Grade);
                     }
@@ -153,6 +158,7 @@ public class GradingService {
                     gradeDetailsDTO.setStudentName(student.getKey().getStudentName());
                     gradeDetailsDTO.setTotalMarks(totalMarks);
                     gradeDetailsDTO.setExamTypesName(examTypesName);
+                    gradeDetailsDTO.setFailedStudents(failedStudents);
                     gradeDetailsDTOS.add(gradeDetailsDTO);
                 }
                 Object[] responseData = new Object[]{gradeDetailsDTOS, gradeCount};
@@ -184,7 +190,7 @@ public class GradingService {
     }
 
     //used to calculate the marks values for each exam type using stored map
-    private void saveCalculatedMarksValues(Map<String, Map<String, Float>> marksData, LinkedHashMap<String, float[]> examtypesMarks) {
+    private void saveCalculatedMarksValues(Map<String, Map<String, Float>> marksData, LinkedHashMap<String, float[]> examtypesMarks,Map<String,List<String>> failedStudents) {
         examtypesMarks.forEach((examTypeID, examMarks) -> {
             marksData.forEach((studentNumber, studentMarks) -> {
                 if (studentMarks.containsKey(examTypeID)) {
@@ -192,12 +198,9 @@ public class GradingService {
                     if (marks >= examMarks[0]) {
                         marks = (float) Math.round((marks * (examMarks[1] / 100)));
                         studentMarks.put(examTypeID, marks);
-                    } else if (marks == -1) {
-                        studentMarks.put(examTypeID, -1f);
-                    } else if (marks == -2) {
-                        studentMarks.put(examTypeID, -2f);
                     } else {
-                        studentMarks.put(examTypeID, 0f);
+                        failedStudents.computeIfAbsent(studentNumber, k -> new ArrayList<>()).add(examTypeID);                        marks = (float) Math.round((marks * (examMarks[1] / 100)));
+                        studentMarks.put(examTypeID, marks);
                     }
                 }
             });
@@ -213,15 +216,7 @@ public class GradingService {
             for (Map.Entry<String, Float> entry : studentMarks.entrySet()) {
 
                 Float marks = entry.getValue();
-                if (marks != -2 && marks != -1) {
-                    totalMarks += marks;
-                } else if (marks == -2) {
-                    totalMarks = -2;
-                    return totalMarks;
-                } else if (marks == -1) {
-                    totalMarks = -1;
-                    return totalMarks;
-                }
+                totalMarks += marks;
             }
 
         }
@@ -277,9 +272,9 @@ public class GradingService {
         }
     }
 
-    private void extractStudent(Map<StudentsEntity,String> studentNumbers, List<ResultEntity> resultEntities) {
+    private void extractStudent(Map<StudentsEntity,ResultEntity> studentNumbers, List<ResultEntity> resultEntities) {
         for (ResultEntity resultEntity : resultEntities) {
-            studentNumbers.put(resultEntity.getStudent(),resultEntity.getStatus().toString());
+            studentNumbers.put(resultEntity.getStudent(),resultEntity);
         }
     }
 
