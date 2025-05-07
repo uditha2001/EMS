@@ -393,7 +393,7 @@ public class ResultService {
     //used to get all results published exams
     public ResponseEntity<StandardResponse> getAllPublishedExams(){
         try{
-            List<ExaminationEntity> publishedExams=publishedResultsRepo.getAllExaminations();
+            List<ExaminationEntity> publishedExams=publishedResultsRepo.getAllExaminations(ResultStatus.PUBLISHED);
             List<ExaminationDTO> publishEdexaminationDTOS=new ArrayList<>();
             for(ExaminationEntity examinationEntity:publishedExams){
                 ExaminationDTO examinationDTO=mapToDTO(examinationEntity);

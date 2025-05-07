@@ -55,8 +55,8 @@ public interface PublishedResultsRepo extends JpaRepository<PublishedResultsEnti
             "FROM PublishedResultsEntity pac")
     List<DataForCalCulationDTO> findAllResults();
 
-    @Query("SELECT pac.examination FROM PublishedResultsEntity pac")
-    List<ExaminationEntity> getAllExaminations();
+    @Query("SELECT distinct pac.examination FROM PublishedResultsEntity pac WHERE pac.status=:status")
+    List<ExaminationEntity> getAllExaminations(@Param("status") ResultStatus status);
     @Modifying
     @Transactional
     @Query("UPDATE PublishedResultsEntity pac SET pac.status = :status,pac.approvedBy=:user,pac.finalMarks=:marks,pac.grade=:grade " +
