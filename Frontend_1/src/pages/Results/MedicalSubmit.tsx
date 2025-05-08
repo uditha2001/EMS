@@ -150,31 +150,31 @@ const MedicalSubmit = () => {
         const updatedStudents = [...students];
         updatedStudents[index].status = newStatus;
         setStudents(updatedStudents);
-      
+
         const updatedStudent: medicalStudents = {
-          studentNumber: students[index].studentNumber,
-          status: newStatus,
+            studentNumber: students[index].studentNumber,
+            status: newStatus,
         };
-      
+
         // Clone the submitMedical array
         const submittedMedical = [...submitMedical];
-      
+
         // Check if the student is already in submitMedical
         const existingIndex = submittedMedical.findIndex(
-          (s) => s.studentNumber === updatedStudent.studentNumber
+            (s) => s.studentNumber === updatedStudent.studentNumber
         );
-      
+
         if (existingIndex !== -1) {
-          // Update existing entry
-          submittedMedical[existingIndex] = updatedStudent;
+            // Update existing entry
+            submittedMedical[existingIndex] = updatedStudent;
         } else {
-          // Add new entry
-          submittedMedical.push(updatedStudent);
+            // Add new entry
+            submittedMedical.push(updatedStudent);
         }
-      
+
         setSubmitMedical(submittedMedical);
-      };
-      
+    };
+
 
     const handleSubmitMedical = () => {
         setIsSubmitting(true);
@@ -203,7 +203,7 @@ const MedicalSubmit = () => {
                     </div>
                     <div className="px-6 pt-4">
                         <div className="bg-yellow-100 text-yellow-800 text-sm px-4 py-2 rounded border border-yellow-300">
-                        ⚠️ <strong>Medical requests can only be submitted for results where marks have already been uploaded (First Marking submitted).</strong>                        </div>
+                            ⚠️ <strong>Medical requests can only be submitted for results where marks have already been uploaded (i.e., First Marking is submitted). If the medical is approved before First Marking, then the first marker can upload the approved medical data. In that case, please request the first marker to do so.</strong>                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pt-6 pb-6">
