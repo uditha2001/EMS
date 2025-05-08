@@ -131,6 +131,7 @@ const RecorrectionUpload: React.FC = () => {
             setShowTable(false);
             setData([]);
             setFile(null);
+            
           } else {
             setErrorMessage('Failed to upload re-correction results. Please try again.');
           }
